@@ -322,18 +322,18 @@ export const getBattleState = async (roomId: string) => {
           { question: "Mock Q2: Capital of BD?", options: ["Dhaka","Ctg","Sylhet","Raj"], correctAnswerIndex: 0 }
       ],
       players: [
-          { uid: 'mock-host', name: 'Host', score: 20, avatar: '', answers: { '0': 1, '1': 0 } },
-          { uid: 'you', name: 'You', score: 10, avatar: '', answers: { '0': 1 } }
+          { uid: 'mock-host', name: 'Host', score: 20, avatar: '', totalTimeTaken: 5, answers: { '0': 1, '1': 0 } },
+          { uid: 'you', name: 'You', score: 10, avatar: '', totalTimeTaken: 8, answers: { '0': 1 } }
       ]
   };
   return fetchWithFallback(`/battles/${roomId}`, {}, mockBattleState);
 };
 
-export const submitBattleAnswer = async (roomId: string, userId: string, isCorrect: boolean, questionIndex: number, selectedOption: number) => {
-  // Send questionIndex and selectedOption for comparison
+export const submitBattleAnswer = async (roomId: string, userId: string, isCorrect: boolean, questionIndex: number, selectedOption: number, timeTaken?: number) => {
+  // Send questionIndex and selectedOption for comparison, timeTaken for tie-breaking
   return fetchWithFallback(`/battles/${roomId}/answer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, isCorrect, questionIndex, selectedOption })
+    body: JSON.stringify({ userId, isCorrect, questionIndex, selectedOption, timeTaken })
   }, { success: true });
 };
