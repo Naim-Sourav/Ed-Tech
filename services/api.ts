@@ -1,9 +1,9 @@
-import { PaymentRequest, Notification, LeaderboardUser, ExamPack } from "../types";
+
+import { PaymentRequest, Notification, LeaderboardUser, ExamPack, Quest, QuestType } from "../types";
 
 const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
 
 // --- MOCK DATA ---
-// ... (Keeping existing mocks same)
 const MOCK_STATS = {
   user: {
     college: 'Dhaka College',
@@ -80,18 +80,17 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
     
     // 1. Handle HTTP Errors (non-200)
     if (!response.ok) {
-        // Try to parse error message from JSON body to throw specific logic error (e.g. "Wrong Password")
         let errorMessage = `HTTP Error ${response.status}`;
         try {
             const errorData = await response.json();
             if (errorData && errorData.error) errorMessage = errorData.error;
         } catch (e) {
-            // Body wasn't JSON (e.g. 404 HTML page), ignore parsing error and keep generic message
+            // Body wasn't JSON
         }
         throw new Error(errorMessage);
     }
 
-    // 2. Handle Success (200) but potentially non-JSON body (e.g. HTML 200 from a proxy/SPA fallback)
+    // 2. Handle Success (200)
     const text = await response.text();
     try {
         return JSON.parse(text);
@@ -101,17 +100,31 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
 
   } catch (error: any) {
     // 3. Fallback Mechanism
-    // If a fallback is provided, use it (Masks network/parsing errors)
     if (fallback !== null && fallback !== undefined) {
         console.warn(`API Error (${endpoint}): ${error.message}. Using Fallback Data.`);
         return fallback;
     }
-    // If no fallback (e.g. critical mutation like Login/Register where we need to know failure), re-throw
     throw error;
   }
 };
 
-// --- API EXPORTS (Existing ones preserved) ---
+// --- API EXPORTS ---
+
+export const updateQuestProgressAPI = async (userId: string, actionType: QuestType, value: number = 1) => {
+    return fetchWithFallback('/quests/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, actionType, value })
+    }, { success: true });
+};
+
+export const claimQuestAPI = async (userId: string, questId: string) => {
+    return fetchWithFallback('/quests/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, questId })
+    }, { success: false });
+};
 
 export const syncUserToMongoDB = async (user: any) => {
   return fetchWithFallback('/users/sync', {
@@ -285,7 +298,6 @@ export const fetchExamPacksAPI = async (): Promise<ExamPack[]> => {
 // --- BATTLE API ---
 
 export const createBattleRoom = async (userId: string, userName: string, avatar: string, config: any) => {
-  // Config now contains arrays for subjects and chapters
   return fetchWithFallback('/battles/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -330,7 +342,6 @@ export const getBattleState = async (roomId: string) => {
 };
 
 export const submitBattleAnswer = async (roomId: string, userId: string, isCorrect: boolean, questionIndex: number, selectedOption: number, timeTaken?: number) => {
-  // Send questionIndex and selectedOption for comparison, timeTaken for tie-breaking
   return fetchWithFallback(`/battles/${roomId}/answer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
