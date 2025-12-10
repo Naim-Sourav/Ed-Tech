@@ -12,7 +12,7 @@ interface BattlePlayer {
   name: string;
   avatar: string;
   score: number;
-  totalTimeTaken: number; // New field for tie-breaking
+  totalTimeTaken: number;
   team: 'A' | 'B' | 'NONE';
   answers: Record<string, number>; 
 }
@@ -530,7 +530,7 @@ const QuizBattlePrototype: React.FC = () => {
 
     if (showComparison) {
         return (
-            <div className="h-full bg-gray-50 dark:bg-gray-900 overflow-y-auto">
+            <div className="h-full bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
                 {/* Visual Analysis Header */}
                 <div className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <button onClick={() => setShowComparison(false)} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
