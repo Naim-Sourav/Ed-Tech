@@ -3,7 +3,8 @@ import { PaymentRequest, Notification, LeaderboardUser, ExamPack } from "../type
 
 const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
 
-// --- MOCK DATA FOR FALLBACK ---
+// --- MOCK DATA ---
+// ... (Keeping existing mocks same)
 const MOCK_STATS = {
   user: {
     college: 'Dhaka College',
@@ -77,15 +78,25 @@ const MOCK_LEADERBOARD: LeaderboardUser[] = [
 const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fallback: any = null) => {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
-    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+    if (!response.ok) {
+        // If it's a 4xx error (like 400 Bad Request), throw it so the UI can catch it
+        if (response.status >= 400 && response.status < 500) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP Error ${response.status}`);
+        }
+        throw new Error(`HTTP Error ${response.status}`);
+    }
     return await response.json();
-  } catch (error) {
-    console.warn(`API Error (${endpoint}): Using Fallback Data.`);
-    return fallback;
+  } catch (error: any) {
+    if (error.message && error.message.includes('HTTP Error')) {
+        console.warn(`API Error (${endpoint}): Using Fallback Data.`);
+        return fallback;
+    }
+    throw error; // Re-throw valid logic errors
   }
 };
 
-// --- API EXPORTS ---
+// --- API EXPORTS (Existing ones preserved) ---
 
 export const syncUserToMongoDB = async (user: any) => {
   return fetchWithFallback('/users/sync', {
@@ -101,7 +112,7 @@ export const syncUserToMongoDB = async (user: any) => {
         department: user.department,
         target: user.target
       })
-  }, { success: true }); // Fallback success
+  }, { success: true });
 };
 
 export const fetchUserEnrollments = async (userId: string) => {
@@ -233,7 +244,7 @@ export const generateQuizFromDB = async (config: { subject: string, chapter: str
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(config)
-  }, []); // Return empty array so AI generation takes over
+  }, []);
 };
 
 export const fetchSyllabusStatsAPI = async () => {
@@ -259,11 +270,12 @@ export const fetchExamPacksAPI = async (): Promise<ExamPack[]> => {
 // --- BATTLE API ---
 
 export const createBattleRoom = async (userId: string, userName: string, avatar: string, config: any) => {
+  // Pass chapter as well
   return fetchWithFallback('/battles/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, userName, avatar, config })
-  }, { roomId: '123456' }); // Mock ID
+  }, { roomId: '123456' }); 
 };
 
 export const joinBattleRoom = async (roomId: string, userId: string, userName: string, avatar: string) => {
@@ -302,10 +314,11 @@ export const getBattleState = async (roomId: string) => {
   return fetchWithFallback(`/battles/${roomId}`, {}, mockBattleState);
 };
 
-export const submitBattleAnswer = async (roomId: string, userId: string, isCorrect: boolean) => {
+export const submitBattleAnswer = async (roomId: string, userId: string, isCorrect: boolean, questionIndex: number) => {
+  // Send questionIndex to prevent duplicate submissions
   return fetchWithFallback(`/battles/${roomId}/answer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, isCorrect })
+    body: JSON.stringify({ userId, isCorrect, questionIndex })
   }, { success: true });
 };
