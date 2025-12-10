@@ -5,7 +5,7 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/Dopamine-Edu/', // রিপোজিটরির নামের সাথে মিল রেখে সেট করা হয়েছে
+  base: '/Ed-Tech/', // Updated to match your GitHub repository name
   resolve: {
     alias: {
       '@': path.resolve('./'),
