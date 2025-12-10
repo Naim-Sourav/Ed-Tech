@@ -1,6 +1,5 @@
-
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, AlertTriangle, CheckCircle, Crown } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, Crown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { createBattleRoom, joinBattleRoom, getBattleState, submitBattleAnswer, startBattle } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
@@ -14,12 +13,12 @@ interface BattlePlayer {
   avatar: string;
   score: number;
   team: 'A' | 'B' | 'NONE';
-  answeredQuestions?: number[]; // Local tracking if needed, primarily server handled
+  answeredQuestions: number[]; 
 }
 
 interface BattleConfig {
   subject: string;
-  chapter: string; // Added Chapter
+  chapter: string; 
   mode: '1v1' | '2v2' | 'FFA';
   questionCount: number;
   timePerQuestion: number;
@@ -50,17 +49,15 @@ const QuizBattlePrototype: React.FC = () => {
   
   // Config State
   const [config, setConfig] = useState<BattleConfig>({
-    subject: Object.keys(SYLLABUS_DB)[0], // Default to first subject
-    chapter: '', // Initialize empty
+    subject: Object.keys(SYLLABUS_DB)[0],
+    chapter: '', 
     mode: '1v1',
     questionCount: 5,
     timePerQuestion: 15
   });
 
-  // Derived Chapters
   const chapters = config.subject ? Object.keys(SYLLABUS_DB[config.subject] || {}) : [];
 
-  // Initialize chapter when subject changes
   useEffect(() => {
       if (chapters.length > 0 && !chapters.includes(config.chapter)) {
           setConfig(prev => ({ ...prev, chapter: chapters[0] }));
@@ -72,13 +69,79 @@ const QuizBattlePrototype: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [isQuestionReady, setIsQuestionReady] = useState(false); // New state to track if question is fully loaded
+  const [isQuestionReady, setIsQuestionReady] = useState(false);
   
-  const pollIntervalRef = useRef<number | null>(null);
+  // --- POLLING EFFECT ---
+  // Fetches fresh state every second if we are in a room
+  useEffect(() => {
+    let interval: any;
+    
+    const fetchLoop = async () => {
+        if (!roomId) return;
+        try {
+            const state = await getBattleState(roomId);
+            setBattleState(state);
+            
+            // Check questions loaded
+            if (state.questions && state.questions.length > 0) {
+                setIsQuestionReady(true);
+            }
+        } catch (e) {
+            console.error("Polling error", e);
+        }
+    };
+
+    if (roomId && (phase === 'LOBBY' || phase === 'GAME' || phase === 'RESULT')) {
+        fetchLoop(); // Immediate call
+        interval = setInterval(fetchLoop, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [roomId, phase]);
+
+  // --- GAME LOGIC EFFECT ---
+  // Runs whenever battleState updates to sync timer and questions
+  useEffect(() => {
+    if (!battleState) return;
+
+    if (battleState.status === 'ACTIVE') {
+        if (phase !== 'GAME') setPhase('GAME');
+        
+        if (battleState.startTime && battleState.questions.length > 0) {
+            const now = Date.now();
+            const safeStartTime = Math.min(now, battleState.startTime);
+            const elapsedSeconds = (now - safeStartTime) / 1000;
+            const durationPerQ = battleState.config.timePerQuestion;
+            
+            const calculatedIndex = Math.floor(elapsedSeconds / durationPerQ);
+            
+            // Check if game ended
+            if (calculatedIndex >= battleState.questions.length) {
+               // Don't set phase to RESULT here immediately, wait for server status update
+               // But we can show "Finished" UI or 0 time
+               setTimeLeft(0);
+            } else {
+               // Sync Time
+               const timeInCurrentQ = elapsedSeconds % durationPerQ;
+               const remaining = Math.max(0, Math.floor(durationPerQ - timeInCurrentQ));
+               setTimeLeft(remaining);
+
+               // Sync Question Index
+               if (calculatedIndex !== currentQIndex) {
+                   setCurrentQIndex(calculatedIndex);
+                   // Reset for new question
+                   setHasAnswered(false);
+                   setSelectedOption(null);
+               }
+            }
+        }
+    } else if (battleState.status === 'FINISHED') {
+        setPhase('RESULT');
+    }
+  }, [battleState, currentQIndex, phase]); // Dependencies ensure we always have fresh 'currentQIndex'
 
   // --- ACTIONS ---
 
-  // 1. Create Room
   const handleCreate = async () => {
     if (!currentUser) return;
     if (!config.subject || !config.chapter) {
@@ -92,19 +155,14 @@ const QuizBattlePrototype: React.FC = () => {
       if (res && res.roomId) {
         setRoomId(res.roomId);
         setPhase('LOBBY');
-        startPolling(res.roomId);
-      } else {
-        throw new Error("Invalid response");
       }
     } catch (e: any) {
-      console.error(e);
-      showToast(e.message || "রুম তৈরি করতে সমস্যা হয়েছে। প্রশ্ন ডাটাবেসে নেই হয়তো।", "error");
+      showToast(e.message || "রুম তৈরি করতে সমস্যা হয়েছে।", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. Join Room
   const handleJoin = async () => {
     if (!currentUser || !inputRoomId) return;
     setLoading(true);
@@ -112,31 +170,27 @@ const QuizBattlePrototype: React.FC = () => {
       await joinBattleRoom(inputRoomId, currentUser.uid, currentUser.displayName || 'Player', userAvatar);
       setRoomId(inputRoomId);
       setPhase('LOBBY');
-      startPolling(inputRoomId);
     } catch (e) {
-      showToast("রুম খুঁজে পাওয়া যায়নি বা রুম পূর্ণ হয়ে গেছে।", "error");
+      showToast("রুম খুঁজে পাওয়া যায়নি।", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // 3. Start Game (Host Only)
   const handleStart = async () => {
     if (!currentUser || !roomId) return;
     try {
       await startBattle(roomId, currentUser.uid);
-      // The polling will pick up the status change to 'ACTIVE'
     } catch (e) {
       showToast("গেম শুরু করতে সমস্যা হয়েছে।", "error");
     }
   };
 
-  // 4. Submit Answer
   const handleAnswer = async (idx: number) => {
     // Strictly block if already answered locally
     if (hasAnswered || !battleState || !currentUser) return;
     
-    setHasAnswered(true); // Immediate lock
+    setHasAnswered(true); // Immediate lock UI
     setSelectedOption(idx);
     
     const currentQ = battleState.questions[currentQIndex];
@@ -145,92 +199,12 @@ const QuizBattlePrototype: React.FC = () => {
     const isCorrect = idx === Number(currentQ.correctAnswerIndex);
     
     try {
-      // Pass index to prevent spamming
       await submitBattleAnswer(roomId, currentUser.uid, isCorrect, currentQIndex);
-      
-      if (isCorrect) {
-          // Optimistic update
-          setBattleState(prev => {
-              if(!prev) return null;
-              const newPlayers = prev.players.map(p => 
-                  p.uid === currentUser.uid ? { ...p, score: p.score + 10 } : p
-              );
-              return { ...prev, players: newPlayers };
-          });
-      }
+      // State will update via polling
     } catch (e: any) {
       console.error("Answer submit failed", e);
-      // If server rejects (already answered), we keep it locked locally
-      if (e.message?.includes('Already answered')) {
-          setHasAnswered(true);
-      }
     }
   };
-
-  // --- POLLING & SYNC LOGIC ---
-
-  const startPolling = (id: string) => {
-    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-    fetchState(id);
-    pollIntervalRef.current = window.setInterval(() => fetchState(id), 1000);
-  };
-
-  const fetchState = async (id: string) => {
-    try {
-      const state = await getBattleState(id);
-      setBattleState(state);
-
-      // Check if questions are loaded
-      if (state.questions && state.questions.length > 0) {
-          setIsQuestionReady(true);
-      } else {
-          setIsQuestionReady(false);
-      }
-
-      if (state.status === 'ACTIVE') {
-        setPhase('GAME');
-        syncGameTimer(state);
-      } else if (state.status === 'FINISHED') {
-        setPhase('RESULT');
-        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-      }
-    } catch (e) {
-      console.error("Polling error", e);
-    }
-  };
-
-  const syncGameTimer = (state: BattleState) => {
-    if (!state.startTime || !state.questions || state.questions.length === 0) return;
-
-    const now = Date.now();
-    // Safety: ensure startTime isn't in future
-    const safeStartTime = Math.min(now, state.startTime); 
-    const elapsedSeconds = (now - safeStartTime) / 1000;
-    const durationPerQ = state.config.timePerQuestion;
-    
-    const calculatedIndex = Math.floor(elapsedSeconds / durationPerQ);
-    
-    if (calculatedIndex >= state.questions.length) {
-       setPhase('RESULT');
-       return;
-    }
-
-    if (calculatedIndex !== currentQIndex) {
-        setCurrentQIndex(calculatedIndex);
-        setHasAnswered(false);
-        setSelectedOption(null);
-    }
-
-    const timeInCurrentQ = elapsedSeconds % durationPerQ;
-    const remaining = Math.max(0, Math.floor(durationPerQ - timeInCurrentQ));
-    setTimeLeft(remaining);
-  };
-
-  useEffect(() => {
-    return () => {
-        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-    };
-  }, []);
 
   // --- RENDERERS ---
 
@@ -454,7 +428,6 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const renderGame = () => {
-    // Ensuring questions are truly loaded and indexed correctly
     if (!battleState || !battleState.questions || battleState.questions.length === 0 || !battleState.questions[currentQIndex]) {
         return (
             <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
