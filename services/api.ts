@@ -1,4 +1,3 @@
-
 import { PaymentRequest, Notification, LeaderboardUser, ExamPack } from "../types";
 
 const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
@@ -78,21 +77,37 @@ const MOCK_LEADERBOARD: LeaderboardUser[] = [
 const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fallback: any = null) => {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
+    
+    // 1. Handle HTTP Errors (non-200)
     if (!response.ok) {
-        // If it's a 4xx error (like 400 Bad Request), throw it so the UI can catch it
-        if (response.status >= 400 && response.status < 500) {
+        // Try to parse error message from JSON body to throw specific logic error (e.g. "Wrong Password")
+        let errorMessage = `HTTP Error ${response.status}`;
+        try {
             const errorData = await response.json();
-            throw new Error(errorData.error || `HTTP Error ${response.status}`);
+            if (errorData && errorData.error) errorMessage = errorData.error;
+        } catch (e) {
+            // Body wasn't JSON (e.g. 404 HTML page), ignore parsing error and keep generic message
         }
-        throw new Error(`HTTP Error ${response.status}`);
+        throw new Error(errorMessage);
     }
-    return await response.json();
+
+    // 2. Handle Success (200) but potentially non-JSON body (e.g. HTML 200 from a proxy/SPA fallback)
+    const text = await response.text();
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        throw new Error("Invalid JSON response (Server might be sending HTML)");
+    }
+
   } catch (error: any) {
-    if (error.message && error.message.includes('HTTP Error')) {
-        console.warn(`API Error (${endpoint}): Using Fallback Data.`);
+    // 3. Fallback Mechanism
+    // If a fallback is provided, use it (Masks network/parsing errors)
+    if (fallback !== null && fallback !== undefined) {
+        console.warn(`API Error (${endpoint}): ${error.message}. Using Fallback Data.`);
         return fallback;
     }
-    throw error; // Re-throw valid logic errors
+    // If no fallback (e.g. critical mutation like Login/Register where we need to know failure), re-throw
+    throw error;
   }
 };
 
