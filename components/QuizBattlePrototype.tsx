@@ -14,10 +14,12 @@ interface BattlePlayer {
   avatar: string;
   score: number;
   team: 'A' | 'B' | 'NONE';
+  answeredQuestions?: number[]; // Local tracking if needed, primarily server handled
 }
 
 interface BattleConfig {
   subject: string;
+  chapter: string; // Added Chapter
   mode: '1v1' | '2v2' | 'FFA';
   questionCount: number;
   timePerQuestion: number;
@@ -48,17 +50,29 @@ const QuizBattlePrototype: React.FC = () => {
   
   // Config State
   const [config, setConfig] = useState<BattleConfig>({
-    subject: 'Physics 1st Paper',
+    subject: Object.keys(SYLLABUS_DB)[0], // Default to first subject
+    chapter: '', // Initialize empty
     mode: '1v1',
     questionCount: 5,
     timePerQuestion: 15
   });
+
+  // Derived Chapters
+  const chapters = config.subject ? Object.keys(SYLLABUS_DB[config.subject] || {}) : [];
+
+  // Initialize chapter when subject changes
+  useEffect(() => {
+      if (chapters.length > 0 && !chapters.includes(config.chapter)) {
+          setConfig(prev => ({ ...prev, chapter: chapters[0] }));
+      }
+  }, [config.subject]);
 
   // Game Play State
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isQuestionReady, setIsQuestionReady] = useState(false); // New state to track if question is fully loaded
   
   const pollIntervalRef = useRef<number | null>(null);
 
@@ -67,6 +81,11 @@ const QuizBattlePrototype: React.FC = () => {
   // 1. Create Room
   const handleCreate = async () => {
     if (!currentUser) return;
+    if (!config.subject || !config.chapter) {
+        showToast("বিষয় এবং অধ্যায় নির্বাচন করুন", "warning");
+        return;
+    }
+
     setLoading(true);
     try {
       const res = await createBattleRoom(currentUser.uid, currentUser.displayName || 'Host', userAvatar, config);
@@ -77,9 +96,9 @@ const QuizBattlePrototype: React.FC = () => {
       } else {
         throw new Error("Invalid response");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      showToast("রুম তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।", "error");
+      showToast(e.message || "রুম তৈরি করতে সমস্যা হয়েছে। প্রশ্ন ডাটাবেসে নেই হয়তো।", "error");
     } finally {
       setLoading(false);
     }
@@ -114,19 +133,23 @@ const QuizBattlePrototype: React.FC = () => {
 
   // 4. Submit Answer
   const handleAnswer = async (idx: number) => {
+    // Strictly block if already answered locally
     if (hasAnswered || !battleState || !currentUser) return;
     
-    setHasAnswered(true);
+    setHasAnswered(true); // Immediate lock
     setSelectedOption(idx);
     
     const currentQ = battleState.questions[currentQIndex];
-    // Backend indexes are usually 0-3. Ensure type consistency.
+    if (!currentQ) return;
+
     const isCorrect = idx === Number(currentQ.correctAnswerIndex);
     
     try {
-      await submitBattleAnswer(roomId, currentUser.uid, isCorrect);
+      // Pass index to prevent spamming
+      await submitBattleAnswer(roomId, currentUser.uid, isCorrect, currentQIndex);
+      
       if (isCorrect) {
-          // Optimistic update for UI responsiveness
+          // Optimistic update
           setBattleState(prev => {
               if(!prev) return null;
               const newPlayers = prev.players.map(p => 
@@ -135,8 +158,12 @@ const QuizBattlePrototype: React.FC = () => {
               return { ...prev, players: newPlayers };
           });
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Answer submit failed", e);
+      // If server rejects (already answered), we keep it locked locally
+      if (e.message?.includes('Already answered')) {
+          setHasAnswered(true);
+      }
     }
   };
 
@@ -144,11 +171,7 @@ const QuizBattlePrototype: React.FC = () => {
 
   const startPolling = (id: string) => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-    
-    // Immediate fetch
     fetchState(id);
-    
-    // Interval fetch (1 second)
     pollIntervalRef.current = window.setInterval(() => fetchState(id), 1000);
   };
 
@@ -157,7 +180,13 @@ const QuizBattlePrototype: React.FC = () => {
       const state = await getBattleState(id);
       setBattleState(state);
 
-      // Handle Phase Transitions based on Server State
+      // Check if questions are loaded
+      if (state.questions && state.questions.length > 0) {
+          setIsQuestionReady(true);
+      } else {
+          setIsQuestionReady(false);
+      }
+
       if (state.status === 'ACTIVE') {
         setPhase('GAME');
         syncGameTimer(state);
@@ -173,36 +202,30 @@ const QuizBattlePrototype: React.FC = () => {
   const syncGameTimer = (state: BattleState) => {
     if (!state.startTime || !state.questions || state.questions.length === 0) return;
 
-    // Calculate elapsed time since server start
     const now = Date.now();
-    const elapsedSeconds = (now - state.startTime) / 1000;
+    // Safety: ensure startTime isn't in future
+    const safeStartTime = Math.min(now, state.startTime); 
+    const elapsedSeconds = (now - safeStartTime) / 1000;
     const durationPerQ = state.config.timePerQuestion;
     
-    // Calculate which question we should be on
     const calculatedIndex = Math.floor(elapsedSeconds / durationPerQ);
     
-    // Calculate remaining time for CURRENT question
-    const timeInCurrentQ = elapsedSeconds % durationPerQ;
-    const remaining = Math.max(0, Math.floor(durationPerQ - timeInCurrentQ));
-
-    // Check if game is over based on time
     if (calculatedIndex >= state.questions.length) {
-       // Ideally server sets FINISHED, but frontend can also show waiting/finished
        setPhase('RESULT');
        return;
     }
 
-    // Update Question Index if changed
     if (calculatedIndex !== currentQIndex) {
         setCurrentQIndex(calculatedIndex);
-        setHasAnswered(false); // Reset for new question
+        setHasAnswered(false);
         setSelectedOption(null);
     }
 
+    const timeInCurrentQ = elapsedSeconds % durationPerQ;
+    const remaining = Math.max(0, Math.floor(durationPerQ - timeInCurrentQ));
     setTimeLeft(remaining);
   };
 
-  // Clean up on unmount
   useEffect(() => {
     return () => {
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -220,7 +243,7 @@ const QuizBattlePrototype: React.FC = () => {
         
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2 text-center">কুইজ ব্যাটল</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-10 text-center max-w-sm">
-            বন্ধুদের সাথে লাইভ প্রতিযোগিতা। কে হবে সেরা?
+            বন্ধুদের সাথে লাইভ প্রতিযোগিতা। ডাটাবেস থেকে প্রশ্ন, রিয়েল-টাইম স্কোর।
         </p>
 
         <div className="w-full max-w-sm space-y-4">
@@ -265,7 +288,20 @@ const QuizBattlePrototype: React.FC = () => {
                         className="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none"
                     >
                         {Object.keys(SYLLABUS_DB).map(s => (
-                            <option key={s} value={s}>{s}</option>
+                            <option key={s} value={s}>{s.split('(')[0]}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-bold text-gray-500 uppercase mb-2">অধ্যায় (Chapter)</label>
+                    <select 
+                        value={config.chapter}
+                        onChange={(e) => setConfig({...config, chapter: e.target.value})}
+                        className="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                    >
+                        {chapters.map(c => (
+                            <option key={c} value={c}>{c}</option>
                         ))}
                     </select>
                 </div>
@@ -308,6 +344,7 @@ const QuizBattlePrototype: React.FC = () => {
                     >
                         {loading ? <Loader2 className="animate-spin" /> : 'রুম তৈরি করুন'}
                     </button>
+                    <p className="text-center text-xs text-gray-400 mt-2">বি:দ্র: ডাটাবেসে প্রশ্ন না থাকলে ব্যাটল তৈরি হবে না</p>
                 </div>
             </div>
         </div>
@@ -345,11 +382,10 @@ const QuizBattlePrototype: React.FC = () => {
     
     const isHost = battleState.hostId === currentUser?.uid;
     const players = battleState.players;
-    const requiredPlayers = battleState.config.mode === '1v1' ? 2 : 2; // Min 2 players to start
+    const requiredPlayers = battleState.config.mode === '1v1' ? 2 : 2; 
 
     return (
         <div className="max-w-4xl mx-auto p-6 animate-in fade-in">
-            {/* Lobby Header */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
                 <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">ROOM CODE</p>
@@ -364,11 +400,12 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full font-bold text-sm">
                         <Users size={16}/> {players.length} Players Joined
                     </div>
-                    <p className="text-xs text-gray-400 mt-2 font-medium">Waiting for host to start...</p>
+                    <p className="text-xs text-gray-400 mt-2 font-medium">
+                        Topic: {battleState.config.chapter}
+                    </p>
                 </div>
             </div>
 
-            {/* Players Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 {players.map((p) => (
                     <div key={p.uid} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col items-center shadow-sm relative overflow-hidden group">
@@ -386,7 +423,6 @@ const QuizBattlePrototype: React.FC = () => {
                     </div>
                 ))}
                 
-                {/* Empty Slots Placeholder */}
                 {Array.from({length: Math.max(0, 4 - players.length)}).map((_, i) => (
                     <div key={i} className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex items-center justify-center p-6 min-h-[160px]">
                         <p className="text-gray-400 text-sm font-bold animate-pulse">Waiting...</p>
@@ -394,16 +430,16 @@ const QuizBattlePrototype: React.FC = () => {
                 ))}
             </div>
 
-            {/* Start Button Area */}
             <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 md:static md:bg-transparent md:border-none">
                 <div className="max-w-4xl mx-auto flex justify-center">
                     {isHost ? (
                         <button 
                             onClick={handleStart}
-                            disabled={players.length < requiredPlayers}
+                            disabled={players.length < requiredPlayers || !isQuestionReady}
                             className="px-12 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-bold text-xl shadow-xl shadow-orange-600/30 flex items-center gap-3 disabled:opacity-50 disabled:grayscale transition-all hover:scale-105 active:scale-95"
                         >
-                            <Play fill="currentColor" /> খেলা শুরু করুন
+                            {!isQuestionReady ? <Loader2 className="animate-spin"/> : <Play fill="currentColor" />} 
+                            {!isQuestionReady ? 'Preparing Questions...' : 'খেলা শুরু করুন'}
                         </button>
                     ) : (
                         <div className="flex items-center gap-3 text-gray-500">
@@ -418,22 +454,19 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const renderGame = () => {
-    // SAFETY CHECK: Ensure questions are loaded before rendering game
-    if (!battleState || !battleState.questions || battleState.questions.length === 0) {
+    // Ensuring questions are truly loaded and indexed correctly
+    if (!battleState || !battleState.questions || battleState.questions.length === 0 || !battleState.questions[currentQIndex]) {
         return (
             <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
                 <Loader2 className="animate-spin text-orange-500 mb-4" size={48} />
-                <h2 className="text-xl font-bold text-gray-700 dark:text-gray-300">প্রশ্ন লোড হচ্ছে...</h2>
-                <p className="text-sm text-gray-500 mt-2">দয়া করে অপেক্ষা করুন</p>
+                <h2 className="text-xl font-bold text-gray-700 dark:text-gray-300">Syncing...</h2>
+                <p className="text-sm text-gray-500 mt-2">প্রশ্ন লোড হতে সময় নিচ্ছে, দয়া করে অপেক্ষা করুন।</p>
             </div>
         );
     }
 
     const question = battleState.questions[currentQIndex];
-    if (!question) return <div>Error loading question</div>; // Fallback
-
     const totalQ = battleState.config.questionCount;
-    // Sort players for leaderboard side panel
     const sortedPlayers = [...battleState.players].sort((a, b) => b.score - a.score);
 
     return (
@@ -446,7 +479,7 @@ const QuizBattlePrototype: React.FC = () => {
                         {currentQIndex + 1} / {totalQ}
                     </span>
                     <span className="text-sm font-bold text-orange-600 hidden md:block">
-                        {battleState.config.subject}
+                        {battleState.config.chapter}
                     </span>
                 </div>
                 <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-mono font-bold text-xl border-2 ${timeLeft <= 5 ? 'bg-red-50 border-red-500 text-red-600 animate-pulse' : 'bg-white dark:bg-gray-800 border-orange-500 text-gray-800 dark:text-white'}`}>
