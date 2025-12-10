@@ -1,31 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppView, Notification } from '../types';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { GraduationCap, ClipboardList, Home, PieChart, Moon, Sun, Swords, Library, LogOut, User, ShieldCheck, Bell, Trophy, FileCheck, Archive, Monitor } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchNotificationsAPI } from '../services/api';
+import { Notification } from '../types';
 
 interface NavigationProps {
-  currentView: AppView;
-  onNavigate: (view: AppView) => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
-  isDarkMode: boolean;
   themeMode?: 'light' | 'dark' | 'system';
   toggleTheme: () => void;
-  openAuthModal: () => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
-  currentView, 
-  onNavigate, 
   isMobileMenuOpen, 
   setIsMobileMenuOpen,
-  isDarkMode,
   themeMode,
   toggleTheme
 }) => {
   const { currentUser, logout, userAvatar } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -61,26 +57,22 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   const navItems = [
-    { view: AppView.HOME, label: 'হোম (Home)', icon: <Home size={20} /> },
-    { view: AppView.COURSE, label: 'কোর্সসমূহ (Courses)', icon: <Library size={20} /> },
-    { view: AppView.QUESTION_BANK, label: 'প্রশ্ন ব্যাংক (Q-Bank)', icon: <Archive size={20} /> },
-    { view: AppView.EXAM_PACK, label: 'মডেল টেস্ট (Exams)', icon: <FileCheck size={20} /> },
-    { view: AppView.QUIZ, label: 'কুইজ চ্যালেঞ্জ (Quiz)', icon: <ClipboardList size={20} /> },
-    { view: AppView.BATTLE, label: 'কুইজ ব্যাটল (Battle)', icon: <Swords size={20} /> },
-    { view: AppView.LEADERBOARD, label: 'লিডারবোর্ড (Rank)', icon: <Trophy size={20} /> },
-    { view: AppView.TRACKER, label: 'পড়ার রুটিন (Tracker)', icon: <PieChart size={20} /> },
-    { view: AppView.ADMISSION, label: 'ভর্তি তথ্য (Info)', icon: <GraduationCap size={20} /> },
+    { path: '/dashboard', label: 'হোম (Home)', icon: <Home size={20} /> },
+    { path: '/courses', label: 'কোর্সসমূহ (Courses)', icon: <Library size={20} /> },
+    { path: '/qbank', label: 'প্রশ্ন ব্যাংক (Q-Bank)', icon: <Archive size={20} /> },
+    { path: '/exams', label: 'মডেল টেস্ট (Exams)', icon: <FileCheck size={20} /> },
+    { path: '/quiz', label: 'কুইজ চ্যালেঞ্জ (Quiz)', icon: <ClipboardList size={20} /> },
+    { path: '/battle', label: 'কুইজ ব্যাটল (Battle)', icon: <Swords size={20} /> },
+    { path: '/leaderboard', label: 'লিডারবোর্ড (Rank)', icon: <Trophy size={20} /> },
+    { path: '/tracker', label: 'পড়ার রুটিন (Tracker)', icon: <PieChart size={20} /> },
+    { path: '/admission', label: 'ভর্তি তথ্য (Info)', icon: <GraduationCap size={20} /> },
   ];
-
-  const handleNavClick = (view: AppView) => {
-    onNavigate(view);
-    setIsMobileMenuOpen(false);
-  };
 
   const handleLogout = async () => {
     try {
       await logout();
       setIsMobileMenuOpen(false);
+      navigate('/');
     } catch (error) {
       console.error("Failed to log out", error);
     }
@@ -97,6 +89,8 @@ const Navigation: React.FC<NavigationProps> = ({
     if (themeMode === 'system') return 'অটো (সিস্টেম)';
     return 'লাইট মোড';
   };
+
+  const isActive = (path: string) => location.pathname === path;
 
   if (!currentUser) return null;
 
@@ -162,9 +156,10 @@ const Navigation: React.FC<NavigationProps> = ({
 
         {/* User Profile */}
         <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-          <button 
-            onClick={() => handleNavClick(AppView.PROFILE)}
-            className="w-full bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+          <Link 
+            to="/profile"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`w-full p-3 rounded-xl flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left ${isActive('/profile') ? 'bg-gray-50 dark:bg-gray-700/80' : 'bg-gray-50 dark:bg-gray-700/50'}`}
           >
             <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/10 dark:bg-green-400/10 flex-shrink-0">
                {userAvatar && userAvatar !== 'default' ? (
@@ -181,37 +176,39 @@ const Navigation: React.FC<NavigationProps> = ({
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">প্রোফাইল দেখুন</p>
             </div>
-          </button>
+          </Link>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => (
-            <button
-              key={item.view}
-              onClick={() => handleNavClick(item.view)}
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
-                currentView === item.view
+                isActive(item.path)
                   ? 'bg-green-50 dark:bg-primary/20 text-primary dark:text-green-400 border border-green-100 dark:border-primary/20'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               {item.icon}
               <span>{item.label}</span>
-            </button>
+            </Link>
           ))}
           
           {/* Admin Button */}
-          <button
-            onClick={() => handleNavClick(AppView.ADMIN)}
+          <Link
+            to="/admin"
+            onClick={() => setIsMobileMenuOpen(false)}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium mt-4 ${
-              currentView === AppView.ADMIN
+              isActive('/admin')
                 ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-orange-50 dark:hover:bg-orange-900/10 hover:text-orange-600 dark:hover:text-orange-400'
             }`}
           >
             <ShieldCheck size={20} />
             <span>অ্যাডমিন (Admin)</span>
-          </button>
+          </Link>
         </nav>
 
         {/* Theme & Footer */}

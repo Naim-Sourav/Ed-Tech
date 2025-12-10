@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, EnrolledCourse } from '../contexts/AuthContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI } from '../services/api';
 import { User, Mail, BookOpen, Edit2, Check, X, Camera, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, TrendingUp, BarChart2, AlertCircle, Zap, Filter, GraduationCap, Briefcase, Target, PieChart, Layers, RefreshCw, AlertTriangle, Clock, Play, AlignJustify, LayoutList, FolderPlus, Folder, MoveRight } from 'lucide-react';
-import { AppView } from '../types';
 import { useToast } from './Toast';
 
 const AVATARS = [
@@ -19,11 +19,8 @@ const AVATARS = [
   'https://api.dicebear.com/7.x/notionists/svg?seed=Mila&backgroundColor=c0aede'
 ];
 
-interface ProfilePageProps {
-  onNavigate?: (view: AppView) => void;
-}
-
-const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
+const ProfilePage: React.FC = () => {
+  const navigate = useNavigate();
   const { currentUser, userAvatar, enrolledCourses, extendedProfile, updateUserProfile } = useAuth();
   const { showToast } = useToast();
   
@@ -261,10 +258,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 
     localStorage.setItem('mistake_exam_config', JSON.stringify(config));
     setShowExamConfig(false);
-    
-    if (onNavigate) {
-        onNavigate(AppView.QUIZ);
-    }
+    navigate('/quiz');
   };
 
   // Gamification Level Logic

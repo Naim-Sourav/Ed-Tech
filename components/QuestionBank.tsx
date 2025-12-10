@@ -1,18 +1,13 @@
 
 import React, { useState } from 'react';
-import { AppView } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { PAST_PAPERS_DB, PastPaper } from '../services/staticQuestionBank';
 import { Archive, FileText, Database, BookOpen, Clock, Play, ArrowRight, Check } from 'lucide-react';
 import { SYLLABUS_DB } from '../services/syllabusData';
 
-interface QuestionBankProps {
-  onNavigate: (view: AppView) => void;
-}
-
-type BankMode = 'SUBJECT' | 'SET';
-
-const QuestionBank: React.FC<QuestionBankProps> = ({ onNavigate }) => {
-  const [mode, setMode] = useState<BankMode>('SET');
+const QuestionBank: React.FC = () => {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<'SET' | 'SUBJECT'>('SET');
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedSource, setSelectedSource] = useState<string>('ALL');
 
@@ -46,7 +41,7 @@ const QuestionBank: React.FC<QuestionBankProps> = ({ onNavigate }) => {
       type: 'PAST_PAPER'
     };
     localStorage.setItem('quiz_launch_config', JSON.stringify(config));
-    onNavigate(AppView.QUIZ);
+    navigate('/quiz');
   };
 
   const handleStartSubjectExam = () => {
@@ -61,7 +56,7 @@ const QuestionBank: React.FC<QuestionBankProps> = ({ onNavigate }) => {
       type: 'PRACTICE'
     };
     localStorage.setItem('quiz_launch_config', JSON.stringify(config));
-    onNavigate(AppView.QUIZ);
+    navigate('/quiz');
   };
 
   return (

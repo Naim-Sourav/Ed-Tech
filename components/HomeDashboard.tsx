@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppView } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, Bot, Brain, Search, PieChart, Swords, Library, 
   FileCheck, Sparkles, Trophy, Flame, Target, Zap, Clock, 
@@ -9,12 +9,16 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserStatsAPI } from '../services/api';
 
-interface HomeDashboardProps {
-  onNavigate: (view: AppView) => void;
-  onOpenSynapse: () => void;
+interface DashboardContext {
+  openSynapse: () => void;
 }
 
-const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse }) => {
+interface HomeDashboardProps {
+  openSynapse: () => void;
+}
+
+const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
+  const navigate = useNavigate();
   const { currentUser, userAvatar } = useAuth();
   const [greeting, setGreeting] = useState('');
   const [stats, setStats] = useState<any>(null);
@@ -30,30 +34,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
         fetchUserStatsAPI(currentUser.uid).then(data => setStats(data)).catch(() => {});
     }
   }, [currentUser]);
-
-  const startWeakTopicPractice = (topic: string) => {
-      // Launch QuizArena specifically for this topic
-      const config = {
-          questions: [], // Will generate
-          time: 15,
-          mode: 'SINGLE_PAGE',
-          title: `Practice: ${topic}`,
-          type: 'PRACTICE',
-          focusTopic: topic // Flag for QuizArena if we implemented it, but here we can just use it to generate
-      };
-      // Note: In a real implementation, we would pass this 'focusTopic' to QuizArena to trigger generation 
-      // specific to this topic. For now, since QuizArena generates based on selection, 
-      // we might need to simulate selection or update QuizArena to accept a "topic string" for auto-generation.
-      // Assuming QuizArena can handle a generic config object that implies "Generate for this topic"
-      
-      // Let's use the local storage method to pass a signal
-      // We will need to update QuizArena to handle "Generate for Topic" signal if not already present.
-      // But based on current QuizArena implementation, it takes specific questions.
-      // So we might just navigate to Question Bank or Quiz Area.
-      
-      // For simplicity in this iteration without major refactoring of QuizArena generation logic:
-      onNavigate(AppView.QUIZ); 
-  };
   
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors pb-32">
@@ -92,7 +72,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
         </header>
 
         {/* Main Hero: Exam Focus */}
-        <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white p-6 md:p-10 shadow-2xl mb-10 group cursor-pointer" onClick={() => onNavigate(AppView.QUIZ)}>
+        <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white p-6 md:p-10 shadow-2xl mb-10 group cursor-pointer" onClick={() => navigate('/quiz')}>
            {/* Abstract Background Elements */}
            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-primary/30 transition-all duration-700"></div>
            <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-blue-500/10 rounded-full blur-[80px] -ml-10 -mb-10"></div>
@@ -146,9 +126,9 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
         {/* Feature Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
            
-           {/* Question Bank (New) */}
+           {/* Question Bank */}
            <div 
-             onClick={() => onNavigate(AppView.QUESTION_BANK)}
+             onClick={() => navigate('/qbank')}
              className="col-span-2 md:col-span-2 bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all group cursor-pointer relative overflow-hidden active:scale-95 duration-200"
            >
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110">
@@ -170,7 +150,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
 
            {/* Model Test Pack */}
            <div 
-             onClick={() => onNavigate(AppView.EXAM_PACK)}
+             onClick={() => navigate('/exams')}
              className="col-span-2 md:col-span-2 bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all group cursor-pointer relative overflow-hidden active:scale-95 duration-200"
            >
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110">
@@ -192,7 +172,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
 
            {/* Battle Mode */}
            <div 
-             onClick={() => onNavigate(AppView.BATTLE)}
+             onClick={() => navigate('/battle')}
              className="col-span-2 md:col-span-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl p-6 text-white shadow-lg hover:shadow-orange-500/30 hover:-translate-y-1 transition-all cursor-pointer relative overflow-hidden group active:scale-95 duration-200"
            >
               <div className="absolute -bottom-4 -right-4 text-white/10 transform rotate-12 group-hover:rotate-0 transition-transform duration-500">
@@ -215,7 +195,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
 
            {/* Leaderboard */}
            <div 
-             onClick={() => onNavigate(AppView.LEADERBOARD)}
+             onClick={() => navigate('/leaderboard')}
              className="col-span-1 bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:border-yellow-400 transition-all cursor-pointer group active:scale-95 duration-200"
            >
               <div className="flex justify-between items-start mb-3">
@@ -229,7 +209,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
 
            {/* Study Tracker */}
            <div 
-             onClick={() => onNavigate(AppView.TRACKER)}
+             onClick={() => navigate('/tracker')}
              className="col-span-1 bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:border-blue-400 transition-all cursor-pointer group active:scale-95 duration-200"
            >
               <div className="flex justify-between items-start mb-3">
@@ -243,7 +223,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
 
            {/* Admission Info */}
            <div 
-             onClick={() => onNavigate(AppView.ADMISSION)}
+             onClick={() => navigate('/admission')}
              className="col-span-1 bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:border-cyan-400 transition-all cursor-pointer group active:scale-95 duration-200"
            >
               <div className="flex justify-between items-start mb-3">
@@ -257,7 +237,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate, onOpenSynapse
 
            {/* AI Tutor */}
            <div 
-             onClick={onOpenSynapse}
+             onClick={openSynapse}
              className="col-span-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-5 text-white shadow-md hover:shadow-lg transition-all cursor-pointer group active:scale-95 duration-200"
            >
               <div className="flex justify-between items-start mb-3">
