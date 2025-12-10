@@ -1,9 +1,9 @@
-// ... (Previous imports and helper functions remain unchanged)
 import { PaymentRequest, Notification, LeaderboardUser, ExamPack } from "../types";
 
 const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
 
-// ... (Existing MOCK_DATA and fetchWithFallback remain unchanged)
+// --- MOCK DATA ---
+// ... (Keeping existing mocks same)
 const MOCK_STATS = {
   user: {
     college: 'Dhaka College',
@@ -78,15 +78,20 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
     
+    // 1. Handle HTTP Errors (non-200)
     if (!response.ok) {
+        // Try to parse error message from JSON body to throw specific logic error (e.g. "Wrong Password")
         let errorMessage = `HTTP Error ${response.status}`;
         try {
             const errorData = await response.json();
             if (errorData && errorData.error) errorMessage = errorData.error;
-        } catch (e) {}
+        } catch (e) {
+            // Body wasn't JSON (e.g. 404 HTML page), ignore parsing error and keep generic message
+        }
         throw new Error(errorMessage);
     }
 
+    // 2. Handle Success (200) but potentially non-JSON body (e.g. HTML 200 from a proxy/SPA fallback)
     const text = await response.text();
     try {
         return JSON.parse(text);
@@ -95,15 +100,19 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
     }
 
   } catch (error: any) {
+    // 3. Fallback Mechanism
+    // If a fallback is provided, use it (Masks network/parsing errors)
     if (fallback !== null && fallback !== undefined) {
         console.warn(`API Error (${endpoint}): ${error.message}. Using Fallback Data.`);
         return fallback;
     }
+    // If no fallback (e.g. critical mutation like Login/Register where we need to know failure), re-throw
     throw error;
   }
 };
 
-// ... (Other exports remain unchanged) ...
+// --- API EXPORTS (Existing ones preserved) ---
+
 export const syncUserToMongoDB = async (user: any) => {
   return fetchWithFallback('/users/sync', {
       method: 'POST',
@@ -276,6 +285,7 @@ export const fetchExamPacksAPI = async (): Promise<ExamPack[]> => {
 // --- BATTLE API ---
 
 export const createBattleRoom = async (userId: string, userName: string, avatar: string, config: any) => {
+  // Config now contains arrays for subjects and chapters
   return fetchWithFallback('/battles/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -306,7 +316,7 @@ export const getBattleState = async (roomId: string) => {
       hostId: 'mock-host',
       status: 'ACTIVE',
       startTime: Date.now() - 10000,
-      config: { timePerQuestion: 20 },
+      config: { timePerQuestion: 20, subjects: ['Physics'], chapters: ['Vector'] },
       questions: [
           { question: "Mock Q1: 2+2?", options: ["3","4","5","6"], correctAnswerIndex: 1 },
           { question: "Mock Q2: Capital of BD?", options: ["Dhaka","Ctg","Sylhet","Raj"], correctAnswerIndex: 0 }
