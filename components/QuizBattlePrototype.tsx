@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, Crown, Eye, CheckCircle, X, ChevronDown, Check, Settings, ArrowRight, Share2, Timer } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { createBattleRoom, joinBattleRoom, getBattleState, submitBattleAnswer, startBattle } from '../services/api';
+import { createBattleRoom, joinBattleRoom, getBattleState, submitBattleAnswer, startBattle, updateQuestProgressAPI } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
 import Confetti from './Confetti';
@@ -136,6 +137,22 @@ const QuizBattlePrototype: React.FC = () => {
         }
     }
   }, [battleState, currentQIndex, phase]); 
+
+  // --- QUEST UPDATE EFFECT ---
+  useEffect(() => {
+      if (battleState && battleState.status === 'FINISHED' && phase === 'RESULT' && currentUser) {
+          const sortedPlayers = [...battleState.players].sort((a, b) => b.score - a.score);
+          const winner = sortedPlayers[0];
+          
+          // Basic Participation Quest
+          updateQuestProgressAPI(currentUser.uid, 'PLAY_BATTLE', 1);
+          
+          // Win Quest
+          if (winner.uid === currentUser.uid) {
+              updateQuestProgressAPI(currentUser.uid, 'WIN_BATTLE', 1);
+          }
+      }
+  }, [battleState?.status, phase]);
 
   // --- HANDLERS ---
   const toggleSelection = (item: string, list: string[], setList: (l: string[]) => void) => {

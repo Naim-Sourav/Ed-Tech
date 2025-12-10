@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserStatsAPI } from '../services/api';
+import QuestWidget from './QuestWidget';
 
 interface DashboardContext {
   openSynapse: () => void;
@@ -23,16 +24,19 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
   const [greeting, setGreeting] = useState('');
   const [stats, setStats] = useState<any>(null);
 
+  const loadStats = () => {
+      if (currentUser) {
+        fetchUserStatsAPI(currentUser.uid).then(data => setStats(data)).catch(() => {});
+      }
+  };
+
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('শুভ সকাল');
     else if (hour < 17) setGreeting('শুভ দুপুর');
     else setGreeting('শুভ সন্ধ্যা');
 
-    // Fetch quick stats for the dashboard
-    if (currentUser) {
-        fetchUserStatsAPI(currentUser.uid).then(data => setStats(data)).catch(() => {});
-    }
+    loadStats();
   }, [currentUser]);
   
   return (
@@ -71,61 +75,86 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
           </div>
         </header>
 
-        {/* Main Hero: Exam Focus */}
-        <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white p-6 md:p-10 shadow-2xl mb-10 group cursor-pointer" onClick={() => navigate('/quiz')}>
-           {/* Abstract Background Elements */}
-           <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-primary/30 transition-all duration-700"></div>
-           <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-blue-500/10 rounded-full blur-[80px] -ml-10 -mb-10"></div>
-           
-           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="space-y-4 max-w-lg">
-                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-green-300 backdrop-blur-md">
-                    <Sparkles size={12} /> ডেইলি চ্যালেঞ্জ
-                 </div>
-                 <h2 className="text-3xl md:text-5xl font-bold leading-tight">
-                    নিজেক যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">লাইভ কুইজ</span> দিয়ে
-                 </h2>
-                 <p className="text-gray-400 text-sm md:text-base leading-relaxed">
-                    প্রতিদিন নতুন নতুন টপিকের উপর মডেল টেস্ট দাও এবং তোমার অবস্থান যাচাই করো। ভুলগুলো থেকে শেখো।
-                 </p>
-                 <button className="mt-4 bg-primary hover:bg-green-600 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-green-900/20 group-hover:scale-105 active:scale-95">
-                    পরীক্ষা শুরু করুন <ArrowRight size={18} />
-                 </button>
-              </div>
-
-              {/* Visual Element */}
-              <div className="relative w-full md:w-auto flex justify-center">
-                 <div className="relative w-64 h-48 bg-gray-800/50 backdrop-blur-md border border-white/10 rounded-2xl p-4 transform rotate-3 group-hover:rotate-6 transition-transform duration-500 shadow-2xl">
-                    <div className="absolute -top-3 -right-3 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg animate-bounce">Live</div>
-                    <div className="h-full flex flex-col justify-between">
-                       <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary"><Clock size={20}/></div>
-                          <div>
-                             <p className="text-sm font-bold">Physics Quiz</p>
-                             <p className="text-[10px] text-gray-400">Time: 20 Mins</p>
-                          </div>
-                       </div>
-                       <div className="space-y-2">
-                          <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                             <div className="h-full bg-primary w-[70%]"></div>
-                          </div>
-                          <div className="flex justify-between text-[10px] text-gray-400">
-                             <span>Progress</span>
-                             <span>1500+ Participants</span>
-                          </div>
-                       </div>
-                       <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-bold transition-colors">
-                          Join Now
-                       </button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-2">
+                {/* Main Hero: Exam Focus */}
+                <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white p-6 md:p-10 shadow-2xl mb-6 group cursor-pointer" onClick={() => navigate('/quiz')}>
+                {/* Abstract Background Elements */}
+                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-primary/30 transition-all duration-700"></div>
+                <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-blue-500/10 rounded-full blur-[80px] -ml-10 -mb-10"></div>
+                
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div className="space-y-4 max-w-lg">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-green-300 backdrop-blur-md">
+                            <Sparkles size={12} /> ডেইলি চ্যালেঞ্জ
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold leading-tight">
+                            নিজেক যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">লাইভ কুইজ</span> দিয়ে
+                        </h2>
+                        <p className="text-gray-400 text-sm md:text-base leading-relaxed">
+                            প্রতিদিন নতুন নতুন টপিকের উপর মডেল টেস্ট দাও এবং তোমার অবস্থান যাচাই করো। ভুলগুলো থেকে শেখো।
+                        </p>
+                        <button className="mt-4 bg-primary hover:bg-green-600 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-green-900/20 group-hover:scale-105 active:scale-95">
+                            পরীক্ষা শুরু করুন <ArrowRight size={18} />
+                        </button>
                     </div>
-                 </div>
-              </div>
-           </div>
-        </section>
+
+                    {/* Visual Element */}
+                    <div className="relative w-full md:w-auto flex justify-center">
+                        <div className="relative w-64 h-48 bg-gray-800/50 backdrop-blur-md border border-white/10 rounded-2xl p-4 transform rotate-3 group-hover:rotate-6 transition-transform duration-500 shadow-2xl">
+                            <div className="absolute -top-3 -right-3 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg animate-bounce">Live</div>
+                            <div className="h-full flex flex-col justify-between">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary"><Clock size={20}/></div>
+                                <div>
+                                    <p className="text-sm font-bold">Physics Quiz</p>
+                                    <p className="text-[10px] text-gray-400">Time: 20 Mins</p>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary w-[70%]"></div>
+                                </div>
+                                <div className="flex justify-between text-[10px] text-gray-400">
+                                    <span>Progress</span>
+                                    <span>1500+ Participants</span>
+                                </div>
+                            </div>
+                            <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-bold transition-colors">
+                                Join Now
+                            </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </section>
+            </div>
+
+            {/* Daily Quests Widget */}
+            <div className="lg:col-span-1">
+                {stats && stats.quests && <QuestWidget quests={stats.quests} onQuestUpdate={loadStats} />}
+                
+                {/* Recent Performance Strip */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
+                            <Activity size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase">Last Exam</p>
+                            <p className="font-bold text-gray-900 dark:text-white text-sm">Physics 1st Paper</p>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xl font-bold text-green-500">85%</p>
+                        <p className="text-[10px] text-gray-400">Accuracy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {/* Feature Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-           
            {/* Question Bank */}
            <div 
              onClick={() => navigate('/qbank')}
@@ -249,23 +278,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
               <p className="text-[10px] text-emerald-100">যেকোনো প্রশ্ন করো</p>
            </div>
 
-        </div>
-
-        {/* Recent Performance Strip */}
-        <div className="mt-8 bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between shadow-sm">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
-                 <Activity size={20} />
-              </div>
-              <div>
-                 <p className="text-xs font-bold text-gray-500 uppercase">Last Exam</p>
-                 <p className="font-bold text-gray-900 dark:text-white text-sm">Physics 1st Paper - Vector</p>
-              </div>
-           </div>
-           <div className="text-right">
-              <p className="text-xl font-bold text-green-500">85%</p>
-              <p className="text-[10px] text-gray-400">Accuracy</p>
-           </div>
         </div>
 
       </div>

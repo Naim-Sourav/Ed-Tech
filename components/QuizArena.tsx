@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generateQuizFromDB, fetchSyllabusStatsAPI, saveQuestionsToBankAPI, saveQuestionAPI, unsaveQuestionAPI, saveExamResultAPI } from '../services/api';
+import { generateQuizFromDB, fetchSyllabusStatsAPI, saveQuestionsToBankAPI, saveQuestionAPI, unsaveQuestionAPI, saveExamResultAPI, updateQuestProgressAPI } from '../services/api';
 import { generateQuiz } from '../services/geminiService';
 import { QuizQuestion, ExamStandard, QuizConfig, DifficultyLevel } from '../types';
 import { SYLLABUS_DB } from '../services/syllabusData';
@@ -476,6 +476,13 @@ const QuizArena: React.FC = () => {
                 topicStats: topicStatsArray,
                 mistakes: mistakes // Sending mistakes to backend
             });
+            
+            // --- QUEST UPDATE ---
+            updateQuestProgressAPI(currentUser.uid, 'EXAM_COMPLETE', 1);
+            if (percentage >= 80) {
+                updateQuestProgressAPI(currentUser.uid, 'HIGH_SCORE', 1);
+            }
+            
             showToast("ফলাফল সংরক্ষণ করা হয়েছে", "success");
         } catch (e) {
             console.error("Failed to save result", e);
@@ -512,6 +519,10 @@ const QuizArena: React.FC = () => {
         newSet.add(index);
         setSavedQuestionIndices(newSet);
         await saveQuestionAPI(currentUser.uid, (q as any)._id);
+        
+        // --- QUEST UPDATE ---
+        updateQuestProgressAPI(currentUser.uid, 'SAVE_QUESTION', 1);
+        
         showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
       }
     } catch (e) {
@@ -657,9 +668,6 @@ const QuizArena: React.FC = () => {
     </div>
   );
 
-  // ... Rest of the component logic remains identical, just rendering
-  // The crucial part was replacing useHistory with useNavigate
-
   // --- VIEWS ---
 
   if (step === 'SELECTION') {
@@ -721,9 +729,7 @@ const QuizArena: React.FC = () => {
     );
   }
 
-  // ... (Other steps: TOPIC_CONFIG, LOADING, EXAM, RESULT - they just render based on state, no navigation changes needed inside them except 'Result' buttons)
-
-  // TOPIC CONFIG STEP
+  // TOPIC CONFIG STEP (UI Remains same, just need to ensure imports and exports are fine)
   if (step === 'TOPIC_CONFIG') {
     const subjects = Object.keys(globalSelection);
     return (
