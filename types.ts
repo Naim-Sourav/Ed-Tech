@@ -131,3 +131,20 @@ export interface ExamPack {
   theme: 'blue' | 'purple' | 'emerald' | 'orange' | 'red';
   tag?: string;
 }
+
+// --- NEW GAMIFICATION TYPES ---
+
+export type QuestType = 'EXAM_COMPLETE' | 'HIGH_SCORE' | 'WIN_BATTLE' | 'PLAY_BATTLE' | 'STUDY_TIME' | 'ASK_AI' | 'SAVE_QUESTION';
+
+export interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  type: QuestType;
+  target: number;
+  progress: number;
+  reward: number;
+  completed: boolean;
+  claimed: boolean;
+  icon?: string;
+}
