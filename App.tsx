@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import HomeDashboard from './components/HomeDashboard';
 import QuizArena from './components/QuizArena';
@@ -15,20 +15,80 @@ import LandingPage from './components/LandingPage';
 import ProfilePage from './components/ProfilePage';
 import AdminPage from './components/AdminPage';
 import LeaderboardPage from './components/LeaderboardPage';
-import { AppView } from './types';
 import { Menu, Loader2, ArrowLeft, GraduationCap } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
+// Layout Component to handle Navigation and Common UI
+const MainLayout: React.FC<{ 
+  themeMode: 'light' | 'dark' | 'system', 
+  toggleTheme: () => void,
+  children: React.ReactNode,
+  openSynapse: () => void
+}> = ({ themeMode, toggleTheme, children, openSynapse }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSynapseOpen, setIsSynapseOpen] = useState(false);
-  const [isAuthViewOpen, setIsAuthViewOpen] = useState(false); 
-  
+  const location = useLocation();
+
+  // Map paths to Titles
+  const getTitle = (pathname: string) => {
+    switch (pathname) {
+      case '/dashboard': return 'ডোপামিন';
+      case '/quiz': return 'কুইজ চ্যালেঞ্জ';
+      case '/battle': return 'ব্যাটল জোন';
+      case '/admission': return 'ভর্তি তথ্য';
+      case '/tracker': return 'স্টাডি ট্র্যাকার';
+      case '/courses': return 'কোর্সসমূহ';
+      case '/exams': return 'মডেল টেস্ট';
+      case '/qbank': return 'প্রশ্ন ব্যাংক';
+      case '/profile': return 'প্রোফাইল';
+      case '/admin': return 'অ্যাডমিন প্যানেল';
+      case '/leaderboard': return 'লিডারবোর্ড';
+      default: return 'ডোপামিন';
+    }
+  };
+
+  return (
+    <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-200 text-gray-900 dark:text-gray-100">
+      <Navigation 
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        themeMode={themeMode}
+        toggleTheme={toggleTheme}
+      />
+
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+        {/* Mobile Header */}
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between transition-colors sticky top-0 z-50 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
+              <GraduationCap size={20} />
+            </div>
+            <span className="font-bold text-gray-800 dark:text-white text-lg tracking-tight">
+              {getTitle(location.pathname)}
+            </span>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-hidden p-0 md:p-6 bg-gray-50 dark:bg-gray-900 transition-colors relative">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+const App: React.FC = () => {
   const { currentUser, loading } = useAuth();
+  const [isSynapseOpen, setIsSynapseOpen] = useState(false);
   
-  // Theme State: 'light' | 'dark' | 'system'
+  // Theme State
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('themeMode');
@@ -53,7 +113,6 @@ const App: React.FC = () => {
     applyTheme();
     localStorage.setItem('themeMode', themeMode);
 
-    // Listener for system changes if mode is 'system'
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
       if (themeMode === 'system') applyTheme();
@@ -70,27 +129,6 @@ const App: React.FC = () => {
     });
   };
 
-  const openSynapse = () => setIsSynapseOpen(true);
-  const closeSynapse = () => setIsSynapseOpen(false);
-
-  // Helper to get title based on view
-  const getViewTitle = (view: AppView) => {
-    switch (view) {
-      case AppView.HOME: return 'ডোপামিন';
-      case AppView.QUIZ: return 'কুইজ চ্যালেঞ্জ';
-      case AppView.BATTLE: return 'ব্যাটল জোন';
-      case AppView.ADMISSION: return 'ভর্তি তথ্য';
-      case AppView.TRACKER: return 'স্টাডি ট্র্যাকার';
-      case AppView.COURSE: return 'কোর্সসমূহ';
-      case AppView.EXAM_PACK: return 'মডেল টেস্ট';
-      case AppView.QUESTION_BANK: return 'প্রশ্ন ব্যাংক';
-      case AppView.PROFILE: return 'প্রোফাইল';
-      case AppView.ADMIN: return 'অ্যাডমিন প্যানেল';
-      case AppView.LEADERBOARD: return 'লিডারবোর্ড';
-      default: return 'ডোপামিন';
-    }
-  };
-
   // Loading State
   if (loading) {
     return (
@@ -100,96 +138,43 @@ const App: React.FC = () => {
     );
   }
 
-  // Not Logged In Logic
-  if (!currentUser) {
-    if (isAuthViewOpen) {
-      return <AuthPage onBack={() => setIsAuthViewOpen(false)} />;
-    }
-    return <LandingPage onLoginClick={() => setIsAuthViewOpen(true)} />;
-  }
+  const openSynapse = () => setIsSynapseOpen(true);
 
-  // Logged In: Show Main App
-  const renderContent = () => {
-    switch (currentView) {
-      case AppView.HOME:
-        return <HomeDashboard onNavigate={setCurrentView} onOpenSynapse={openSynapse} />;
-      case AppView.QUIZ:
-        return <QuizArena onNavigate={setCurrentView} />;
-      case AppView.BATTLE:
-        return <QuizBattlePrototype />;
-      case AppView.ADMISSION:
-        return <AdmissionSearch />;
-      case AppView.TRACKER:
-        return <StudyTracker />;
-      case AppView.COURSE:
-        return <CourseSection />;
-      case AppView.EXAM_PACK:
-        return <ExamPackSection />;
-      case AppView.QUESTION_BANK:
-        return <QuestionBank onNavigate={setCurrentView} />;
-      case AppView.PROFILE:
-        return <ProfilePage onNavigate={setCurrentView} />;
-      case AppView.ADMIN:
-        return <AdminPage />;
-      case AppView.LEADERBOARD:
-        return <LeaderboardPage />;
-      case AppView.CONCEPT:
-        return <HomeDashboard onNavigate={setCurrentView} onOpenSynapse={openSynapse} />; 
-      default:
-        return <HomeDashboard onNavigate={setCurrentView} onOpenSynapse={openSynapse} />;
-    }
-  };
-
+  // Use HashRouter instead of BrowserRouter to avoid path issues on different environments
   return (
     <AdminProvider>
-      <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-200 text-gray-900 dark:text-gray-100">
-        <Navigation 
-          currentView={currentView} 
-          onNavigate={setCurrentView} 
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-          isDarkMode={themeMode === 'dark'} // Only for basic prop logic if needed, but passing themeMode is better
-          themeMode={themeMode}
-          toggleTheme={toggleTheme}
-          openAuthModal={() => {}} 
-        />
+      <HashRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => window.location.hash = '#/auth'} /> : <Navigate to="/dashboard" />} />
+          <Route path="/auth" element={!currentUser ? <AuthPage onBack={() => window.location.hash = '#/'} /> : <Navigate to="/dashboard" />} />
 
-        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-          {/* Mobile Header with Back Button Logic */}
-          <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between transition-colors sticky top-0 z-50 shadow-sm">
-            <div className="flex items-center gap-3">
-              {currentView !== AppView.HOME ? (
-                <button 
-                  onClick={() => setCurrentView(AppView.HOME)}
-                  className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-                >
-                  <ArrowLeft size={24} />
-                </button>
-              ) : (
-                <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-                  <GraduationCap size={20} />
-                </div>
-              )}
-              <span className="font-bold text-gray-800 dark:text-white text-lg tracking-tight">
-                {getViewTitle(currentView)}
-              </span>
-            </div>
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors"
-            >
-              <Menu size={24} />
-            </button>
-          </div>
-
-          {/* Main Content Area */}
-          <main className="flex-1 overflow-hidden p-0 md:p-6 bg-gray-50 dark:bg-gray-900 transition-colors relative">
-            {renderContent()}
-            {/* Global Synapse Bot Widget */}
-            <SynapseBot isOpen={isSynapseOpen} onClose={closeSynapse} />
-          </main>
-        </div>
-      </div>
+          {/* Protected Routes */}
+          <Route path="/*" element={
+             currentUser ? (
+               <MainLayout themeMode={themeMode} toggleTheme={toggleTheme} openSynapse={openSynapse}>
+                  <Routes>
+                    <Route path="/dashboard" element={<HomeDashboard openSynapse={openSynapse} />} />
+                    <Route path="/courses" element={<CourseSection />} />
+                    <Route path="/qbank" element={<QuestionBank />} />
+                    <Route path="/exams" element={<ExamPackSection />} />
+                    <Route path="/quiz" element={<QuizArena />} />
+                    <Route path="/battle" element={<QuizBattlePrototype />} />
+                    <Route path="/leaderboard" element={<LeaderboardPage />} />
+                    <Route path="/tracker" element={<StudyTracker />} />
+                    <Route path="/admission" element={<AdmissionSearch />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/admin" element={<AdminPage />} />
+                    <Route path="*" element={<Navigate to="/dashboard" />} />
+                  </Routes>
+               </MainLayout>
+             ) : (
+               <Navigate to="/auth" />
+             )
+          } />
+        </Routes>
+        <SynapseBot isOpen={isSynapseOpen} onClose={() => setIsSynapseOpen(false)} />
+      </HashRouter>
     </AdminProvider>
   );
 };
