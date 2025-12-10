@@ -8,8 +8,12 @@ import {
   Maximize2, Minimize2, ChevronRight, PenLine, StopCircle,
   Focus, Activity
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { updateQuestProgressAPI } from '../services/api';
 
 const StudyTracker: React.FC = () => {
+  const { currentUser } = useAuth();
+  
   // --- Global State ---
   const [view, setView] = useState<'DASHBOARD' | 'HISTORY' | 'PLANNER'>('DASHBOARD');
   const [sessions, setSessions] = useState<StudySession[]>([]);
@@ -132,6 +136,12 @@ const StudyTracker: React.FC = () => {
     };
 
     setSessions(prev => [newSession, ...prev]);
+    
+    // --- QUEST UPDATE ---
+    if (currentUser && finalDuration > 0) {
+        updateQuestProgressAPI(currentUser.uid, 'STUDY_TIME', finalDuration);
+    }
+
     setActiveSession(null);
     setIsFocusMode(false);
   };
@@ -476,11 +486,9 @@ const StudyTracker: React.FC = () => {
                      </div>
                    ))}
                    {todos.length === 0 && (
-                     <div className="text-center py-20">
-                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300 dark:text-gray-600">
-                            <ListTodo size={32} />
-                        </div>
-                        <p className="text-gray-400 dark:text-gray-500">আজকের কোনো প্ল্যান নেই?</p>
+                     <div className="text-center py-10 text-gray-400">
+                        <CheckSquare size={48} className="mx-auto mb-2 opacity-20" />
+                        <p>No tasks yet. Add one to get started!</p>
                      </div>
                    )}
                  </div>
@@ -488,52 +496,37 @@ const StudyTracker: React.FC = () => {
           )}
 
           {view === 'HISTORY' && (
-              <div className="space-y-6">
-                 {/* Summary Cards */}
-                 <div className="grid grid-cols-2 gap-4">
-                     <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-2xl border border-orange-100 dark:border-orange-800">
-                         <p className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-2">Current Streak</p>
-                         <div className="flex items-center gap-2">
-                             <Flame size={32} className="text-orange-500" fill="currentColor"/>
-                             <span className="text-4xl font-bold text-gray-800 dark:text-white">{streak}</span>
-                         </div>
-                     </div>
-                     <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800">
-                         <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">Total Sessions</p>
-                         <div className="flex items-center gap-2">
-                             <Target size={32} className="text-blue-500" />
-                             <span className="text-4xl font-bold text-gray-800 dark:text-white">{sessions.length}</span>
-                         </div>
-                     </div>
-                 </div>
-
-                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-                   <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
-                     <History size={20} className="text-primary dark:text-green-400" /> রিসেন্ট সেশন
-                   </h3>
-                   <div className="space-y-4">
-                     {sessions.length === 0 && <p className="text-gray-400 dark:text-gray-600 text-center py-8">কোনো হিস্টোরি নেই</p>}
-                     {sessions.slice(0, 10).map((session) => (
-                       <div key={session.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                         <div className="flex items-center gap-4">
-                           <div className={`w-10 h-10 rounded-full ${getSubjectStyle(session.subject).bg} flex items-center justify-center`}>
-                               <BookOpen size={18} className={getSubjectStyle(session.subject).color.split(' ')[0]} />
-                           </div>
-                           <div>
-                             <p className="font-bold text-gray-800 dark:text-gray-200 text-sm">{session.subject.split('(')[0]}</p>
-                             <p className="text-xs text-gray-500 dark:text-gray-400">{session.topic || 'Self Study'}</p>
-                           </div>
-                         </div>
-                         <div className="text-right">
-                           <p className="font-bold text-gray-800 dark:text-white font-mono">{session.durationMinutes} min</p>
-                           <p className="text-xs text-gray-400">{new Date(session.timestamp).toLocaleDateString()}</p>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
+              <div className="space-y-4">
+                  <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                      <History size={20} className="text-primary"/> সেশন হিস্টোরি
+                  </h3>
+                  
+                  {sessions.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                          <p>No study sessions recorded yet.</p>
+                      </div>
+                  ) : (
+                      sessions.map((session) => (
+                          <div key={session.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm hover:shadow-md transition-shadow">
+                              <div className="flex items-center gap-4">
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getSubjectStyle(session.subject).bg} ${getSubjectStyle(session.subject).color}`}>
+                                      <Clock size={18} />
+                                  </div>
+                                  <div>
+                                      <h4 className="font-bold text-gray-800 dark:text-white text-sm">{session.subject.split('(')[0]}</h4>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">{session.topic || 'No Topic'}</p>
+                                  </div>
+                              </div>
+                              <div className="text-right">
+                                  <span className="block font-bold text-gray-800 dark:text-white">{formatMinimalTime(session.durationMinutes)}</span>
+                                  <span className="text-[10px] text-gray-400">{new Date(session.timestamp).toLocaleDateString()}</span>
+                              </div>
+                          </div>
+                      ))
+                  )}
               </div>
           )}
+
       </div>
     </div>
   );
