@@ -297,12 +297,12 @@ const QuizBattlePrototype: React.FC = () => {
                         </select>
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">প্লেয়ার সংখ্যা: {config.maxPlayers}</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">প্রশ্ন সংখ্যা: {config.questionCount}</label>
                         <input 
                             type="range" 
-                            min="2" max="10" 
-                            value={config.maxPlayers}
-                            onChange={(e) => setConfig({...config, maxPlayers: Number(e.target.value)})}
+                            min="5" max="15" 
+                            value={config.questionCount}
+                            onChange={(e) => setConfig({...config, questionCount: Number(e.target.value)})}
                             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
                         />
                     </div>
@@ -334,6 +334,11 @@ const QuizBattlePrototype: React.FC = () => {
                 type="text" 
                 value={inputRoomId}
                 onChange={(e) => setInputRoomId(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && inputRoomId.length === 6) {
+                        handleJoin();
+                    }
+                }}
                 placeholder="000000"
                 className="w-full p-4 text-center text-4xl font-mono font-bold tracking-[0.5em] border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none mb-6 bg-gray-50 dark:bg-gray-700 dark:text-white placeholder-gray-300"
             />
@@ -525,7 +530,7 @@ const QuizBattlePrototype: React.FC = () => {
 
     if (showComparison) {
         return (
-            <div className="h-full bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
+            <div className="h-full bg-gray-50 dark:bg-gray-900 overflow-y-auto">
                 {/* Visual Analysis Header */}
                 <div className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <button onClick={() => setShowComparison(false)} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
@@ -584,63 +589,65 @@ const QuizBattlePrototype: React.FC = () => {
     }
 
     return (
-        <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 overflow-y-auto">
+        <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
             {isWinner && <Confetti />}
             
-            <div className="text-center mb-8 animate-in zoom-in duration-500">
-                <div className="relative inline-block mb-4">
-                    <div className="absolute inset-0 bg-yellow-400 blur-2xl opacity-40 rounded-full animate-pulse"></div>
-                    <img src={winner.avatar} className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-yellow-400 shadow-xl relative z-10 object-cover bg-white" />
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full font-bold text-xs shadow-lg z-20 flex items-center gap-1 whitespace-nowrap">
-                        <Trophy size={12} fill="currentColor"/> WINNER
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-32">
+                <div className="text-center mb-8 animate-in zoom-in duration-500">
+                    <div className="relative inline-block mb-4">
+                        <div className="absolute inset-0 bg-yellow-400 blur-2xl opacity-40 rounded-full animate-pulse"></div>
+                        <img src={winner.avatar} className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-yellow-400 shadow-xl relative z-10 object-cover bg-white" />
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full font-bold text-xs shadow-lg z-20 flex items-center gap-1 whitespace-nowrap">
+                            <Trophy size={12} fill="currentColor"/> WINNER
+                        </div>
+                    </div>
+                    
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-1">{winner.name}</h2>
+                    <div className="flex items-center justify-center gap-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                        <span className="text-orange-600 font-bold">{winner.score} Pts</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1"><Timer size={14}/> {winner.totalTimeTaken?.toFixed(1)}s</span>
                     </div>
                 </div>
-                
-                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-1">{winner.name}</h2>
-                <div className="flex items-center justify-center gap-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span className="text-orange-600 font-bold">{winner.score} Pts</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1"><Timer size={14}/> {winner.totalTimeTaken?.toFixed(1)}s</span>
-                </div>
-            </div>
 
-            <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden mb-6">
-                <div className="p-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <span>Rank</span>
-                    <span>Score (Time)</span>
-                </div>
-                <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {sortedPlayers.map((p, idx) => (
-                        <div key={p.uid} className={`flex items-center justify-between p-4 ${p.uid === currentUser?.uid ? 'bg-orange-50 dark:bg-orange-900/10' : ''}`}>
-                            <div className="flex items-center gap-3">
-                                <span className={`font-bold w-5 text-center text-sm ${idx === 0 ? 'text-yellow-500 text-lg' : 'text-gray-400'}`}>#{idx + 1}</span>
-                                <div className="flex items-center gap-2">
-                                    <img src={p.avatar} className="w-8 h-8 rounded-full bg-gray-200" />
-                                    <div>
-                                        <p className="font-bold text-gray-800 dark:text-white text-xs">{p.name}</p>
-                                        {p.uid === currentUser?.uid && <p className="text-[9px] text-orange-600 font-bold uppercase">You</p>}
+                <div className="w-full max-w-sm mx-auto bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden mb-6">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <span>Rank</span>
+                        <span>Score (Time)</span>
+                    </div>
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                        {sortedPlayers.map((p, idx) => (
+                            <div key={p.uid} className={`flex items-center justify-between p-4 ${p.uid === currentUser?.uid ? 'bg-orange-50 dark:bg-orange-900/10' : ''}`}>
+                                <div className="flex items-center gap-3">
+                                    <span className={`font-bold w-5 text-center text-sm ${idx === 0 ? 'text-yellow-500 text-lg' : 'text-gray-400'}`}>#{idx + 1}</span>
+                                    <div className="flex items-center gap-2">
+                                        <img src={p.avatar} className="w-8 h-8 rounded-full bg-gray-200" />
+                                        <div>
+                                            <p className="font-bold text-gray-800 dark:text-white text-xs">{p.name}</p>
+                                            {p.uid === currentUser?.uid && <p className="text-[9px] text-orange-600 font-bold uppercase">You</p>}
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="text-right">
+                                    <span className="font-mono font-bold text-gray-800 dark:text-white text-sm block">{p.score}</span>
+                                    <span className="text-[10px] text-gray-400">{p.totalTimeTaken?.toFixed(1)}s</span>
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <span className="font-mono font-bold text-gray-800 dark:text-white text-sm block">{p.score}</span>
-                                <span className="text-[10px] text-gray-400">{p.totalTimeTaken?.toFixed(1)}s</span>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 w-full max-w-xs">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t border-gray-200 dark:border-gray-800 md:static md:bg-transparent md:border-none flex flex-col gap-3 items-center">
                 <button 
                     onClick={() => setShowComparison(true)} 
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-blue-200 dark:shadow-none"
+                    className="w-full max-w-xs px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-blue-200 dark:shadow-none"
                 >
                     <Eye size={16}/> View Analysis
                 </button>
                 <button 
                     onClick={() => window.location.reload()} 
-                    className="w-full px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-bold hover:scale-105 transition-transform text-sm"
+                    className="w-full max-w-xs px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-bold hover:scale-105 transition-transform text-sm"
                 >
                     Back to Menu
                 </button>
