@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, Crown, Eye, CheckCircle, X, ChevronDown, Check, Settings, ArrowRight } from 'lucide-react';
+import { Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, Crown, Eye, CheckCircle, X, ChevronDown, Check, Settings, ArrowRight, Share2, Timer } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { createBattleRoom, joinBattleRoom, getBattleState, submitBattleAnswer, startBattle } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
@@ -12,13 +12,14 @@ interface BattlePlayer {
   name: string;
   avatar: string;
   score: number;
+  totalTimeTaken: number; // New field for tie-breaking
   team: 'A' | 'B' | 'NONE';
   answers: Record<string, number>; 
 }
 
 interface BattleConfig {
-  subjects: string[]; // Changed to array
-  chapters: string[]; // Changed to array
+  subjects: string[]; 
+  chapters: string[];
   mode: '1v1' | '2v2' | 'FFA';
   questionCount: number;
   timePerQuestion: number;
@@ -59,7 +60,7 @@ const QuizBattlePrototype: React.FC = () => {
     maxPlayers: 2
   });
 
-  // Helper for dynamic chapter list based on selected subjects
+  // Derived Data
   const availableChapters = React.useMemo(() => {
       let chapters: string[] = [];
       config.subjects.forEach(sub => {
@@ -67,7 +68,7 @@ const QuizBattlePrototype: React.FC = () => {
               chapters = [...chapters, ...Object.keys(SYLLABUS_DB[sub])];
           }
       });
-      return [...new Set(chapters)]; // Unique
+      return [...new Set(chapters)]; 
   }, [config.subjects]);
 
   // Game Play State
@@ -76,6 +77,9 @@ const QuizBattlePrototype: React.FC = () => {
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isQuestionReady, setIsQuestionReady] = useState(false);
+  
+  // Timing State for Tie Breaker
+  const questionStartTimeRef = useRef<number>(0);
   
   // --- POLLING EFFECT ---
   useEffect(() => {
@@ -117,6 +121,11 @@ const QuizBattlePrototype: React.FC = () => {
                    setCurrentQIndex(calculatedIndex);
                    setHasAnswered(false);
                    setSelectedOption(null);
+                   // Record when new question started
+                   questionStartTimeRef.current = Date.now();
+               } else if (questionStartTimeRef.current === 0) {
+                   // Initial start
+                   questionStartTimeRef.current = Date.now();
                }
             }
         }
@@ -177,11 +186,15 @@ const QuizBattlePrototype: React.FC = () => {
     if (hasAnswered || !battleState || !currentUser) return;
     setHasAnswered(true); 
     setSelectedOption(idx);
+    
+    // Calculate time taken (seconds)
+    const timeTaken = (Date.now() - questionStartTimeRef.current) / 1000;
+
     const currentQ = battleState.questions[currentQIndex];
     if (!currentQ) return;
     const isCorrect = idx === Number(currentQ.correctAnswerIndex);
     try {
-      await submitBattleAnswer(roomId, currentUser.uid, isCorrect, currentQIndex, idx);
+      await submitBattleAnswer(roomId, currentUser.uid, isCorrect, currentQIndex, idx, timeTaken);
     } catch (e: any) { console.error("Answer submit failed", e); }
   };
 
@@ -341,7 +354,7 @@ const QuizBattlePrototype: React.FC = () => {
     
     const isHost = battleState.hostId === currentUser?.uid;
     const players = battleState.players;
-    const requiredPlayers = 2; // Fixed for prototype
+    const requiredPlayers = 2; 
 
     return (
         <div className="max-w-4xl mx-auto p-4 md:p-6 animate-in fade-in h-full flex flex-col">
@@ -416,6 +429,7 @@ const QuizBattlePrototype: React.FC = () => {
 
     const question = battleState.questions[currentQIndex];
     const totalQ = battleState.config.questionCount;
+    // Sort logic handled in result, just standard sort here
     const sortedPlayers = [...battleState.players].sort((a, b) => b.score - a.score);
 
     return (
@@ -499,57 +513,71 @@ const QuizBattlePrototype: React.FC = () => {
 
   const renderResult = () => {
     if (!battleState) return null;
-    const sortedPlayers = [...battleState.players].sort((a, b) => b.score - a.score);
+    
+    // Improved Sorting Logic: Score DESC, then Time ASC
+    const sortedPlayers = [...battleState.players].sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return (a.totalTimeTaken || 0) - (b.totalTimeTaken || 0); // Less time is better
+    });
+    
     const winner = sortedPlayers[0];
     const isWinner = winner.uid === currentUser?.uid;
 
     if (showComparison) {
         return (
             <div className="h-full bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
-                <div className="max-w-xl mx-auto pb-20">
-                    <div className="flex items-center justify-between mb-4 sticky top-0 bg-gray-50 dark:bg-gray-900 py-2 z-10">
-                        <button onClick={() => setShowComparison(false)} className="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"><ArrowRight size={16} className="rotate-180"/> Back</button>
-                        <h2 className="text-base font-bold text-gray-800 dark:text-white">Analysis</h2>
-                    </div>
-                    
-                    <div className="space-y-4">
-                        {battleState.questions.map((q, idx) => {
-                            // Find user's answer
-                            const myPlayer = battleState.players.find(p => p.uid === currentUser?.uid);
-                            let myAnsIndex = -1;
-                            if (myPlayer && myPlayer.answers) {
-                                // @ts-ignore
-                                myAnsIndex = myPlayer.answers[idx.toString()] !== undefined ? myPlayer.answers[idx.toString()] : -1;
-                            }
-                            const correctIdx = Number(q.correctAnswerIndex);
-                            const isCorrect = myAnsIndex === correctIdx;
-                            const isSkipped = myAnsIndex === -1;
+                {/* Visual Analysis Header */}
+                <div className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <button onClick={() => setShowComparison(false)} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                        <ArrowRight size={18} className="rotate-180"/> Back to Result
+                    </button>
+                    <h2 className="text-base font-bold text-gray-800 dark:text-white">Question Analysis</h2>
+                </div>
 
-                            return (
-                                <div key={idx} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                                    <div className="flex gap-2 mb-2">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isCorrect ? 'bg-green-100 text-green-700' : isSkipped ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-700'}`}>
-                                            {isCorrect ? 'Correct' : isSkipped ? 'Skipped' : 'Wrong'}
-                                        </span>
-                                    </div>
-                                    <p className="font-bold text-gray-800 dark:text-white text-sm mb-3">{q.question}</p>
+                <div className="max-w-xl mx-auto p-4 pb-20 space-y-6">
+                    {battleState.questions.map((q, qIdx) => (
+                        <div key={qIdx} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
+                                <span className="text-xs font-bold text-gray-400 mb-1 block">Question {qIdx + 1}</span>
+                                <p className="font-bold text-gray-800 dark:text-white text-sm leading-relaxed">{q.question}</p>
+                            </div>
+                            <div className="p-2 space-y-2">
+                                {q.options.map((opt: string, optIdx: number) => {
+                                    const isCorrect = optIdx === Number(q.correctAnswerIndex);
                                     
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <span className="font-bold text-gray-500 w-16">Correct:</span>
-                                            <span className="font-bold text-green-600 bg-green-50 px-2 py-1 rounded flex-1">{q.options[correctIdx]}</span>
-                                        </div>
-                                        {!isCorrect && !isSkipped && (
-                                            <div className="flex items-center gap-2 text-xs">
-                                                <span className="font-bold text-gray-500 w-16">Your Ans:</span>
-                                                <span className="font-bold text-red-600 bg-red-50 px-2 py-1 rounded flex-1">{q.options[myAnsIndex]}</span>
+                                    // Find who picked this option
+                                    const pickers = battleState.players.filter(p => {
+                                        // @ts-ignore
+                                        const ans = p.answers[qIdx.toString()];
+                                        return ans === optIdx;
+                                    });
+
+                                    return (
+                                        <div key={optIdx} className={`relative p-3 rounded-xl border flex items-center justify-between ${isCorrect ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'}`}>
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCorrect ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                                                    {['A','B','C','D'][optIdx]}
+                                                </div>
+                                                <span className={`text-sm truncate ${isCorrect ? 'font-bold text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}>{opt}</span>
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                            
+                                            {/* Avatars of pickers */}
+                                            <div className="flex -space-x-2 shrink-0 ml-2">
+                                                {pickers.map(p => (
+                                                    <img 
+                                                        key={p.uid} 
+                                                        src={p.avatar} 
+                                                        title={p.name}
+                                                        className={`w-6 h-6 rounded-full border-2 ${isCorrect ? 'border-green-100' : 'border-white'} shadow-sm object-cover`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         )
@@ -569,15 +597,23 @@ const QuizBattlePrototype: React.FC = () => {
                 </div>
                 
                 <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-1">{winner.name}</h2>
-                <p className="text-lg font-mono font-bold text-orange-600">{winner.score} Points</p>
+                <div className="flex items-center justify-center gap-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <span className="text-orange-600 font-bold">{winner.score} Pts</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1"><Timer size={14}/> {winner.totalTimeTaken?.toFixed(1)}s</span>
+                </div>
             </div>
 
             <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden mb-6">
+                <div className="p-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <span>Rank</span>
+                    <span>Score (Time)</span>
+                </div>
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                     {sortedPlayers.map((p, idx) => (
                         <div key={p.uid} className={`flex items-center justify-between p-4 ${p.uid === currentUser?.uid ? 'bg-orange-50 dark:bg-orange-900/10' : ''}`}>
                             <div className="flex items-center gap-3">
-                                <span className={`font-bold w-5 text-center text-sm ${idx === 0 ? 'text-yellow-500' : 'text-gray-400'}`}>#{idx + 1}</span>
+                                <span className={`font-bold w-5 text-center text-sm ${idx === 0 ? 'text-yellow-500 text-lg' : 'text-gray-400'}`}>#{idx + 1}</span>
                                 <div className="flex items-center gap-2">
                                     <img src={p.avatar} className="w-8 h-8 rounded-full bg-gray-200" />
                                     <div>
@@ -586,7 +622,10 @@ const QuizBattlePrototype: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            <span className="font-mono font-bold text-gray-700 dark:text-gray-300 text-sm">{p.score}</span>
+                            <div className="text-right">
+                                <span className="font-mono font-bold text-gray-800 dark:text-white text-sm block">{p.score}</span>
+                                <span className="text-[10px] text-gray-400">{p.totalTimeTaken?.toFixed(1)}s</span>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -597,7 +636,7 @@ const QuizBattlePrototype: React.FC = () => {
                     onClick={() => setShowComparison(true)} 
                     className="w-full px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-blue-200 dark:shadow-none"
                 >
-                    <Eye size={16}/> See Analysis
+                    <Eye size={16}/> View Analysis
                 </button>
                 <button 
                     onClick={() => window.location.reload()} 
@@ -614,7 +653,7 @@ const QuizBattlePrototype: React.FC = () => {
     <div className="h-full bg-gray-50 dark:bg-gray-900 overflow-y-auto transition-colors">
         {phase === 'MENU' && renderMenu()}
         {phase === 'CREATE' && renderCreate()}
-        {phase === 'JOIN' && renderJoin()} {/* UI for Join similar to Create if needed, but keeping simpler */}
+        {phase === 'JOIN' && renderJoin()} 
         {phase === 'LOBBY' && renderLobby()} 
         {phase === 'GAME' && renderGame()}
         {phase === 'RESULT' && renderResult()}
