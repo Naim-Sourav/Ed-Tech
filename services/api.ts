@@ -1,5 +1,5 @@
 
-import { PaymentRequest, Notification, LeaderboardUser, ExamPack, Quest, QuestType } from "../types";
+import { PaymentRequest, Notification, LeaderboardUser, ExamPack, Quest, QuestType, QuestTemplate } from "../types";
 
 const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
 
@@ -110,6 +110,7 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
 
 // --- API EXPORTS ---
 
+// Quest APIs
 export const updateQuestProgressAPI = async (userId: string, actionType: QuestType, value: number = 1) => {
     return fetchWithFallback('/quests/update', {
         method: 'POST',
@@ -118,14 +119,34 @@ export const updateQuestProgressAPI = async (userId: string, actionType: QuestTy
     }, { success: true });
 };
 
-export const claimQuestAPI = async (userId: string, questId: string) => {
+export const claimQuestAPI = async (userId: string, questId: string, category: 'DAILY' | 'WEEKLY' = 'DAILY') => {
     return fetchWithFallback('/quests/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, questId })
+        body: JSON.stringify({ userId, questId, category })
     }, { success: false });
 };
 
+// Admin Quest Management APIs
+export const fetchAdminQuestsAPI = async (): Promise<QuestTemplate[]> => {
+    return fetchWithFallback('/admin/quests', {}, []);
+};
+
+export const createAdminQuestAPI = async (questData: Partial<QuestTemplate>) => {
+    return fetchWithFallback('/admin/quests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(questData)
+    }, { success: true });
+};
+
+export const deleteAdminQuestAPI = async (id: string) => {
+    return fetchWithFallback(`/admin/quests/${id}`, {
+        method: 'DELETE'
+    }, { success: true });
+};
+
+// User & Sync APIs
 export const syncUserToMongoDB = async (user: any) => {
   return fetchWithFallback('/users/sync', {
       method: 'POST',
