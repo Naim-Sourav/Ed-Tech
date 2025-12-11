@@ -1,4 +1,3 @@
-
 export enum AppView {
   HOME = 'HOME',
   CONCEPT = 'CONCEPT',
@@ -28,7 +27,7 @@ export interface QuizQuestion {
   options: string[];
   correctAnswerIndex: number; // 0-3
   explanation: string;
-  subject?: string; // Added for analyzing preset results
+  subject?: string;
   chapter?: string;
   topic?: string;
   difficulty?: string;
@@ -38,7 +37,7 @@ export interface QuizConfig {
   subject: string;
   chapter: string;
   topics: string[];
-  questionCount?: number; // Optional override for presets
+  questionCount?: number;
 }
 
 export interface SearchSource {
@@ -109,7 +108,7 @@ export interface Notification {
   message: string;
   date: number;
   type: 'INFO' | 'WARNING' | 'SUCCESS';
-  read?: boolean; // Local state
+  read?: boolean;
 }
 
 export interface LeaderboardUser {
@@ -132,9 +131,9 @@ export interface ExamPack {
   tag?: string;
 }
 
-// --- NEW GAMIFICATION TYPES ---
+// --- GAMIFICATION TYPES ---
 
-export type QuestType = 'EXAM_COMPLETE' | 'HIGH_SCORE' | 'WIN_BATTLE' | 'PLAY_BATTLE' | 'STUDY_TIME' | 'ASK_AI' | 'SAVE_QUESTION';
+export type QuestType = 'EXAM_COMPLETE' | 'HIGH_SCORE' | 'WIN_BATTLE' | 'PLAY_BATTLE' | 'STUDY_TIME' | 'ASK_AI' | 'SAVE_QUESTION' | 'EARN_POINTS' | 'VIEW_MISTAKES' | 'SHARE_APP' | 'LOGIN';
 
 export interface Quest {
   id: string;
@@ -147,4 +146,19 @@ export interface Quest {
   completed: boolean;
   claimed: boolean;
   icon?: string;
+  link?: string;
+  category: 'DAILY' | 'WEEKLY';
+}
+
+export interface QuestTemplate {
+  _id?: string; // MongoDB ID
+  title: string;
+  description: string;
+  type: QuestType;
+  target: number;
+  reward: number;
+  icon: string;
+  link: string;
+  category: 'DAILY' | 'WEEKLY';
+  isActive: boolean;
 }

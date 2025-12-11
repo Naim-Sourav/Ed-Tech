@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navigation from './components/Navigation';
@@ -15,6 +16,7 @@ import LandingPage from './components/LandingPage';
 import ProfilePage from './components/ProfilePage';
 import AdminPage from './components/AdminPage';
 import LeaderboardPage from './components/LeaderboardPage';
+import DailyChallengePage from './components/DailyChallengePage';
 import { Menu, Loader2, ArrowLeft, GraduationCap } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
@@ -43,6 +45,7 @@ const MainLayout: React.FC<{
       case '/profile': return 'প্রোফাইল';
       case '/admin': return 'অ্যাডমিন প্যানেল';
       case '/leaderboard': return 'লিডারবোর্ড';
+      case '/challenges': return 'ডেইলি চ্যালেঞ্জ';
       default: return 'ডোপামিন';
     }
   };
@@ -165,6 +168,7 @@ const App: React.FC = () => {
                     <Route path="/admission" element={<AdmissionSearch />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/challenges" element={<DailyChallengePage openSynapse={openSynapse} />} />
                     <Route path="*" element={<Navigate to="/dashboard" />} />
                   </Routes>
                </MainLayout>
