@@ -33,8 +33,8 @@ interface Preset {
 const PRESET_DB: Preset[] = [
   {
     id: 'medical',
-    title: 'Medical Admission',
-    subtitle: 'মেডিকেল ভর্তি পরীক্ষা',
+    title: 'মেডিকেল ভর্তি পরীক্ষা',
+    subtitle: 'মেডিকেল ভর্তি পরীক্ষা (পূর্ণাঙ্গ)',
     standard: ExamStandard.MEDICAL,
     duration: 60,
     negativeMark: 0.25,
@@ -50,7 +50,7 @@ const PRESET_DB: Preset[] = [
   },
   {
     id: 'du_a',
-    title: 'Dhaka University (A-Unit)',
+    title: 'ঢাকা বিশ্ববিদ্যালয় (ক-ইউনিট)',
     subtitle: 'ক-ইউনিট ভর্তি পরীক্ষা',
     standard: ExamStandard.VARSITY,
     duration: 60,
@@ -66,8 +66,8 @@ const PRESET_DB: Preset[] = [
   },
   {
     id: 'engineering',
-    title: 'Engineering (BUET/CKRUET)',
-    subtitle: 'ইঞ্জিনিয়ারিং প্রিলি',
+    title: 'ইঞ্জিনিয়ারিং (BUET/CKRUET)',
+    subtitle: 'ইঞ্জিনিয়ারিং প্রিলি স্ট্যান্ডার্ড',
     standard: ExamStandard.ENGINEERING,
     duration: 60,
     negativeMark: 0.50,
@@ -185,7 +185,7 @@ const QuizArena: React.FC = () => {
             setExamViewMode(parsedConfig.mode || 'SINGLE_PAGE');
             setNegativeMarking(0);
             setIsPracticeMode(true); // Default to practice mode for revisions
-            setCustomTitle('Mistake Revision');
+            setCustomTitle('ভুল থেকে শিক্ষা (Mistake Revision)');
             
             setStep('EXAM');
             // Clean up
@@ -657,7 +657,7 @@ const QuizArena: React.FC = () => {
        </button>
        <ChevronRight size={14} />
        <span className={step === 'SELECTION' ? 'text-primary dark:text-green-400 font-bold' : ''}>
-         {tabMode === 'CUSTOM' ? 'অধ্যায় নির্বাচন' : tabMode === 'MISTAKE_REVISION' ? 'Mistake Review' : 'প্রিসেট নির্বাচন'}
+         {tabMode === 'CUSTOM' ? 'অধ্যায় নির্বাচন' : tabMode === 'MISTAKE_REVISION' ? 'ভুল সংশোধন' : 'প্রিসেট নির্বাচন'}
        </span>
        {step === 'TOPIC_CONFIG' && (
            <>
@@ -1102,7 +1102,7 @@ const QuizArena: React.FC = () => {
                       onClick={handleDownloadPDF}
                       className="flex-1 px-6 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors text-sm md:text-base border border-blue-200 dark:border-blue-800"
                     >
-                       <Download size={18} className="md:w-5 md:h-5" /> Download PDF
+                       <Download size={18} className="md:w-5 md:h-5" /> PDF ডাউনলোড
                     </button>
                     <button 
                       onClick={resetAll}
@@ -1114,7 +1114,7 @@ const QuizArena: React.FC = () => {
                       onClick={goHome}
                       className="flex-1 px-8 py-3 bg-primary hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-green-900/20 text-sm md:text-base"
                     >
-                       <Home size={18} className="md:w-5 md:h-5" /> হোম পেজে যান
+                       <Home size={18} className="md:w-5 md:h-5" /> হোমে ফিরুন
                     </button>
                </div>
             </div>

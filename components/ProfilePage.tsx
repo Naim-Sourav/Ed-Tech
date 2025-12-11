@@ -398,14 +398,14 @@ const ProfilePage: React.FC = () => {
                       className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-bold flex items-center justify-center gap-2"
                       disabled={loading}
                     >
-                       <X size={18} /> Cancel
+                       <X size={18} /> বাতিল
                     </button>
                     <button 
                       onClick={handleSaveProfile}
                       className="px-4 py-2 bg-primary text-white rounded-lg font-bold flex items-center justify-center gap-2"
                       disabled={loading}
                     >
-                       <Check size={18} /> Save
+                       <Check size={18} /> সেভ
                     </button>
                  </div>
                ) : (
@@ -413,7 +413,7 @@ const ProfilePage: React.FC = () => {
                    onClick={() => setIsEditing(true)}
                    className="px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg font-bold flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 transition-colors w-full md:w-auto"
                  >
-                    <Edit2 size={16} /> Edit Profile
+                    <Edit2 size={16} /> প্রোফাইল এডিট
                  </button>
                )}
             </div>
@@ -422,7 +422,7 @@ const ProfilePage: React.FC = () => {
           {/* Avatar Selector Panel */}
           {showAvatarSelector && isEditing && (
              <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700 animate-in slide-in-from-top-4">
-                <p className="font-bold text-gray-700 dark:text-gray-300 mb-4 text-sm">Choose Avatar:</p>
+                <p className="font-bold text-gray-700 dark:text-gray-300 mb-4 text-sm">অবতার নির্বাচন করুন:</p>
                 <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                    {AVATARS.map((avatar, idx) => (
                       <button 
@@ -441,16 +441,16 @@ const ProfilePage: React.FC = () => {
         {/* Navigation Tabs */}
         <div className="flex p-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 w-full md:w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar">
            <button onClick={() => setActiveTab('INFO')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'INFO' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-              <LayoutGrid size={16} /> Analysis
+              <LayoutGrid size={16} /> এনালাইসিস
            </button>
            <button onClick={() => setActiveTab('COURSES')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'COURSES' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-              <BookOpen size={16} /> Courses
+              <BookOpen size={16} /> কোর্সসমূহ
            </button>
            <button onClick={() => setActiveTab('SAVED')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'SAVED' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-              <Bookmark size={16} /> Saved
+              <Bookmark size={16} /> বুকমার্ক
            </button>
            <button onClick={() => setActiveTab('MISTAKES')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'MISTAKES' ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50' : 'text-gray-500 hover:text-red-600 dark:hover:text-red-400'}`}>
-              <AlertTriangle size={16} /> Mistakes
+              <AlertTriangle size={16} /> ভুলসমূহ
            </button>
         </div>
 
@@ -460,19 +460,19 @@ const ProfilePage: React.FC = () => {
                {/* Quick Stats Grid */}
                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                    <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">Total Exams</p>
+                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">মোট এক্সাম</p>
                        <p className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">{stats.totalExams}</p>
                    </div>
                    <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">Correct</p>
+                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">সঠিক</p>
                        <p className="text-xl md:text-2xl font-bold text-green-600">{stats.totalCorrect}</p>
                    </div>
                    <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">Wrong</p>
+                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">ভুল</p>
                        <p className="text-xl md:text-2xl font-bold text-red-600">{stats.totalWrong}</p>
                    </div>
                    <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10">
-                       <p className="text-orange-600 dark:text-orange-400 text-[10px] md:text-xs font-bold uppercase mb-1 flex items-center justify-center gap-1"><Zap size={12} fill="currentColor"/> Points</p>
+                       <p className="text-orange-600 dark:text-orange-400 text-[10px] md:text-xs font-bold uppercase mb-1 flex items-center justify-center gap-1"><Zap size={12} fill="currentColor"/> পয়েন্ট</p>
                        <p className="text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.points}</p>
                    </div>
                </div>
@@ -482,13 +482,13 @@ const ProfilePage: React.FC = () => {
                    {/* Weakness & Strength (Topic Wise) */}
                    <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
                        <h3 className="font-bold text-gray-800 dark:text-white mb-4 md:mb-6 flex items-center gap-2 text-sm md:text-base">
-                           <TrendingUp size={18} className="text-primary"/> Topic Mastery
+                           <TrendingUp size={18} className="text-primary"/> টপিক মাস্টারি
                        </h3>
                        
                        <div className="space-y-6">
                            {/* Strong Topics */}
                            <div>
-                               <p className="text-xs font-bold text-green-600 uppercase mb-3 flex items-center gap-1"><Award size={12}/> Strongest Topics</p>
+                               <p className="text-xs font-bold text-green-600 uppercase mb-3 flex items-center gap-1"><Award size={12}/> শক্তিশালী টপিক</p>
                                <div className="space-y-2">
                                    {stats.strongestTopics && stats.strongestTopics.length > 0 ? (
                                        stats.strongestTopics.map((t: any) => (
@@ -497,13 +497,13 @@ const ProfilePage: React.FC = () => {
                                                <span className="text-xs font-bold text-green-600 shrink-0">{t.accuracy.toFixed(0)}%</span>
                                            </div>
                                        ))
-                                   ) : <p className="text-xs text-gray-400">Not enough data</p>}
+                                   ) : <p className="text-xs text-gray-400">পর্যাপ্ত ডেটা নেই</p>}
                                </div>
                            </div>
 
                            {/* Weak Topics */}
                            <div>
-                               <p className="text-xs font-bold text-red-500 uppercase mb-3 flex items-center gap-1"><AlertCircle size={12}/> Areas for Improvement</p>
+                               <p className="text-xs font-bold text-red-500 uppercase mb-3 flex items-center gap-1"><AlertCircle size={12}/> দুর্বল টপিক</p>
                                <div className="space-y-2">
                                    {stats.weakestTopics && stats.weakestTopics.length > 0 ? (
                                        stats.weakestTopics.map((t: any) => (
@@ -512,7 +512,7 @@ const ProfilePage: React.FC = () => {
                                                <span className="text-xs font-bold text-red-500 shrink-0">{t.accuracy.toFixed(0)}%</span>
                                            </div>
                                        ))
-                                   ) : <p className="text-xs text-gray-400">Not enough data</p>}
+                                   ) : <p className="text-xs text-gray-400">পর্যাপ্ত ডেটা নেই</p>}
                                </div>
                            </div>
                        </div>
@@ -521,14 +521,14 @@ const ProfilePage: React.FC = () => {
                    {/* Subject Performance - BAR CHART */}
                    <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col">
                        <h3 className="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2 text-sm md:text-base">
-                           <BarChart2 size={18} className="text-blue-500"/> Subject Performance
+                           <BarChart2 size={18} className="text-blue-500"/> বিষয়ভিত্তিক দক্ষতা
                        </h3>
                        
                        <div className="flex-1 flex flex-col justify-end">
                            {(!stats.subjectBreakdown || stats.subjectBreakdown.length === 0) ? (
                                <div className="text-center py-10 text-gray-400">
                                    <PieChart size={48} className="mx-auto mb-2 opacity-20" />
-                                   <p>No data available yet</p>
+                                   <p>কোনো ডেটা পাওয়া যায়নি</p>
                                </div>
                            ) : (
                                <div className="w-full">
@@ -576,7 +576,7 @@ const ProfilePage: React.FC = () => {
         {activeTab === 'COURSES' && (
             <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm animate-in fade-in">
                <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                  <BookOpen size={20} className="text-primary md:w-6 md:h-6" /> My Courses
+                  <BookOpen size={20} className="text-primary md:w-6 md:h-6" /> আমার কোর্সসমূহ
                </h2>
                
                {enrolledCourses.length > 0 ? (
@@ -596,7 +596,7 @@ const ProfilePage: React.FC = () => {
                  </div>
                ) : (
                  <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-                    <p>You are not enrolled in any courses yet.</p>
+                    <p>আপনি কোনো কোর্সে এনরোল করেননি।</p>
                  </div>
                )}
             </div>
@@ -607,7 +607,7 @@ const ProfilePage: React.FC = () => {
             <div className="space-y-6 animate-in fade-in">
                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                    <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                      <AlertTriangle size={20} className="text-red-500 md:w-6 md:h-6" /> Mistake Log ({filteredItems.length})
+                      <AlertTriangle size={20} className="text-red-500 md:w-6 md:h-6" /> ভুলের খাতা ({filteredItems.length})
                    </h2>
                    
                    <div className="flex gap-2 w-full md:w-auto">
@@ -640,16 +640,16 @@ const ProfilePage: React.FC = () => {
                          onClick={() => setShowExamConfig(true)}
                          className="w-full md:w-auto px-6 py-2.5 bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-700 shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-95 text-sm"
                        >
-                          <RefreshCw size={16} /> Retake ({filteredItems.length})
+                          <RefreshCw size={16} /> পুনরায় দিন ({filteredItems.length})
                        </button>
                    )}
                </div>
 
                {loadingMistakes ? (
-                  <div className="text-center py-12 text-gray-500">Loading mistakes...</div>
+                  <div className="text-center py-12 text-gray-500">লোডিং...</div>
                ) : mistakes.length === 0 ? (
                   <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500">
-                     <p>Great job! You don't have any recorded mistakes yet.</p>
+                     <p>গ্রেট জব! আপনার কোনো রেকর্ডকৃত ভুল নেই।</p>
                   </div>
                ) : (
                   <div className="space-y-4">
@@ -783,13 +783,13 @@ const ProfilePage: React.FC = () => {
                </div>
 
                {loadingSaved ? (
-                  <div className="text-center py-12 text-gray-500">Loading...</div>
+                  <div className="text-center py-12 text-gray-500">লোডিং...</div>
                ) : filteredItems.length === 0 ? (
                   <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500">
                      <p>
                         {savedQuestions.length === 0 
-                           ? "No saved questions yet. Bookmark tricky questions during quizzes!"
-                           : "No questions found in this folder/filter."
+                           ? "কোনো প্রশ্ন সেভ করা নেই। কুইজ চলাকালীন কঠিন প্রশ্নগুলো সেভ করুন!"
+                           : "এই ফোল্ডার/ফিল্টারে কোনো প্রশ্ন পাওয়া যায়নি।"
                         }
                      </p>
                   </div>

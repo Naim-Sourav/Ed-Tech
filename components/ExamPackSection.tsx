@@ -146,9 +146,9 @@ const ExamPackSection: React.FC = () => {
                               </div>
                               <button 
                                 onClick={() => alert("Starting Exam... (Demo)")}
-                                className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${exam.status === 'COMPLETED' ? 'bg-gray-100 text-gray-500 cursor-default' : 'bg-primary text-white hover:bg-green-700 shadow-sm flex items-center gap-2'}`}
+                                className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${exam.status === 'COMPLETED' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200' : 'bg-primary text-white hover:bg-green-700 shadow-sm'}`}
                               >
-                                  {exam.status === 'COMPLETED' ? 'Result' : <><Play size={14}/> Start</>}
+                                {exam.status === 'COMPLETED' ? 'Review' : 'Start'}
                               </button>
                           </div>
                       ))}
@@ -160,189 +160,177 @@ const ExamPackSection: React.FC = () => {
 
   // --- RENDER: LIST VIEW ---
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors pb-40">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-10 text-center md:text-left">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 flex items-center justify-center md:justify-start gap-3">
-            <FileCheck size={32} className="text-primary dark:text-green-400" />
-            মডেল টেস্ট ও প্রশ্ন ব্যাংক
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
-            শেষ মুহূর্তের প্রস্তুতির জন্য সেরা মডেল টেস্ট বান্ডেল এবং প্রশ্ন ব্যাংক সলভ। নিজেকে যাচাই করো এখনই।
-          </p>
-        </header>
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
+            <header className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-3">
+                    <ShoppingBag size={32} className="text-primary dark:text-green-400" />
+                    এক্সাম প্যাক সমূহ
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
+                    ভর্তি পরীক্ষার শেষ মুহূর্তের প্রস্তুতির জন্য সেরা এক্সাম প্যাকগুলো সংগ্রহ করুন।
+                </p>
+            </header>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin text-primary" size={40} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {packs.map(pack => {
-              const isOwned = isEnrolled(pack.id);
-              
-              return (
-                <div key={pack.id} className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col relative overflow-hidden group">
-                    {/* Badge */}
-                    {pack.tag && !isOwned && (
-                    <div className="absolute top-4 right-4 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md z-10">
-                        {pack.tag}
+            {loading ? (
+                <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary"/></div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
+                    {packs.map(pack => {
+                        const themeClass = getThemeColor(pack.theme);
+                        const isOwned = isEnrolled(pack.id); 
+
+                        return (
+                            <div key={pack.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all group">
+                                <div className={`p-6 border-b border-gray-100 dark:border-gray-700 bg-opacity-10 dark:bg-opacity-10 ${themeClass.split(' ')[1]}`}>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${themeClass.split(' ')[1]} border ${themeClass.split(' ')[2]}`}>
+                                            {pack.tag}
+                                        </span>
+                                        <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
+                                            <FileCheck size={16}/> {pack.totalExams} Exams
+                                        </div>
+                                    </div>
+                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{pack.title}</h2>
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm">{pack.subtitle}</p>
+                                </div>
+
+                                <div className="p-6 flex-1 flex flex-col">
+                                    <div className="space-y-3 mb-6 flex-1">
+                                        {pack.features.map((feat, idx) => (
+                                            <div key={idx} className="flex items-start gap-2">
+                                                <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0"/>
+                                                <span className="text-sm text-gray-600 dark:text-gray-300">{feat}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                        <div>
+                                            {isOwned ? (
+                                                <span className="text-green-600 font-bold text-sm flex items-center gap-1"><CheckCircle size={14}/> Purchased</span>
+                                            ) : (
+                                                <>
+                                                    <span className="text-xs text-gray-400 line-through block">৳{pack.originalPrice}</span>
+                                                    <span className="text-xl font-bold text-gray-900 dark:text-white">৳{pack.price}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                        {isOwned ? (
+                                            <button 
+                                                onClick={() => openPack(pack)}
+                                                className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-green-200 dark:shadow-none transition-all active:scale-95"
+                                            >
+                                                ওপেন করুন <ArrowRight size={16}/>
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                onClick={() => handleBuyClick(pack)}
+                                                className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 rounded-xl font-bold transition-all shadow-lg active:scale-95"
+                                            >
+                                                কিনুন
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
+        </div>
+
+        {/* Payment Modal */}
+        {selectedPack && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-800 dark:text-white">পেমেন্ট ফর্ম</h3>
+                        <button onClick={closePaymentModal}><X size={20} className="text-gray-500" /></button>
                     </div>
-                    )}
-                    {isOwned && (
-                        <div className="absolute top-0 left-0 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-br-xl z-10 flex items-center gap-1 shadow-sm">
-                            <CheckCircle2 size={12} /> Active Pack
-                        </div>
-                    )}
                     
-                    {/* Icon/Theme Area */}
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 text-3xl font-bold shadow-inner ${getThemeColor(pack.theme)}`}>
-                        <FileCheck size={32} />
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">{pack.title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 flex-1">{pack.subtitle}</p>
-
-                    <div className="space-y-3 mb-8">
-                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 font-medium">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-xs font-bold">
-                                {pack.totalExams}
+                    <div className="p-6">
+                        {errorMsg && (
+                            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-100 dark:border-red-800 flex items-start gap-2">
+                                <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                                <span>{errorMsg}</span>
                             </div>
-                            টি মডেল টেস্ট
-                        </div>
-                        {pack.features.slice(0, 2).map((feat, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <CheckCircle2 size={16} className="text-green-500 shrink-0" /> {feat}
-                            </div>
-                        ))}
-                    </div>
+                        )}
 
-                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <div>
-                            {isOwned ? (
-                                <span className="text-sm font-bold text-green-600 dark:text-green-400">Purchased</span>
-                            ) : (
-                                <>
-                                    <span className="text-xs text-gray-400 line-through">৳{pack.originalPrice}</span>
-                                    <p className="text-2xl font-bold text-primary dark:text-green-400">৳{pack.price}</p>
-                                </>
-                            )}
-                        </div>
-                        
-                        {isOwned ? (
-                            <button 
-                                onClick={() => openPack(pack)}
-                                className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-green-700 hover:scale-105 transition-all shadow-lg"
-                            >
-                                এক্সাম দিন <ArrowRight size={18} />
-                            </button>
-                        ) : (
-                            <button 
-                                onClick={() => handleBuyClick(pack)}
-                                className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg shadow-gray-500/20"
-                            >
-                                কিনুন <ShoppingBag size={18} />
-                            </button>
+                        {paymentStep === 'INFO' && (
+                            <div className="space-y-6">
+                                <div className="text-center">
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">আপনি কিনছেন</p>
+                                    <h2 className="text-xl font-bold text-primary dark:text-green-400">{selectedPack.title}</h2>
+                                    <p className="text-2xl font-bold text-gray-800 dark:text-white mt-2">৳{selectedPack.price}</p>
+                                </div>
+
+                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 font-medium">নিচের নাম্বারে <strong>Send Money</strong> করুন:</p>
+                                    <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg border border-blue-200 dark:border-blue-700">
+                                        <span className="font-mono text-lg font-bold text-blue-600 dark:text-blue-400">01622190454</span>
+                                        <button onClick={handleCopyNumber} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500"><Copy size={18} /></button>
+                                    </div>
+                                    <div className="flex gap-2 mt-3 justify-center">
+                                        <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded">bKash</span>
+                                        <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">Nagad</span>
+                                    </div>
+                                </div>
+
+                                <button onClick={() => setPaymentStep('FORM')} className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors">পেমেন্ট সম্পন্ন করেছি</button>
+                            </div>
+                        )}
+
+                        {paymentStep === 'FORM' && (
+                            <form onSubmit={handleSubmitPayment} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">প্রেরক নম্বর</label>
+                                    <input 
+                                        required
+                                        type="text" 
+                                        placeholder="01XXXXXXXXX"
+                                        value={senderNumber}
+                                        onChange={(e) => setSenderNumber(e.target.value)}
+                                        className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">TrxID</label>
+                                    <input 
+                                        required
+                                        type="text" 
+                                        placeholder="Example: 9H7XXXXX"
+                                        value={trxId}
+                                        onChange={(e) => setTrxId(e.target.value)}
+                                        className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white uppercase"
+                                    />
+                                </div>
+                                <button 
+                                    type="submit" 
+                                    disabled={isVerifying}
+                                    className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    {isVerifying ? <Loader2 className="animate-spin" /> : 'জমা দিন'}
+                                </button>
+                            </form>
+                        )}
+
+                        {paymentStep === 'SUCCESS' && (
+                            <div className="text-center py-6">
+                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Check size={32} />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-800 dark:text-white">রিকোয়েস্ট জমা হয়েছে!</h3>
+                                <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
+                                    অ্যাডমিন কনফার্ম করলে প্যাকটি আপনার অ্যাকাউন্টে যুক্ত হবে।
+                                </p>
+                                <button onClick={closePaymentModal} className="mt-6 px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-lg">ঠিক আছে</button>
+                            </div>
                         )}
                     </div>
                 </div>
-              );
-            })}
-          </div>
+            </div>
         )}
-      </div>
-
-      {/* Payment Modal (Reused Logic) */}
-      {selectedPack && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-           <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 border border-gray-200 dark:border-gray-700">
-              <div className="bg-gray-50 dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                 <h3 className="font-bold text-gray-800 dark:text-white">অর্ডার কনফার্মেশন</h3>
-                 <button onClick={closePaymentModal} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"><X size={20} className="text-gray-500" /></button>
-              </div>
-              
-              <div className="p-6">
-                 {errorMsg && (
-                   <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-100 dark:border-red-800 flex items-start gap-2">
-                      <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                      <span>{errorMsg}</span>
-                   </div>
-                 )}
-
-                 {paymentStep === 'INFO' && (
-                    <div className="space-y-6">
-                       <div className="text-center">
-                          <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">আপনি কিনছেন</p>
-                          <h2 className="text-xl font-bold text-primary dark:text-green-400">{selectedPack.title}</h2>
-                          <p className="text-3xl font-bold text-gray-800 dark:text-white mt-2">৳{selectedPack.price}</p>
-                       </div>
-
-                       <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 text-center">
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 font-medium">নিচের নাম্বারে <strong>Send Money</strong> করুন:</p>
-                          <div className="flex items-center justify-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-blue-200 dark:border-blue-700 w-fit mx-auto">
-                             <span className="font-mono text-lg font-bold text-blue-600 dark:text-blue-400">01622190454</span>
-                             <button onClick={handleCopyNumber} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500"><Copy size={16} /></button>
-                          </div>
-                          <div className="flex gap-2 mt-3 justify-center">
-                             <span className="px-2 py-1 bg-pink-100 text-pink-700 text-[10px] font-bold rounded">bKash</span>
-                             <span className="px-2 py-1 bg-orange-100 text-orange-700 text-[10px] font-bold rounded">Nagad</span>
-                          </div>
-                       </div>
-
-                       <button onClick={() => setPaymentStep('FORM')} className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors shadow-lg shadow-green-900/20">পেমেন্ট সম্পন্ন করেছি</button>
-                    </div>
-                 )}
-
-                 {paymentStep === 'FORM' && (
-                    <form onSubmit={handleSubmitPayment} className="space-y-4">
-                       <div>
-                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">প্রেরক নম্বর (Sender Number)</label>
-                          <input 
-                            required
-                            type="text" 
-                            placeholder="01XXXXXXXXX"
-                            value={senderNumber}
-                            onChange={(e) => setSenderNumber(e.target.value)}
-                            className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-mono"
-                          />
-                       </div>
-                       <div>
-                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">ট্রানজেকশন আইডি (TrxID)</label>
-                          <input 
-                            required
-                            type="text" 
-                            placeholder="Example: 9H7XXXXX"
-                            value={trxId}
-                            onChange={(e) => setTrxId(e.target.value)}
-                            className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-mono uppercase"
-                          />
-                       </div>
-                       <button 
-                         type="submit" 
-                         disabled={isVerifying}
-                         className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
-                       >
-                         {isVerifying ? <Loader2 className="animate-spin" /> : 'জমা দিন'}
-                       </button>
-                    </form>
-                 )}
-
-                 {paymentStep === 'SUCCESS' && (
-                    <div className="text-center py-6">
-                       <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                          <Check size={32} />
-                       </div>
-                       <h3 className="text-xl font-bold text-gray-800 dark:text-white">রিকোয়েস্ট জমা হয়েছে!</h3>
-                       <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
-                          অ্যাডমিন পেমেন্ট ভেরিফাই করার পর আপনার ড্যাশবোর্ডে এটি অ্যাক্টিভ হবে।
-                       </p>
-                       <button onClick={closePaymentModal} className="mt-6 px-8 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">ঠিক আছে</button>
-                    </div>
-                 )}
-              </div>
-           </div>
-        </div>
-      )}
     </div>
   );
 };

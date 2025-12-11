@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserStatsAPI } from '../services/api';
-import QuestWidget from './QuestWidget';
 
 interface DashboardContext {
   openSynapse: () => void;
@@ -130,12 +129,35 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
                 </section>
             </div>
 
-            {/* Daily Quests Widget */}
+            {/* Daily Goal / Challenge Banner (Replacing Widget) */}
             <div className="lg:col-span-1">
-                {stats && stats.quests && <QuestWidget quests={stats.quests} onQuestUpdate={loadStats} />}
+                <div 
+                    onClick={() => navigate('/challenges')}
+                    className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10 rounded-2xl p-6 border border-yellow-200 dark:border-yellow-800/30 cursor-pointer hover:shadow-lg transition-all group relative overflow-hidden"
+                >
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Zap size={80} className="text-yellow-600" fill="currentColor"/>
+                    </div>
+                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-2">
+                        <Target size={20} className="text-red-500"/> ডেইলি গোল
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                        আজকের ৫টি চ্যালেঞ্জ সম্পন্ন করে জিতে নাও বোনাস পয়েন্ট!
+                    </p>
+                    <div className="w-full bg-white dark:bg-gray-700 h-2 rounded-full overflow-hidden mb-4 border border-yellow-100 dark:border-transparent">
+                        <div 
+                            className="bg-yellow-500 h-full rounded-full transition-all duration-1000" 
+                            style={{ width: `${stats?.quests ? (stats.quests.filter((q:any) => q.claimed).length / 5) * 100 : 0}%` }}
+                        ></div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-bold text-yellow-700 dark:text-yellow-500">
+                        <span>{stats?.quests?.filter((q:any) => q.claimed).length || 0} / 5 Completed</span>
+                        <span className="flex items-center gap-1">View All <ArrowRight size={12}/></span>
+                    </div>
+                </div>
                 
                 {/* Recent Performance Strip */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between shadow-sm">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between shadow-sm mt-6">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
                             <Activity size={20} />

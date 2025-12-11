@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Subject, StudySession, TodoItem } from '../types';
 import { 
@@ -323,7 +324,7 @@ const StudyTracker: React.FC = () => {
                  <div className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-white dark:bg-gray-800">
                     <Pause size={20} fill="currentColor" />
                  </div>
-                 <span className="text-xs font-bold">পজ</span>
+                 <span className="text-xs font-bold">বিরতি</span>
                </button>
             </div>
 
@@ -354,7 +355,7 @@ const StudyTracker: React.FC = () => {
                     </div>
                  </div>
                  <div>
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-1">আজকের প্রোগ্রেস</h2>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-1">আজকের অগ্রগতি</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{formatMinimalTime(totalMinutesToday)} / {dailyGoal}h Goal</p>
                     <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-lg text-xs font-bold">
@@ -395,7 +396,7 @@ const StudyTracker: React.FC = () => {
               <>
                 {/* Subject Grid */}
                 <div>
-                    <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2"><Zap size={18} className="text-yellow-500"/> কুইক স্টার্ট</h3>
+                    <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2"><Zap size={18} className="text-yellow-500"/> দ্রুত শুরু করুন</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {Object.values(Subject).map((subj) => {
                             const minutes = subjectTimesToday[subj] || 0;
@@ -424,7 +425,7 @@ const StudyTracker: React.FC = () => {
                 {/* Mini Planner */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><CheckSquare size={18} className="text-primary dark:text-green-400"/> পেন্ডিং টাস্ক</h3>
+                        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><CheckSquare size={18} className="text-primary dark:text-green-400"/> বাকি কাজসমূহ</h3>
                         <button onClick={() => setView('PLANNER')} className="text-xs font-bold text-primary dark:text-green-400 hover:underline">সব দেখুন</button>
                     </div>
                     <div className="space-y-2">
@@ -450,7 +451,7 @@ const StudyTracker: React.FC = () => {
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 min-h-[500px]">
                  <div className="flex items-center gap-2 mb-6">
                     <ListTodo size={24} className="text-primary dark:text-green-400" />
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">স্টাডি প্ল্যানার</h3>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">পড়ার রুটিন</h3>
                  </div>
                  
                  <form onSubmit={handleAddTodo} className="flex gap-3 mb-8">
@@ -488,7 +489,7 @@ const StudyTracker: React.FC = () => {
                    {todos.length === 0 && (
                      <div className="text-center py-10 text-gray-400">
                         <CheckSquare size={48} className="mx-auto mb-2 opacity-20" />
-                        <p>No tasks yet. Add one to get started!</p>
+                        <p>কোনো টাস্ক নেই। শুরু করতে একটি যোগ করুন!</p>
                      </div>
                    )}
                  </div>
@@ -503,7 +504,7 @@ const StudyTracker: React.FC = () => {
                   
                   {sessions.length === 0 ? (
                       <div className="text-center py-12 text-gray-500 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                          <p>No study sessions recorded yet.</p>
+                          <p>কোনো স্টাডি সেশন রেকর্ড করা হয়নি।</p>
                       </div>
                   ) : (
                       sessions.map((session) => (

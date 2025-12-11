@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { GraduationCap, ClipboardList, Home, PieChart, Moon, Sun, Swords, Library, LogOut, User, ShieldCheck, Bell, Trophy, FileCheck, Archive, Monitor } from 'lucide-react';
+import { GraduationCap, ClipboardList, Home, PieChart, Moon, Sun, Swords, Library, LogOut, User, ShieldCheck, Bell, Trophy, FileCheck, Archive, Monitor, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchNotificationsAPI } from '../services/api';
 import { Notification } from '../types';
@@ -58,10 +58,11 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const navItems = [
     { path: '/dashboard', label: 'হোম (Home)', icon: <Home size={20} /> },
+    { path: '/challenges', label: 'ডেইলি চ্যালেঞ্জ (Quests)', icon: <Zap size={20} /> },
     { path: '/courses', label: 'কোর্সসমূহ (Courses)', icon: <Library size={20} /> },
     { path: '/qbank', label: 'প্রশ্ন ব্যাংক (Q-Bank)', icon: <Archive size={20} /> },
     { path: '/exams', label: 'মডেল টেস্ট (Exams)', icon: <FileCheck size={20} /> },
-    { path: '/quiz', label: 'কুইজ চ্যালেঞ্জ (Quiz)', icon: <ClipboardList size={20} /> },
+    { path: '/quiz', label: 'কুইজ জোন (Quiz)', icon: <ClipboardList size={20} /> },
     { path: '/battle', label: 'কুইজ ব্যাটল (Battle)', icon: <Swords size={20} /> },
     { path: '/leaderboard', label: 'লিডারবোর্ড (Rank)', icon: <Trophy size={20} /> },
     { path: '/tracker', label: 'পড়ার রুটিন (Tracker)', icon: <PieChart size={20} /> },
@@ -116,8 +117,8 @@ const Navigation: React.FC<NavigationProps> = ({
               <GraduationCap size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-white hidden md:block leading-none">ডোপামিন</h1>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium hidden md:block">মেডিকেল ও ভার্সিটি এডমিশন</p>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-white hidden md:block leading-none">শিক্ষা সহায়ক</h1>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium hidden md:block">এডমিশন প্রস্তুতি</p>
             </div>
           </div>
           
@@ -138,7 +139,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   </div>
                   <div className="max-h-60 overflow-y-auto">
                      {notifications.length === 0 ? (
-                        <p className="p-4 text-xs text-center text-gray-400">কোনো নোটিফিকেশন নেই</p>
+                        <p className="p-4 text-xs text-center text-gray-400">কোনো নতুন নোটিফিকেশন নেই</p>
                      ) : (
                         notifications.map(n => (
                            <div key={n.id} className="p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
@@ -207,7 +208,7 @@ const Navigation: React.FC<NavigationProps> = ({
             }`}
           >
             <ShieldCheck size={20} />
-            <span>অ্যাডমিন (Admin)</span>
+            <span>অ্যাডমিন প্যানেল</span>
           </Link>
         </nav>
 
@@ -230,7 +231,7 @@ const Navigation: React.FC<NavigationProps> = ({
           </button>
 
           <div className="text-xs text-center text-gray-400 dark:text-gray-500">
-            <p>© 2024 Dopamine</p>
+            <p>© 2024 Shikkha Shohayok</p>
             <p>Made with ❤️ in Bangladesh</p>
           </div>
         </div>
