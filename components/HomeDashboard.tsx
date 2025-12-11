@@ -7,7 +7,7 @@ import {
   ChevronRight, Star, TrendingUp, Activity, Archive
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchUserStatsAPI } from '../services/api';
+import { fetchUserStatsAPI, fetchLeaderboardAPI } from '../services/api';
 
 interface DashboardContext {
   openSynapse: () => void;
@@ -22,10 +22,33 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
   const { currentUser, userAvatar } = useAuth();
   const [greeting, setGreeting] = useState('');
   const [stats, setStats] = useState<any>(null);
+  const [rank, setRank] = useState<number | null>(null);
+  const [lastExam, setLastExam] = useState<any>(null);
 
-  const loadStats = () => {
+  const loadData = async () => {
       if (currentUser) {
-        fetchUserStatsAPI(currentUser.uid).then(data => setStats(data)).catch(() => {});
+        // Fetch User Stats
+        try {
+            const data = await fetchUserStatsAPI(currentUser.uid);
+            setStats(data);
+        } catch (e) { console.error("Stats error", e); }
+
+        // Fetch Leaderboard for Rank
+        try {
+            const leaderboard = await fetchLeaderboardAPI();
+            const userRank = leaderboard.findIndex(u => u.uid === currentUser.uid);
+            if (userRank !== -1) {
+                setRank(userRank + 1);
+            }
+        } catch (e) { console.error("Leaderboard error", e); }
+
+        // Fetch Last Exam from LocalStorage
+        try {
+            const savedLastExam = localStorage.getItem('dopamine_last_exam');
+            if (savedLastExam) {
+                setLastExam(JSON.parse(savedLastExam));
+            }
+        } catch (e) { console.error("Last exam load error", e); }
       }
   };
 
@@ -35,7 +58,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
     else if (hour < 17) setGreeting('শুভ দুপুর');
     else setGreeting('শুভ সন্ধ্যা');
 
-    loadStats();
+    loadData();
   }, [currentUser]);
   
   return (
@@ -59,7 +82,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
              <div className="px-4 py-2 border-r border-gray-100 dark:border-gray-700">
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Rank</p>
                 <p className="font-bold text-gray-800 dark:text-white flex items-center gap-1">
-                   <Trophy size={14} className="text-yellow-500" /> #{stats ? '12' : '--'}
+                   <Trophy size={14} className="text-yellow-500" /> #{rank || '--'}
                 </p>
              </div>
              <div className="px-4 py-2">
@@ -88,7 +111,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
                             <Sparkles size={12} /> ডেইলি চ্যালেঞ্জ
                         </div>
                         <h2 className="text-3xl md:text-5xl font-bold leading-tight">
-                            নিজেক যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">লাইভ কুইজ</span> দিয়ে
+                            নিজেকে যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">লাইভ কুইজ</span> দিয়ে
                         </h2>
                         <p className="text-gray-400 text-sm md:text-base leading-relaxed">
                             প্রতিদিন নতুন নতুন টপিকের উপর মডেল টেস্ট দাও এবং তোমার অবস্থান যাচাই করো। ভুলগুলো থেকে শেখো।
@@ -156,7 +179,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
                     </div>
                 </div>
                 
-                {/* Recent Performance Strip */}
+                {/* Recent Performance Strip - Updated with Last Exam Data */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between shadow-sm mt-6">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
@@ -164,11 +187,15 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ openSynapse }) => {
                         </div>
                         <div>
                             <p className="text-xs font-bold text-gray-500 uppercase">Last Exam</p>
-                            <p className="font-bold text-gray-900 dark:text-white text-sm">Physics 1st Paper</p>
+                            <p className="font-bold text-gray-900 dark:text-white text-sm line-clamp-1 max-w-[150px]">
+                                {lastExam ? lastExam.subject : 'No exams yet'}
+                            </p>
                         </div>
                     </div>
                     <div className="text-right">
-                        <p className="text-xl font-bold text-green-500">85%</p>
+                        <p className={`text-xl font-bold ${lastExam?.percentage >= 80 ? 'text-green-500' : lastExam?.percentage >= 50 ? 'text-yellow-500' : 'text-gray-400'}`}>
+                            {lastExam ? `${lastExam.percentage}%` : '--'}
+                        </p>
                         <p className="text-[10px] text-gray-400">Accuracy</p>
                     </div>
                 </div>

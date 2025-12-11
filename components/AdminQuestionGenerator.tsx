@@ -81,12 +81,12 @@ const AdminQuestionGenerator: React.FC = () => {
   const totalQuestionsToGenerate = distribution.reduce((a, b) => a + b, 0);
 
   const getSubjectIcon = (subject: string) => {
-    if (subject.includes('Physics')) return <Atom size={18} className="text-purple-600 dark:text-purple-400" />;
+    if (subject.includes('Physics')) return <Atom size={18} className="text-blue-600 dark:text-blue-400" />;
     if (subject.includes('Chemistry')) return <Beaker size={18} className="text-orange-600 dark:text-orange-400" />;
-    if (subject.includes('Math')) return <Calculator size={18} className="text-blue-600 dark:text-blue-400" />;
+    if (subject.includes('Math')) return <Calculator size={18} className="text-indigo-600 dark:text-indigo-400" />;
     if (subject.includes('Biology')) return <Dna size={18} className="text-green-600 dark:text-green-400" />;
-    if (subject.includes('English') || subject.includes('Bangla')) return <Book size={18} className="text-pink-600 dark:text-pink-400" />;
-    if (subject.includes('ICT')) return <Activity size={18} className="text-teal-600 dark:text-teal-400" />;
+    if (subject.includes('English') || subject.includes('Bangla')) return <Book size={18} className="text-teal-600 dark:text-teal-400" />;
+    if (subject.includes('ICT')) return <Activity size={18} className="text-cyan-600 dark:text-cyan-400" />;
     return <Globe size={18} className="text-gray-600 dark:text-gray-400" />;
   };
 
@@ -229,7 +229,7 @@ const AdminQuestionGenerator: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-8">
         
         <div className="text-center">
-          <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
              <Brain size={32} />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">স্মার্ট প্রশ্ন জেনারেটর</h2>
@@ -287,7 +287,7 @@ const AdminQuestionGenerator: React.FC = () => {
                            </div>
                            <div className="max-h-60 overflow-y-auto grid gap-2">
                                {availableTopics.map(t => (
-                                   <button key={t} onClick={() => toggleTopic(t)} className={`text-left p-2 rounded text-xs border ${selectedTopics.includes(t) ? 'bg-purple-100 border-purple-500 dark:bg-purple-900/30' : 'bg-white dark:bg-gray-800 border-gray-200'}`}>
+                                   <button key={t} onClick={() => toggleTopic(t)} className={`text-left p-2 rounded text-xs border ${selectedTopics.includes(t) ? 'bg-blue-100 border-blue-500 dark:bg-blue-900/30' : 'bg-white dark:bg-gray-800 border-gray-200'}`}>
                                        {t}
                                    </button>
                                ))}
@@ -319,7 +319,7 @@ const AdminQuestionGenerator: React.FC = () => {
                                 max="50"
                                 value={distribution[idx]} 
                                 onChange={(e) => updateDistribution(idx, parseInt(e.target.value))}
-                                className="w-16 p-1 text-center font-bold rounded border-gray-300 focus:ring-2 focus:ring-purple-500 text-gray-800"
+                                className="w-16 p-1 text-center font-bold rounded border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-800"
                               />
                           </div>
                       ))}
@@ -335,19 +335,19 @@ const AdminQuestionGenerator: React.FC = () => {
                       <button 
                         onClick={handleGenerate}
                         disabled={isGenerating || totalQuestionsToGenerate === 0}
-                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {isGenerating ? <Loader2 className="animate-spin"/> : <Sparkles/>} 
                         {isGenerating ? 'Generating...' : 'Start Generation'}
                       </button>
                   </div>
-                  {isGenerating && <p className="text-center text-xs mt-2 text-purple-600 animate-pulse">{progress}</p>}
+                  {isGenerating && <p className="text-center text-xs mt-2 text-blue-600 animate-pulse">{progress}</p>}
               </div>
 
               {/* Import/Export */}
               <div className="flex justify-end gap-2">
                   <input type="file" ref={fileInputRef} accept=".json" onChange={handleFileUpload} className="hidden" />
-                  <button onClick={() => fileInputRef.current?.click()} className="text-xs font-bold text-gray-500 hover:text-purple-600 flex items-center gap-1"><Upload size={12}/> Import JSON</button>
+                  <button onClick={() => fileInputRef.current?.click()} className="text-xs font-bold text-gray-500 hover:text-blue-600 flex items-center gap-1"><Upload size={12}/> Import JSON</button>
               </div>
            </div>
         </div>

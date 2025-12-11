@@ -53,24 +53,24 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
       {/* Left Side - Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-emerald-800 opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-blue-800 opacity-90"></div>
         
         <div className="relative z-10 p-12 text-white max-w-lg">
-          <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8 shadow-xl">
-             <span className="text-3xl font-bold">শি</span>
+          <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-8 shadow-xl border-2 border-white">
+             <span className="text-3xl font-bold">ডো</span>
           </div>
           <h1 className="text-5xl font-bold mb-6">আপনার লার্নিং জার্নি শুরু হোক এখান থেকেই</h1>
-          <p className="text-lg text-green-100 leading-relaxed mb-8">
+          <p className="text-lg text-blue-100 leading-relaxed mb-8">
             AI টিউটর, স্মার্ট কুইজ এবং পার্সোনালাইজড সাপোর্টের মাধ্যমে নিজেকে প্রস্তুত করুন সেরা ফলাফলের জন্য।
           </p>
           <div className="flex gap-4">
              <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
                 <span className="font-bold text-2xl">১০,০০০+</span>
-                <p className="text-sm text-green-100">শিক্ষার্থী</p>
+                <p className="text-sm text-blue-100">শিক্ষার্থী</p>
              </div>
              <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
                 <span className="font-bold text-2xl">৫০,০০০+</span>
-                <p className="text-sm text-green-100">কুইজ টেস্ট</p>
+                <p className="text-sm text-blue-100">কুইজ টেস্ট</p>
              </div>
           </div>
         </div>
@@ -148,7 +148,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
              <button
                type="submit"
                disabled={loading}
-               className="w-full bg-primary hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-900/20 active:scale-95"
+               className="w-full bg-primary hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95"
              >
                {loading ? (
                  <Loader2 size={24} className="animate-spin" />

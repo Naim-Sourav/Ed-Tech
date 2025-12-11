@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { GraduationCap, ClipboardList, Home, PieChart, Moon, Sun, Swords, Library, LogOut, User, ShieldCheck, Bell, Trophy, FileCheck, Archive, Monitor, Zap } from 'lucide-react';
+import { GraduationCap, ClipboardList, Home, PieChart, Moon, Sun, Swords, Library, LogOut, User, ShieldCheck, Bell, Trophy, FileCheck, Archive, Monitor, Zap, Brain } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchNotificationsAPI } from '../services/api';
 import { Notification } from '../types';
@@ -113,11 +113,11 @@ const Navigation: React.FC<NavigationProps> = ({
       `}>
         <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center">
-            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl mr-3 shadow-lg shadow-blue-900/20">
-              <GraduationCap size={24} />
+            <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl mr-3 shadow-lg shadow-blue-500/20">
+              <Brain size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-white hidden md:block leading-none">শিক্ষা সহায়ক</h1>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-white hidden md:block leading-none">ডোপামিন</h1>
               <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium hidden md:block">এডমিশন প্রস্তুতি</p>
             </div>
           </div>
@@ -162,11 +162,11 @@ const Navigation: React.FC<NavigationProps> = ({
             onClick={() => setIsMobileMenuOpen(false)}
             className={`w-full p-3 rounded-xl flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left ${isActive('/profile') ? 'bg-gray-50 dark:bg-gray-700/80' : 'bg-gray-50 dark:bg-gray-700/50'}`}
           >
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/10 dark:bg-green-400/10 flex-shrink-0">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/10 dark:bg-blue-400/10 flex-shrink-0">
                {userAvatar && userAvatar !== 'default' ? (
                  <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
                ) : (
-                 <div className="w-full h-full flex items-center justify-center text-primary dark:text-green-400 font-bold">
+                 <div className="w-full h-full flex items-center justify-center text-primary dark:text-blue-400 font-bold">
                    <User size={20} />
                  </div>
                )}
@@ -188,7 +188,7 @@ const Navigation: React.FC<NavigationProps> = ({
               onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
                 isActive(item.path)
-                  ? 'bg-green-50 dark:bg-primary/20 text-primary dark:text-green-400 border border-green-100 dark:border-primary/20'
+                  ? 'bg-blue-50 dark:bg-primary/20 text-primary dark:text-blue-300 border border-blue-100 dark:border-primary/20'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -203,8 +203,8 @@ const Navigation: React.FC<NavigationProps> = ({
             onClick={() => setIsMobileMenuOpen(false)}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium mt-4 ${
               isActive('/admin')
-                ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-orange-50 dark:hover:bg-orange-900/10 hover:text-orange-600 dark:hover:text-orange-400'
+                ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300'
             }`}
           >
             <ShieldCheck size={20} />
@@ -231,7 +231,7 @@ const Navigation: React.FC<NavigationProps> = ({
           </button>
 
           <div className="text-xs text-center text-gray-400 dark:text-gray-500">
-            <p>© 2024 Shikkha Shohayok</p>
+            <p>© 2024 Dopamine</p>
             <p>Made with ❤️ in Bangladesh</p>
           </div>
         </div>
