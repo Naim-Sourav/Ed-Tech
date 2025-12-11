@@ -17,7 +17,7 @@ import ProfilePage from './components/ProfilePage';
 import AdminPage from './components/AdminPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import DailyChallengePage from './components/DailyChallengePage';
-import { Menu, Loader2, ArrowLeft, GraduationCap } from 'lucide-react';
+import { Menu, Loader2, ArrowLeft, GraduationCap, Brain } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 
@@ -33,6 +33,7 @@ const MainLayout: React.FC<{
 
   // Map paths to Titles
   const getTitle = (pathname: string) => {
+    if (pathname.startsWith('/profile/')) return 'প্রোফাইল'; // Handle dynamic profile title
     switch (pathname) {
       case '/dashboard': return 'ডোপামিন';
       case '/quiz': return 'কুইজ চ্যালেঞ্জ';
@@ -64,7 +65,7 @@ const MainLayout: React.FC<{
         <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between transition-colors sticky top-0 z-50 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-              <GraduationCap size={20} />
+              <Brain size={20} />
             </div>
             <span className="font-bold text-gray-800 dark:text-white text-lg tracking-tight">
               {getTitle(location.pathname)}
@@ -167,6 +168,7 @@ const App: React.FC = () => {
                     <Route path="/tracker" element={<StudyTracker />} />
                     <Route path="/admission" element={<AdmissionSearch />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/profile/:userId" element={<ProfilePage />} /> {/* New Dynamic Route */}
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/challenges" element={<DailyChallengePage openSynapse={openSynapse} />} />
                     <Route path="*" element={<Navigate to="/dashboard" />} />

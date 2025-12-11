@@ -1,3 +1,4 @@
+
 export enum AppView {
   HOME = 'HOME',
   CONCEPT = 'CONCEPT',
@@ -117,6 +118,10 @@ export interface LeaderboardUser {
   photoURL: string;
   points: number;
   rank?: number;
+  college?: string;
+  hscBatch?: string;
+  target?: string;
+  department?: string;
 }
 
 export interface ExamPack {

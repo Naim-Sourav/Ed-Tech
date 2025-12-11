@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shikkha Shohayok | HSC & Admission AI Tutor</title>
+    <title>Dopamine | HSC & Admission AI Tutor</title>
     
     <!-- SEO & Social Sharing Tags -->
     <meta name="description" content="An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students featuring concept explanation, quiz generation, and admission information." />
-    <meta property="og:title" content="Shikkha Shohayok - HSC & Admission Prep" />
+    <meta property="og:title" content="Dopamine - HSC & Admission Prep" />
     <meta property="og:description" content="Your personal AI tutor for Physics, Chemistry, Math, Biology and Admission Tests." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop" />
@@ -23,10 +23,11 @@
               sans: ['Hind Siliguri', 'sans-serif'],
             },
             colors: {
-              primary: '#006a4e', // BD Flag Green
-              secondary: '#f42a41', // BD Flag Redish
-              accent: '#f0fdf4',
-              emerald: {
+              primary: '#1565C0', // Deep Royal Blue
+              secondary: '#0288D1', // Bright Blue
+              accent: '#E3F2FD',
+              dark: '#0D47A1',
+              emerald: { 
                 500: '#10b981',
                 600: '#059669',
               }
@@ -64,14 +65,14 @@
         background: #1f2937; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #c1c1c1; 
+        background: #90CAF9; /* Light blue tint */
         border-radius: 4px;
       }
       .dark ::-webkit-scrollbar-thumb {
-        background: #4b5563; 
+        background: #1E88E5; /* Dark blue tint */
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8; 
+        background: #1565C0; 
       }
       /* Global transition for smooth theme switching */
       *, *::before, *::after {
@@ -111,22 +112,23 @@
         width: 80px;
         height: 80px;
         background-color: #fff;
-        border-radius: 20px;
+        border-radius: 50%; /* Circle like logo */
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 40px;
         font-weight: bold;
-        color: #006a4e;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        color: #1565C0; /* Blue */
+        box-shadow: 0 10px 25px rgba(21, 101, 192, 0.2);
         margin-bottom: 24px;
         animation: pulse 2s infinite;
+        border: 4px solid #E3F2FD;
       }
       .spinner {
         width: 40px;
         height: 40px;
         border: 4px solid #e5e7eb;
-        border-top: 4px solid #006a4e;
+        border-top: 4px solid #1565C0; /* Blue */
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
@@ -158,7 +160,9 @@
     "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
     "path": "https://aistudiocdn.com/path@^0.12.7",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.10.1",
+    "react-easy-crop": "https://esm.sh/react-easy-crop@^5.5.6"
   }
 }
 </script>
@@ -168,9 +172,9 @@
     <div id="root" class="h-full">
       <!-- Initial Loading State (Visible immediately before React loads) -->
       <div id="app-loading">
-        <div class="logo-box">শি</div>
+        <div class="logo-box">ডো</div>
         <div class="spinner"></div>
-        <p class="loading-text">অ্যাপ লোড হচ্ছে...</p>
+        <p class="loading-text">ডোপামিন লোড হচ্ছে...</p>
       </div>
     </div>
     <script type="module" src="/index.tsx"></script>

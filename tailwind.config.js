@@ -11,9 +11,10 @@ export default {
         sans: ['Hind Siliguri', 'sans-serif'],
       },
       colors: {
-        primary: '#006a4e',
-        secondary: '#f42a41',
-        accent: '#f0fdf4',
+        primary: '#1565C0', // Deep Royal Blue (Logo Main Color)
+        secondary: '#0288D1', // Bright Blue/Cyan (Accent)
+        accent: '#E3F2FD', // Very Light Blue (Backgrounds)
+        dark: '#0D47A1', // Darker Blue for hover states
       }
     },
   },
