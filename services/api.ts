@@ -1,5 +1,5 @@
 
-import { PaymentRequest, Notification, LeaderboardUser, ExamPack, Quest, QuestType, QuestTemplate } from "../types";
+import { PaymentRequest, Notification, LeaderboardUser, ExamPack, Quest, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
 
 const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
 
@@ -62,7 +62,7 @@ const MOCK_PACKS: ExamPack[] = [
 ];
 
 const MOCK_NOTIFICATIONS: Notification[] = [
-    { id: '1', title: 'Welcome', message: 'Welcome to Shikkha Shohayok! (Offline Mode)', type: 'INFO', date: Date.now() },
+    { id: '1', title: 'Welcome', message: 'Welcome to Dhrubok! (Offline Mode)', type: 'INFO', date: Date.now() },
     { id: '2', title: 'Update', message: 'New Physics questions added.', type: 'SUCCESS', date: Date.now() - 86400000 }
 ];
 
@@ -147,7 +147,7 @@ export const deleteAdminQuestAPI = async (id: string) => {
 };
 
 // User & Sync APIs
-export const syncUserToMongoDB = async (user: any) => {
+export const syncUserToMongoDB = async (user: any, additionalData?: any) => {
   return fetchWithFallback('/users/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -156,10 +156,12 @@ export const syncUserToMongoDB = async (user: any) => {
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
+        phoneNumber: additionalData?.phoneNumber || user.phoneNumber || '',
         college: user.college,
         hscBatch: user.hscBatch,
         department: user.department,
-        target: user.target
+        target: user.target,
+        ...additionalData
       })
   }, { success: true });
 };
@@ -267,12 +269,16 @@ export const deletePaymentAPI = async (id: string) => {
   }, { success: true });
 };
 
-export const saveQuestionsToBankAPI = async (questions: any[]) => {
+export const saveQuestionsToBankAPI = async (questions: any[], metadata?: QuestionPaperMetadata) => {
   return fetchWithFallback('/admin/questions/bulk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questions })
+      body: JSON.stringify({ questions, metadata })
   }, { success: true });
+};
+
+export const fetchQuestionPapersAPI = async (): Promise<QuestionPaperMetadata[]> => {
+  return fetchWithFallback('/question-papers', {}, []);
 };
 
 export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string) => {
@@ -280,6 +286,10 @@ export const fetchQuestionsFromBankAPI = async (page: number, limit: number, sub
   if (subject) url += `&subject=${encodeURIComponent(subject)}`;
   if (chapter) url += `&chapter=${encodeURIComponent(chapter)}`;
   return fetchWithFallback(url, {}, { questions: [], total: 0 });
+};
+
+export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
+  return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
 };
 
 export const deleteQuestionFromBankAPI = async (id: string) => {

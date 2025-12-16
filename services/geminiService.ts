@@ -306,3 +306,95 @@ export const searchAdmissionInfo = async (query: string): Promise<AdmissionResul
     throw error;
   }
 };
+
+/**
+ * Enriches a list of raw questions (e.g. from JSON past papers) with:
+ * 1. Correct Subject and Chapter detection (NCTB Syllabus).
+ * 2. Detailed Explanation from standard textbooks.
+ * 3. Topic tagging.
+ */
+export const enrichQuestionList = async (
+  rawQuestions: any[],
+  examName: string,
+  year: string
+): Promise<QuizQuestion[]> => {
+  const ai = getClient();
+  const chunks = [];
+  const chunkSize = 15; // Process in small batches to ensure quality
+
+  for (let i = 0; i < rawQuestions.length; i += chunkSize) {
+    chunks.push(rawQuestions.slice(i, i + chunkSize));
+  }
+
+  const responseSchema: Schema = {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        question: { type: Type.STRING },
+        options: { type: Type.ARRAY, items: { type: Type.STRING } },
+        correctAnswerIndex: { type: Type.INTEGER },
+        explanation: { type: Type.STRING },
+        subject: { type: Type.STRING },
+        chapter: { type: Type.STRING },
+        topic: { type: Type.STRING }
+      },
+      required: ["question", "options", "correctAnswerIndex", "explanation", "subject", "chapter", "topic"]
+    }
+  };
+
+  let enrichedResults: QuizQuestion[] = [];
+
+  for (const chunk of chunks) {
+    const prompt = `
+      I have a list of raw questions from the ${examName} (${year}) admission test. 
+      Your task is to analyze each question and ENRICH it.
+      
+      Raw Data: ${JSON.stringify(chunk)}
+
+      Requirements:
+      1. **Subject & Chapter Detection**: Accurately detect the Subject (Physics 1st/2nd Paper, Chemistry 1st/2nd Paper, Biology 1st/2nd Paper, English, General Knowledge) and the specific Chapter Name in Bengali strictly following the NCTB HSC Syllabus.
+      2. **Explanation**: Provide a detailed, high-quality explanation for the correct answer. Cite logic from standard textbooks (e.g., Gazi Ajmal, Hazari Nag, Tapan/Ishaq) where applicable. The explanation must be in Bengali.
+      3. **Topic**: Identify a short specific topic (e.g. 'Vector', 'Organic Chemistry', 'Grammar').
+      4. **Validation**: Correct any typos in the raw question or options. Ensure options are a list of 4 strings.
+      
+      Output strictly as a JSON array matching the schema.
+    `;
+
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.2
+        }
+      });
+
+      if (response.text) {
+        const data = JSON.parse(cleanJsonString(response.text));
+        enrichedResults = [...enrichedResults, ...data];
+      }
+      
+      // Rate limit buffer
+      await new Promise(r => setTimeout(r, 1000));
+
+    } catch (e) {
+      console.error("Batch processing failed:", e);
+      // Fallback: Add raw questions without enrichment if AI fails
+      const fallback = chunk.map((q: any) => ({
+         question: q.question,
+         options: q.options || [],
+         correctAnswerIndex: q.correctAnswerIndex || 0,
+         explanation: "AI processing failed. Please add explanation manually.",
+         subject: "Unknown",
+         chapter: "Unknown",
+         topic: "Unknown"
+      }));
+      enrichedResults = [...enrichedResults, ...fallback];
+    }
+  }
+
+  return enrichedResults;
+};
