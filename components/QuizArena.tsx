@@ -175,7 +175,7 @@ const SUBJECT_GROUPS = [
   },
 ];
 
-type QuizStep = 'SELECTION' | 'LOADING' | 'EXAM' | 'RESULT';
+type QuizStep = 'SELECTION' | 'TOPIC_CONFIG' | 'LOADING' | 'EXAM' | 'RESULT';
 type ExamViewMode = 'SINGLE_PAGE' | 'ALL_AT_ONCE';
 type TabMode = 'CUSTOM' | 'PRESET' | 'MISTAKE_REVISION';
 // New View State for Custom Selection
