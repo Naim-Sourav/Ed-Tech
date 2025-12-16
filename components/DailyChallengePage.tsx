@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, CheckCircle, Clock, Trophy, Target, ArrowRight, 
   FileCheck, Swords, Bot, Bookmark, Activity, Dna, Atom, 
   Beaker, Calculator, Database, Share2, AlertCircle, Play, 
-  Calendar, Crown, Star
+  Calendar, Crown, Star, Medal, Shield, Lock, Timer
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserStatsAPI, claimQuestAPI } from '../services/api';
 import { Quest } from '../types';
 import { useToast } from './Toast';
 import Confetti from './Confetti';
+import { MILESTONE_QUESTS } from '../services/questData';
 
 interface DailyChallengePageProps {
   openSynapse: () => void;
@@ -20,13 +22,38 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  
+  // State
   const [dailyQuests, setDailyQuests] = useState<Quest[]>([]);
   const [weeklyQuests, setWeeklyQuests] = useState<Quest[]>([]);
+  const [lifetimeQuests, setLifetimeQuests] = useState<Quest[]>(MILESTONE_QUESTS);
+  
   const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [claimingId, setClaimingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'DAILY' | 'WEEKLY'>('DAILY');
+  const [activeTab, setActiveTab] = useState<'DAILY' | 'WEEKLY' | 'LIFETIME'>('DAILY');
+  const [timeLeft, setTimeLeft] = useState('');
 
+  // Countdown Logic
+  useEffect(() => {
+      const calculateTimeLeft = () => {
+          const now = new Date();
+          const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+          const diff = tomorrow.getTime() - now.getTime();
+          
+          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((diff / (1000 * 60)) % 60);
+          const seconds = Math.floor((diff / 1000) % 60);
+          
+          setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+      };
+      
+      calculateTimeLeft();
+      const timer = setInterval(calculateTimeLeft, 1000);
+      return () => clearInterval(timer);
+  }, []);
+
+  // Load Data
   const loadData = async () => {
     if (currentUser) {
       try {
@@ -34,6 +61,26 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
         if (stats) {
             if (stats.quests) setDailyQuests(stats.quests);
             if (stats.weeklyQuests) setWeeklyQuests(stats.weeklyQuests);
+            
+            // Merge User Progress with Static Lifetime Quests
+            const updatedLifetime = MILESTONE_QUESTS.map(q => {
+                let currentProgress = 0;
+                let isClaimed = false; // Mock, in real app check against stats.claimedLifetimeIds
+                
+                if (q.type === 'EXAM_COMPLETE') currentProgress = stats.totalExams || 0;
+                else if (q.type === 'HIGH_SCORE') currentProgress = stats.totalCorrect > 0 ? Math.floor(stats.totalCorrect / 10) : 0; 
+                else if (q.type === 'EARN_POINTS') currentProgress = stats.points || 0;
+                
+                const isCompleted = currentProgress >= q.target;
+                
+                return {
+                    ...q,
+                    progress: currentProgress,
+                    completed: isCompleted,
+                    claimed: isClaimed 
+                };
+            });
+            setLifetimeQuests(updatedLifetime);
         }
       } catch (e) {
         console.error("Failed to load quests", e);
@@ -47,16 +94,23 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
     loadData();
   }, [currentUser]);
 
-  const handleClaim = async (questId: string, category: 'DAILY' | 'WEEKLY') => {
+  const handleClaim = async (questId: string, category: 'DAILY' | 'WEEKLY' | 'LIFETIME') => {
       if (!currentUser) return;
       setClaimingId(questId);
       try {
-          const res = await claimQuestAPI(currentUser.uid, questId, category);
-          if (res.success) {
+          if (category === 'LIFETIME') {
               setShowConfetti(true);
               setTimeout(() => setShowConfetti(false), 3000);
-              showToast(`অভিনন্দন! ${res.points - (currentUser as any).points || 0} পয়েন্ট অর্জিত হয়েছে!`, "success");
-              loadData(); 
+              showToast("Milestone recorded! (Demo)", "success");
+              setLifetimeQuests(prev => prev.map(q => q.id === questId ? { ...q, claimed: true } : q));
+          } else {
+              const res = await claimQuestAPI(currentUser.uid, questId, category);
+              if (res.success) {
+                  setShowConfetti(true);
+                  setTimeout(() => setShowConfetti(false), 3000);
+                  showToast(`অভিনন্দন! পয়েন্ট অর্জিত হয়েছে!`, "success");
+                  loadData(); 
+              }
           }
       } catch (e) {
           showToast("ক্লেইম করতে সমস্যা হয়েছে", "error");
@@ -66,14 +120,11 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
   };
 
   const handleStart = (quest: any) => { 
-      if (quest.link === 'SYNAPSE') {
-          openSynapse();
-      } else if (quest.link === 'SHARE') {
-          navigator.clipboard.writeText("Join Shikkha Shohayok: https://shikkha-shohayok.web.app");
-          showToast("Link copied to clipboard!", "info");
-      } else if (quest.link) {
-          navigate(quest.link);
-      }
+      if (quest.type === 'ASK_AI') openSynapse();
+      else if (quest.type === 'EXAM_COMPLETE') navigate('/quiz');
+      else if (quest.type === 'PLAY_BATTLE') navigate('/battle');
+      else if (quest.type === 'STUDY_TIME') navigate('/tracker');
+      else navigate('/quiz');
   };
 
   const getIcon = (iconName?: string) => {
@@ -85,17 +136,24 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
           case 'Swords': return <Swords size={size} className="text-orange-500" />;
           case 'Bot': return <Bot size={size} className="text-green-500" />;
           case 'Bookmark': return <Bookmark size={size} className="text-yellow-500" />;
-          case 'Atom': return <Atom size={size} className="text-purple-600" />;
-          case 'Beaker': return <Beaker size={size} className="text-orange-600" />;
-          case 'Calculator': return <Calculator size={size} className="text-blue-600" />;
-          case 'Dna': return <Dna size={size} className="text-green-600" />;
           case 'Crown': return <Crown size={size} className="text-amber-500" />;
           case 'Star': return <Star size={size} className="text-yellow-400" />;
           default: return <Trophy size={size} className="text-primary" />;
       }
   };
 
-  const questsToRender = activeTab === 'DAILY' ? dailyQuests : weeklyQuests;
+  const getDifficultyColor = (diff?: string) => {
+      switch(diff) {
+          case 'NOVICE': return 'border-l-4 border-l-gray-400';
+          case 'APPRENTICE': return 'border-l-4 border-l-green-500';
+          case 'ELITE': return 'border-l-4 border-l-blue-500';
+          case 'MASTER': return 'border-l-4 border-l-purple-500';
+          case 'LEGEND': return 'border-l-4 border-l-orange-500 bg-orange-50/10';
+          default: return '';
+      }
+  };
+
+  const questsToRender = activeTab === 'DAILY' ? dailyQuests : activeTab === 'WEEKLY' ? weeklyQuests : lifetimeQuests;
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
@@ -107,24 +165,35 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center gap-2">
                 <Target className="text-red-500"/> চ্যালেঞ্জ জোন
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
-                নিয়মিত চ্যালেঞ্জ কমপ্লিট করে পয়েন্ট জিতো এবং নিজেকে প্রস্তুত করো।
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto mb-4">
+                নিয়মিত চ্যালেঞ্জ কমপ্লিট করে ব্যাজ ও পয়েন্ট জিতো।
             </p>
+            {activeTab === 'DAILY' && (
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold font-mono">
+                    <Timer size={14}/> রিসেট হতে বাকি: {timeLeft}
+                </div>
+            )}
          </div>
 
          {/* Tab Switcher */}
-         <div className="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 w-full max-w-sm mx-auto">
+         <div className="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 w-full overflow-x-auto no-scrollbar">
              <button 
                 onClick={() => setActiveTab('DAILY')}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'DAILY' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'DAILY' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
              >
                  <Zap size={16}/> Daily
              </button>
              <button 
                 onClick={() => setActiveTab('WEEKLY')}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'WEEKLY' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'WEEKLY' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
              >
                  <Calendar size={16}/> Weekly
+             </button>
+             <button 
+                onClick={() => setActiveTab('LIFETIME')}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'LIFETIME' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
+             >
+                 <Medal size={16}/> Achievements
              </button>
          </div>
 
@@ -142,35 +211,45 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
                      const percent = Math.min(100, (quest.progress / quest.target) * 100);
                      const isReady = quest.completed && !quest.claimed;
                      const isCompleted = quest.claimed;
+                     const diffColor = getDifficultyColor(quest.difficulty);
 
                      return (
-                         <div key={quest.id} className={`bg-white dark:bg-gray-800 p-4 rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md ${isCompleted ? 'border-green-200 dark:border-green-900/50 bg-green-50/20 opacity-80' : 'border-gray-200 dark:border-gray-700'}`}>
+                         <div key={quest.id} className={`bg-white dark:bg-gray-800 p-4 rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md ${diffColor} ${isCompleted ? 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 opacity-70' : 'border-gray-200 dark:border-gray-700'}`}>
                              <div className="flex items-center gap-4">
                                  
                                  {/* Icon */}
-                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isCompleted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 relative ${isCompleted ? 'bg-gray-100 dark:bg-gray-700 grayscale' : 'bg-gray-50 dark:bg-gray-700'}`}>
                                      {getIcon(quest.icon)}
+                                     {isCompleted && (
+                                         <div className="absolute inset-0 bg-white/50 dark:bg-black/50 rounded-xl flex items-center justify-center">
+                                             <CheckCircle size={20} className="text-green-600"/>
+                                         </div>
+                                     )}
                                  </div>
 
                                  {/* Info */}
                                  <div className="flex-1 min-w-0">
                                      <div className="flex justify-between items-center mb-1">
-                                         <h3 className={`text-sm md:text-base font-bold truncate ${isCompleted ? 'text-green-700 dark:text-green-400' : 'text-gray-800 dark:text-white'}`}>{quest.title}</h3>
-                                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isCompleted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
-                                             {isCompleted ? 'Done' : `+${quest.reward} Pts`}
+                                         <div className="flex items-center gap-2">
+                                            <h3 className={`text-sm md:text-base font-bold truncate ${isCompleted ? 'text-gray-500 dark:text-gray-500' : 'text-gray-800 dark:text-white'}`}>{quest.title}</h3>
+                                            {/* Only show difficulty badge for lifetime */}
+                                            {activeTab === 'LIFETIME' && (
+                                                <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-1.5 py-0.5 rounded">{quest.difficulty}</span>
+                                            )}
+                                         </div>
+                                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isCompleted ? 'bg-gray-100 text-gray-500 dark:bg-gray-700' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
+                                             {isCompleted ? 'Collected' : `+${quest.reward} Pts`}
                                          </span>
                                      </div>
                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate">{quest.description}</p>
                                      
                                      {/* Progress */}
-                                     {!isCompleted && (
-                                         <div className="flex items-center gap-3">
-                                             <div className="flex-1 bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                                                 <div className="bg-primary h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${percent}%` }}></div>
-                                             </div>
-                                             <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">{quest.progress}/{quest.target}</span>
+                                     <div className="flex items-center gap-3">
+                                         <div className="flex-1 bg-gray-100 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                                             <div className={`h-full rounded-full transition-all duration-1000 ease-out ${isCompleted ? 'bg-green-500' : 'bg-primary'}`} style={{ width: `${percent}%` }}></div>
                                          </div>
-                                     )}
+                                         <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">{quest.progress >= quest.target ? quest.target : quest.progress}/{quest.target}</span>
+                                     </div>
                                  </div>
 
                                  {/* Action */}
@@ -179,20 +258,24 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
                                          <button 
                                              onClick={() => handleClaim(quest.id, activeTab)}
                                              disabled={claimingId === quest.id}
-                                             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-200 dark:shadow-none animate-pulse"
+                                             className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-200 dark:shadow-none animate-pulse flex items-center gap-1"
                                          >
-                                             {claimingId === quest.id ? '...' : 'Claim'}
+                                             {claimingId === quest.id ? <Clock size={14} className="animate-spin"/> : <Gift size={14}/>} Claim
                                          </button>
-                                     ) : !isCompleted ? (
+                                     ) : !isCompleted && activeTab !== 'LIFETIME' ? (
+                                         // Only show 'Start' button for daily/weekly, Lifetime is passive
                                          <button 
                                              onClick={() => handleStart(quest)}
                                              className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary rounded-full transition-colors"
                                          >
                                              <Play size={14} fill="currentColor"/>
                                          </button>
+                                     ) : isCompleted ? (
+                                         null // Nothing for completed
                                      ) : (
-                                         <div className="w-8 h-8 flex items-center justify-center bg-green-50 dark:bg-green-900/20 text-green-600 rounded-full">
-                                             <CheckCircle size={16} />
+                                         // Locked / In Progress state for Lifetime
+                                         <div className="w-8 h-8 flex items-center justify-center text-gray-300 dark:text-gray-600">
+                                             <Lock size={16} />
                                          </div>
                                      )}
                                  </div>
@@ -206,5 +289,8 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
     </div>
   );
 };
+
+// Helper for icon
+const Gift = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>;
 
 export default DailyChallengePage;

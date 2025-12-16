@@ -1,15 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../contexts/AdminContext';
-import { Check, X, Search, Trash2, Calendar, User, Phone, CreditCard, ShieldCheck, Filter, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, BookOpen, Activity, FileText } from 'lucide-react';
+import { Check, X, Search, Trash2, Calendar, User, Phone, CreditCard, ShieldCheck, Filter, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, BookOpen, Activity, FileText, FileJson } from 'lucide-react';
 import AdminQuestionGenerator from './AdminQuestionGenerator';
+import AdminJsonUpload from './AdminJsonUpload';
 import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'Q_BANK' | 'DATABASE'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'Q_BANK' | 'DATABASE' | 'JSON_UPLOAD'>('DASHBOARD');
   const { showToast } = useToast();
   
   // Payment Filters
@@ -134,6 +135,9 @@ const AdminPage: React.FC = () => {
                    </button>
                    <button onClick={() => setActiveTab('PAYMENTS')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'PAYMENTS' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <DollarSign size={16} /> পেমেন্টস
+                   </button>
+                   <button onClick={() => setActiveTab('JSON_UPLOAD')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'JSON_UPLOAD' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <FileJson size={16} /> Smart Upload
                    </button>
                    <button onClick={() => setActiveTab('Q_BANK')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'Q_BANK' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Database size={16} /> Generator
@@ -342,6 +346,11 @@ const AdminPage: React.FC = () => {
                    </table>
                </div>
            </div>
+        )}
+
+        {/* --- TAB: SMART JSON UPLOAD --- */}
+        {activeTab === 'JSON_UPLOAD' && (
+           <AdminJsonUpload />
         )}
 
         {/* --- TAB: QUESTION BANK GENERATOR --- */}

@@ -1,23 +1,26 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, Crown, Eye, CheckCircle, X, ChevronDown, Check, Settings, ArrowRight, Share2, Timer } from 'lucide-react';
+import { Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, Crown, Eye, CheckCircle, X, ChevronDown, Check, Settings, ArrowRight, Timer, Share2, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { createBattleRoom, joinBattleRoom, getBattleState, submitBattleAnswer, startBattle, updateQuestProgressAPI } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
 import Confetti from './Confetti';
+import { 
+  createRTDBRoom, 
+  joinRTDBRoom, 
+  startRTDBBattle, 
+  submitAnswerRTDB, 
+  listenToBattleRoom, 
+  finishRTDBBattle,
+  deleteRTDBRoom,
+  BattleRoom,
+  BattlePlayer
+} from '../services/battleService';
+import { generateQuiz } from '../services/geminiService'; 
+import { updateQuestProgressAPI, saveExamResultAPI, sendNotificationAPI } from '../services/api'; 
+import { useLocation } from 'react-router-dom';
 
 // --- TYPES ---
-interface BattlePlayer {
-  uid: string;
-  name: string;
-  avatar: string;
-  score: number;
-  totalTimeTaken: number;
-  team: 'A' | 'B' | 'NONE';
-  answers: Record<string, number>; 
-}
-
 interface BattleConfig {
   subjects: string[]; 
   chapters: string[];
@@ -27,27 +30,19 @@ interface BattleConfig {
   maxPlayers: number;
 }
 
-interface BattleState {
-  roomId: string;
-  hostId: string;
-  status: 'WAITING' | 'ACTIVE' | 'FINISHED';
-  config: BattleConfig;
-  questions: any[];
-  players: BattlePlayer[];
-  startTime?: number;
-}
-
 type Phase = 'MENU' | 'CREATE' | 'JOIN' | 'LOBBY' | 'GAME' | 'RESULT';
 
 const QuizBattlePrototype: React.FC = () => {
   const { currentUser, userAvatar } = useAuth();
   const { showToast } = useToast();
+  const location = useLocation();
+  const opponentInfo = location.state?.opponent; // Check for challenge data
   
   // --- STATE ---
   const [phase, setPhase] = useState<Phase>('MENU');
   const [loading, setLoading] = useState(false);
   const [roomId, setRoomId] = useState('');
-  const [battleState, setBattleState] = useState<BattleState | null>(null);
+  const [battleState, setBattleState] = useState<BattleRoom | null>(null);
   const [inputRoomId, setInputRoomId] = useState('');
   const [showComparison, setShowComparison] = useState(false);
   
@@ -60,6 +55,15 @@ const QuizBattlePrototype: React.FC = () => {
     timePerQuestion: 15,
     maxPlayers: 2
   });
+
+  // Effect to auto-switch to create mode if challenging someone
+  useEffect(() => {
+      if (opponentInfo && phase === 'MENU') {
+          setPhase('CREATE');
+          // Optionally auto-select a subject or show a message
+          showToast(`Challenging ${opponentInfo.name}. Configure your battle!`, "info");
+      }
+  }, [opponentInfo]);
 
   // Derived Data
   const availableChapters = React.useMemo(() => {
@@ -77,84 +81,124 @@ const QuizBattlePrototype: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [isQuestionReady, setIsQuestionReady] = useState(false);
   
-  // Timing State for Tie Breaker
-  const questionStartTimeRef = useRef<number>(0);
-  
-  // --- POLLING EFFECT ---
+  // --- REALTIME LISTENER ---
   useEffect(() => {
-    let interval: any;
-    const fetchLoop = async () => {
-        if (!roomId) return;
-        try {
-            const state = await getBattleState(roomId);
-            setBattleState(state);
-            if (state.questions && state.questions.length > 0) setIsQuestionReady(true);
-        } catch (e) { console.error("Polling error", e); }
+    let unsubscribe: () => void;
+
+    if (roomId) {
+      setLoading(true);
+      unsubscribe = listenToBattleRoom(roomId, (data) => {
+        setLoading(false);
+        if (data) {
+          setBattleState(data);
+          
+          // Phase Management based on RTDB Status
+          if (data.status === 'WAITING' && phase !== 'LOBBY') setPhase('LOBBY');
+          if (data.status === 'ACTIVE' && phase !== 'GAME') setPhase('GAME');
+          if (data.status === 'FINISHED' && phase !== 'RESULT') setPhase('RESULT');
+        } else {
+          // Room deleted or null
+          if (phase === 'GAME' || phase === 'LOBBY') {
+             showToast("রুমটি হোস্ট দ্বারা বন্ধ করা হয়েছে।", "info");
+             resetToMenu();
+          }
+        }
+      });
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
     };
-    if (roomId && (phase === 'LOBBY' || phase === 'GAME' || phase === 'RESULT')) {
-        fetchLoop();
-        interval = setInterval(fetchLoop, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [roomId, phase]);
+  }, [roomId]);
 
-  // --- GAME LOGIC EFFECT ---
+  // --- GAME TIMER LOGIC (Client Side Sync) ---
   useEffect(() => {
-    if (!battleState) return;
-    if (battleState.status === 'ACTIVE') {
-        if (phase !== 'GAME') setPhase('GAME');
-        if (battleState.startTime && battleState.questions.length > 0) {
-            const now = Date.now();
-            const safeStartTime = Math.min(now, battleState.startTime);
-            const elapsedSeconds = (now - safeStartTime) / 1000;
-            const durationPerQ = battleState.config.timePerQuestion;
-            const calculatedIndex = Math.floor(elapsedSeconds / durationPerQ);
-            
-            if (calculatedIndex >= battleState.questions.length) {
-               setTimeLeft(0);
-            } else {
-               const timeInCurrentQ = elapsedSeconds % durationPerQ;
-               const remaining = Math.max(0, Math.floor(durationPerQ - timeInCurrentQ));
+    let timer: any;
+    if (battleState && battleState.status === 'ACTIVE' && phase === 'GAME') {
+        const now = Date.now();
+        // Wait for start time (buffer)
+        if (now < battleState.startTime) {
+            setTimeLeft(Math.ceil((battleState.startTime - now) / 1000));
+            return;
+        }
+
+        const elapsedSeconds = (now - battleState.startTime) / 1000;
+        const durationPerQ = battleState.config.timePerQuestion;
+        const calculatedIndex = Math.floor(elapsedSeconds / durationPerQ);
+        
+        // Check if game over
+        if (calculatedIndex >= battleState.questions.length) {
+           if (battleState.hostId === currentUser?.uid) {
+               finishRTDBBattle(roomId);
+           }
+        } else {
+           const timeInCurrentQ = elapsedSeconds % durationPerQ;
+           const remaining = Math.max(0, Math.floor(durationPerQ - timeInCurrentQ));
+           
+           if (calculatedIndex !== currentQIndex) {
+               // New Question Started
+               setCurrentQIndex(calculatedIndex);
+               setHasAnswered(false);
+               setSelectedOption(null);
+               setTimeLeft(durationPerQ);
+           } else {
                setTimeLeft(remaining);
-               if (calculatedIndex !== currentQIndex) {
-                   setCurrentQIndex(calculatedIndex);
-                   setHasAnswered(false);
-                   setSelectedOption(null);
-                   // Record when new question started
-                   questionStartTimeRef.current = Date.now();
-               } else if (questionStartTimeRef.current === 0) {
-                   // Initial start
-                   questionStartTimeRef.current = Date.now();
-               }
-            }
+           }
         }
-    } else if (battleState.status === 'FINISHED') {
-        if (phase !== 'RESULT') {
-            setPhase('RESULT');
-            setShowComparison(false);
-        }
-    }
-  }, [battleState, currentQIndex, phase]); 
 
-  // --- QUEST UPDATE EFFECT ---
+        // Ticking effect for UI smoothness
+        timer = setInterval(() => {
+             setTimeLeft(prev => Math.max(0, prev - 1));
+        }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [battleState, currentQIndex, phase]);
+
+  // --- SYNC RESULTS TO MONGODB (ONCE ON FINISH) ---
+  const hasSyncedRef = useRef(false);
   useEffect(() => {
-      if (battleState && battleState.status === 'FINISHED' && phase === 'RESULT' && currentUser) {
-          const sortedPlayers = [...battleState.players].sort((a, b) => b.score - a.score);
-          const winner = sortedPlayers[0];
+      if (phase === 'RESULT' && battleState && currentUser && !hasSyncedRef.current) {
+          hasSyncedRef.current = true;
           
-          // Basic Participation Quest
-          updateQuestProgressAPI(currentUser.uid, 'PLAY_BATTLE', 1);
+          // Calculate Result
+          const players = Object.values(battleState.players) as BattlePlayer[];
+          const me = players.find(p => p.uid === currentUser.uid);
+          const opponent = players.find(p => p.uid !== currentUser.uid);
           
-          // Win Quest
-          if (winner.uid === currentUser.uid) {
-              updateQuestProgressAPI(currentUser.uid, 'WIN_BATTLE', 1);
+          if (me) {
+              const isWin = me.score > (opponent?.score || 0);
+              
+              // 1. Save Result to MongoDB (Stats)
+              const resultData = {
+                  subject: battleState.config.subjects[0] || 'General',
+                  totalQuestions: battleState.questions.length,
+                  correct: me.score / 50, // Assuming 50 pts per q
+                  wrong: 0, // Simplified for battle
+                  skipped: 0,
+                  score: me.score,
+                  topicStats: []
+              };
+              saveExamResultAPI(currentUser.uid, resultData).catch(err => console.error(err));
+
+              // 2. Update Quests
+              updateQuestProgressAPI(currentUser.uid, 'PLAY_BATTLE', 1);
+              if (isWin) updateQuestProgressAPI(currentUser.uid, 'WIN_BATTLE', 1);
           }
       }
-  }, [battleState?.status, phase]);
+  }, [phase, battleState]);
 
   // --- HANDLERS ---
+
+  const resetToMenu = () => {
+      setPhase('MENU');
+      setRoomId('');
+      setBattleState(null);
+      setHasAnswered(false);
+      setCurrentQIndex(0);
+      hasSyncedRef.current = false;
+  };
+
   const toggleSelection = (item: string, list: string[], setList: (l: string[]) => void) => {
       if (list.includes(item)) setList(list.filter(i => i !== item));
       else setList([...list, item]);
@@ -163,17 +207,45 @@ const QuizBattlePrototype: React.FC = () => {
   const handleCreate = async () => {
     if (!currentUser) return;
     if (config.subjects.length === 0) return showToast("অন্তত একটি বিষয় নির্বাচন করুন", "warning");
-    if (config.chapters.length === 0) return showToast("অন্তত একটি অধ্যায় নির্বাচন করুন", "warning");
-
+    
     setLoading(true);
     try {
-      const res = await createBattleRoom(currentUser.uid, currentUser.displayName || 'Host', userAvatar, config);
-      if (res && res.roomId) {
-        setRoomId(res.roomId);
-        setPhase('LOBBY');
+      // 1. Generate Questions First (Using existing Gemini Service)
+      const qConfig = config.subjects.map(sub => ({
+          subject: sub,
+          chapter: config.chapters[0] || 'Random', // Simplification
+          topics: [],
+          questionCount: 1 // Distribute later
+      }));
+      
+      // Generate questions or fetch from DB. For now using GenAI hook wrapper logic or mock
+      const questions = await generateQuiz(qConfig, 'HSC Academic' as any, config.questionCount);
+      
+      // 2. Create Room in RTDB
+      const newRoomId = await createRTDBRoom(
+          { uid: currentUser.uid, name: currentUser.displayName || 'Host', avatar: userAvatar },
+          config,
+          questions
+      );
+      
+      setRoomId(newRoomId);
+
+      // 3. If challenged opponent exists, send notification invite
+      if (opponentInfo) {
+          await sendNotificationAPI({
+              title: "⚔️ কুইজ ব্যাটল চ্যালেঞ্জ!",
+              message: `${currentUser.displayName || 'একজন'} আপনাকে একটি ব্যাটল চ্যালেঞ্জ পাঠিয়েছে। কোড: ${newRoomId}`,
+              type: "BATTLE_CHALLENGE",
+              target: opponentInfo.uid,
+              actionLink: "/battle",
+              metadata: { roomId: newRoomId, mode: config.mode }
+          });
+          showToast(`${opponentInfo.name}-কে ইনভাইট পাঠানো হয়েছে!`, "success");
       }
+
+      // Listener will auto-switch phase to LOBBY
     } catch (e: any) {
-      showToast(e.message || "রুম তৈরি করতে সমস্যা হয়েছে।", "error");
+      showToast(e.message || "Failed to create room", "error");
     } finally {
       setLoading(false);
     }
@@ -183,36 +255,45 @@ const QuizBattlePrototype: React.FC = () => {
     if (!currentUser || !inputRoomId) return;
     setLoading(true);
     try {
-      await joinBattleRoom(inputRoomId, currentUser.uid, currentUser.displayName || 'Player', userAvatar);
+      await joinRTDBRoom(inputRoomId, {
+          uid: currentUser.uid, 
+          name: currentUser.displayName || 'Guest', 
+          avatar: userAvatar
+      });
       setRoomId(inputRoomId);
-      setPhase('LOBBY');
-    } catch (e) {
-      showToast("রুম খুঁজে পাওয়া যায়নি।", "error");
+      // Listener will auto-switch
+    } catch (e: any) {
+      showToast(e.message || "রুম জয়েন করা যাচ্ছে না", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStart = async () => {
-    if (!currentUser || !roomId) return;
-    try { await startBattle(roomId, currentUser.uid); } 
-    catch (e) { showToast("গেম শুরু করতে সমস্যা হয়েছে।", "error"); }
+  const handleStartGame = async () => {
+      if (!roomId) return;
+      try {
+          await startRTDBBattle(roomId);
+      } catch (e) { showToast("শুরু করা যাচ্ছে না", "error"); }
   };
 
-  const handleAnswer = async (idx: number) => {
-    if (hasAnswered || !battleState || !currentUser) return;
-    setHasAnswered(true); 
-    setSelectedOption(idx);
-    
-    // Calculate time taken (seconds)
-    const timeTaken = (Date.now() - questionStartTimeRef.current) / 1000;
+  const handleAnswer = (idx: number) => {
+      if (hasAnswered || !battleState || !currentUser) return;
+      setHasAnswered(true);
+      setSelectedOption(idx);
+      
+      const q = battleState.questions[currentQIndex];
+      const isCorrect = idx === Number(q.correctAnswerIndex);
+      
+      // Optimistic UI update handled by local state, real logic sent to DB
+      submitAnswerRTDB(roomId, currentUser.uid, currentQIndex, idx, isCorrect);
+  };
 
-    const currentQ = battleState.questions[currentQIndex];
-    if (!currentQ) return;
-    const isCorrect = idx === Number(currentQ.correctAnswerIndex);
-    try {
-      await submitBattleAnswer(roomId, currentUser.uid, isCorrect, currentQIndex, idx, timeTaken);
-    } catch (e: any) { console.error("Answer submit failed", e); }
+  const handleLeaveAndCleanup = async () => {
+      if (battleState?.hostId === currentUser?.uid) {
+          // Host cleans up
+          await deleteRTDBRoom(roomId);
+      }
+      resetToMenu();
   };
 
   // --- UI RENDERERS ---
@@ -226,7 +307,7 @@ const QuizBattlePrototype: React.FC = () => {
         
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2 text-center">কুইজ ব্যাটল</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-xs text-sm">
-            বন্ধুদের চ্যালেঞ্জ জানাও, রিয়েল-টাইম কুইজ খেলো এবং জ্ঞান যাচাই করো।
+            রিয়েল-টাইম কুইজ খেলো। (ফ্রি টায়ারে একই সাথে ৫০টি ব্যাটল সম্ভব)
         </p>
 
         <div className="w-full max-w-xs space-y-3">
@@ -251,13 +332,15 @@ const QuizBattlePrototype: React.FC = () => {
         <div className="max-w-2xl mx-auto pb-20">
             <div className="flex items-center gap-2 mb-6">
                 <button onClick={() => setPhase('MENU')} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"><XCircle size={20} className="text-gray-500"/></button>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">ব্যাটল কনফিগারেশন</h2>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+                    {opponentInfo ? `ব্যাটল কনফিগারেশন vs ${opponentInfo.name}` : 'ব্যাটল কনফিগারেশন'}
+                </h2>
             </div>
             
             <div className="space-y-6">
                 {/* Subject Selection */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2"><Settings size={12}/> বিষয় নির্বাচন (একাধিক সম্ভব)</h3>
+                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2"><Settings size={12}/> বিষয় নির্বাচন</h3>
                     <div className="flex flex-wrap gap-2">
                         {Object.keys(SYLLABUS_DB).map(s => {
                             const isSelected = config.subjects.includes(s);
@@ -274,30 +357,6 @@ const QuizBattlePrototype: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Chapter Selection */}
-                {config.subjects.length > 0 && (
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <div className="flex justify-between items-center mb-3">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase">অধ্যায় নির্বাচন</h3>
-                            <button onClick={() => setConfig({...config, chapters: availableChapters})} className="text-xs text-orange-600 font-bold hover:underline">সব সিলেক্ট</button>
-                        </div>
-                        <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto custom-scrollbar p-1">
-                            {availableChapters.map(c => {
-                                const isSelected = config.chapters.includes(c);
-                                return (
-                                    <button 
-                                        key={c} 
-                                        onClick={() => toggleSelection(c, config.chapters, (l) => setConfig({...config, chapters: l}))}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border text-left transition-all ${isSelected ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-400 text-orange-700 dark:text-orange-300' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'}`}
-                                    >
-                                        {c}
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
-                )}
-
                 {/* Settings Grid */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -310,14 +369,13 @@ const QuizBattlePrototype: React.FC = () => {
                             <option value="10">১০ সেকেন্ড</option>
                             <option value="15">১৫ সেকেন্ড</option>
                             <option value="20">২০ সেকেন্ড</option>
-                            <option value="30">৩০ সেকেন্ড</option>
                         </select>
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">প্রশ্ন সংখ্যা: {config.questionCount}</label>
                         <input 
                             type="range" 
-                            min="5" max="15" 
+                            min="3" max="10" 
                             value={config.questionCount}
                             onChange={(e) => setConfig({...config, questionCount: Number(e.target.value)})}
                             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
@@ -326,14 +384,13 @@ const QuizBattlePrototype: React.FC = () => {
                 </div>
             </div>
 
-            {/* Bottom Bar */}
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t border-gray-200 dark:border-gray-800 flex justify-center md:static md:bg-transparent md:border-none md:mt-8">
                 <button 
                     onClick={handleCreate}
-                    disabled={loading || config.chapters.length === 0}
+                    disabled={loading}
                     className="w-full max-w-md py-3.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-base shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
                 >
-                    {loading ? <Loader2 className="animate-spin" /> : <><Zap size={18} fill="currentColor"/> ব্যাটল শুরু করুন</>}
+                    {loading ? <Loader2 className="animate-spin" /> : <><Zap size={18} fill="currentColor"/> {opponentInfo ? 'চ্যালেঞ্জ পাঠান' : 'ব্যাটল শুরু করুন'}</>}
                 </button>
             </div>
         </div>
@@ -345,19 +402,14 @@ const QuizBattlePrototype: React.FC = () => {
         <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700">
             <button onClick={() => setPhase('MENU')} className="mb-6 text-gray-400 hover:text-gray-900 dark:hover:text-white font-bold text-sm">← ফিরে যান</button>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">কোড দিয়ে জয়েন করুন</h2>
-            <p className="text-gray-500 text-sm mb-6">আপনার বন্ধুর শেয়ার করা ৬ ডিজিটের কোডটি লিখুন</p>
             
             <input 
                 type="text" 
                 value={inputRoomId}
                 onChange={(e) => setInputRoomId(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' && inputRoomId.length === 6) {
-                        handleJoin();
-                    }
-                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && inputRoomId.length === 6) handleJoin(); }}
                 placeholder="000000"
-                className="w-full p-4 text-center text-4xl font-mono font-bold tracking-[0.5em] border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none mb-6 bg-gray-50 dark:bg-gray-700 dark:text-white placeholder-gray-300"
+                className="w-full p-4 text-center text-4xl font-mono font-bold tracking-[0.5em] border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none mb-6 bg-gray-50 dark:bg-gray-700 dark:text-white"
             />
             
             <button 
@@ -375,8 +427,7 @@ const QuizBattlePrototype: React.FC = () => {
     if (!battleState) return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-orange-500" size={40}/></div>;
     
     const isHost = battleState.hostId === currentUser?.uid;
-    const players = battleState.players;
-    const requiredPlayers = 2; 
+    const players = Object.values(battleState.players) as BattlePlayer[];
 
     return (
         <div className="max-w-4xl mx-auto p-4 md:p-6 animate-in fade-in h-full flex flex-col">
@@ -392,11 +443,8 @@ const QuizBattlePrototype: React.FC = () => {
                 </div>
                 <div className="text-center md:text-right">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full font-bold text-sm">
-                        <Users size={16}/> {players.length} Players Joined
+                        <Users size={16}/> {players.length} Players
                     </div>
-                    <p className="text-xs text-gray-400 mt-2 font-medium">
-                        Topics: {battleState.config.chapters.length > 1 ? `${battleState.config.chapters.length} Chapters` : battleState.config.chapters[0]}
-                    </p>
                 </div>
             </div>
 
@@ -412,10 +460,8 @@ const QuizBattlePrototype: React.FC = () => {
                             )}
                         </div>
                         <p className="font-bold text-gray-800 dark:text-white text-center truncate w-full text-sm md:text-base">{p.name}</p>
-                        {p.uid === currentUser?.uid && <span className="text-[10px] uppercase font-bold text-gray-400 mt-1">You</span>}
                     </div>
                 ))}
-                
                 {Array.from({length: Math.max(0, 2 - players.length)}).map((_, i) => (
                     <div key={i} className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex items-center justify-center p-6 min-h-[140px]">
                         <p className="text-gray-400 text-sm font-bold animate-pulse">Waiting...</p>
@@ -427,12 +473,11 @@ const QuizBattlePrototype: React.FC = () => {
                 <div className="max-w-4xl mx-auto flex justify-center">
                     {isHost ? (
                         <button 
-                            onClick={handleStart}
-                            disabled={players.length < requiredPlayers || !isQuestionReady}
-                            className="w-full md:w-auto px-8 md:px-12 py-3 md:py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-bold text-lg md:text-xl shadow-xl shadow-orange-600/30 flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
+                            onClick={handleStartGame}
+                            disabled={players.length < 2}
+                            className="w-full md:w-auto px-8 md:px-12 py-3 md:py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-bold text-lg md:text-xl shadow-xl flex items-center justify-center gap-3 disabled:opacity-50 transition-all active:scale-95"
                         >
-                            {!isQuestionReady ? <Loader2 className="animate-spin"/> : <Play fill="currentColor" />} 
-                            {!isQuestionReady ? 'Preparing Questions...' : 'ব্যাটল শুরু করুন'}
+                            <Play fill="currentColor" /> ব্যাটল শুরু করুন
                         </button>
                     ) : (
                         <div className="flex items-center gap-3 text-gray-500">
@@ -450,27 +495,22 @@ const QuizBattlePrototype: React.FC = () => {
     if (!battleState || !battleState.questions[currentQIndex]) return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-orange-500"/></div>;
 
     const question = battleState.questions[currentQIndex];
-    const totalQ = battleState.config.questionCount;
-    // Sort logic handled in result, just standard sort here
-    const sortedPlayers = [...battleState.players].sort((a, b) => b.score - a.score);
+    const totalQ = battleState.questions.length;
+    const players = (Object.values(battleState.players) as BattlePlayer[]).sort((a, b) => b.score - a.score);
 
     return (
         <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
-            {/* Compact Header */}
             <div className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm z-10 shrink-0">
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">{currentQIndex + 1}/{totalQ}</span>
-                    <span className="text-xs font-bold text-orange-600 truncate max-w-[100px]">{battleState.config.subjects[0].split('(')[0]}</span>
                 </div>
                 <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${timeLeft <= 5 ? 'bg-red-50 border-red-500 text-red-600 animate-pulse' : 'bg-gray-100 dark:bg-gray-700 border-transparent text-gray-700 dark:text-gray-200'}`}>
                     <Clock size={14}/> <span className="font-mono font-bold text-sm">{timeLeft}s</span>
                 </div>
             </div>
 
-            {/* Question Area */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-20">
                 <div className="max-w-2xl mx-auto">
-                    {/* Progress Bar */}
                     <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mb-6 overflow-hidden">
                         <div className="h-full bg-orange-500 transition-all duration-1000 ease-linear" style={{ width: `${(timeLeft / battleState.config.timePerQuestion) * 100}%` }}></div>
                     </div>
@@ -487,7 +527,7 @@ const QuizBattlePrototype: React.FC = () => {
                             let btnClass = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200";
                             if (hasAnswered) {
                                 if (isSelected) btnClass = isCorrect ? "bg-green-100 border-green-500 text-green-800" : "bg-red-100 border-red-500 text-red-800";
-                                else if (isCorrect) btnClass = "bg-green-50 border-green-300 text-green-700"; // Show correct answer slightly
+                                else if (isCorrect) btnClass = "bg-green-50 border-green-300 text-green-700";
                                 else btnClass = "opacity-50 grayscale";
                             } else if (isSelected) {
                                 btnClass = "bg-orange-600 text-white border-orange-600";
@@ -512,15 +552,12 @@ const QuizBattlePrototype: React.FC = () => {
                 </div>
             </div>
 
-            {/* Compact Leaderboard Bottom Sheet */}
+            {/* Live Leaderboard */}
             <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 shrink-0 z-20">
                 <div className="flex overflow-x-auto gap-3 no-scrollbar max-w-2xl mx-auto">
-                    {sortedPlayers.map((p, idx) => (
+                    {players.map((p, idx) => (
                         <div key={p.uid} className={`flex items-center gap-2 p-1.5 pr-3 rounded-full border min-w-[120px] ${p.uid === currentUser?.uid ? 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800' : 'bg-gray-50 border-gray-100 dark:bg-gray-700 dark:border-gray-600'}`}>
-                            <div className="relative">
-                                <img src={p.avatar} className="w-8 h-8 rounded-full bg-gray-200" />
-                                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full border border-white">{idx+1}</span>
-                            </div>
+                            <img src={p.avatar} className="w-8 h-8 rounded-full bg-gray-200" />
                             <div className="flex flex-col leading-none">
                                 <span className="text-[10px] font-bold text-gray-700 dark:text-gray-200 truncate w-14">{p.name}</span>
                                 <span className="text-xs font-bold text-orange-600">{p.score}</span>
@@ -535,72 +572,22 @@ const QuizBattlePrototype: React.FC = () => {
 
   const renderResult = () => {
     if (!battleState) return null;
-    
-    // Improved Sorting Logic: Score DESC, then Time ASC
-    const sortedPlayers = [...battleState.players].sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        return (a.totalTimeTaken || 0) - (b.totalTimeTaken || 0); // Less time is better
-    });
-    
+    const sortedPlayers = (Object.values(battleState.players) as BattlePlayer[]).sort((a, b) => b.score - a.score);
     const winner = sortedPlayers[0];
     const isWinner = winner.uid === currentUser?.uid;
 
     if (showComparison) {
+        // ... (Reuse comparison logic from previous implementation if needed, adapting to RTDB structure)
         return (
             <div className="h-full bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
-                {/* Visual Analysis Header */}
                 <div className="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <button onClick={() => setShowComparison(false)} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                         <ArrowRight size={18} className="rotate-180"/> Back to Result
                     </button>
                     <h2 className="text-base font-bold text-gray-800 dark:text-white">Question Analysis</h2>
                 </div>
-
-                <div className="max-w-xl mx-auto p-4 pb-20 space-y-6">
-                    {battleState.questions.map((q, qIdx) => (
-                        <div key={qIdx} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
-                                <span className="text-xs font-bold text-gray-400 mb-1 block">Question {qIdx + 1}</span>
-                                <p className="font-bold text-gray-800 dark:text-white text-sm leading-relaxed">{q.question}</p>
-                            </div>
-                            <div className="p-2 space-y-2">
-                                {q.options.map((opt: string, optIdx: number) => {
-                                    const isCorrect = optIdx === Number(q.correctAnswerIndex);
-                                    
-                                    // Find who picked this option
-                                    const pickers = battleState.players.filter(p => {
-                                        // @ts-ignore
-                                        const ans = p.answers[qIdx.toString()];
-                                        return ans === optIdx;
-                                    });
-
-                                    return (
-                                        <div key={optIdx} className={`relative p-3 rounded-xl border flex items-center justify-between ${isCorrect ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'}`}>
-                                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCorrect ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
-                                                    {['A','B','C','D'][optIdx]}
-                                                </div>
-                                                <span className={`text-sm truncate ${isCorrect ? 'font-bold text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}>{opt}</span>
-                                            </div>
-                                            
-                                            {/* Avatars of pickers */}
-                                            <div className="flex -space-x-2 shrink-0 ml-2">
-                                                {pickers.map(p => (
-                                                    <img 
-                                                        key={p.uid} 
-                                                        src={p.avatar} 
-                                                        title={p.name}
-                                                        className={`w-6 h-6 rounded-full border-2 ${isCorrect ? 'border-green-100' : 'border-white'} shadow-sm object-cover`}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {/* Simplified analysis view */}
+                <div className="p-4 text-center text-gray-500">Analysis Mode Coming Soon for Realtime Battles</div>
             </div>
         )
     }
@@ -622,16 +609,10 @@ const QuizBattlePrototype: React.FC = () => {
                     <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-1">{winner.name}</h2>
                     <div className="flex items-center justify-center gap-3 text-sm font-medium text-gray-500 dark:text-gray-400">
                         <span className="text-orange-600 font-bold">{winner.score} Pts</span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1"><Timer size={14}/> {winner.totalTimeTaken?.toFixed(1)}s</span>
                     </div>
                 </div>
 
                 <div className="w-full max-w-sm mx-auto bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden mb-6">
-                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        <span>Rank</span>
-                        <span>Score (Time)</span>
-                    </div>
                     <div className="divide-y divide-gray-100 dark:divide-gray-700">
                         {sortedPlayers.map((p, idx) => (
                             <div key={p.uid} className={`flex items-center justify-between p-4 ${p.uid === currentUser?.uid ? 'bg-orange-50 dark:bg-orange-900/10' : ''}`}>
@@ -647,7 +628,6 @@ const QuizBattlePrototype: React.FC = () => {
                                 </div>
                                 <div className="text-right">
                                     <span className="font-mono font-bold text-gray-800 dark:text-white text-sm block">{p.score}</span>
-                                    <span className="text-[10px] text-gray-400">{p.totalTimeTaken?.toFixed(1)}s</span>
                                 </div>
                             </div>
                         ))}
@@ -657,16 +637,10 @@ const QuizBattlePrototype: React.FC = () => {
 
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t border-gray-200 dark:border-gray-800 md:static md:bg-transparent md:border-none flex flex-col gap-3 items-center">
                 <button 
-                    onClick={() => setShowComparison(true)} 
-                    className="w-full max-w-xs px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-blue-200 dark:shadow-none"
+                    onClick={handleLeaveAndCleanup} 
+                    className="w-full max-w-xs px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-95"
                 >
-                    <Eye size={16}/> View Analysis
-                </button>
-                <button 
-                    onClick={() => window.location.reload()} 
-                    className="w-full max-w-xs px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-bold hover:scale-105 transition-transform text-sm"
-                >
-                    Back to Menu
+                    <LogOut size={18}/> Leave & Close Room
                 </button>
             </div>
         </div>

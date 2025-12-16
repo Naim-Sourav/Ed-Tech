@@ -68,6 +68,11 @@ const SynapseBot: React.FC<SynapseBotProps> = ({ isOpen, onClose }) => {
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    /* MathJax Container Styling */
+    .math-content {
+        overflow-x: auto;
+        max-width: 100%;
+    }
   `;
 
   // --- CONFIG ---
@@ -115,16 +120,18 @@ Use MCQs strategically when:
 - To check if student understood your explanation`;
 
   // --- EFFECTS ---
-  useEffect(() => {
-    if (messages.length === 0 && isOpen) {
-       // Initial greeting is static in this version as per the HTML provided
-    }
-  }, [messages, isOpen]);
-
+  
+  // Trigger MathJax typesetting whenever messages change or bot opens
   useEffect(() => {
     scrollToBottom();
     if (window.MathJax && window.MathJax.typesetPromise) {
-      window.MathJax.typesetPromise().catch((err: any) => console.error(err));
+      // Delay slightly to ensure DOM is updated
+      setTimeout(() => {
+        const chatContainer = document.getElementById('synapse-chat-container');
+        if (chatContainer) {
+            window.MathJax.typesetPromise([chatContainer]).catch((err: any) => console.error('MathJax error:', err));
+        }
+      }, 100);
     }
   }, [messages, isOpen]);
 
@@ -315,7 +322,7 @@ Use MCQs strategically when:
 
       return (
           <div className="mcq-container bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4 my-3 shadow-sm">
-              <div className="mcq-question font-bold text-gray-800 dark:text-white mb-3 border-b border-dashed border-blue-200 dark:border-blue-800 pb-2">
+              <div className="mcq-question font-bold text-gray-800 dark:text-white mb-3 border-b border-dashed border-blue-200 dark:border-blue-800 pb-2 math-content">
                   {data.question}
               </div>
               <div className="space-y-2">
@@ -332,13 +339,13 @@ Use MCQs strategically when:
                       return (
                           <button key={opt.label} onClick={() => !selected && setSelected(opt.label)} disabled={!!selected} className={btnClass}>
                               <span className="font-bold min-w-[20px]">{opt.label})</span>
-                              <span>{opt.text}</span>
+                              <span className="math-content">{opt.text}</span>
                           </button>
                       );
                   })}
               </div>
               {selected && (
-                  <div className={`mcq-explanation show mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-500 rounded text-sm text-emerald-900 dark:text-emerald-100`}>
+                  <div className={`mcq-explanation show mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-500 rounded text-sm text-emerald-900 dark:text-emerald-100 math-content`}>
                       <strong>ব্যাখ্যা:</strong> {data.explanation}
                   </div>
               )}
@@ -369,7 +376,7 @@ Use MCQs strategically when:
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-[#eef2f6] dark:bg-gray-900 scroll-smooth">
+      <div id="synapse-chat-container" className="flex-1 overflow-y-auto p-4 bg-[#eef2f6] dark:bg-gray-900 scroll-smooth">
          {messages.length === 0 && (
              <div className="text-center mt-10 p-6">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-md mb-4 text-emerald-600">
@@ -390,7 +397,7 @@ Use MCQs strategically when:
                      {msg.role === 'user' ? (
                          msg.text
                      ) : (
-                         <div>
+                         <div className="math-content">
                              {parseMCQ(msg.text).map((part, idx) => (
                                  part.type === 'mcq' ? <MCQBlock key={idx} data={part.data} /> : <p key={idx} className="mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{__html: (part.content || '').replace(/\n/g, '<br/>')}}></p>
                              ))}

@@ -10,10 +10,12 @@ import {
   Focus, Activity
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { updateQuestProgressAPI } from '../services/api';
 
 const StudyTracker: React.FC = () => {
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   
   // --- Global State ---
   const [view, setView] = useState<'DASHBOARD' | 'HISTORY' | 'PLANNER'>('DASHBOARD');
@@ -117,7 +119,7 @@ const StudyTracker: React.FC = () => {
     if (!activeSession) return;
 
     if (elapsedSeconds < 10) { 
-      if (!window.confirm("খুব অল্প সময়ের সেশন (১০ সেকেন্ডের কম)। আপনি কি এটি বাতিল করতে চান?")) {
+      if (!window.confirm("Session less than 10 seconds. Discard?")) {
         return;
       }
       setActiveSession(null);
@@ -261,38 +263,38 @@ const StudyTracker: React.FC = () => {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
 
         {/* Content */}
-        <div className="relative z-10 w-full max-w-md p-8 flex flex-col items-center text-center">
+        <div className="relative z-10 w-full max-w-md p-6 flex flex-col items-center text-center">
             
             {/* Subject Badge */}
-            <div className={`mb-8 px-4 py-1.5 rounded-full ${style.bg} ${style.color} font-bold text-sm border ${style.border} dark:border-transparent flex items-center gap-2 shadow-sm`}>
-               <BookOpen size={16} />
+            <div className={`mb-6 px-3 py-1 rounded-full ${style.bg} ${style.color} font-bold text-xs border ${style.border} dark:border-transparent flex items-center gap-2 shadow-sm`}>
+               <BookOpen size={14} />
                {activeSession.subject.split('(')[0]}
             </div>
 
-            {/* Timer Ring Animation */}
-            <div className="relative mb-12">
+            {/* Timer Ring Animation - Scaled down for mobile */}
+            <div className="relative mb-8">
                <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${style.bg.replace('100', '500')}`}></div>
-               <div className={`relative w-64 h-64 rounded-full border-8 ${style.color.replace('text-', 'border-').replace('600', '100').replace('400', '800')} flex items-center justify-center bg-white dark:bg-gray-800 shadow-2xl`}>
+               <div className={`relative w-56 h-56 md:w-64 md:h-64 rounded-full border-8 ${style.color.replace('text-', 'border-').replace('600', '100').replace('400', '800')} flex items-center justify-center bg-white dark:bg-gray-800 shadow-2xl`}>
                   <div className="space-y-1">
-                      <span className="block text-5xl font-mono font-bold text-gray-800 dark:text-white tracking-tighter">
+                      <span className="block text-4xl md:text-5xl font-mono font-bold text-gray-800 dark:text-white tracking-tighter">
                           {formatTime(elapsedSeconds)}
                       </span>
-                      <span className="block text-xs text-gray-400 uppercase tracking-widest font-semibold">Focus Time</span>
+                      <span className="block text-[10px] md:text-xs text-gray-400 uppercase tracking-widest font-semibold">Focus Time</span>
                   </div>
                </div>
             </div>
 
             {/* Topic Input */}
-            <div className="w-full mb-10 group">
+            <div className="w-full mb-8 group">
                 <div className="relative">
                     <input 
                       type="text" 
                       value={activeSession.topic}
                       onChange={(e) => updateTimerTopic(e.target.value)}
-                      placeholder="আজকের টপিক কি?"
-                      className="w-full bg-transparent text-center text-xl font-medium text-gray-800 dark:text-gray-100 placeholder-gray-400 border-b-2 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-primary focus:outline-none py-2 transition-all"
+                      placeholder="Current Topic?"
+                      className="w-full bg-transparent text-center text-lg md:text-xl font-medium text-gray-800 dark:text-gray-100 placeholder-gray-400 border-b-2 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:border-primary focus:outline-none py-2 transition-all"
                     />
-                    <PenLine size={16} className="absolute right-0 top-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <PenLine size={14} className="absolute right-4 top-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
             </div>
 
@@ -302,33 +304,33 @@ const StudyTracker: React.FC = () => {
                  onClick={() => setIsFocusMode(false)} 
                  className="flex flex-col items-center gap-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                >
-                 <div className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <Minimize2 size={20} />
+                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <Minimize2 size={18} />
                  </div>
-                 <span className="text-xs font-bold">মিনিমাইজ</span>
+                 <span className="text-[10px] font-bold">Minimize</span>
                </button>
 
                <button 
                  onClick={stopSession}
                  className="flex flex-col items-center gap-2 group"
                >
-                 <div className="w-20 h-20 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-200 dark:shadow-red-900/30 group-hover:scale-110 group-active:scale-95 transition-all duration-300">
-                    <StopCircle size={32} fill="currentColor" />
+                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-200 dark:shadow-red-900/30 group-hover:scale-110 group-active:scale-95 transition-all duration-300">
+                    <StopCircle size={28} fill="currentColor" />
                  </div>
-                 <span className="text-sm font-bold text-red-500">শেষ করুন</span>
+                 <span className="text-xs font-bold text-red-500">Finish</span>
                </button>
 
                <button 
                  className="flex flex-col items-center gap-2 text-gray-400 cursor-not-allowed opacity-50"
                >
-                 <div className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-white dark:bg-gray-800">
-                    <Pause size={20} fill="currentColor" />
+                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-white dark:bg-gray-800">
+                    <Pause size={18} fill="currentColor" />
                  </div>
-                 <span className="text-xs font-bold">বিরতি</span>
+                 <span className="text-[10px] font-bold">Pause</span>
                </button>
             </div>
 
-            <p className="mt-8 text-xs text-gray-400 animate-pulse">
+            <p className="mt-6 text-[10px] text-gray-400 animate-pulse">
                Do not disturb mode recommended
             </p>
         </div>
@@ -340,26 +342,26 @@ const StudyTracker: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden relative transition-colors">
       
-      {/* Header Summary Card */}
-      <div className="p-4 md:p-6 pb-0">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-6 w-full md:w-auto">
+      {/* Header Summary Card - Compact Padding */}
+      <div className="p-4 pb-0">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4 w-full md:w-auto">
                  {/* Progress Ring */}
-                 <div className="relative w-24 h-24 shrink-0">
+                 <div className="relative w-16 h-16 md:w-24 md:h-24 shrink-0">
                     <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-100 dark:text-gray-700" />
-                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={251.2} strokeDashoffset={251.2 - ((Math.min(totalMinutesToday / (dailyGoal * 60), 1)) * 251.2)} className="text-primary dark:text-green-500 transition-all duration-1000 ease-out" strokeLinecap="round" />
+                        <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-100 dark:text-gray-700" />
+                        <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={251.2} strokeDashoffset={251.2 - ((Math.min(totalMinutesToday / (dailyGoal * 60), 1)) * 251.2)} className="text-primary dark:text-green-500 transition-all duration-1000 ease-out" strokeLinecap="round" />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xl font-bold text-gray-800 dark:text-white">{Math.round((totalMinutesToday / (dailyGoal * 60)) * 100)}%</span>
+                        <span className="text-sm md:text-xl font-bold text-gray-800 dark:text-white">{Math.round((totalMinutesToday / (dailyGoal * 60)) * 100)}%</span>
                     </div>
                  </div>
                  <div>
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-1">আজকের অগ্রগতি</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{formatMinimalTime(totalMinutesToday)} / {dailyGoal}h Goal</p>
+                    <h2 className="text-base md:text-xl font-bold text-gray-800 dark:text-white mb-0.5">{t('tracker_today_progress')}</h2>
+                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-2">{formatMinimalTime(totalMinutesToday)} / {dailyGoal}h Goal</p>
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-lg text-xs font-bold">
-                            <Flame size={12} fill="currentColor" /> {streak} Day Streak
+                        <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg text-[10px] md:text-xs font-bold">
+                            <Flame size={10} fill="currentColor" /> {streak} Day Streak
                         </div>
                     </div>
                  </div>
@@ -368,9 +370,9 @@ const StudyTracker: React.FC = () => {
               {activeSession && (
                   <button 
                     onClick={() => setIsFocusMode(true)}
-                    className="w-full md:w-auto bg-primary dark:bg-green-600 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-200 dark:shadow-green-900/20 animate-pulse"
+                    className="w-full md:w-auto bg-primary dark:bg-green-600 text-white px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-200 dark:shadow-green-900/20 animate-pulse text-sm"
                   >
-                     <Maximize2 size={18} /> ফোকাস মোডে যান
+                     <Maximize2 size={16} /> {t('tracker_focus_mode')}
                   </button>
               )}
           </div>
@@ -379,16 +381,16 @@ const StudyTracker: React.FC = () => {
       {/* Main Content Scroll Area */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth space-y-6">
           
-          {/* View Toggle */}
-          <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-xl w-fit">
-              <button onClick={() => setView('DASHBOARD')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${view === 'DASHBOARD' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>
-                  <LayoutDashboard size={16} /> ড্যাশবোর্ড
+          {/* View Toggle - Smaller */}
+          <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-lg w-fit">
+              <button onClick={() => setView('DASHBOARD')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'DASHBOARD' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>
+                  <LayoutDashboard size={14} /> {t('tracker_dashboard')}
               </button>
-              <button onClick={() => setView('PLANNER')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${view === 'PLANNER' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>
-                  <ListTodo size={16} /> প্ল্যানার
+              <button onClick={() => setView('PLANNER')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'PLANNER' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>
+                  <ListTodo size={14} /> {t('tracker_planner')}
               </button>
-              <button onClick={() => setView('HISTORY')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${view === 'HISTORY' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>
-                  <History size={16} /> হিস্টোরি
+              <button onClick={() => setView('HISTORY')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${view === 'HISTORY' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>
+                  <History size={14} /> {t('tracker_history')}
               </button>
           </div>
 
@@ -396,8 +398,8 @@ const StudyTracker: React.FC = () => {
               <>
                 {/* Subject Grid */}
                 <div>
-                    <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2"><Zap size={18} className="text-yellow-500"/> দ্রুত শুরু করুন</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2 text-sm"><Zap size={16} className="text-yellow-500"/> {t('tracker_quick_start')}</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {Object.values(Subject).map((subj) => {
                             const minutes = subjectTimesToday[subj] || 0;
                             const style = getSubjectStyle(subj);
@@ -407,15 +409,15 @@ const StudyTracker: React.FC = () => {
                                 <button 
                                     key={subj}
                                     onClick={() => isActive ? setIsFocusMode(true) : startSession(subj)}
-                                    className={`relative p-4 rounded-2xl border text-left transition-all duration-300 group hover:shadow-md ${isActive ? 'bg-white dark:bg-gray-800 border-primary dark:border-green-500 ring-1 ring-primary dark:ring-green-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}
+                                    className={`relative p-3 rounded-xl border text-left transition-all duration-300 group hover:shadow-md ${isActive ? 'bg-white dark:bg-gray-800 border-primary dark:border-green-500 ring-1 ring-primary dark:ring-green-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}
                                 >
-                                    <div className={`w-10 h-10 rounded-lg ${style.bg} ${style.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                                        {isActive ? <Activity size={20} className="animate-pulse"/> : <Play size={20} className="ml-0.5"/>}
+                                    <div className={`w-8 h-8 rounded-lg ${style.bg} ${style.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
+                                        {isActive ? <Activity size={16} className="animate-pulse"/> : <Play size={16} className="ml-0.5"/>}
                                     </div>
-                                    <h4 className="font-bold text-gray-800 dark:text-white text-sm truncate">{subj.split('(')[0]}</h4>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{minutes > 0 ? `${formatMinimalTime(minutes)} Today` : 'Start now'}</p>
+                                    <h4 className="font-bold text-gray-800 dark:text-white text-xs truncate">{subj.split('(')[0]}</h4>
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{minutes > 0 ? `${formatMinimalTime(minutes)} Today` : 'Start now'}</p>
                                     
-                                    {isActive && <div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>}
+                                    {isActive && <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></div>}
                                 </button>
                             )
                         })}
@@ -423,24 +425,24 @@ const StudyTracker: React.FC = () => {
                 </div>
 
                 {/* Mini Planner */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><CheckSquare size={18} className="text-primary dark:text-green-400"/> বাকি কাজসমূহ</h3>
-                        <button onClick={() => setView('PLANNER')} className="text-xs font-bold text-primary dark:text-green-400 hover:underline">সব দেখুন</button>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm"><CheckSquare size={16} className="text-primary dark:text-green-400"/> {t('tracker_tasks')}</h3>
+                        <button onClick={() => setView('PLANNER')} className="text-[10px] font-bold text-primary dark:text-green-400 hover:underline">{t('view_all')}</button>
                     </div>
                     <div className="space-y-2">
                         {todos.filter(t => !t.completed).slice(0, 3).map(todo => (
-                            <div key={todo.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
-                                <button onClick={() => toggleTodo(todo.id)} className="text-gray-400 hover:text-primary dark:hover:text-green-400"><Square size={20} /></button>
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{todo.text}</span>
+                            <div key={todo.id} className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                <button onClick={() => toggleTodo(todo.id)} className="text-gray-400 hover:text-primary dark:hover:text-green-400"><Square size={16} /></button>
+                                <span className="text-xs font-medium text-gray-700 dark:text-gray-200">{todo.text}</span>
                             </div>
                         ))}
                         {todos.filter(t => !t.completed).length === 0 && (
-                            <p className="text-sm text-gray-400 text-center py-4">কোনো পেন্ডিং কাজ নেই। গ্রেট জব!</p>
+                            <p className="text-xs text-gray-400 text-center py-4">No pending tasks. Great job!</p>
                         )}
                         <form onSubmit={handleAddTodo} className="flex gap-2 mt-2">
-                            <input name="todoText" type="text" placeholder="নতুন টাস্ক..." className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary dark:text-white"/>
-                            <button type="submit" className="bg-gray-900 dark:bg-gray-700 text-white p-2 rounded-lg hover:bg-black"><Plus size={18}/></button>
+                            <input name="todoText" type="text" placeholder={t('tracker_add_task')} className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-primary dark:text-white"/>
+                            <button type="submit" className="bg-gray-900 dark:bg-gray-700 text-white p-2 rounded-lg hover:bg-black"><Plus size={14}/></button>
                         </form>
                     </div>
                 </div>
@@ -448,48 +450,48 @@ const StudyTracker: React.FC = () => {
           )}
 
           {view === 'PLANNER' && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 min-h-[500px]">
-                 <div className="flex items-center gap-2 mb-6">
-                    <ListTodo size={24} className="text-primary dark:text-green-400" />
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">পড়ার রুটিন</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 md:p-6 min-h-[500px]">
+                 <div className="flex items-center gap-2 mb-4">
+                    <ListTodo size={20} className="text-primary dark:text-green-400" />
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-white">{t('tracker_planner')}</h3>
                  </div>
                  
-                 <form onSubmit={handleAddTodo} className="flex gap-3 mb-8">
+                 <form onSubmit={handleAddTodo} className="flex gap-2 mb-6">
                    <input 
                      name="todoText"
                      type="text" 
-                     placeholder="নতুন টাস্ক যোগ করুন..." 
-                     className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                     placeholder={t('tracker_add_task')} 
+                     className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary dark:text-white text-sm"
                    />
-                   <button type="submit" className="bg-primary hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white p-3 rounded-xl transition-colors shadow-lg shadow-green-200 dark:shadow-none">
-                     <Plus size={24} />
+                   <button type="submit" className="bg-primary hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white p-2.5 rounded-xl transition-colors shadow-lg shadow-green-200 dark:shadow-none">
+                     <Plus size={20} />
                    </button>
                  </form>
 
-                 <div className="space-y-3">
+                 <div className="space-y-2">
                    {todos.map(todo => (
                      <div key={todo.id} className={`group flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${todo.completed ? 'bg-gray-50 dark:bg-gray-800/50 border-transparent opacity-60' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:shadow-sm'}`}>
                        <button 
                          onClick={() => toggleTodo(todo.id)}
                          className={`transition-colors duration-300 ${todo.completed ? 'text-primary dark:text-green-400' : 'text-gray-300 dark:text-gray-600 hover:text-gray-400'}`}
                        >
-                         {todo.completed ? <CheckSquare size={24} /> : <Square size={24} />}
+                         {todo.completed ? <CheckSquare size={20} /> : <Square size={20} />}
                        </button>
-                       <span className={`flex-1 text-base transition-all duration-300 ${todo.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}>
+                       <span className={`flex-1 text-sm transition-all duration-300 ${todo.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}>
                          {todo.text}
                        </span>
                        <button 
                          onClick={() => deleteTodo(todo.id)}
                          className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                        >
-                         <Trash2 size={18} />
+                         <Trash2 size={16} />
                        </button>
                      </div>
                    ))}
                    {todos.length === 0 && (
                      <div className="text-center py-10 text-gray-400">
-                        <CheckSquare size={48} className="mx-auto mb-2 opacity-20" />
-                        <p>কোনো টাস্ক নেই। শুরু করতে একটি যোগ করুন!</p>
+                        <CheckSquare size={40} className="mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">No tasks yet. Add one to get started!</p>
                      </div>
                    )}
                  </div>
@@ -497,29 +499,29 @@ const StudyTracker: React.FC = () => {
           )}
 
           {view === 'HISTORY' && (
-              <div className="space-y-4">
-                  <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                      <History size={20} className="text-primary"/> সেশন হিস্টোরি
+              <div className="space-y-3">
+                  <h3 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2 text-sm">
+                      <History size={16} className="text-primary"/> {t('tracker_session_history')}
                   </h3>
                   
                   {sessions.length === 0 ? (
                       <div className="text-center py-12 text-gray-500 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                          <p>কোনো স্টাডি সেশন রেকর্ড করা হয়নি।</p>
+                          <p className="text-sm">No study sessions recorded.</p>
                       </div>
                   ) : (
                       sessions.map((session) => (
-                          <div key={session.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm hover:shadow-md transition-shadow">
-                              <div className="flex items-center gap-4">
-                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getSubjectStyle(session.subject).bg} ${getSubjectStyle(session.subject).color}`}>
-                                      <Clock size={18} />
+                          <div key={session.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm hover:shadow-md transition-shadow">
+                              <div className="flex items-center gap-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getSubjectStyle(session.subject).bg} ${getSubjectStyle(session.subject).color}`}>
+                                      <Clock size={14} />
                                   </div>
                                   <div>
-                                      <h4 className="font-bold text-gray-800 dark:text-white text-sm">{session.subject.split('(')[0]}</h4>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400">{session.topic || 'No Topic'}</p>
+                                      <h4 className="font-bold text-gray-800 dark:text-white text-xs">{session.subject.split('(')[0]}</h4>
+                                      <p className="text-[10px] text-gray-500 dark:text-gray-400">{session.topic || 'No Topic'}</p>
                                   </div>
                               </div>
                               <div className="text-right">
-                                  <span className="block font-bold text-gray-800 dark:text-white">{formatMinimalTime(session.durationMinutes)}</span>
+                                  <span className="block font-bold text-gray-800 dark:text-white text-sm">{formatMinimalTime(session.durationMinutes)}</span>
                                   <span className="text-[10px] text-gray-400">{new Date(session.timestamp).toLocaleDateString()}</span>
                               </div>
                           </div>

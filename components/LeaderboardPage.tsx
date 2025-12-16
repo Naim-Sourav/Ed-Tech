@@ -130,7 +130,7 @@ const LeaderboardPage: React.FC = () => {
                             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-700 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg border border-slate-600">#2</div>
                          </div>
                          <div className="text-center mb-2">
-                            <p className="font-bold text-xs md:text-sm text-slate-200 truncate w-20">{top3[1].displayName.split(' ')[0]}</p>
+                            <p className="font-bold text-xs md:text-sm text-slate-200 truncate w-20">{(top3[1].displayName || 'User').split(' ')[0]}</p>
                             <p className="text-[10px] md:text-xs text-slate-400 font-bold">{top3[1].points} pts</p>
                          </div>
                          <div className="w-full h-24 md:h-28 bg-gradient-to-t from-slate-800/80 to-slate-700/30 rounded-t-2xl border-t border-slate-500/20 backdrop-blur-sm relative overflow-hidden group">
@@ -150,7 +150,7 @@ const LeaderboardPage: React.FC = () => {
                             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-yellow-500 text-yellow-950 text-xs font-bold px-3 py-0.5 rounded shadow-lg border border-yellow-400">#1</div>
                          </div>
                          <div className="text-center mb-3 mt-1">
-                            <p className="font-bold text-sm md:text-base text-yellow-100 truncate w-28">{top3[0].displayName.split(' ')[0]}</p>
+                            <p className="font-bold text-sm md:text-base text-yellow-100 truncate w-28">{(top3[0].displayName || 'User').split(' ')[0]}</p>
                             <p className="text-xs text-yellow-500 font-bold">{top3[0].points} pts</p>
                          </div>
                          <div className="w-full h-32 md:h-40 bg-gradient-to-t from-yellow-900/40 to-yellow-600/10 rounded-t-2xl border-t border-yellow-500/20 backdrop-blur-md relative overflow-hidden group shadow-[0_-10px_40px_-15px_rgba(234,179,8,0.1)]">
@@ -172,7 +172,7 @@ const LeaderboardPage: React.FC = () => {
                             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-amber-800 text-amber-100 text-[10px] font-bold px-2 py-0.5 rounded shadow-lg border border-amber-700">#3</div>
                          </div>
                          <div className="text-center mb-2">
-                            <p className="font-bold text-xs md:text-sm text-slate-200 truncate w-20">{top3[2].displayName.split(' ')[0]}</p>
+                            <p className="font-bold text-xs md:text-sm text-slate-200 truncate w-20">{(top3[2].displayName || 'User').split(' ')[0]}</p>
                             <p className="text-[10px] md:text-xs text-amber-600 font-bold">{top3[2].points} pts</p>
                          </div>
                          <div className="w-full h-20 md:h-24 bg-gradient-to-t from-amber-900/60 to-amber-800/20 rounded-t-2xl border-t border-amber-600/20 backdrop-blur-sm relative overflow-hidden group">
@@ -207,7 +207,7 @@ const LeaderboardPage: React.FC = () => {
                             </div>
                             <div className="flex-1">
                                 <p className={`font-bold text-sm ${isMe ? 'text-white' : 'text-slate-300'}`}>
-                                {u.displayName}
+                                {u.displayName || 'User'}
                                 {isMe && <span className="ml-2 text-[9px] bg-indigo-500 text-white px-1.5 py-0.5 rounded font-bold tracking-wide uppercase">YOU</span>}
                                 </p>
                             </div>
