@@ -1,16 +1,31 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dopamine | HSC & Admission AI Tutor</title>
+    <title>Dhrubok | HSC & Admission AI Tutor</title>
     
-    <!-- SEO & Social Sharing Tags -->
-    <meta name="description" content="An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students featuring concept explanation, quiz generation, and admission information." />
-    <meta property="og:title" content="Dopamine - HSC & Admission Prep" />
-    <meta property="og:description" content="Your personal AI tutor for Physics, Chemistry, Math, Biology and Admission Tests." />
+    <!-- Standard SEO -->
+    <meta name="description" content="Dhrubok (ধ্রুবক) - An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students featuring concept explanation, quiz generation, and admission information." />
+    <meta name="keywords" content="HSC, Admission, Bangladesh, AI Tutor, Quiz, Medical, Engineering, University, Dhrubok, Dhruobo" />
+    <meta name="author" content="Dhrubok Team" />
+
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://shikkha-shohayok.web.app/" />
+    <meta property="og:title" content="Dhrubok - HSC & Admission Prep" />
+    <meta property="og:description" content="Your personal AI tutor for Physics, Chemistry, Math, Biology and Admission Tests. Join thousands of students today!" />
     <meta property="og:image" content="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://shikkha-shohayok.web.app/" />
+    <meta property="twitter:title" content="Dhrubok - HSC & Admission Prep" />
+    <meta property="twitter:description" content="An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students." />
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop" />
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -116,7 +131,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 40px;
+        font-size: 32px;
         font-weight: bold;
         color: #1565C0; /* Blue */
         box-shadow: 0 10px 25px rgba(21, 101, 192, 0.2);
@@ -148,20 +163,20 @@
         50% { transform: scale(1.05); }
       }
     </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
-    "vite": "https://aistudiocdn.com/vite@^7.2.6",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.10.1",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.10.1",
+    "vite": "https://esm.sh/vite@^7.2.7",
+    "firebase/": "https://esm.sh/firebase@^12.6.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "path": "https://esm.sh/path@^0.12.7",
     "react-easy-crop": "https://esm.sh/react-easy-crop@^5.5.6"
   }
 }
@@ -172,9 +187,9 @@
     <div id="root" class="h-full">
       <!-- Initial Loading State (Visible immediately before React loads) -->
       <div id="app-loading">
-        <div class="logo-box">ডো</div>
+        <div class="logo-box">ধ্রু</div>
         <div class="spinner"></div>
-        <p class="loading-text">ডোপামিন লোড হচ্ছে...</p>
+        <p class="loading-text">ধ্রুবক লোড হচ্ছে...</p>
       </div>
     </div>
     <script type="module" src="/index.tsx"></script>

@@ -32,6 +32,16 @@ export interface QuizQuestion {
   chapter?: string;
   topic?: string;
   difficulty?: string;
+  examRef?: string;
+}
+
+export interface QuestionPaperMetadata {
+  id: string;
+  title: string;
+  year: string;
+  source: string; // Medical, Engineering, etc.
+  totalQuestions: number;
+  time: number;
 }
 
 export interface QuizConfig {
@@ -108,8 +118,11 @@ export interface Notification {
   title: string;
   message: string;
   date: number;
-  type: 'INFO' | 'WARNING' | 'SUCCESS';
+  type: 'INFO' | 'WARNING' | 'SUCCESS' | 'BATTLE_CHALLENGE' | 'BATTLE_RESULT';
   read?: boolean;
+  actionLink?: string;
+  metadata?: any;
+  target?: string;
 }
 
 export interface LeaderboardUser {
@@ -152,7 +165,8 @@ export interface Quest {
   claimed: boolean;
   icon?: string;
   link?: string;
-  category: 'DAILY' | 'WEEKLY';
+  category: 'DAILY' | 'WEEKLY' | 'LIFETIME';
+  difficulty?: 'NOVICE' | 'APPRENTICE' | 'ELITE' | 'MASTER' | 'LEGEND';
 }
 
 export interface QuestTemplate {
@@ -164,6 +178,6 @@ export interface QuestTemplate {
   reward: number;
   icon: string;
   link: string;
-  category: 'DAILY' | 'WEEKLY';
+  category: 'DAILY' | 'WEEKLY' | 'LIFETIME';
   isActive: boolean;
 }
