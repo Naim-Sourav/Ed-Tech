@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../services/firebase';
-import { onAuthStateChanged, User, signOut, updateProfile, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { auth, googleProvider } from '../services/firebase';
+import { onAuthStateChanged, User, signOut, updateProfile, setPersistence, browserLocalPersistence, signInWithPopup } from 'firebase/auth';
 import { syncUserToMongoDB, fetchUserEnrollments, fetchUserStatsAPI } from '../services/api';
 
 export interface EnrolledCourse {
@@ -15,6 +15,7 @@ export interface UserProfileExtended {
   hscBatch?: string;
   department?: string;
   target?: string;
+  phoneNumber?: string;
 }
 
 interface AuthContextType {
@@ -23,10 +24,13 @@ interface AuthContextType {
   enrolledCourses: EnrolledCourse[];
   extendedProfile: UserProfileExtended | null;
   loading: boolean;
+  profileLoading: boolean; // New Flag to track API fetch status
+  isProfileComplete: boolean;
   logout: () => Promise<void>;
   updateUserProfile: (name: string, photoURL: string, additionalData?: UserProfileExtended) => Promise<void>;
   enrollInCourse: (course: EnrolledCourse) => void;
   isEnrolled: (contentId: string) => boolean;
+  loginWithGoogle: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,13 +43,21 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Firebase Auth Loading
+  const [profileLoading, setProfileLoading] = useState(true); // Profile Data Fetching Loading
   const [userAvatar, setUserAvatar] = useState<string>('default');
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [extendedProfile, setExtendedProfile] = useState<UserProfileExtended | null>(null);
 
+  // Derive profile completion status
+  const isProfileComplete = React.useMemo(() => {
+      if (!currentUser) return false;
+      // If profile is still loading, we can't determine completion yet, assume false but handled by UI
+      if (!extendedProfile) return false;
+      return !!(extendedProfile.target && extendedProfile.college);
+  }, [currentUser, extendedProfile]);
+
   useEffect(() => {
-    // Explicitly set persistence to local storage
     setPersistence(auth, browserLocalPersistence)
       .catch((error) => {
         console.error("Failed to set auth persistence:", error);
@@ -55,37 +67,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentUser(user);
       
       if (user) {
+        setProfileLoading(true); // Start profile loading
         if (user.photoURL) {
           setUserAvatar(user.photoURL);
         }
 
-        // 1. Fetch Enrollments & Stats (to get profile info)
         try {
-           const courses = await fetchUserEnrollments(user.uid);
+           // Parallel fetching for speed
+           const [courses, stats] = await Promise.all([
+               fetchUserEnrollments(user.uid),
+               fetchUserStatsAPI(user.uid),
+               // Initial Sync (fire and forget, don't await strictly if not needed for UI immediately, but safer to await)
+               syncUserToMongoDB(user) 
+           ]);
+
            setEnrolledCourses(courses);
            
-           // Fetch stats to get extended profile data stored in MongoDB
-           const stats = await fetchUserStatsAPI(user.uid);
            if (stats && stats.user) {
                setExtendedProfile({
                    college: stats.user.college,
                    hscBatch: stats.user.hscBatch,
                    department: stats.user.department,
-                   target: stats.user.target
+                   target: stats.user.target,
+                   phoneNumber: stats.user.phoneNumber
                });
            }
-           
-           // Initial Sync (Just to ensure basics are there)
-           syncUserToMongoDB(user);
-
         } catch (err) {
            console.error("Error loading user data", err);
+        } finally {
+           setProfileLoading(false); // Data fetch done (success or fail)
+           setLoading(false); // Auth check done
         }
-        setLoading(false);
 
       } else {
         setEnrolledCourses([]);
         setExtendedProfile(null);
+        setProfileLoading(false);
         setLoading(false);
       }
     });
@@ -94,6 +111,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       unsubscribeAuth();
     };
   }, []);
+
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      return result.user;
+    } catch (error) {
+      console.error("Google Login Error", error);
+      throw error;
+    }
+  };
 
   const logout = () => signOut(auth);
 
@@ -107,16 +134,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserAvatar(photoURL);
       
       if (additionalData) {
-          setExtendedProfile(additionalData);
+          setExtendedProfile(prev => ({ ...prev, ...additionalData }));
       }
 
       // Sync update to MongoDB including extended fields
-      syncUserToMongoDB({ 
+      await syncUserToMongoDB({ 
           ...auth.currentUser, 
           displayName: name, 
-          photoURL: photoURL,
-          ...(additionalData || {})
-      });
+          photoURL: photoURL
+      }, additionalData);
     }
   };
 
@@ -131,13 +157,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = { 
     currentUser, 
     loading, 
+    profileLoading,
     logout, 
     userAvatar, 
     enrolledCourses,
     extendedProfile,
+    isProfileComplete,
     updateUserProfile,
     enrollInCourse,
-    isEnrolled
+    isEnrolled,
+    loginWithGoogle
   };
 
   return (
