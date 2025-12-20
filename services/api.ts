@@ -101,7 +101,8 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
   } catch (error: any) {
     // 3. Fallback Mechanism
     if (fallback !== null && fallback !== undefined) {
-        console.warn(`API Error (${endpoint}): ${error.message}. Using Fallback Data.`);
+        // Log as info instead of warn to reduce noise for expected 404s
+        console.info(`[API Fallback] ${endpoint}: ${error.message}`);
         return fallback;
     }
     throw error;

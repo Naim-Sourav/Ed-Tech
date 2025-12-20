@@ -2,17 +2,38 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { QuizQuestion, Subject, AdmissionResult, SearchSource, ExamStandard, QuizConfig, DifficultyLevel } from "../types";
 
+// Helper to safely get Env Variable in any environment (Vite, Next, Node, etc.)
+const getEnvKey = () => {
+  try {
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_KEY;
+    }
+  } catch (e) {}
+  
+  try {
+    // @ts-ignore
+    if (typeof process !== 'undefined' && process.env) {
+      // @ts-ignore
+      return process.env.VITE_API_KEY || process.env.API_KEY;
+    }
+  } catch (e) {}
+  
+  return undefined;
+};
+
 // API Key Rotation Pool
 const API_KEYS = [
-  // @ts-ignore: process.env is replaced by bundler
-  process.env.API_KEY,
+  getEnvKey(),
   "AIzaSyBNJxFT8X1ldhADeCUNXpRp-b2k2uM2RIw",
   "AIzaSyA3Z-b1YZfuHc-e2leBTOiKkGWLawLsRvw",
   "AIzaSyBgVW3lgdx67iuDAdzT1AXFXx5RNmeJXt0"
 ].filter((key) => key && key.startsWith('AIzaSy'));
 
 const getClient = () => {
-  const apiKey = API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
+  // Use the first valid key (Env key has priority if set)
+  const apiKey = API_KEYS[0] || API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
   if (!apiKey) {
     console.warn("API Key is missing. AI features will not work.");
   }

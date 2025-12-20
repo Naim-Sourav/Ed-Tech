@@ -1,5 +1,5 @@
 
-import { ref, set, get, update, remove, onValue, off, runTransaction, child } from "firebase/database";
+import { ref, set, get, update, remove, onValue, off, runTransaction, child, serverTimestamp } from "firebase/database";
 import { rtdb } from "./firebase";
 import { QuizQuestion } from "../types";
 
@@ -20,8 +20,8 @@ export interface BattleRoom {
   config: any;
   questions: QuizQuestion[];
   players: Record<string, BattlePlayer>;
-  startTime: number;
-  createdAt: number;
+  startTime: number; 
+  createdAt: object; // Changed to object to support serverTimestamp placeholder
 }
 
 // --- ACTIONS ---
@@ -41,7 +41,7 @@ export const createRTDBRoom = async (
     config,
     questions,
     startTime: 0,
-    createdAt: Date.now(),
+    createdAt: serverTimestamp(), // Use server time
     players: {
       [host.uid]: {
         uid: host.uid,
@@ -70,7 +70,6 @@ export const joinRTDBRoom = async (
 
   if (data.status !== 'WAITING') throw new Error("Battle already started");
   
-  // Use update to add player without overwriting
   const playerRef = child(roomRef, `players/${player.uid}`);
   await set(playerRef, {
     uid: player.uid,
@@ -84,9 +83,27 @@ export const joinRTDBRoom = async (
 
 export const startRTDBBattle = async (roomId: string) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
+  
+  // We use serverTimestamp to set the start time. 
+  // However, we want a buffer (e.g. 3 seconds delay). 
+  // Since we can't do `serverTimestamp() + 3000` directly in the write,
+  // We fetch the estimated server time first via offset on the client triggering this,
+  // OR simpler: Set startTime to a future timestamp based on current estimated server time.
+  
+  // Best approach for sync: Write the OFFSET, handled in client. 
+  // Here we will simply set it.
+  
+  // Note: For perfect sync, we grab the server time estimate from the client triggering it.
+  // But to keep service clean, we use Date.now() + offset logic in the component, or utilize a trigger.
+  // Here we will stick to a robust client-initiated timestamp which works if client is synced.
+  // Actually, let's use a trick: Set startTime to Date.now() + 3000 BUT the client will correct it using .info/serverTimeOffset
+  
+  const estimatedServerTime = Date.now(); // This will be corrected by offset in UI
+  const startGameTime = estimatedServerTime + 3000; 
+
   await update(roomRef, {
     status: 'ACTIVE',
-    startTime: Date.now() + 3000 // 3 seconds buffer/countdown
+    startTime: startGameTime
   });
 };
 
@@ -99,30 +116,25 @@ export const submitAnswerRTDB = async (
 ) => {
   const playerRef = ref(rtdb, `battles/${roomId}/players/${userId}`);
   
-  // Transaction to ensure score integrity
   await runTransaction(playerRef, (player) => {
     if (player) {
       if (!player.answers) player.answers = {};
-      
-      // If already answered this question, ignore
       if (player.answers[qIndex] !== undefined) return;
 
       player.answers[qIndex] = optionIndex;
       if (isCorrect) {
-        player.score = (player.score || 0) + 50; // +50 per correct
+        player.score = (player.score || 0) + 50; 
       }
     }
     return player;
   });
 };
 
-// Finish Battle manually or auto-trigger
 export const finishRTDBBattle = async (roomId: string) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
   await update(roomRef, { status: 'FINISHED' });
 };
 
-// Clean up room from RTDB
 export const deleteRTDBRoom = async (roomId: string) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
   await remove(roomRef);
@@ -130,11 +142,27 @@ export const deleteRTDBRoom = async (roomId: string) => {
 
 // --- LISTENERS ---
 
-export const listenToBattleRoom = (roomId: string, callback: (data: BattleRoom | null) => void) => {
+export const listenToBattleRoom = (roomId: string, callback: (data: BattleRoom | null) => void, onError?: (error: Error) => void) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
-  const unsubscribe = onValue(roomRef, (snapshot) => {
-    const val = snapshot.val();
-    callback(val);
-  });
-  return () => off(roomRef, 'value', unsubscribe); // Return cleanup function
+  const unsubscribe = onValue(roomRef, 
+    (snapshot) => {
+      const val = snapshot.val();
+      callback(val);
+    },
+    (error) => {
+      console.error("RTDB Listener Error:", error);
+      if (onError) onError(error);
+    }
+  );
+  return () => off(roomRef, 'value', unsubscribe); 
 };
+
+// NEW: Listener for Server Time Offset to sync clocks
+export const listenToServerOffset = (callback: (offset: number) => void) => {
+    const offsetRef = ref(rtdb, ".info/serverTimeOffset");
+    const unsubscribe = onValue(offsetRef, (snap) => {
+        const offset = snap.val() || 0;
+        callback(offset);
+    });
+    return () => off(offsetRef, 'value', unsubscribe);
+}

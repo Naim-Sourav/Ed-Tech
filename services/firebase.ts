@@ -4,6 +4,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 
+// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBXXaWWoFqn6MpH6IWSm6CGaqUJzAmzbzA",
   authDomain: "dopamine-quiz.firebaseapp.com",
@@ -12,11 +13,9 @@ const firebaseConfig = {
   messagingSenderId: "822531459966",
   appId: "1:822531459966:web:8e7d2385090e997eb1c12f",
   measurementId: "G-6TWRMVGB18",
-  databaseURL: "https://dopamine-quiz-default-rtdb.asia-southeast1.firebasedatabase.app" 
+  // Updated to the user-provided URL
+  databaseURL: "https://dopamine-quiz-default-rtdb.firebaseio.com"
 };
-
-// Note: Replace databaseURL with your actual Firebase Realtime Database URL if different.
-// Usually found in Firebase Console -> Realtime Database -> Data tab.
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
