@@ -3,8 +3,8 @@ import React, { useState, useRef } from 'react';
 import { generateQuiz } from '../services/geminiService';
 import { saveQuestionsToBankAPI } from '../services/api';
 import { ExamStandard, QuizQuestion } from '../types';
-import { SYLLABUS_DB } from '../services/syllabusData';
-import { Sparkles, Save, Trash2, Brain, CheckCircle, Loader2, RefreshCw, Layers, BookOpen, Hash, CheckSquare, Square, Upload, Download, XCircle, PieChart, Atom, Beaker, Calculator, Dna, Activity, Globe, ChevronDown, Book } from 'lucide-react';
+import { SYLLABUS_DB, TopicNode } from '../services/syllabusData';
+import { Sparkles, Save, Trash2, Brain, CheckCircle, Loader2, RefreshCw, Layers, BookOpen, Hash, CheckSquare, Square, Upload, Download, XCircle, PieChart, Atom, Beaker, Calculator, Dna, Activity, Globe, ChevronDown, Book, ListFilter, Check } from 'lucide-react';
 import { useToast } from './Toast';
 
 // --- BLOOM'S TAXONOMY & QUESTION STRATEGIES ---
@@ -106,8 +106,44 @@ const AdminQuestionGenerator: React.FC = () => {
     setSelectedTopics(prev => prev.includes(topic) ? prev.filter(t => t !== topic) : [...prev, topic]);
   };
 
+  // Helper to check if a group (TopicNode) is fully selected
+  const isGroupFullySelected = (node: TopicNode) => {
+      return node.subTopics.every(sub => selectedTopics.includes(sub));
+  };
+
+  // Toggle entire group
+  const toggleGroup = (node: TopicNode) => {
+      if (isGroupFullySelected(node)) {
+          // Deselect all
+          setSelectedTopics(prev => prev.filter(t => !node.subTopics.includes(t)));
+      } else {
+          // Select all (merge)
+          setSelectedTopics(prev => {
+              const newSet = new Set(prev);
+              node.subTopics.forEach(t => newSet.add(t));
+              return Array.from(newSet);
+          });
+      }
+  };
+
   const selectAllTopics = () => {
-    setSelectedTopics(selectedTopics.length === availableTopics.length ? [] : [...availableTopics]);
+    const allLeafLabels: string[] = [];
+    
+    // Flatten logic
+    availableTopics.forEach(t => {
+        if (typeof t === 'string') {
+            allLeafLabels.push(t);
+        } else {
+            allLeafLabels.push(...t.subTopics);
+        }
+    });
+
+    // Toggle Logic
+    if (selectedTopics.length === allLeafLabels.length) {
+        setSelectedTopics([]);
+    } else {
+        setSelectedTopics(allLeafLabels);
+    }
   };
 
   const updateDistribution = (index: number, val: number) => {
@@ -282,17 +318,54 @@ const AdminQuestionGenerator: React.FC = () => {
                    {chapter && (
                        <div>
                            <div className="flex justify-between items-center mb-2">
-                               <label className="text-sm font-bold">টপিক</label>
-                               <button onClick={selectAllTopics} className="text-xs text-primary font-bold">Toggle All</button>
+                               <label className="text-sm font-bold flex items-center gap-1"><ListFilter size={14}/> টপিক</label>
+                               <button onClick={selectAllTopics} className="text-xs text-primary font-bold hover:underline">সব সিলেক্ট করুন</button>
                            </div>
-                           <div className="max-h-60 overflow-y-auto grid gap-2">
-                               {availableTopics.map(t => (
-                                   <button key={t} onClick={() => toggleTopic(t)} className={`text-left p-2 rounded text-xs border ${selectedTopics.includes(t) ? 'bg-blue-100 border-blue-500 dark:bg-blue-900/30' : 'bg-white dark:bg-gray-800 border-gray-200'}`}>
-                                       {t}
-                                   </button>
-                               ))}
+                           <div className="max-h-[400px] overflow-y-auto grid gap-2 pr-1 custom-scrollbar">
+                               {availableTopics.map((t, idx) => {
+                                   if (typeof t === 'string') {
+                                       // Standard Topic
+                                       return (
+                                           <button key={idx} onClick={() => toggleTopic(t)} className={`text-left p-3 rounded-xl text-xs font-medium border transition-all ${selectedTopics.includes(t) ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300'}`}>
+                                               {t}
+                                           </button>
+                                       );
+                                   } else {
+                                       // Topic with Subtopics
+                                       const isSelected = isGroupFullySelected(t);
+                                       const selectedCount = t.subTopics.filter(sub => selectedTopics.includes(sub)).length;
+                                       
+                                       return (
+                                           <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
+                                               <div 
+                                                   onClick={() => toggleGroup(t)}
+                                                   className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                               >
+                                                   <span className={`text-xs font-bold ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>{t.title}</span>
+                                                   <span className={`text-[10px] px-2 py-0.5 rounded-full ${selectedCount > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200' : 'bg-gray-200 text-gray-500 dark:bg-gray-700'}`}>
+                                                       {selectedCount}/{t.subTopics.length}
+                                                   </span>
+                                               </div>
+                                               <div className="p-2 space-y-1 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+                                                   {t.subTopics.map((sub, sIdx) => (
+                                                       <button 
+                                                           key={sIdx} 
+                                                           onClick={() => toggleTopic(sub)}
+                                                           className={`w-full text-left px-3 py-2 rounded-lg text-[11px] border transition-all flex items-center gap-2 ${selectedTopics.includes(sub) ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/10 dark:border-blue-800 dark:text-blue-300' : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'}`}
+                                                       >
+                                                           <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${selectedTopics.includes(sub) ? 'bg-blue-500 border-blue-500' : 'border-gray-400'}`}>
+                                                               {selectedTopics.includes(sub) && <Check size={8} className="text-white"/>}
+                                                           </div>
+                                                           {sub}
+                                                       </button>
+                                                   ))}
+                                               </div>
+                                           </div>
+                                       );
+                                   }
+                               })}
                            </div>
-                           <p className="text-xs text-gray-500 mt-2">{selectedTopics.length} selected</p>
+                           <p className="text-xs text-gray-500 mt-2 text-right">{selectedTopics.length} selected</p>
                        </div>
                    )}
                </div>

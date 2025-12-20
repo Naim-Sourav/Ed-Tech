@@ -81,10 +81,30 @@ const SynapseBot: React.FC<SynapseBotProps> = ({ isOpen, onClose }) => {
     "gemini-2.5-flash-lite"
   ];
   
+  // Helper to securely get API Key
+  const getEnvKey = () => {
+    try {
+      // @ts-ignore
+      if (typeof import.meta !== 'undefined' && import.meta.env) {
+        // @ts-ignore
+        return import.meta.env.VITE_API_KEY;
+      }
+    } catch (e) {}
+    
+    try {
+      // @ts-ignore
+      if (typeof process !== 'undefined' && process.env) {
+        // @ts-ignore
+        return process.env.VITE_API_KEY || process.env.API_KEY;
+      }
+    } catch (e) {}
+    
+    return undefined;
+  };
+
   // Securely get API key pool
   const BOT_KEYS = [
-    // @ts-ignore
-    process.env.API_KEY,
+    getEnvKey(),
     "AIzaSyBNJxFT8X1ldhADeCUNXpRp-b2k2uM2RIw",
     "AIzaSyA3Z-b1YZfuHc-e2leBTOiKkGWLawLsRvw",
     "AIzaSyBgVW3lgdx67iuDAdzT1AXFXx5RNmeJXt0"

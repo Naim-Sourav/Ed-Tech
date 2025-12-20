@@ -242,24 +242,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             </button>
           </div>
 
-          {/* Animated Stats */}
+          {/* Animated Stats - REPLACED WITH CAPABILITIES */}
           <div className="mt-12 md:mt-20 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-4xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                   <div className="text-center">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={10000} suffix="+" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">শিক্ষার্থী</p>
+                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={50} suffix="L+" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">কুইজ সলভ</p>
+                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
                   </div>
                   <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={500} suffix="+" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">লেকচার নোট</p>
+                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={10} suffix="+" /></p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1">৪.৯</p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">ইউজার রেটিং <Star size={10} className="fill-yellow-400 text-yellow-400"/></p>
+                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
                   </div>
               </div>
           </div>

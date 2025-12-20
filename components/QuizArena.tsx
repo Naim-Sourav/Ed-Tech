@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { generateQuizFromDB, fetchSyllabusStatsAPI, saveQuestionsToBankAPI, saveQuestionAPI, unsaveQuestionAPI, saveExamResultAPI, updateQuestProgressAPI, fetchQuestionsByExamRefAPI } from '../services/api';
 import { generateQuiz } from '../services/geminiService';
 import { QuizQuestion, ExamStandard, QuizConfig, DifficultyLevel } from '../types';
-import { SYLLABUS_DB } from '../services/syllabusData';
+import { SYLLABUS_DB, SyllabusItem, TopicNode } from '../services/syllabusData';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
@@ -195,6 +195,7 @@ const QuizArena: React.FC = () => {
   const [selectionView, setSelectionView] = useState<SelectionView>('SUBJECT_GRID');
   const [activeSubjectGroup, setActiveSubjectGroup] = useState<string | null>(null);
   const [expandedChapterIds, setExpandedChapterIds] = useState<Set<string>>(new Set());
+  const [expandedTopicIds, setExpandedTopicIds] = useState<Set<string>>(new Set()); // For nesting
   
   const [topicSelection, setTopicSelection] = useState<Record<string, string[]>>({});
   
@@ -347,40 +348,16 @@ const QuizArena: React.FC = () => {
   };
 
   // --- Dynamic Topic Helper ---
-  const getTopicsForChapter = (subject: string, chapter: string) => {
+  // Modified to handle nested TopicNodes
+  const getTopicsForChapter = (subject: string, chapter: string): SyllabusItem[] => {
       const staticTopics = SYLLABUS_DB[subject]?.[chapter] || [];
-      let dynamicTopics: string[] = [];
-      
-      // Attempt to find dynamic topics even if chapter name has slight mismatch
-      let chapterData = syllabusStats?.[subject]?.chapters?.[chapter];
-      if (!chapterData && syllabusStats?.[subject]?.chapters) {
-          // Fuzzy search for chapter
-          const normChapter = normalizeText(chapter);
-          const matchedChapterKey = Object.keys(syllabusStats[subject].chapters).find(k => normalizeText(k) === normChapter);
-          if (matchedChapterKey) {
-              chapterData = syllabusStats[subject].chapters[matchedChapterKey];
-          }
-      }
+      return staticTopics;
+  };
 
-      if (chapterData?.topics) {
-          dynamicTopics = Object.keys(chapterData.topics);
-      }
-      
-      // Smart Merge: Deduplicate based on normalized text
-      const topicMap = new Map<string, string>();
-      
-      // 1. Add Static Topics (Priority for display name)
-      staticTopics.forEach(t => topicMap.set(normalizeText(t), t));
-      
-      // 2. Add Dynamic Topics only if normalized key doesn't exist
-      dynamicTopics.forEach(t => {
-          const norm = normalizeText(t);
-          if (!topicMap.has(norm)) {
-              topicMap.set(norm, t);
-          }
-      });
-      
-      return Array.from(topicMap.values());
+  // Flatten nested topics to simple strings for API consumption
+  const getAllSubTopics = (item: SyllabusItem): string[] => {
+      if (typeof item === 'string') return [item];
+      return [item.title, ...item.subTopics];
   };
 
   const toggleTopic = (subject: string, chapter: string, topic: string) => {
@@ -398,12 +375,22 @@ const QuizArena: React.FC = () => {
 
   const toggleAllTopicsInChapter = (subject: string, chapter: string) => {
     const key = `${subject}-${chapter}`;
-    const allTopics = getTopicsForChapter(subject, chapter); 
+    const rawItems = getTopicsForChapter(subject, chapter); 
+    const allTopics: string[] = [];
+    
+    // Flatten all possible topics strings
+    rawItems.forEach(item => {
+        if (typeof item === 'string') allTopics.push(item);
+        else {
+            allTopics.push(item.title);
+            item.subTopics.forEach(sub => allTopics.push(sub));
+        }
+    });
+
     setTopicSelection(prev => {
       const current = prev[key] || [];
-      // If ANY topic is unselected, select all. If ALL are selected, deselect all.
-      // Logic change: Click body to select all if not fully selected. If fully selected, deselect.
       
+      // If fully selected, deselect all. Otherwise, select all.
       if (current.length === allTopics.length) {
          const newState = { ...prev };
          delete newState[key];
@@ -412,6 +399,33 @@ const QuizArena: React.FC = () => {
          return { ...prev, [key]: [...allTopics] };
       }
     });
+  };
+
+  // Toggle a nested group (e.g. "Animal Diversity" and all its sub-topics)
+  const toggleTopicGroup = (subject: string, chapter: string, group: TopicNode) => {
+      const key = `${subject}-${chapter}`;
+      const groupItems = [group.title, ...group.subTopics];
+      
+      setTopicSelection(prev => {
+          const currentSelection = prev[key] || [];
+          
+          // Check if all items in this group are currently selected
+          const isGroupFullySelected = groupItems.every(item => currentSelection.includes(item));
+          
+          let newSelection: string[];
+          
+          if (isGroupFullySelected) {
+              // Deselect all items in this group
+              newSelection = currentSelection.filter(item => !groupItems.includes(item));
+          } else {
+              // Select all items in this group (merge unique)
+              newSelection = Array.from(new Set([...currentSelection, ...groupItems]));
+          }
+          
+          const newState = { ...prev, [key]: newSelection };
+          if (newSelection.length === 0) delete newState[key];
+          return newState;
+      });
   };
 
   const toggleChapterExpansion = (chapterKey: string) => {
@@ -425,6 +439,15 @@ const QuizArena: React.FC = () => {
           return newSet;
       });
   };
+
+  const toggleTopicExpansion = (topicKey: string) => {
+      setExpandedTopicIds(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(topicKey)) newSet.delete(topicKey);
+          else newSet.add(topicKey);
+          return newSet;
+      });
+  }
 
   // --- Stats Helper for Group or Paper ---
   const getStatsFor = (subjectKeyOrGroup: string, chapter?: string, topic?: string) => {
@@ -904,7 +927,15 @@ const QuizArena: React.FC = () => {
                                                         const chapKey = `${paperName}-${chapter}`;
                                                         const availableTopics = getTopicsForChapter(paperName, chapter);
                                                         const selectedTopics = topicSelection[chapKey] || [];
-                                                        const isFullySelected = selectedTopics.length === availableTopics.length && availableTopics.length > 0;
+                                                        
+                                                        // Calc total flat items count for accurate selection check
+                                                        let totalItemsCount = 0;
+                                                        availableTopics.forEach(t => {
+                                                            if (typeof t === 'string') totalItemsCount++;
+                                                            else totalItemsCount += (1 + t.subTopics.length);
+                                                        });
+
+                                                        const isFullySelected = selectedTopics.length === totalItemsCount && totalItemsCount > 0;
                                                         const isPartiallySelected = selectedTopics.length > 0 && !isFullySelected;
                                                         const isExpanded = expandedChapterIds.has(chapKey);
                                                         const chapQ = getStatsFor(paperName, chapter);
@@ -929,7 +960,7 @@ const QuizArena: React.FC = () => {
                                                                                 {renderStatsBadge(chapQ)}
                                                                                 {selectedTopics.length > 0 && (
                                                                                     <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                                                                                        {selectedTopics.length}/{availableTopics.length} topics
+                                                                                        {selectedTopics.length}/{totalItemsCount} topics
                                                                                     </span>
                                                                                 )}
                                                                             </div>
@@ -948,23 +979,84 @@ const QuizArena: React.FC = () => {
                                                                 {/* Expanded Topics */}
                                                                 {isExpanded && (
                                                                     <div className="border-t border-gray-100 dark:border-gray-700 p-3 bg-gray-50/50 dark:bg-gray-900/30 animate-in slide-in-from-top-2">
-                                                                        <div className="grid grid-cols-1 gap-2 pl-8">
-                                                                            {availableTopics.map(topic => {
-                                                                                const isTopicSelected = selectedTopics.includes(topic);
-                                                                                return (
-                                                                                    <label key={topic} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors">
-                                                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${isTopicSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'}`}>
-                                                                                            {isTopicSelected && <Check size={10} className="text-white" />}
+                                                                        <div className="grid grid-cols-1 gap-2 pl-2 md:pl-8">
+                                                                            {availableTopics.map((item, idx) => {
+                                                                                if (typeof item === 'string') {
+                                                                                    // Simple String Topic
+                                                                                    const topic = item;
+                                                                                    const isTopicSelected = selectedTopics.includes(topic);
+                                                                                    const topicCount = getStatsFor(paperName, chapter, topic);
+                                                                                    return (
+                                                                                        <label key={idx} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors group">
+                                                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isTopicSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'}`}>
+                                                                                                {isTopicSelected && <Check size={10} className="text-white" />}
+                                                                                            </div>
+                                                                                            <input 
+                                                                                                type="checkbox" 
+                                                                                                className="hidden" 
+                                                                                                checked={isTopicSelected} 
+                                                                                                onChange={() => toggleTopic(paperName, chapter, topic)}
+                                                                                            />
+                                                                                            <span className="text-xs text-gray-600 dark:text-gray-300 font-medium flex-1">{topic}</span>
+                                                                                            {topicCount > 0 && (
+                                                                                                <span className="text-[9px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+                                                                                                    {topicCount}
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </label>
+                                                                                    )
+                                                                                } else {
+                                                                                    // Nested Topic Object
+                                                                                    const topicKey = `${chapKey}-${item.title}`;
+                                                                                    const isTopicExpanded = expandedTopicIds.has(topicKey);
+                                                                                    const groupItems = [item.title, ...item.subTopics];
+                                                                                    const isGroupFullySelected = groupItems.every(t => selectedTopics.includes(t));
+                                                                                    const isGroupPartiallySelected = groupItems.some(t => selectedTopics.includes(t)) && !isGroupFullySelected;
+
+                                                                                    return (
+                                                                                        <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 mb-1">
+                                                                                            <div className="flex items-center p-2 bg-gray-50 dark:bg-gray-800/80">
+                                                                                                <button
+                                                                                                    onClick={() => toggleTopicGroup(paperName, chapter, item)}
+                                                                                                    className="flex items-center justify-center p-1 mr-2"
+                                                                                                >
+                                                                                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isGroupFullySelected ? 'bg-blue-500 border-blue-500' : isGroupPartiallySelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'}`}>
+                                                                                                        {isGroupFullySelected && <Check size={10} className="text-white" />}
+                                                                                                        {isGroupPartiallySelected && <div className="w-2 h-2 bg-white rounded-sm" />}
+                                                                                                    </div>
+                                                                                                </button>
+                                                                                                <button 
+                                                                                                    onClick={() => toggleTopicExpansion(topicKey)}
+                                                                                                    className="flex-1 text-left flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-200"
+                                                                                                >
+                                                                                                    {item.title}
+                                                                                                    {isTopicExpanded ? <ChevronUp size={14} className="text-gray-400"/> : <ChevronDown size={14} className="text-gray-400"/>}
+                                                                                                </button>
+                                                                                            </div>
+                                                                                            {isTopicExpanded && (
+                                                                                                <div className="p-2 pl-8 border-t border-gray-100 dark:border-gray-700 space-y-1 bg-white dark:bg-gray-900/20">
+                                                                                                    {item.subTopics.map((sub, sIdx) => {
+                                                                                                        const isSubSelected = selectedTopics.includes(sub);
+                                                                                                        return (
+                                                                                                            <label key={sIdx} className="flex items-center gap-3 p-1.5 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                                                                                <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${isSubSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                                                                                    {isSubSelected && <Check size={8} className="text-white" />}
+                                                                                                                </div>
+                                                                                                                <input 
+                                                                                                                    type="checkbox" 
+                                                                                                                    className="hidden" 
+                                                                                                                    checked={isSubSelected}
+                                                                                                                    onChange={() => toggleTopic(paperName, chapter, sub)}
+                                                                                                                />
+                                                                                                                <span className="text-[11px] text-gray-600 dark:text-gray-400">{sub}</span>
+                                                                                                            </label>
+                                                                                                        )
+                                                                                                    })}
+                                                                                                </div>
+                                                                                            )}
                                                                                         </div>
-                                                                                        <input 
-                                                                                            type="checkbox" 
-                                                                                            className="hidden" 
-                                                                                            checked={isTopicSelected} 
-                                                                                            onChange={() => toggleTopic(paperName, chapter, topic)}
-                                                                                        />
-                                                                                        <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">{topic}</span>
-                                                                                    </label>
-                                                                                )
+                                                                                    )
+                                                                                }
                                                                             })}
                                                                         </div>
                                                                     </div>
@@ -1548,7 +1640,7 @@ const QuizArena: React.FC = () => {
                                     
                                     return (
                                         <div key={oIdx} className={`p-2.5 rounded-xl border flex items-center gap-3 text-xs md:text-sm ${optClass}`}>
-                                            <div className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px] opacity-70">{['A','B','C','D'][oIdx]}</div>
+                                            <div className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-[10px] opacity-70">{['A','B','C','D'][oIdx]}</div>
                                             <span className="flex-1">{opt}</span>
                                             {isAnswer && <CheckCircle size={14} className="text-green-600 dark:text-green-400"/>}
                                             {isSelected && !isCorrect && <XCircle size={14} className="text-red-600 dark:text-red-400"/>}
