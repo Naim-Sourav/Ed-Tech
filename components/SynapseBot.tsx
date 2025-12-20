@@ -21,6 +21,12 @@ interface Message {
   sources?: { title: string; uri: string }[];
 }
 
+// ============================================================
+// 🔑 API KEY CONFIGURATION
+// ============================================================
+// নিচে কোটেশনের ভেতর আপনার API Key টি পেস্ট করুন (প্রাইভেট রিপোর জন্য)
+const DIRECT_API_KEY = ""; 
+
 const SynapseBot: React.FC<SynapseBotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -81,11 +87,11 @@ const SynapseBot: React.FC<SynapseBotProps> = ({ isOpen, onClose }) => {
     "gemini-2.5-flash-lite"
   ];
   
-  // Helper to securely get API Key
+  // Helper to securely get API Key with crash prevention
   const getEnvKey = () => {
     try {
       // @ts-ignore
-      if (typeof import.meta !== 'undefined' && import.meta.env) {
+      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
         // @ts-ignore
         return import.meta.env.VITE_API_KEY;
       }
@@ -93,22 +99,23 @@ const SynapseBot: React.FC<SynapseBotProps> = ({ isOpen, onClose }) => {
     
     try {
       // @ts-ignore
-      if (typeof process !== 'undefined' && process.env) {
+      if (typeof process !== 'undefined' && process.env && process.env.VITE_API_KEY) {
         // @ts-ignore
         return process.env.VITE_API_KEY || process.env.API_KEY;
       }
     } catch (e) {}
     
-    return undefined;
+    return "";
   };
 
   // Securely get API key pool
   const BOT_KEYS = [
+    DIRECT_API_KEY,
     getEnvKey(),
     "AIzaSyBNJxFT8X1ldhADeCUNXpRp-b2k2uM2RIw",
     "AIzaSyA3Z-b1YZfuHc-e2leBTOiKkGWLawLsRvw",
     "AIzaSyBgVW3lgdx67iuDAdzT1AXFXx5RNmeJXt0"
-  ].filter(key => key && key.startsWith('AIzaSy'));
+  ].filter(key => key && key.length > 10 && key.startsWith('AIzaSy'));
 
   const BOT_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 
