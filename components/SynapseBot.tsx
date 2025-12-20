@@ -25,7 +25,7 @@ interface Message {
 // 🔑 API KEY CONFIGURATION
 // ============================================================
 // নিচে কোটেশনের ভেতর আপনার API Key টি পেস্ট করুন (প্রাইভেট রিপোর জন্য)
-const DIRECT_API_KEY = ""; 
+const DIRECT_API_KEY = "AIzaSyCfi9PJ4KX0nC17xuYUJJzwML_SZ1_urAs"; 
 
 const SynapseBot: React.FC<SynapseBotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
