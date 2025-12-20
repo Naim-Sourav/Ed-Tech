@@ -2,42 +2,50 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { QuizQuestion, Subject, AdmissionResult, SearchSource, ExamStandard, QuizConfig, DifficultyLevel } from "../types";
 
-// Helper to safely get Env Variable in any environment (Vite, Next, Node, etc.)
+// ============================================================
+// 🔑 API KEY CONFIGURATION
+// ============================================================
+// নিচে কোটেশনের ভেতর আপনার API Key টি পেস্ট করুন (প্রাইভেট রিপোর জন্য)
+const DIRECT_API_KEY = ""; 
+
+// Helper to safely get Env Variable
 const getEnvKey = () => {
   try {
     // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
       // @ts-ignore
       return import.meta.env.VITE_API_KEY;
     }
-  } catch (e) {}
+  } catch (e) {
+    // console.warn("Environment variable read failed", e);
+  }
   
   try {
     // @ts-ignore
-    if (typeof process !== 'undefined' && process.env) {
+    if (typeof process !== 'undefined' && process.env && process.env.VITE_API_KEY) {
       // @ts-ignore
-      return process.env.VITE_API_KEY || process.env.API_KEY;
+      return process.env.VITE_API_KEY;
     }
   } catch (e) {}
   
-  return undefined;
+  return "";
 };
 
 // API Key Rotation Pool
 const API_KEYS = [
+  DIRECT_API_KEY, // Highest priority
   getEnvKey(),
-  "AIzaSyBNJxFT8X1ldhADeCUNXpRp-b2k2uM2RIw",
-  "AIzaSyA3Z-b1YZfuHc-e2leBTOiKkGWLawLsRvw",
-  "AIzaSyBgVW3lgdx67iuDAdzT1AXFXx5RNmeJXt0"
-].filter((key) => key && key.startsWith('AIzaSy'));
+  "AIzaSyBNJxFT8X1ldhADeCUNXpRp-b2k2uM2RIw", // Fallback 1
+  "AIzaSyA3Z-b1YZfuHc-e2leBTOiKkGWLawLsRvw", // Fallback 2
+  "AIzaSyBgVW3lgdx67iuDAdzT1AXFXx5RNmeJXt0"  // Fallback 3
+].filter((key) => key && key.length > 10 && key.startsWith('AIzaSy'));
 
 const getClient = () => {
-  // Use the first valid key (Env key has priority if set)
   const apiKey = API_KEYS[0] || API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
   if (!apiKey) {
-    console.warn("API Key is missing. AI features will not work.");
+    console.warn("API Key is missing. Please add it to DIRECT_API_KEY in geminiService.ts");
   }
-  return new GoogleGenAI({ apiKey: apiKey || '' });
+  return new GoogleGenAI({ apiKey: apiKey || 'dummy_key' });
 };
 
 const cleanJsonString = (str: string) => {
@@ -45,7 +53,6 @@ const cleanJsonString = (str: string) => {
 };
 
 // --- MODELS CONFIG ---
-// Models to rotate through for robustness against Rate Limits (429 Errors)
 const GENERATIVE_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.5-flash-preview-09-2025",
@@ -261,8 +268,6 @@ export const generateQuiz = async (
           const data = JSON.parse(cleanJsonString(response.text));
           const finalQuestions = (data as QuizQuestion[]);
           
-          // Post-processing to ensure fields are filled if AI missed them
-          // (Fallback logic: if chapter is missing, try to fill from config if only 1 config exists)
           if (configs.length === 1 && !isPresetMode) {
              finalQuestions.forEach(q => {
                  if (!q.chapter) q.chapter = configs[0].chapter;
@@ -275,11 +280,9 @@ export const generateQuiz = async (
       } catch (error: any) {
         console.warn(`Model ${model} failed:`, error.message);
         lastError = error;
-        // Continue to next model if this one fails
       }
     }
 
-    // If all models fail
     console.error("All models failed to generate quiz.");
     throw lastError || new Error("Failed to generate quiz.");
 
@@ -296,7 +299,6 @@ export const searchAdmissionInfo = async (query: string): Promise<AdmissionResul
     Target context: University Admissions in Bangladesh (BUET, Dhaka University, Medical, Engineering, GST, etc.).
     Summarize the key dates, requirements, or information clearly in Bengali.`;
 
-    // Attempt search with rotation if needed, but keeping simple for now
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
@@ -328,12 +330,6 @@ export const searchAdmissionInfo = async (query: string): Promise<AdmissionResul
   }
 };
 
-/**
- * Enriches a list of raw questions (e.g. from JSON past papers) with:
- * 1. Correct Subject and Chapter detection (NCTB Syllabus).
- * 2. Detailed Explanation from standard textbooks.
- * 3. Topic tagging.
- */
 export const enrichQuestionList = async (
   rawQuestions: any[],
   examName: string,
@@ -341,7 +337,7 @@ export const enrichQuestionList = async (
 ): Promise<QuizQuestion[]> => {
   const ai = getClient();
   const chunks = [];
-  const chunkSize = 15; // Process in small batches to ensure quality
+  const chunkSize = 15;
 
   for (let i = 0; i < rawQuestions.length; i += chunkSize) {
     chunks.push(rawQuestions.slice(i, i + chunkSize));
@@ -397,13 +393,10 @@ export const enrichQuestionList = async (
         const data = JSON.parse(cleanJsonString(response.text));
         enrichedResults = [...enrichedResults, ...data];
       }
-      
-      // Rate limit buffer
       await new Promise(r => setTimeout(r, 1000));
 
     } catch (e) {
       console.error("Batch processing failed:", e);
-      // Fallback: Add raw questions without enrichment if AI fails
       const fallback = chunk.map((q: any) => ({
          question: q.question,
          options: q.options || [],
