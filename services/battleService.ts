@@ -21,7 +21,8 @@ export interface BattleRoom {
   questions: QuizQuestion[];
   players: Record<string, BattlePlayer>;
   startTime: number; 
-  createdAt: object; // Changed to object to support serverTimestamp placeholder
+  createdAt: object;
+  lastReaction?: { emoji: string, sender: string, timestamp: number };
 }
 
 // --- ACTIONS ---
@@ -41,7 +42,7 @@ export const createRTDBRoom = async (
     config,
     questions,
     startTime: 0,
-    createdAt: serverTimestamp(), // Use server time
+    createdAt: serverTimestamp(),
     players: {
       [host.uid]: {
         uid: host.uid,
@@ -81,24 +82,14 @@ export const joinRTDBRoom = async (
   });
 };
 
+export const leaveRTDBRoom = async (roomId: string, userId: string) => {
+  const playerRef = ref(rtdb, `battles/${roomId}/players/${userId}`);
+  await remove(playerRef);
+};
+
 export const startRTDBBattle = async (roomId: string) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
-  
-  // We use serverTimestamp to set the start time. 
-  // However, we want a buffer (e.g. 3 seconds delay). 
-  // Since we can't do `serverTimestamp() + 3000` directly in the write,
-  // We fetch the estimated server time first via offset on the client triggering this,
-  // OR simpler: Set startTime to a future timestamp based on current estimated server time.
-  
-  // Best approach for sync: Write the OFFSET, handled in client. 
-  // Here we will simply set it.
-  
-  // Note: For perfect sync, we grab the server time estimate from the client triggering it.
-  // But to keep service clean, we use Date.now() + offset logic in the component, or utilize a trigger.
-  // Here we will stick to a robust client-initiated timestamp which works if client is synced.
-  // Actually, let's use a trick: Set startTime to Date.now() + 3000 BUT the client will correct it using .info/serverTimeOffset
-  
-  const estimatedServerTime = Date.now(); // This will be corrected by offset in UI
+  const estimatedServerTime = Date.now(); 
   const startGameTime = estimatedServerTime + 3000; 
 
   await update(roomRef, {
@@ -112,7 +103,8 @@ export const submitAnswerRTDB = async (
   userId: string,
   qIndex: number,
   optionIndex: number,
-  isCorrect: boolean
+  isCorrect: boolean,
+  points: number = 50
 ) => {
   const playerRef = ref(rtdb, `battles/${roomId}/players/${userId}`);
   
@@ -123,11 +115,22 @@ export const submitAnswerRTDB = async (
 
       player.answers[qIndex] = optionIndex;
       if (isCorrect) {
-        player.score = (player.score || 0) + 50; 
+        player.score = (player.score || 0) + points; 
       }
     }
     return player;
   });
+};
+
+export const sendReactionRTDB = async (roomId: string, emoji: string, sender: string) => {
+    const roomRef = ref(rtdb, `battles/${roomId}`);
+    await update(roomRef, {
+        lastReaction: {
+            emoji,
+            sender,
+            timestamp: Date.now()
+        }
+    });
 };
 
 export const finishRTDBBattle = async (roomId: string) => {
@@ -139,8 +142,6 @@ export const deleteRTDBRoom = async (roomId: string) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
   await remove(roomRef);
 };
-
-// --- LISTENERS ---
 
 export const listenToBattleRoom = (roomId: string, callback: (data: BattleRoom | null) => void, onError?: (error: Error) => void) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
@@ -157,7 +158,6 @@ export const listenToBattleRoom = (roomId: string, callback: (data: BattleRoom |
   return () => off(roomRef, 'value', unsubscribe); 
 };
 
-// NEW: Listener for Server Time Offset to sync clocks
 export const listenToServerOffset = (callback: (offset: number) => void) => {
     const offsetRef = ref(rtdb, ".info/serverTimeOffset");
     const unsubscribe = onValue(offsetRef, (snap) => {

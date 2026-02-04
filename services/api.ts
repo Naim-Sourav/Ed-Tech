@@ -1,4 +1,5 @@
 
+// ... (imports from types.ts)
 import { PaymentRequest, Notification, LeaderboardUser, ExamPack, Quest, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
 
 const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
@@ -17,9 +18,43 @@ const MOCK_STATS = {
   totalCorrect: 120,
   totalWrong: 30,
   subjectBreakdown: [
-    { subject: 'Physics', accuracy: 85 },
-    { subject: 'Biology', accuracy: 75 },
-    { subject: 'Chemistry', accuracy: 60 }
+    { 
+        subject: 'Physics', 
+        accuracy: 85,
+        total: 50,
+        correct: 42,
+        wrong: 8,
+        skipped: 0,
+        chapters: {
+            'Vector': { total: 20, correct: 18, wrong: 2, skipped: 0 },
+            'Dynamics': { total: 15, correct: 12, wrong: 3, skipped: 0 },
+            'Work & Energy': { total: 15, correct: 12, wrong: 3, skipped: 0 }
+        }
+    },
+    { 
+        subject: 'Biology', 
+        accuracy: 75,
+        total: 40,
+        correct: 30,
+        wrong: 8,
+        skipped: 2,
+        chapters: {
+            'Cell Structure': { total: 20, correct: 15, wrong: 4, skipped: 1 },
+            'Genetics': { total: 20, correct: 15, wrong: 4, skipped: 1 }
+        }
+    },
+    { 
+        subject: 'Chemistry', 
+        accuracy: 60,
+        total: 30,
+        correct: 18,
+        wrong: 10,
+        skipped: 2,
+        chapters: {
+            'Organic Chemistry': { total: 15, correct: 8, wrong: 6, skipped: 1 },
+            'Periodic Table': { total: 15, correct: 10, wrong: 4, skipped: 1 }
+        }
+    }
   ],
   strongestTopics: [{ topic: 'Vector', accuracy: 95 }],
   weakestTopics: [{ topic: 'Organic Chemistry', accuracy: 40 }]
@@ -179,8 +214,20 @@ export const saveExamResultAPI = async (userId: string, resultData: any) => {
   }, { success: true });
 };
 
+export const fetchExamResultAPI = async (userId: string, examId: string) => {
+    return fetchWithFallback(`/users/${userId}/exam-results/${examId}`, {}, null);
+};
+
 export const fetchUserStatsAPI = async (userId: string) => {
   return fetchWithFallback(`/users/${userId}/stats`, {}, MOCK_STATS);
+};
+
+export const recordUserActivityAPI = async (userId: string) => {
+    return fetchWithFallback('/users/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+    }, { success: true, streak: 1, activityLog: [], streakUpdated: false });
 };
 
 export const fetchUserMistakesAPI = async (userId: string) => {
@@ -190,6 +237,14 @@ export const fetchUserMistakesAPI = async (userId: string) => {
 export const deleteUserMistakeAPI = async (userId: string, mistakeId: string) => {
   return fetchWithFallback(`/users/${userId}/mistakes/${mistakeId}`, {
     method: 'DELETE'
+  }, { success: true });
+};
+
+export const clearMistakesAPI = async (userId: string, questionIds: string[]) => {
+  return fetchWithFallback(`/users/${userId}/mistakes/clear`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ questionIds })
   }, { success: true });
 };
 
@@ -241,8 +296,10 @@ export const submitPaymentToAPI = async (data: any) => {
   }, { success: true });
 };
 
+// Fixed: Maps _id to id for frontend compatibility
 export const fetchPaymentsFromAPI = async (): Promise<PaymentRequest[]> => {
-  return fetchWithFallback('/admin/payments', {}, []);
+  const data = await fetchWithFallback('/admin/payments', {}, []);
+  return Array.isArray(data) ? data.map((p: any) => ({ ...p, id: p.id || p._id })) : [];
 };
 
 export const fetchAdminStatsAPI = async () => {
@@ -282,14 +339,32 @@ export const fetchQuestionPapersAPI = async (): Promise<QuestionPaperMetadata[]>
   return fetchWithFallback('/question-papers', {}, []);
 };
 
-export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string) => {
+export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string, search?: string) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
-  if (subject) url += `&subject=${encodeURIComponent(subject)}`;
-  if (chapter) url += `&chapter=${encodeURIComponent(chapter)}`;
+  if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(subject)}`;
+  if (chapter && chapter !== 'ALL') url += `&chapter=${encodeURIComponent(chapter)}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
   return fetchWithFallback(url, {}, { questions: [], total: 0 });
 };
 
+export const updateQuestionInBankAPI = async (id: string, questionData: any) => {
+  return fetchWithFallback(`/admin/questions/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(questionData)
+  }, { success: true });
+};
+
 export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
+  // If examRef is gst_a_23_24, we load from our newly added JSON
+  if (examRef === 'gst_a_23_24') {
+     try {
+       const response = await fetch('/data/gst_a_23_24_questions.json');
+       return await response.json();
+     } catch (e) {
+       return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
+     }
+  }
   return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
 };
 
@@ -319,8 +394,10 @@ export const sendNotificationAPI = async (data: any) => {
   }, { success: true });
 };
 
+// Fixed: Maps _id to id for frontend compatibility
 export const fetchNotificationsAPI = async (): Promise<Notification[]> => {
-  return fetchWithFallback('/notifications', {}, MOCK_NOTIFICATIONS);
+  const data = await fetchWithFallback('/notifications', {}, MOCK_NOTIFICATIONS);
+  return Array.isArray(data) ? data.map((n: any) => ({ ...n, id: n.id || n._id })) : MOCK_NOTIFICATIONS;
 };
 
 export const fetchExamPacksAPI = async (): Promise<ExamPack[]> => {

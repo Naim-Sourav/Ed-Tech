@@ -6,7 +6,7 @@ import { QuizQuestion, Subject, AdmissionResult, SearchSource, ExamStandard, Qui
 // 🔑 API KEY CONFIGURATION
 // ============================================================
 // নিচে কোটেশনের ভেতর আপনার API Key টি পেস্ট করুন (প্রাইভেট রিপোর জন্য)
-const DIRECT_API_KEY = "AIzaSyAixiDwoE5VWpWsbgs_Er6xDPiIB4QU1LY"; 
+const DIRECT_API_KEY = ""; 
 
 // Helper to safely get Env Variable
 const getEnvKey = () => {
