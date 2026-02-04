@@ -1,3 +1,4 @@
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -9,6 +10,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Hind Siliguri', 'sans-serif'],
+        tiro: ['Kalpurush', 'sans-serif'],
       },
       colors: {
         primary: '#1565C0', // Deep Royal Blue (Logo Main Color)

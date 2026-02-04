@@ -33,6 +33,9 @@ export interface QuizQuestion {
   topic?: string;
   difficulty?: string;
   examRef?: string;
+  questionImage?: string;
+  explanationImage?: string;
+  optionsImages?: string[];
 }
 
 export interface QuestionPaperMetadata {
@@ -42,6 +45,7 @@ export interface QuestionPaperMetadata {
   source: string; // Medical, Engineering, etc.
   totalQuestions: number;
   time: number;
+  subjects?: string[]; // Automatically detected subjects
 }
 
 export interface QuizConfig {
@@ -135,6 +139,7 @@ export interface LeaderboardUser {
   hscBatch?: string;
   target?: string;
   department?: string;
+  currentStreak?: number; // New
 }
 
 export interface ExamPack {

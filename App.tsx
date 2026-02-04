@@ -1,19 +1,22 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import AuthPage from './components/AuthPage';
 import LandingPage from './components/LandingPage';
-import { Menu, Loader2, Brain } from 'lucide-react';
+import { Menu, Loader2, Brain, User, ArrowLeft, Bell } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import SynapseBot from './components/SynapseBot';
 import OnboardingModal from './components/OnboardingModal';
+import { fetchNotificationsAPI } from './services/api';
+import { Notification } from './types';
 
 // --- Lazy Load Components ---
 const HomeDashboard = React.lazy(() => import('./components/HomeDashboard'));
 const QuizArena = React.lazy(() => import('./components/QuizArena'));
+const ExamPage = React.lazy(() => import('./components/ExamPage'));
 const AdmissionSearch = React.lazy(() => import('./components/AdmissionSearch'));
 const StudyTracker = React.lazy(() => import('./components/StudyTracker'));
 const QuizBattlePrototype = React.lazy(() => import('./components/QuizBattlePrototype'));
@@ -24,6 +27,9 @@ const ProfilePage = React.lazy(() => import('./components/ProfilePage'));
 const AdminPage = React.lazy(() => import('./components/AdminPage'));
 const LeaderboardPage = React.lazy(() => import('./components/LeaderboardPage'));
 const DailyChallengePage = React.lazy(() => import('./components/DailyChallengePage'));
+const ExamHub = React.lazy(() => import('./components/ExamHub'));
+const GSTCoursePage = React.lazy(() => import('./components/GSTCoursePage'));
+const PaymentPage = React.lazy(() => import('./components/PaymentPage')); // New Page
 
 // Loading Fallback Component
 const PageLoader = () => (
@@ -38,65 +44,158 @@ const MainLayout: React.FC<{
   themeMode: 'light' | 'dark' | 'system', 
   toggleTheme: () => void,
   children: React.ReactNode,
-  openSynapse: () => void
-}> = ({ themeMode, toggleTheme, children, openSynapse }) => {
+}> = ({ themeMode, toggleTheme, children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const location = useLocation();
-  const { isProfileComplete, profileLoading } = useAuth(); // Check profile status & loading state
+  const navigate = useNavigate();
+  const { currentUser, isProfileComplete, profileLoading, userAvatar } = useAuth(); // Check profile status & loading state
+
+  // Notification State (Lifted from Navigation)
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
+
+  // Load Read IDs from LocalStorage
+  useEffect(() => {
+      const storedReads = localStorage.getItem('read_notifications_v2');
+      if (storedReads) {
+          try {
+              setReadNotificationIds(new Set(JSON.parse(storedReads)));
+          } catch (e) { console.error("Failed to parse read notifications"); }
+      }
+  }, []);
+
+  // Sync Read IDs to LocalStorage
+  useEffect(() => {
+      localStorage.setItem('read_notifications_v2', JSON.stringify(Array.from(readNotificationIds)));
+  }, [readNotificationIds]);
+
+  // Fetch Notifications
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const loadNotifications = async () => {
+       try {
+         const allNotifs = await fetchNotificationsAPI();
+         // Filter target specific
+         const userNotifs = allNotifs.filter(n => !n.target || n.target === 'ALL' || n.target === currentUser.uid);
+         // Sort by date desc
+         userNotifs.sort((a, b) => b.date - a.date);
+         setNotifications(userNotifs);
+       } catch (error) {
+         console.error("Error loading notifications:", error);
+       }
+    };
+
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 60000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
+  const unreadCount = notifications.filter(n => !readNotificationIds.has(n.id)).length;
+
+  // Hide Navigation on Exam Page, Payment Page.
+  // NOTE: Battle Page navigation is handled internally (Full screen overlays for Game/Lobby, Regular layout for Menu)
+  const isExamPage = location.pathname.startsWith('/exam/');
+  const isPaymentPage = location.pathname.startsWith('/payment');
+  const isDashboard = location.pathname === '/dashboard';
 
   // Map paths to Titles
   const getTitle = (pathname: string) => {
     if (pathname.startsWith('/profile/')) return 'প্রোফাইল';
+    if (pathname.startsWith('/exam/')) return 'পরীক্ষা চলছে';
+    if (pathname.startsWith('/payment')) return 'পেমেন্ট';
+    if (pathname.startsWith('/battle')) return 'ব্যাটল অ্যারেনা';
     switch (pathname) {
       case '/dashboard': return 'ধ্রুবক';
+      case '/exams': return 'এক্সাম জোন';
       case '/quiz': return 'কুইজ জোন';
-      case '/battle': return 'কুইজ ব্যাটল';
       case '/admission': return 'ভর্তি তথ্য';
       case '/tracker': return 'রুটিন';
       case '/courses': return 'কোর্সসমূহ';
-      case '/exams': return 'মডেল টেস্ট';
       case '/qbank': return 'প্রশ্ন ব্যাংক';
       case '/profile': return 'প্রোফাইল';
       case '/admin': return 'অ্যাডমিন';
       case '/leaderboard': return 'লিডারবোর্ড';
       case '/challenges': return 'চ্যালেঞ্জ';
+      case '/bot': return 'Synapse AI';
+      case '/gst-special': return 'GST চ্যালেঞ্জ';
       default: return 'ধ্রুবক';
     }
   };
+
+  const handleBack = () => {
+      navigate(-1);
+  };
+
+  const hideNav = isExamPage || isPaymentPage;
 
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-200 text-gray-900 dark:text-gray-100">
       {/* Onboarding Overlay: Only show if NOT loading AND profile is incomplete */}
       {!profileLoading && !isProfileComplete && <OnboardingModal />}
 
-      <Navigation 
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-        themeMode={themeMode}
-        toggleTheme={toggleTheme}
-      />
+      {!hideNav && (
+        <Navigation 
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            themeMode={themeMode}
+            toggleTheme={toggleTheme}
+            // Props for Notification Drawer
+            notifications={notifications}
+            readNotificationIds={readNotificationIds}
+            setReadNotificationIds={setReadNotificationIds}
+            isNotificationOpen={isNotificationOpen}
+            setIsNotificationOpen={setIsNotificationOpen}
+        />
+      )}
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* Mobile Header - Compact Version */}
-        <div className="md:hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center justify-between transition-colors sticky top-0 z-50">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-              <Brain size={16} />
+        {/* Mobile Header - Compact Version (Hide on Exam, Payment) */}
+        {!hideNav && (
+            <div className="md:hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between transition-colors z-[60]">
+            <div className="flex items-center gap-3">
+                {isDashboard ? (
+                    <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
+                        <Brain size={18} />
+                    </div>
+                ) : (
+                    <button onClick={handleBack} className="p-1.5 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <ArrowLeft size={22} className="text-gray-600 dark:text-gray-300" />
+                    </button>
+                )}
+                <span className="font-bold text-gray-800 dark:text-white text-lg tracking-tight">
+                    {getTitle(location.pathname)}
+                </span>
             </div>
-            <span className="font-bold text-gray-800 dark:text-white text-base tracking-tight">
-              {getTitle(location.pathname)}
-            </span>
-          </div>
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors active:scale-95"
-          >
-            <Menu size={20} />
-          </button>
-        </div>
+            
+            <div className="flex items-center gap-2">
+                {/* Notification Bell */}
+                <button 
+                    onClick={() => setIsNotificationOpen(true)}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors relative"
+                    aria-label="Notifications"
+                >
+                    <Bell size={24} />
+                    {unreadCount > 0 && (
+                       <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-800 animate-pulse"></span>
+                    )}
+                </button>
 
-        {/* Main Content Area with Suspense */}
-        <main className="flex-1 overflow-hidden p-0 md:p-6 bg-gray-50 dark:bg-gray-900 transition-colors relative">
+                {/* Menu Trigger */}
+                <button 
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                    aria-label="Menu"
+                >
+                    <Menu size={24} />
+                </button>
+            </div>
+            </div>
+        )}
+
+        {/* Main Content Area with Suspense - Adjusted padding for Bottom Nav */}
+        <main className={`flex-1 overflow-hidden transition-colors relative ${hideNav ? 'p-0' : 'p-0 pb-20 md:p-6 md:pb-6'}`}>
           <Suspense fallback={<PageLoader />}>
             {children}
           </Suspense>
@@ -108,7 +207,6 @@ const MainLayout: React.FC<{
 
 const App: React.FC = () => {
   const { currentUser, loading } = useAuth();
-  const [isSynapseOpen, setIsSynapseOpen] = useState(false);
   
   // Theme State
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>(() => {
@@ -160,8 +258,6 @@ const App: React.FC = () => {
     );
   }
 
-  const openSynapse = () => setIsSynapseOpen(true);
-
   // Use HashRouter instead of BrowserRouter to avoid path issues on different environments
   return (
     <LanguageProvider>
@@ -175,13 +271,14 @@ const App: React.FC = () => {
             {/* Protected Routes */}
             <Route path="/*" element={
               currentUser ? (
-                <MainLayout themeMode={themeMode} toggleTheme={toggleTheme} openSynapse={openSynapse}>
+                <MainLayout themeMode={themeMode} toggleTheme={toggleTheme}>
                     <Routes>
-                      <Route path="/dashboard" element={<HomeDashboard openSynapse={openSynapse} />} />
+                      <Route path="/dashboard" element={<HomeDashboard />} />
                       <Route path="/courses" element={<CourseSection />} />
                       <Route path="/qbank" element={<QuestionBank />} />
-                      <Route path="/exams" element={<ExamPackSection />} />
+                      <Route path="/exams" element={<ExamHub />} />
                       <Route path="/quiz" element={<QuizArena />} />
+                      <Route path="/exam/:examId" element={<ExamPage />} />
                       <Route path="/battle" element={<QuizBattlePrototype />} />
                       <Route path="/leaderboard" element={<LeaderboardPage />} />
                       <Route path="/tracker" element={<StudyTracker />} />
@@ -189,7 +286,10 @@ const App: React.FC = () => {
                       <Route path="/profile" element={<ProfilePage />} />
                       <Route path="/profile/:userId" element={<ProfilePage />} />
                       <Route path="/admin" element={<AdminPage />} />
-                      <Route path="/challenges" element={<DailyChallengePage openSynapse={openSynapse} />} />
+                      <Route path="/challenges" element={<DailyChallengePage openSynapse={() => {}} />} />
+                      <Route path="/bot" element={<SynapseBot />} />
+                      <Route path="/gst-special" element={<GSTCoursePage />} /> 
+                      <Route path="/payment" element={<PaymentPage />} />
                       <Route path="*" element={<Navigate to="/dashboard" />} />
                     </Routes>
                 </MainLayout>
@@ -198,7 +298,6 @@ const App: React.FC = () => {
               )
             } />
           </Routes>
-          <SynapseBot isOpen={isSynapseOpen} onClose={() => setIsSynapseOpen(false)} />
         </HashRouter>
       </AdminProvider>
     </LanguageProvider>

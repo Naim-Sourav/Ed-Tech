@@ -29,6 +29,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.maateen.me/kalpurush/font.css" rel="stylesheet">
     <script>
       tailwind.config = {
         darkMode: 'class',
@@ -36,6 +37,7 @@
           extend: {
             fontFamily: {
               sans: ['Hind Siliguri', 'sans-serif'],
+              tiro: ['Kalpurush', 'sans-serif'],
             },
             colors: {
               primary: '#1565C0', // Deep Royal Blue
@@ -55,10 +57,20 @@
       window.MathJax = {
         tex: {
           inlineMath: [['$', '$'], ['\\(', '\\)']],
-          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
         },
-        svg: {
-          fontCache: 'global'
+        options: {
+          enableMenu: false,
+          ignoreHtmlClass: 'tex2jax_ignore',
+          processHtmlClass: 'tex2jax_process'
+        },
+        chtml: {
+          scale: 1,
+          minScale: 0.5
+        },
+        startup: {
+          typeset: true
         }
       };
     </script>
@@ -69,6 +81,22 @@
         margin: 0;
         padding: 0;
       }
+      
+      /* --- MATHJAX FIX: Prevents breaking text --- */
+      mjx-container {
+        display: inline-block !important;
+        margin: 0 2px !important;
+        vertical-align: middle !important;
+        max-width: 100% !important;
+        line-height: 0 !important;
+      }
+      
+      mjx-container[display="true"] {
+        display: block !important;
+        margin: 1em 0 !important;
+        text-align: center !important;
+      }
+
       /* Custom scrollbar for better aesthetics */
       ::-webkit-scrollbar {
         width: 8px;
@@ -183,7 +211,7 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-screen overflow-hidden transition-colors duration-200">
+  <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 fixed inset-0 overflow-hidden transition-colors duration-200">
     <div id="root" class="h-full">
       <!-- Initial Loading State (Visible immediately before React loads) -->
       <div id="app-loading">

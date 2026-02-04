@@ -1,0 +1,153 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow delete: if false;
+    }
+
+    // Admin collection for admin users
+    match /admins/{adminId} {
+      allow read, write: if request.auth != null && request.auth.uid == adminId;
+    }
+
+    // Payment requests collection
+    match /paymentRequests/{document} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && 
+                 (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if request.auth != null && isAdmin();
+      allow delete: if false;
+    }
+
+    // Courses collection
+    match /courses/{courseId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && isAdmin();
+      allow delete: if false;
+    }
+
+    // Course schedules collection
+    match /course_schedules/{courseId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && isAdmin();
+      allow delete: if request.auth != null && isAdmin();
+    }
+
+    // Course enrollments collection
+    match /enrollments/{enrollmentId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Study Groups collection (NEW Rules for Study Group Feature)
+    match /study_groups/{groupId} {
+      // Anyone logged in can read group lists and create new groups
+      allow read, create: if request.auth != null;
+      
+      // Allow update for joining/leaving (updating activeCount)
+      // Ideally, specific field rules should be used, but general auth is okay for prototype
+      allow update: if request.auth != null;
+      
+      // Only the creator or admin can delete the group
+      allow delete: if request.auth != null && (resource.data.createdBy == request.auth.uid || isAdmin());
+
+      // Members sub-collection inside study_groups
+      match /members/{memberId} {
+        // Anyone in the app can see who is in the group
+        allow read: if request.auth != null;
+        
+        // A user can only write/update/delete their OWN member document
+        // This handles join (write), update status (update), and leave (delete)
+        allow write: if request.auth != null && request.auth.uid == memberId;
+      }
+    }
+
+    // Battle rooms collection
+    match /battle_rooms/{roomId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Test collection for connection testing
+    match /test/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Telegram verifications collection
+    match /telegramVerifications/{code} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow delete: if request.auth != null;
+      allow list: if false;
+    }
+
+    // Exams collection
+    match /exams/{examId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && 
+                   (isAdmin() || resource.data.isQuestionBank == true || resource.data.isTeacherExam == true);
+      allow delete: if request.auth != null && 
+                   (isAdmin() || resource.data.createdBy == request.auth.uid);
+    }
+
+    // Attempts collection
+    match /attempts/{attemptId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Battle requests collection
+    match /battle_requests/{requestId} {
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null && 
+                         (resource.data.fromUser == request.auth.uid || 
+                          resource.data.toUser == request.auth.uid || 
+                          resource.data.toUser == null);
+      allow delete: if false;
+    }
+    
+    // Battles collection
+    match /battles/{battleId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && 
+                 (resource.data.player1 == request.auth.uid || 
+                  resource.data.player2 == request.auth.uid);
+      allow update: if request.auth != null && 
+                   (resource.data.player1 == request.auth.uid || 
+                    resource.data.player2 == request.auth.uid);
+      allow delete: if false;
+    }
+
+    // Question bank metadata collection
+    match /question_banks/{bankId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Allow reading questions from local files (if stored in Firestore)
+    match /questions/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Catch-all rule for other collections/documents
+    match /{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             (request.auth.token.admin == true ||
+              exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+  }
+}
