@@ -1,1 +1,802 @@
-
+[
+  {
+    "question": "বাংলাদেশে পানীয় জলে As (আর্সেনিক) এর গ্রহণযোগ্য মাত্রা কত?",
+    "options": ["0.01 ppm", "0.05 ppm", "0.5 g/L", "0.1 ppm"],
+    "correctAnswerIndex": 1,
+    "explanation": "WHO এর মতে আর্সেনিকের গ্রহণযোগ্য মাত্রা ০.০১ মিগ্রা/লিটার হলেও বাংলাদেশের প্রেক্ষাপটে এটি ০.০৫ মিগ্রা/লিটার।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "পরিবেশ রসায়ন"
+  },
+  {
+    "question": "বাংলাদেশের ১০০ টাকার নোটে কোন মসজিদের ছবি আছে?",
+    "options": ["মডেল মসজিদ", "ষাট গম্বুজ মসজিদ", "আতিয়া মসজিদ", "তারা মসজিদ"],
+    "correctAnswerIndex": 3,
+    "explanation": "বাংলাদেশের ১০০ টাকার নোটে তারা মসজিদের ছবি মুদ্রিত আছে।",
+    "subject": "General Knowledge",
+    "chapter": "বাংলাদেশ বিষয়াবলী"
+  },
+  {
+    "question": "Which of the following sentences is correct?",
+    "options": ["Can you run as fast as he could?", "Can you run as fast as he runs?", "Can you run as fast as he?", "Can you run as fast as he can?"],
+    "correctAnswerIndex": 3,
+    "explanation": "As fast as এর পর subject + auxiliary verb (can) বসে।",
+    "subject": "English",
+    "chapter": "Grammar"
+  },
+  {
+    "question": "নিচের কোনটি তাপহারী (endothermic) বিক্রিয়া?",
+    "options": ["C+O_2 = CO_2", "N_2+O_2 = 2NO", "CH_4+2O_2 = CO_2+2H_2O", "2H_2+O_2 = H_2O"],
+    "correctAnswerIndex": 1,
+    "explanation": "নাইট্রোজেন ও অক্সিজেনের বিক্রিয়ায় NO উৎপন্ন হওয়া একটি তাপহারী বিক্রিয়া।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "রাসায়নিক পরিবর্তন"
+  },
+  {
+    "question": "If you succeed, I shall be happy. The correct simple form of the sentence is-",
+    "options": ["I am happy when you succeed.", "I am happy for your success.", "Your success makes me happy.", "Your success will make me happy."],
+    "correctAnswerIndex": 1,
+    "explanation": "Simple sentence এ 'for your success' ফ্রেজটি উপযুক্ত।",
+    "subject": "English",
+    "chapter": "Sentence Transformation"
+  },
+  {
+    "question": "দক্ষিণ এশীয় দেশগুলোর মধ্যে কোন দেশে প্রথম মুসলিম রাষ্ট্র গড়ে উঠেছিল?",
+    "options": ["ইন্দোনেশিয়া", "ইরাক", "মালয়েশিয়া", "সেনেগাল"],
+    "correctAnswerIndex": 0,
+    "explanation": "দক্ষিণ এশিয়া ও দক্ষিণ-পূর্ব এশিয়ার মধ্যে ইন্দোনেশিয়ায় প্রথম দিককার মুসলিম প্রভাব দেখা যায়।",
+    "subject": "General Knowledge",
+    "chapter": "আন্তর্জাতিক বিষয়াবলী"
+  },
+  {
+    "question": "Which of the following is the active form of the statement: 'My book has been lost by me.'?",
+    "options": ["I had lost my book.", "I lost my book.", "I have lost my book.", "A book of mine is lost."],
+    "correctAnswerIndex": 2,
+    "explanation": "Present perfect passive এর active রূপ হবে Subject + have/has + V3।",
+    "subject": "English",
+    "chapter": "Voice Change"
+  },
+  {
+    "question": "উচ্চ প্রযুক্তির নীল এলইডিতে নিচের কোনটি ব্যবহৃত হয়?",
+    "options": ["এস-রে", "লেজার রশ্মি", "ইলেকট্রন", "গ্যালিয়াম নাইট্রাইড"],
+    "correctAnswerIndex": 3,
+    "explanation": "নীল এলইডি তৈরিতে গ্যালিয়াম নাইট্রাইড (GaN) ব্যবহৃত হয়।",
+    "subject": "Physics 2nd Paper",
+    "chapter": "সেমিকন্ডাক্টর ও ইলেকট্রনিক্স"
+  },
+  {
+    "question": "নিচের কোনটি সিলভার দর্পণ পরীক্ষা দেয়?",
+    "options": ["CH_3COOH", "HCHO", "C_2H_5OH", "CH_3COCH_3"],
+    "correctAnswerIndex": 1,
+    "explanation": "অ্যালডিহাইডসমূহ (যেমন ফরমালডিহাইড বা HCHO) টলেন বিকারকের সাথে সিলভার দর্পণ পরীক্ষা দেয়।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "জৈব যৌগ"
+  },
+  {
+    "question": "দুটি ভেক্টর রাশির মান যথাক্রমে ৮ ও ১০। এরা পরস্পর ৩০ ডিগ্রি কোণে ক্রিয়াশীল হলে এদের ভেক্টর গুণফল কত?",
+    "options": ["১৯", "২০", "৪৮", "৪০"],
+    "correctAnswerIndex": 3,
+    "explanation": "ভেক্টর গুণফলের মান = AB sinθ = 8 * 10 * sin(30°) = 80 * 0.5 = 40।",
+    "subject": "Physics 1st Paper",
+    "chapter": "ভেক্টর"
+  },
+  {
+    "question": "কোষ বিভাজনের সময় ক্রোমাটিড তৈরিতে সাহায্য করে কোন অঙ্গাণু?",
+    "options": ["লাইসোজোম (Lysosomes)", "গলগি বস্তু (Golgi bodies)", "মাইক্রোটিউবিউলস (Microtubules)", "রাইবোজোম (Ribosomes)"],
+    "correctAnswerIndex": 2,
+    "explanation": "মাইক্রোটিউবিউলস স্পিন্ডল অ্যাপারেটাস তৈরি করে ক্রোমাটিড পৃথকীকরণে সহায়তা করে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "কোষ বিভাজন"
+  },
+  {
+    "question": "নিচের কোনটি প্রধান গ্রিনহাউস গ্যাস?",
+    "options": ["CO_2", "CH_4", "O_3", "N_2O"],
+    "correctAnswerIndex": 0,
+    "explanation": "কার্বন ডাই অক্সাইড (CO_2) হলো প্রধান গ্রিনহাউস গ্যাস।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "পরিবেশ রসায়ন"
+  },
+  {
+    "question": "Which of the following is the passive form the statement: 'You have to admit this'?",
+    "options": ["You are to have admitted this", "This has to be admitted by you", "This had to be admitted by you", "This is to be admitted by you"],
+    "correctAnswerIndex": 1,
+    "explanation": "Have to/Has to এর প্যাসিভ হলো 'has to be' + V3।",
+    "subject": "English",
+    "chapter": "Voice Change"
+  },
+  {
+    "question": "রেস্ট্রিকশন এনজাইমের কাজ-",
+    "options": ["DNA তন্তু বৃদ্ধিকরণ", "DNA খন্ডকে জোড়া লাগানো", "নির্দিষ্ট স্থানে দ্বিসূত্রক DNA প্রবেশ করানো", "কাঙ্ক্ষিত DNA কে নির্দিষ্ট স্থানে কর্তন করা"],
+    "correctAnswerIndex": 3,
+    "explanation": "রেস্ট্রিকশন এনজাইমকে 'আণবিক কাঁচি' বলা হয় কারণ এটি DNA কে নির্দিষ্ট স্থানে কাটতে পারে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "জীব প্রযুক্তি"
+  },
+  {
+    "question": "আয়ুর্বেদিক শাস্ত্রের জনক কে?",
+    "options": ["পিথাগোরাস", "জোসেফ লিস্টার", "লর্ড শুরু", "লুই পাস্তর"],
+    "correctAnswerIndex": 2,
+    "explanation": "সুশ্রুতকে (Sushruta) আয়ুর্বেদিক শাস্ত্রের বা অস্ত্রোপচারের জনক বলা হয়। (স্ক্রিনশটে লর্ড শুরু লেখা আছে যা সুশ্রুত-এর অপভ্রংশ হতে পারে)।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "ইতিহাস"
+  },
+  {
+    "question": "নিচের কোন ধরনের উদ্ভিদকে ইফিমেরালস (Ephemerals) বলা হয়?",
+    "options": ["খরা সহনশীল", "লবণ সহনশীল", "খরা পলায়নকারী", "খরা প্রতিরোধী"],
+    "correctAnswerIndex": 2,
+    "explanation": "যেসব উদ্ভিদ খরার আগেই তাদের জীবনচক্র সম্পন্ন করে তাদের খরা পলায়নকারী বা ইফিমেরালস বলা হয়।",
+    "subject": "Biology 1st Paper",
+    "chapter": "বিস্তার ও সংরক্ষণ"
+  },
+  {
+    "question": "নিচের কোনটিতে হ্যাক্কেল বহিকঙ্কাল পদ্ধতি সংঘটিত হয়?",
+    "options": ["প্লাজমোডিয়াম", "হাইড্রা", "সিলেন্টেরাটা", "অ্যানিলিডা"],
+    "correctAnswerIndex": 0,
+    "explanation": "প্লাজমোডিয়াম-এর জীবনচক্রে হ্যাক্কেল সংক্রান্ত পদ্ধতি দেখা যায়।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "অণুজীব"
+  },
+  {
+    "question": "মস্তিষ্কের কোন অংশ মানুষের ক্ষুধা নিয়ন্ত্রণ করে?",
+    "options": ["মেডুলা অবলংগাটা", "সেরিবেলাম", "হাইপোথ্যালামাস", "সেরিব্রাম"],
+    "correctAnswerIndex": 2,
+    "explanation": "হাইপোথ্যালামাস শরীরের ক্ষুধা, তৃষ্ণা এবং তাপমাত্রা নিয়ন্ত্রণ করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "সমন্বয় ও নিয়ন্ত্রণ"
+  },
+  {
+    "question": "কুলম্বের সূত্র কোন ক্ষেত্রে প্রযোজ্য?",
+    "options": ["বিন্দু চার্জ", "ক্ষুদ্র চার্জ", "যে কোনো চার্জ", "বৃহৎ চার্জ"],
+    "correctAnswerIndex": 0,
+    "explanation": "কুলম্বের সূত্র মূলত দুটি স্থির বিন্দু চার্জের ক্ষেত্রে প্রযোজ্য।",
+    "subject": "Physics 2nd Paper",
+    "chapter": "স্থির তড়িৎ"
+  },
+  {
+    "question": "25°C তাপমাত্রায় O_2 এর দ্রাব্যতা 2.3 * 10^-4 M হলে ppm এককে তা কত?",
+    "options": ["6.90", "0.74", "7.01", "7.36"],
+    "correctAnswerIndex": 3,
+    "explanation": "ppm = Molarity * Molar Mass * 1000 = 2.3 * 10^-4 * 32 * 1000 ≈ 7.36।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "পরিবেশ রসায়ন"
+  },
+  {
+    "question": "লেন্সের দূরত্ব 1000 cm হলে উহার পাওয়ার ক্ষমতা কত?",
+    "options": ["+10 D", "+100D", "+0.1D", "-0.1D"],
+    "correctAnswerIndex": 2,
+    "explanation": "P = 1/f(m) = 1/10m = +0.1 D।",
+    "subject": "Physics 2nd Paper",
+    "chapter": "জ্যামিতিক আলোকবিজ্ঞান"
+  },
+  {
+    "question": "The word 'anybody' is an example of-",
+    "options": ["distributive pronoun", "relative pronoun", "reciprocal pronoun", "indefinite pronoun"],
+    "correctAnswerIndex": 3,
+    "explanation": "Anybody, someone, everyone হলো Indefinite Pronoun।",
+    "subject": "English",
+    "chapter": "Parts of Speech"
+  },
+  {
+    "question": "নিচের কোনটি লবণাক্ততা সহ্যকারী উদ্ভিদ?",
+    "options": ["স্বর্ণলতা", "আম", "ঘাস", "তেঁতুল"],
+    "correctAnswerIndex": 0,
+    "explanation": "স্বর্ণলতা (Cuscuta) বা ম্যানগ্রোভ জাতীয় উদ্ভিদ লবণাক্ততা সহ্য করতে পারে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "বিস্তার ও সংরক্ষণ"
+  },
+  {
+    "question": "মরি উপত্যকায় নিচের কোনটি উৎপন্ন করা যায়?",
+    "options": ["খেজুর", "উইলো", "ব্রোশেনবিথিন", "বেনজিন"],
+    "correctAnswerIndex": 1,
+    "explanation": "উইলো গাছ সাধারণত জলাভূমি বা উপত্যকা অঞ্চলে জন্মে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "বাংলাদেশ উদ্ভিদ"
+  },
+  {
+    "question": "নিচের কোনটিকে সংকেতদায়ক পুষ্টির জোগান বলা হয়?",
+    "options": ["থিয়ামিন", "রিডক্সিন", "ফ্ল্যাভোন", "নিউট্রোসিউটিক্যালস"],
+    "correctAnswerIndex": 3,
+    "explanation": "নিউট্রোসিউটিক্যালস খাদ্য উপাদানের পাশাপাশি ওষুধি গুণাগুণ সম্পন্ন।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "কর্মমুখী রসায়ন"
+  },
+  {
+    "question": "নিচের কোনটি পিত্তরসে পাওয়া যায় না?",
+    "options": ["অ্যামাইলেজ", "ফ্যাটি এসিড", "অ্যালবিন", "ভিটামিন"],
+    "correctAnswerIndex": 0,
+    "explanation": "অ্যামাইলেজ অগ্ন্যাশয় রস ও লালারসে থাকে, পিত্তরসে নয়।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "পরিপাক ও শোষণ"
+  },
+  {
+    "question": "রেডিয়াসের টিউবিংসিটি কোন অস্থির অংশ?",
+    "options": ["আলনা (Ulna)", "স্ক্যাপুলা (Scapula)", "রেডিয়াস (Radius)", "হিউমেরাস (Humerus)"],
+    "correctAnswerIndex": 2,
+    "explanation": "রেডিয়াল টিউবিংসিটি রেডিয়াস অস্থির একটি অংশ।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "চলন ও অঙ্গচালনা"
+  },
+  {
+    "question": "রক্তের ইউরিয়া বাড়ে নিচের কোনটির সংক্রমণে?",
+    "options": ["নেফ্রাইটিস", "সারকোয়ডোসিস", "অস্থিমজ্জা", "রক্তাল্পতা"],
+    "correctAnswerIndex": 0,
+    "explanation": "নেফ্রাইটিস বা বৃক্কের প্রদাহ হলে রক্তে ইউরিয়ার পরিমাণ বেড়ে যায়।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "বর্জ্য নিষ্কাশন"
+  },
+  {
+    "question": "পেশিতন্তু থেকে উৎপন্ন হওয়া সুক্ষ্ম তন্তুকে কি বলে?",
+    "options": ["মাইওফাইব্রিল", "সারকোলিমা", "মায়োসিন", "সারকোলেমা"],
+    "correctAnswerIndex": 0,
+    "explanation": "পেশিতন্তুর অভ্যন্তরে সুক্ষ্ম তন্তুকে মাইওফাইব্রিল বলে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "চলন ও অঙ্গচালনা"
+  },
+  {
+    "question": "শূন্য ডিগ্রি সেলসিয়াসে শুষ্ক বায়ুর ঘনত্ব 1.29 kg/m^3 হলে ১০ ডিগ্রি সেলসিয়াসে ঘনত্ব কত?",
+    "options": ["1.24", "1.20", "1.34", "1.45"],
+    "correctAnswerIndex": 0,
+    "explanation": "ρ_2 = ρ_1 * (T_1/T_2) = 1.29 * (273/283) ≈ 1.24।",
+    "subject": "Physics 1st Paper",
+    "chapter": "আদর্শ গ্যাস"
+  },
+  {
+    "question": "শব্দ উচ্চতা (sound intensity) তীব্রতা কিসে মাপা হয়?",
+    "options": ["১৮০ ডেসিবেল", "১২০ ডেসিবেল", "১০ ডেসিবেল", "১৫০ ডেসিবেল"],
+    "correctAnswerIndex": 1,
+    "explanation": "সাধারণত মানুষের শব্দের তীব্রতা ডেসিবেল (dB) এককে মাপা হয়। ১২০ dB হলো শব্দের যন্ত্রণাদায়ক সীমা।",
+    "subject": "Physics 1st Paper",
+    "chapter": "তরঙ্গ"
+  },
+  {
+    "question": "বাংলার আধুনিক ক্যালেন্ডার কবে প্রবর্তিত হয়?",
+    "options": ["ডিসেম্বর ২০১৩", "অক্টোবর ২০১৩", "সেপ্টেম্বর ২০১৩", "নভেম্বর ২০১৩"],
+    "correctAnswerIndex": 1,
+    "explanation": "১৪ই অক্টোবর ২০১৩ সালে মন্ত্রিসভার বৈঠকে বাংলা ক্যালেন্ডার সংশোধনের প্রস্তাব আসে।",
+    "subject": "General Knowledge",
+    "chapter": "বাংলাদেশ বিষয়াবলী"
+  },
+  {
+    "question": "ব্লিচিং পাউডারে কোন গ্যাস পাওয়া যায়?",
+    "options": ["ক্লোরিন গ্যাস", "কার্বন ডাই অক্সাইড", "অক্সিজেন গ্যাস", "হাইড্রোজেন গ্যাস"],
+    "correctAnswerIndex": 0,
+    "explanation": "ব্লিচিং পাউডার (Ca(OCl)Cl) থেকে ক্লোরিন গ্যাস পাওয়া যায়।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "ল্যাবরেটরির নিরাপদ ব্যবহার"
+  },
+  {
+    "question": "নিচের কোন মূলকটি অর্থো-প্যারা নির্দেশক?",
+    "options": ["-CH_3", "-NO_2", "-CHO", "-CN"],
+    "correctAnswerIndex": 0,
+    "explanation": "অ্যালকাইল মূলক (যেমন -CH_3) অর্থো-প্যারা নির্দেশক।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "জৈব যৌগ"
+  },
+  {
+    "question": "হৃদপিণ্ডের আবরণকে কি বলে?",
+    "options": ["প্লুরা", "পেরিকার্ডিয়াম", "মেনিনজেস", "পেরিটোনিয়াম"],
+    "correctAnswerIndex": 1,
+    "explanation": "হৃদপিণ্ডের দ্বি-স্তরী আবরণকে পেরিকার্ডিয়াম বলে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "ক্রসিং ওভার কিসে ঘটে?",
+    "options": ["মাইটোকন্ড্রিয়া", "সাইটোপ্লাজম", "রাইবোজোম", "ক্রোমোজোম"],
+    "correctAnswerIndex": 3,
+    "explanation": "ক্রসিং ওভার মায়োসিস বিভাজনে সমসংস্থ ক্রোমোজোমের মধ্যে ঘটে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "কোষ বিভাজন"
+  },
+  {
+    "question": "নিচের কোনটি হৃদপিণ্ডের দ্বিতীয় যান্ত্রিক লিভার হিসাবে পরিচিত?",
+    "options": ["শুশুম্না কান্ড (Spinal cord)", "এন্টেরিক স্নায়ুতন্ত্র (Enteric nervous system)", "এক্সট্রিনসিক স্নায়ুতন্ত্র (Extrinsic nervous system)", "মেডুলা অবলংগাটা (Medulla oblongata)"],
+    "correctAnswerIndex": 3,
+    "explanation": "মেডুলা অবলংগাটা হৃদস্পন্দন ও শ্বসন নিয়ন্ত্রণ করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "সমন্বয় ও নিয়ন্ত্রণ"
+  },
+  {
+    "question": "কোনটি এন্ডোপ্লাজমিক রেটিকুলামের কাজ নয়?",
+    "options": ["প্রোটিন সংশোধন", "লিপিড সংশোধন", "কার্বোহাইড্রেট সংশোধন", "গ্লাইকোজেন সংশোধন"],
+    "correctAnswerIndex": 2,
+    "explanation": "কার্বোহাইড্রেট মূলত প্লাস্টিডে বা সাইটোপ্লাজমে সংশ্লেষিত হয়।",
+    "subject": "Biology 1st Paper",
+    "chapter": "কোষ ও এর গঠন"
+  },
+  {
+    "question": "রক্তের কোন উপাদান জমাট বাঁধতে সাহায্য করে?",
+    "options": ["অ্যালবুমিন", "গ্লোবিউলিন", "ফাইব্রিনোজেন", "হিমোগ্লোবিন"],
+    "correctAnswerIndex": 2,
+    "explanation": "ফাইব্রিনোজেন রক্ত জমাট বাঁধার একটি প্রধান উপাদান।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "এন্ট্রপি কোথায় সবচেয়ে বেশী?",
+    "options": ["গ্যাসে", "তরলে", "কঠিনে", "প্লাজমায়"],
+    "correctAnswerIndex": 0,
+    "explanation": "অণুগুলোর বিশৃঙ্খলা গ্যাসীয় অবস্থায় সবচেয়ে বেশি থাকে, তাই এন্ট্রপি গ্যাসে সর্বোচ্চ।",
+    "subject": "Physics 2nd Paper",
+    "chapter": "তাপগতিবিদ্যা"
+  },
+  {
+    "question": "The chairperson...... Complete the sentence with the parts given below:",
+    "options": ["gave a good speech", "uttered a good speech", "pronounced a good speech", "made a good speech"],
+    "correctAnswerIndex": 3,
+    "explanation": "Speech এর সাথে collocation হিসেবে 'make a speech' ব্যবহৃত হয়।",
+    "subject": "English",
+    "chapter": "Grammar"
+  },
+  {
+    "question": "নিচের কোনটি হরমোন মানুষের লিঙ্গ নির্ধারণে সাহায্য করে?",
+    "options": ["অক্সিটোসিন", "প্রোজেস্টেরন", "টেস্টোস্টেরন", "ইস্ট্রোজেন"],
+    "correctAnswerIndex": 2,
+    "explanation": "টেস্টোস্টেরন পুরুষ লিঙ্গ নির্ধারণ ও বৈশিষ্ট্যে সাহায্য করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "মানব জীবনের ধারাবাহিকতা"
+  },
+  {
+    "question": "এক আলোকবর্ষ সমান কত মিটার?",
+    "options": ["9.46 * 10^15 m", "9.46 * 10^14 m", "9.46 * 10^12 m", "9.46 * 10^18 m"],
+    "correctAnswerIndex": 0,
+    "explanation": "এক আলোকবর্ষ ≈ 9.46 * 10^15 মিটার।",
+    "subject": "Physics 1st Paper",
+    "chapter": "ভৌতজগত ও পরিমাপ"
+  },
+  {
+    "question": "কোন চক্রের মাধ্যমে যকৃতে ইউরিয়া তৈরি হয়?",
+    "options": ["অরনিথিন চক্র", "নাইট্রোজেন চক্র", "কার্বন চক্র", "ক্রেবস চক্র"],
+    "correctAnswerIndex": 0,
+    "explanation": "যকৃতে অরনিথিন চক্রের মাধ্যমে অ্যামোনিয়া থেকে ইউরিয়া তৈরি হয়।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "বর্জ্য নিষ্কাশন"
+  },
+  {
+    "question": "He got the prize ...... hard work. Complete the sentence:",
+    "options": ["by dint of", "by engaging in", "by using", "by"],
+    "correctAnswerIndex": 0,
+    "explanation": "'By dint of' একটি ফ্রেজ যার অর্থ 'বদৌলতে' বা 'ফলাফলস্বরূপ'।",
+    "subject": "English",
+    "chapter": "Prepositional Phrase"
+  },
+  {
+    "question": "কোন অ্যান্টিবডি মূলত এলার্জির সাথে সম্পর্কিত?",
+    "options": ["IgG", "IgM", "IgA", "IgE"],
+    "correctAnswerIndex": 3,
+    "explanation": "IgE অ্যান্টিবডি এলার্জি ও অতিসংবেদনশীলতার সাথে জড়িত।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "মানবদেহের প্রতিরক্ষা"
+  },
+  {
+    "question": "মাশরুমের কোষ প্রাচীর কি দিয়ে গঠিত?",
+    "options": ["সেলুলোজ", "কাইটিন", "পেকটিন", "লিগনিন"],
+    "correctAnswerIndex": 1,
+    "explanation": "ছত্রাক বা মাশরুমের কোষ প্রাচীর কাইটিন (Chitin) দিয়ে গঠিত।",
+    "subject": "Biology 1st Paper",
+    "chapter": "শৈবাল ও ছত্রাক"
+  },
+  {
+    "question": "ডায়নামো কোন শক্তিতে রূপান্তরিত করে?",
+    "options": ["যান্ত্রিক শক্তিকে বিদ্যুৎ শক্তিতে", "বিদ্যুৎ শক্তিকে যান্ত্রিক শক্তিতে", "রাসায়নিক শক্তিকে বিদ্যুৎ শক্তিতে", "তাপ শক্তিকে বিদ্যুৎ শক্তিতে"],
+    "correctAnswerIndex": 0,
+    "explanation": "ডায়নামো যান্ত্রিক শক্তিকে বিদ্যুৎ শক্তিতে রূপান্তরিত করে।",
+    "subject": "Physics 2nd Paper",
+    "chapter": "তড়িৎচৌম্বকীয় আবেশ"
+  },
+  {
+    "question": "তিমি মাছের প্রধান শ্বাসঅঙ্গ কোনটি?",
+    "options": ["ফুসফুস", "ফুলকা", "ত্বক", "শ্বাসনালী"],
+    "correctAnswerIndex": 0,
+    "explanation": "তিমি স্তন্যপায়ী প্রাণী, তাই এর প্রধান শ্বাসঅঙ্গ ফুসফুস।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "প্রাণীর ভিন্নতা"
+  },
+  {
+    "question": "একটি বস্তুর ভর 2 kg। একে 10 m উপরে তুললে কৃতকাজ কত? (g = 9.8)",
+    "options": ["19.6 J", "196 J", "98 J", "20 J"],
+    "correctAnswerIndex": 1,
+    "explanation": "W = mgh = 2 * 9.8 * 10 = 196 J।",
+    "subject": "Physics 1st Paper",
+    "chapter": "কাজ, ক্ষমতা ও শক্তি"
+  },
+  {
+    "question": "মাটির নাইট্রোজেন ফিক্সেশন নিচের কোনটির মাধ্যমে হয়?",
+    "options": ["ব্যাকটেরিয়া", "ভাইরাস", "ছত্রাক", "শৈবাল"],
+    "correctAnswerIndex": 0,
+    "explanation": "রাইজোবিয়াম নামক ব্যাকটেরিয়া নাইট্রোজেন ফিক্সেশনে সাহায্য করে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "অণুজীব"
+  },
+  {
+    "question": "You may accept the gift ----- you may refuse it. (Complete with word)",
+    "options": ["and", "but", "or", "so"],
+    "correctAnswerIndex": 2,
+    "explanation": "দুটি বিকল্পের মধ্যে 'or' কনজাংশন বসে।",
+    "subject": "English",
+    "chapter": "Conjunction"
+  },
+  {
+    "question": "নিচের কোনটি বিজারক ধর্মী?",
+    "options": ["H_2S", "H_2SO_4", "HNO_3", "KMnO_4"],
+    "correctAnswerIndex": 0,
+    "explanation": "H_2S একটি সুপরিচিত বিজারক।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "পরিমাণগত রসায়ন"
+  },
+  {
+    "question": "নিচের কোনটি জারণ-বিজারণ (redox) বিক্রিয়া নয়?",
+    "options": ["Zn + CuSO_4 -> ZnSO_4 + Cu", "NaOH + HCl -> NaCl + H_2O", "H_2 + Cl_2 -> 2HCl", "2Na + Cl_2 -> 2NaCl"],
+    "correctAnswerIndex": 1,
+    "explanation": "অ্যাসিড-ক্ষার প্রশমন বিক্রিয়া জারণ-বিজারণ বিক্রিয়া নয়।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "পরিমাণগত রসায়ন"
+  },
+  {
+    "question": "নিচের কোনটি purine base?",
+    "options": ["Uracil", "Cytosine", "Thymine", "Adenine"],
+    "correctAnswerIndex": 3,
+    "explanation": "DNA/RNA এর পিউরিন বেসগুলো হলো অ্যাডেনিন ও গুয়ানিন।",
+    "subject": "Biology 1st Paper",
+    "chapter": "কোষ ও এর গঠন"
+  },
+  {
+    "question": "মস্তিষ্কের সবচেয়ে বড় অংশ কোনটি?",
+    "options": ["সেরিব্রাম", "সেরিবেলাম", "মেডুলা", "পন্স"],
+    "correctAnswerIndex": 0,
+    "explanation": "মস্তিষ্কের সবচেয়ে বড় অংশ সেরিব্রাম।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "সমন্বয় ও নিয়ন্ত্রণ"
+  },
+  {
+    "question": "রক্তের পিএইচ (pH) কত?",
+    "options": ["7.35 - 7.45", "7.0", "8.0", "6.5"],
+    "correctAnswerIndex": 0,
+    "explanation": "মানুষের রক্তের আদর্শ পিএইচ রেঞ্জ হলো ৭.৩৫ থেকে ৭.৪৫।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "নিচের কোনটি হার্ট বিট নিয়ন্ত্রণ করে?",
+    "options": ["পেসমেকার", "মস্তিষ্ক", "ফুসফুস", "যকৃৎ"],
+    "correctAnswerIndex": 0,
+    "explanation": "পেসমেকার হৃদস্পন্দনের ছন্দ নিয়ন্ত্রণ করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "The sentence 'He seems to have acted rightly' is-",
+    "options": ["Simple past", "Past continuous", "Present perfect", "Simple present"],
+    "correctAnswerIndex": 3,
+    "explanation": "'Seems' এখানে প্রেজেন্ট ফর্মে আছে, তাই এটি Simple present।",
+    "subject": "English",
+    "chapter": "Tense"
+  },
+  {
+    "question": "এন্টিবায়োটিক কিসের বিরুদ্ধে কাজ করে?",
+    "options": ["ব্যাকটেরিয়া", "ভাইরাস", "ছত্রাক", "প্রোটোজোয়া"],
+    "correctAnswerIndex": 0,
+    "explanation": "এন্টিবায়োটিক মূলত ব্যাকটেরিয়ার বৃদ্ধি রোধ বা ধ্বংস করে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "অণুজীব"
+  },
+  {
+    "question": "10% Na_2CO_3 দ্রবণের মোলারিটি কত?",
+    "options": ["0.94 M", "1.0 M", "0.5 M", "1.2 M"],
+    "correctAnswerIndex": 0,
+    "explanation": "M = (10 * 10) / 106 ≈ 0.943 M।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "পরিমাণগত রসায়ন"
+  },
+  {
+    "question": "কোন গ্যাস বায়ু দূষণের জন্য দায়ী নয়?",
+    "options": ["O_2", "CO", "SO_2", "NO_2"],
+    "correctAnswerIndex": 0,
+    "explanation": "অক্সিজেন জীবনধারণের জন্য আবশ্যক, এটি দূষণকারী নয়।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "পরিবেশ রসায়ন"
+  },
+  {
+    "question": "রক্তের পিএইচ নিয়ন্ত্রণে কোনটি বাফার হিসাবে কাজ করে?",
+    "options": ["বাইকার্বনেট বাফার", "ফসফেট বাফার", "প্রোটিন বাফার", "সবকটি"],
+    "correctAnswerIndex": 0,
+    "explanation": "বাইকার্বনেট বাফার রক্তে পিএইচ নিয়ন্ত্রণে প্রধান ভূমিকা পালন করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "বলের ঘাতের একক কোনটি?",
+    "options": ["N s", "N/s", "kg m/s", "J s"],
+    "correctAnswerIndex": 0,
+    "explanation": "বলের ঘাত = বল * সময় = N s।",
+    "subject": "Physics 1st Paper",
+    "chapter": "নিউটনিয়ান বলবিদ্যা"
+  },
+  {
+    "question": "নিচের কোনটি প্রাইমারি স্ট্যান্ডার্ড পদার্থ?",
+    "options": ["Na_2CO_3", "NaOH", "HCl", "KMnO_4"],
+    "correctAnswerIndex": 0,
+    "explanation": "Na_2CO_3 একটি প্রাইমারি স্ট্যান্ডার্ড পদার্থ।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "পরিমাণগত রসায়ন"
+  },
+  {
+    "question": "নিচের কোন কোষে নিউক্লিয়াস থাকে না?",
+    "options": ["পরিণত লোহিত রক্তকণিকা", "শ্বেত রক্তকণিকা", "নিউরন", "পেশিকোষ"],
+    "correctAnswerIndex": 0,
+    "explanation": "মানুষের পরিণত লোহিত রক্তকণিকায় নিউক্লিয়াস থাকে না।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "একটি গোলকের ব্যাস d = (10 +/- 0.1) cm হলে ক্ষেত্রফল নির্ণয়ে শতকরা ত্রুটি কত?",
+    "options": ["2%", "1%", "4%", "0.1%"],
+    "correctAnswerIndex": 0,
+    "explanation": "ক্ষেত্রফল A = π d^2। ত্রুটি = 2 * (0.1/10) * 100% = 2%।",
+    "subject": "Physics 1st Paper",
+    "chapter": "পরিমাপ"
+  },
+  {
+    "question": "পাকস্থলির এইচসিএল (HCl) ক্ষরণ নিয়ন্ত্রণ করে কোন স্নায়ু?",
+    "options": ["ভেগাস", "অপটিক", "ফেসিয়াল", "অলফ্যাক্টরি"],
+    "correctAnswerIndex": 0,
+    "explanation": "ভেগাস স্নায়ু (Vagus nerve) পাকস্থলীর কাজ নিয়ন্ত্রণ করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "সমন্বয় ও নিয়ন্ত্রণ"
+  },
+  {
+    "question": "মান শূন্য নয় এমন ভেক্টরকে তার মান দিয়ে ভাগ করলে কি পাওয়া যায়?",
+    "options": ["একক ভেক্টর", "নাল ভেক্টর", "অবস্থান ভেক্টর", "বিপ্রতীপ ভেক্টর"],
+    "correctAnswerIndex": 0,
+    "explanation": "কোন ভেক্টরকে তার মান দিয়ে ভাগ করলে ওই দিকের একক ভেক্টর পাওয়া যায়।",
+    "subject": "Physics 1st Paper",
+    "chapter": "ভেক্টর"
+  },
+  {
+    "question": "পেসমেকারের কাজ কি?",
+    "options": ["হৃদস্পন্দনের হার নিয়ন্ত্রণ", "রক্তচাপ নিয়ন্ত্রণ", "শ্বাসক্রিয়া নিয়ন্ত্রণ", "পরিপাক নিয়ন্ত্রণ"],
+    "correctAnswerIndex": 0,
+    "explanation": "পেসমেকার হৃদপিণ্ডের স্পন্দন তৈরি ও নিয়ন্ত্রণ করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "The term 'Bravo' is-",
+    "options": ["an interjection", "a conjunction", "a noun", "an adverb"],
+    "correctAnswerIndex": 0,
+    "explanation": "Bravo বিস্ময় বা প্রশংসা প্রকাশ করে, তাই এটি Interjection।",
+    "subject": "English",
+    "chapter": "Parts of Speech"
+  },
+  {
+    "question": "নিচের কোনটি উভধর্মী অক্সাইড?",
+    "options": ["Al_2O_3", "Na_2O", "CaO", "CO_2"],
+    "correctAnswerIndex": 0,
+    "explanation": "অ্যালুমিনা (Al_2O_3) এসিড ও ক্ষার উভয়ের সাথে বিক্রিয়া করে।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "পর্যায়বৃত্ত ধর্ম"
+  },
+  {
+    "question": "দুটি শব্দের কম্পাঙ্কের অনুপাত ৩:৪ হলে তরঙ্গদৈর্ঘ্যের অনুপাত কত?",
+    "options": ["৪:৩", "৩:৪", "৯:১৬", "১৬:৯"],
+    "correctAnswerIndex": 0,
+    "explanation": "তরঙ্গদৈর্ঘ্য কম্পাঙ্কের ব্যস্তানুপাতিক (λ ∝ 1/f)। অনুপাত হবে ৪:৩।",
+    "subject": "Physics 1st Paper",
+    "chapter": "তরঙ্গ"
+  },
+  {
+    "question": "I have a cow which is red. The principal clause is-",
+    "options": ["I have a cow", "which is red", "cow which is red", "a cow which is red"],
+    "correctAnswerIndex": 0,
+    "explanation": "I have a cow এখানে স্বাধীন বাক্যংশ বা Principal Clause।",
+    "subject": "English",
+    "chapter": "Clauses"
+  },
+  {
+    "question": "পৃথিবী ঘূর্ণন বন্ধ হলে মেরু অঞ্চলে বস্তুর ওজনের কি পরিবর্তন হবে?",
+    "options": ["পরিবর্তন হবে না", "বাড়বে", "কমবে", "শূন্য হবে"],
+    "correctAnswerIndex": 0,
+    "explanation": "মেরু অঞ্চলে ঘূর্ণনজনিত প্রভাব নেই, তাই ওজনের পরিবর্তন হবে না।",
+    "subject": "Physics 1st Paper",
+    "chapter": "মহাকর্ষ ও অভিকর্ষ"
+  },
+  {
+    "question": "The adverb form of 'rotation' is-",
+    "options": ["rotationally", "rotatory", "rotating", "rotate"],
+    "correctAnswerIndex": 0,
+    "explanation": "-ly যুক্ত শব্দ সাধারণত এডভার্ব হয়।",
+    "subject": "English",
+    "chapter": "Parts of Speech"
+  },
+  {
+    "question": "শিখা পরীক্ষায় কোবাল্ট গ্লাস দিয়ে পটাশিয়ামের শিখার বর্ণ কেমন দেখায়?",
+    "options": ["গোলাপী লাল", "সোনালী হলুদ", "নীলাভ সবুজ", "বেগুনি"],
+    "correctAnswerIndex": 0,
+    "explanation": "পটাশিয়ামের শিখা কোবাল্ট গ্লাসের মধ্য দিয়ে গোলাপী লাল দেখায়।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "গুণগত রসায়ন"
+  },
+  {
+    "question": "Complete: ..... Bengalis are intelligent.",
+    "options": ["The", "All", "Most", "Some"],
+    "correctAnswerIndex": 0,
+    "explanation": "জাতি বুঝাতে Plural Noun এর আগে 'The' বসে।",
+    "subject": "English",
+    "chapter": "Article"
+  },
+  {
+    "question": "He ----- when the teacher entered the room.",
+    "options": ["was studying", "studied", "had studied", "will study"],
+    "correctAnswerIndex": 0,
+    "explanation": "অতীতের দুটি কাজের মধ্যে একটি চললে Past Continuous হয়।",
+    "subject": "English",
+    "chapter": "Tense"
+  },
+  {
+    "question": "ঢাকা মেডিকেল কলেজ কবে প্রতিষ্ঠিত হয়?",
+    "options": ["১৯৪৬", "১৯৫২", "১৯২১", "১৯৪৮"],
+    "correctAnswerIndex": 0,
+    "explanation": "ঢাকা মেডিকেল কলেজ ১৯৪৬ সালে প্রতিষ্ঠিত হয়।",
+    "subject": "General Knowledge",
+    "chapter": "বাংলাদেশ বিষয়াবলী"
+  },
+  {
+    "question": "কোন ধাতুর অভাবে রক্তাল্পতা দেখা দেয়?",
+    "options": ["Fe (লোহা)", "Ca", "Mg", "Zn"],
+    "correctAnswerIndex": 0,
+    "explanation": "আয়রণ বা লোহার অভাবে রক্তে হিমোগ্লোবিন কমে এনিমিয়া হয়।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "গতিবিদ্যার সমীকরণে s দ্বারা কি বুঝায়?",
+    "options": ["সরণ", "দূরত্ব", "দ্রুতি", "সময়"],
+    "correctAnswerIndex": 0,
+    "explanation": "ফিজিক্সের সমীকরণে 's' সরণ (Displacement) নির্দেশ করে।",
+    "subject": "Physics 1st Paper",
+    "chapter": "গতিবিদ্যা"
+  },
+  {
+    "question": "কোষের অপমৃত্যুকে কি বলে?",
+    "options": ["অ্যাপোপটোসিস", "নেক্রোসিস", "অটোফেজি", "সবকটি"],
+    "correctAnswerIndex": 0,
+    "explanation": "জেনেটিকালি নিয়ন্ত্রিত কোষের মৃত্যুকে অ্যাপোপটোসিস বলে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "কোষ ও এর গঠন"
+  },
+  {
+    "question": "সড়ক পথে পঞ্চগড় থেকে টেকনাফ যাওয়ার পথে কোন জেলাটি অতিক্রম করতে হবে না?",
+    "options": ["কুড়িগ্রাম", "ঢাকা", "কুমিল্লা", "ফেনী"],
+    "correctAnswerIndex": 0,
+    "explanation": "কুড়িগ্রাম মূল রুটের বাইরে অবস্থিত।",
+    "subject": "General Knowledge",
+    "chapter": "বাংলাদেশ বিষয়াবলী"
+  },
+  {
+    "question": "রক্ত জমাট বাঁধতে নিচের কোন এনজাইম ব্যবহৃত হয়?",
+    "options": ["থ্রম্বিন", "পেপসিন", "অ্যামাইলেজ", "লাইপেজ"],
+    "correctAnswerIndex": 0,
+    "explanation": "থ্রম্বিন রক্ত জমাট বাঁধার প্রক্রিয়ায় অত্যন্ত গুরুত্বপূর্ণ।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "ডেটলের মূল উপাদান কোনটি?",
+    "options": ["ক্লোরোজাইলিনল", "আইসোপ্রোপাইল অ্যালকোহল", "পাইন তেল", "সবকটি"],
+    "correctAnswerIndex": 0,
+    "explanation": "ক্লোরোজাইলিনল হলো ডেটলের প্রধান সক্রিয় উপাদান।",
+    "subject": "Chemistry 2nd Paper",
+    "chapter": "কর্মমুখী রসায়ন"
+  },
+  {
+    "question": "নিচের কোনটি নাইট্রোজেনহীন রেচন পদার্থ?",
+    "options": ["রজন", "ইউরিয়া", "ইউরিক এসিড", "অ্যামোনিয়া"],
+    "correctAnswerIndex": 0,
+    "explanation": "রজন উদ্ভিদের একটি নাইট্রোজেনবিহীন রেচন পদার্থ।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "বর্জ্য নিষ্কাশন"
+  },
+  {
+    "question": "১৯৭১ সালে স্বাধীন বাংলা ফুটবল দলের অধিনায়ক কে ছিলেন?",
+    "options": ["জাকারিয়া পিন্টু", "সালাহউদ্দিন", "প্রতাপ শঙ্কর হাজরা", "সাইদ হাসান কানন"],
+    "correctAnswerIndex": 0,
+    "explanation": "জাকারিয়া পিন্টু ছিলেন স্বাধীন বাংলা ফুটবল দলের অধিনায়ক।",
+    "subject": "General Knowledge",
+    "chapter": "মুক্তিযুদ্ধ ও স্বাধীনতা"
+  },
+  {
+    "question": "যকৃতে শর্করা কি হিসাবে জমা থাকে?",
+    "options": ["গ্লাইকোজেন", "গ্লুকোজ", "স্টার্চ", "সুক্রোজ"],
+    "correctAnswerIndex": 0,
+    "explanation": "মানুষের যকৃতে অতিরিক্ত গ্লুকোজ গ্লাইকোজেন হিসাবে জমা থাকে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "পরিপাক ও শোষণ"
+  },
+  {
+    "question": "মুক্তিযুদ্ধ জাদুঘর কোথায় অবস্থিত?",
+    "options": ["ঢাকা", "চট্টগ্রাম", "রাজশাহী", "খুলনা"],
+    "correctAnswerIndex": 0,
+    "explanation": "মুক্তিযুদ্ধ জাদুঘর ঢাকার আগারগাঁওয়ে অবস্থিত।",
+    "subject": "General Knowledge",
+    "chapter": "বাংলাদেশ বিষয়াবলী"
+  },
+  {
+    "question": "সরল দোলকের ক্ষেত্রে ববের ওজন বাড়ালে দোলনকাল কি হবে?",
+    "options": ["পরিবর্তন হবে না", "বাড়বে", "কমবে", "দ্বিগুণ হবে"],
+    "correctAnswerIndex": 0,
+    "explanation": "দোলনকাল ববের ওজনের বা উপাদানের উপর নির্ভর করে না।",
+    "subject": "Physics 1st Paper",
+    "chapter": "পর্যাবৃত্ত গতি"
+  },
+  {
+    "question": "সোডিয়াম ক্লোরাইড কেলাস কি আকৃতির?",
+    "options": ["ঘনকাকৃতি", "গোলাকার", "লম্বাকৃতি", "সরলরৈখিক"],
+    "correctAnswerIndex": 0,
+    "explanation": "NaCl কেলাস ঘনকাকৃতি (Face-centered cubic)।",
+    "subject": "Chemistry 1st Paper",
+    "chapter": "রাসায়নিক বন্ধন"
+  },
+  {
+    "question": "বাংলার শেষ স্বাধীন নবাব কে ছিলেন?",
+    "options": ["সিরাজউদ্দৌলা", "মীর জাফর", "মীর কাসিম", "আলিবর্দী খাঁ"],
+    "correctAnswerIndex": 0,
+    "explanation": "নবাব সিরাজউদ্দৌলা ছিলেন বাংলার শেষ স্বাধীন নবাব।",
+    "subject": "General Knowledge",
+    "chapter": "বাংলাদেশ বিষয়াবলী"
+  },
+  {
+    "question": "হৃদপিণ্ডের কোন প্রকোষ্ঠ থেকে রক্ত সারা দেহে যায়?",
+    "options": ["বাম নিলয়", "ডান নিলয়", "বাম অলিন্দ", "ডান অলিন্দ"],
+    "correctAnswerIndex": 0,
+    "explanation": "বাম নিলয় (Left Ventricle) থেকে মহাধমনীর মাধ্যমে সারা দেহে রক্ত সঞ্চালিত হয়।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "রক্ত ও সঞ্চালন"
+  },
+  {
+    "question": "The word 'artisan' means-",
+    "options": ["a crafts person", "an artist", "a farmer", "a student"],
+    "correctAnswerIndex": 0,
+    "explanation": "Artisan অর্থ কারিগর বা দক্ষ হস্তশিল্পী।",
+    "subject": "English",
+    "chapter": "Vocabulary"
+  },
+  {
+    "question": "নিচের কোনটি লিপিড পরিপাককারী এনজাইম?",
+    "options": ["লাইপেজ", "পেপসিন", "ট্রিপসিন", "অ্যামাইলেজ"],
+    "correctAnswerIndex": 0,
+    "explanation": "লাইপেজ লিপিড বা চর্বি পরিপাক করে।",
+    "subject": "Biology 2nd Paper",
+    "chapter": "পরিপাক ও শোষণ"
+  },
+  {
+    "question": "গ্যালভানোমিটারের সাথে শান্ট ব্যবহার করা হয় কেন?",
+    "options": ["যন্ত্র রক্ষার জন্য", "তীব্রতা বাড়ানোর জন্য", "ভোল্টেজ কমানোর জন্য", "সবকটি"],
+    "correctAnswerIndex": 0,
+    "explanation": "অত্যধিক তড়িৎ প্রবাহ থেকে গ্যালভানোমিটারকে রক্ষা করতে শান্ট ব্যবহার করা হয়।",
+    "subject": "Physics 2nd Paper",
+    "chapter": "চল তড়িৎ"
+  },
+  {
+    "question": "২০২৪ সালে কোটা সংস্কার আন্দোলনে প্রথম শহীদ কে হন?",
+    "options": ["আবু সাঈদ", "মুগ্ধ", "রাফি", "শরীফ"],
+    "correctAnswerIndex": 0,
+    "explanation": "আবু সাঈদ ১৬ই জুলাই ২০২৪ সালে রংপুরে শহীদ হন।",
+    "subject": "General Knowledge",
+    "chapter": "সাম্প্রতিক বাংলাদেশ"
+  },
+  {
+    "question": "ভূ-চুম্বকত্বের উপাদান কয়টি?",
+    "options": ["৩টি", "৪টি", "২টি", "৫টি"],
+    "correctAnswerIndex": 0,
+    "explanation": "ভূ-চুম্বকত্বের উপাদান ৩টি: বিচ্যুতি, বিনতি ও ভূ-চৌম্বক ক্ষেত্রের অনুভূমিক প্রাবল্য।",
+    "subject": "Physics 2nd Paper",
+    "chapter": "চুম্বকত্ব"
+  },
+  {
+    "question": "রিকম্বিন্যান্ট DNA প্রযুক্তির মাধ্যমে সৃষ্ট উদ্ভিদকে কি বলে?",
+    "options": ["ট্রান্সজেনিক উদ্ভিদ", "হাইব্রিড উদ্ভিদ", "ক্লোন উদ্ভিদ", "সবকটি"],
+    "correctAnswerIndex": 0,
+    "explanation": "যে উদ্ভিদে বাইরের জিন প্রবেশ করানো হয় তাকে ট্রান্সজেনিক উদ্ভিদ বলে।",
+    "subject": "Biology 1st Paper",
+    "chapter": "জীব প্রযুক্তি"
+  }
+]
