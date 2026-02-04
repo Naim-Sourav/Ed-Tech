@@ -31,11 +31,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+    setError('');
     try {
         await loginWithGoogle();
         onClose();
     } catch (err: any) {
-        setError('Google Login Failed.');
+        console.error("Login Error:", err);
+        let msg = "Google Login Failed.";
+        if (err.code === 'auth/popup-closed-by-user') {
+            msg = "লগইন উইন্ডোটি বন্ধ করা হয়েছে।";
+        } else if (err.code === 'auth/popup-blocked') {
+            msg = "পপ-আপ ব্লক করা হয়েছে। ব্রাউজার সেটিং চেক করুন।";
+        } else if (err.code === 'auth/unauthorized-domain') {
+            msg = "এই ডোমেইনটি অথোরাইজড নয়।";
+        }
+        setError(msg);
     } finally {
         setLoading(false);
     }
@@ -47,7 +57,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError('');
 
     if (!isLogin && !validatePhone(phoneNumber)) {
-        setError(t('common_error'));
+        setError("সঠিক মোবাইল নাম্বার দিন");
         setLoading(false);
         return;
     }
@@ -69,13 +79,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/invalid-credential') {
-        setError('Invalid credentials');
+        setError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
       } else if (err.code === 'auth/email-already-in-use') {
-        setError('Email already in use');
+        setError('এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট খোলা আছে।');
       } else if (err.code === 'auth/weak-password') {
-        setError('Password too weak');
+        setError('পাসওয়ার্ড অত্যন্ত দুর্বল।');
       } else {
-        setError(t('common_error'));
+        setError('লগইন ব্যর্থ হয়েছে।');
       }
     } finally {
       setLoading(false);

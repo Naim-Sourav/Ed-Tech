@@ -1,21 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../contexts/AdminContext';
-import { Check, X, Search, Trash2, Calendar, User, Phone, CreditCard, ShieldCheck, Filter, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, BookOpen, Activity, FileText, FileJson } from 'lucide-react';
+import { Check, X, Search, Trash2, Calendar, User, Phone, CreditCard, ShieldCheck, Filter, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, BookOpen, Activity, FileText, FileJson, Edit2, Save, Image as ImageIcon, PlusCircle, AlertTriangle, Loader2, Lock, Bookmark } from 'lucide-react';
 import AdminQuestionGenerator from './AdminQuestionGenerator';
 import AdminJsonUpload from './AdminJsonUpload';
-import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI } from '../services/api';
+import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
+import { QuizQuestion } from '../types';
+import { useNavigate } from 'react-router-dom';
+
+declare global {
+  interface Window {
+    MathJax: any;
+  }
+}
 
 const AdminPage: React.FC = () => {
-  const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests } = useAdmin();
+  const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'Q_BANK' | 'DATABASE' | 'JSON_UPLOAD'>('DASHBOARD');
   const { showToast } = useToast();
+  const navigate = useNavigate();
   
   // Payment Filters
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Confirmation Modal State
+  const [confirmAction, setConfirmAction] = useState<{ type: 'APPROVE' | 'REJECT' | 'DELETE', id: string } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Notification Form
   const [notifTitle, setNotifTitle] = useState('');
@@ -23,30 +36,53 @@ const AdminPage: React.FC = () => {
   const [notifType, setNotifType] = useState<'INFO' | 'SUCCESS' | 'WARNING'>('INFO');
   const [sendingNotif, setSendingNotif] = useState(false);
 
-  // Question Viewer State
+  // Question Manager State
   const [questions, setQuestions] = useState<any[]>([]);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [qPage, setQPage] = useState(1);
   const [qSubject, setQSubject] = useState('');
   const [qChapter, setQChapter] = useState('');
+  const [qSearch, setQSearch] = useState('');
   const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<any | null>(null);
 
   useEffect(() => {
-      // Auto refresh on mount
-      refreshRequests();
-  }, []);
+      // Access Control
+      if (!isAdmin) {
+          const timer = setTimeout(() => {
+             navigate('/dashboard');
+             showToast("Access Denied: Admins Only", "error");
+          }, 3000);
+          return () => clearTimeout(timer);
+      } else {
+          // Auto refresh on mount if admin
+          refreshRequests();
+      }
+  }, [isAdmin, navigate, refreshRequests, showToast]);
 
   // Load Questions for Viewer
   useEffect(() => {
-    if (activeTab === 'DATABASE') {
-        loadQuestions();
+    if (activeTab === 'DATABASE' && isAdmin) {
+        const timeout = setTimeout(() => {
+            loadQuestions();
+        }, 500); // Debounce search
+        return () => clearTimeout(timeout);
     }
-  }, [activeTab, qPage, qSubject, qChapter]);
+  }, [activeTab, qPage, qSubject, qChapter, qSearch, isAdmin]);
+
+  // MathJax Trigger on Question Load
+  useEffect(() => {
+    if (activeTab === 'DATABASE' && questions.length > 0 && window.MathJax) {
+        setTimeout(() => {
+            window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
+        }, 200);
+    }
+  }, [questions, activeTab]);
 
   const loadQuestions = async () => {
       setLoadingQuestions(true);
       try {
-          const data = await fetchQuestionsFromBankAPI(qPage, 10, qSubject, qChapter);
+          const data = await fetchQuestionsFromBankAPI(qPage, 10, qSubject, qChapter, qSearch);
           setQuestions(data.questions);
           setTotalQuestions(data.total);
       } catch (error) {
@@ -64,6 +100,24 @@ const AdminPage: React.FC = () => {
           showToast("Question deleted", "success");
       } catch (e) {
           showToast("Failed to delete", "error");
+      }
+  };
+
+  const handleUpdateQuestion = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!editingQuestion) return;
+      try {
+          // Clean data before sending
+          const updatedData = {
+              ...editingQuestion,
+              correctAnswerIndex: Number(editingQuestion.correctAnswerIndex)
+          };
+          await updateQuestionInBankAPI(editingQuestion._id, updatedData);
+          setQuestions(prev => prev.map(q => q._id === editingQuestion._id ? updatedData : q));
+          setEditingQuestion(null);
+          showToast("প্রশ্ন সফলভাবে আপডেট হয়েছে!", "success");
+      } catch (e) {
+          showToast("আপডেট করতে সমস্যা হয়েছে", "error");
       }
   };
 
@@ -108,12 +162,258 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("আপনি কি নিশ্চিত এই এন্ট্রিটি ডিলেট করতে চান? এটি আর ফিরিয়ে আনা যাবে না।")) {
-      await deletePaymentRequest(id);
-      showToast("Deleted successfully", "info");
-    }
+  // --- Payment Action Handlers ---
+  const executeConfirmAction = async () => {
+      if (!confirmAction) return;
+      
+      setActionLoading(true);
+      try {
+          if (confirmAction.type === 'APPROVE') {
+              await approvePayment(confirmAction.id);
+              showToast("পেমেন্ট অ্যাপ্রুভ করা হয়েছে ✅", "success");
+          } else if (confirmAction.type === 'REJECT') {
+              await rejectPayment(confirmAction.id);
+              showToast("পেমেন্ট রিজেক্ট করা হয়েছে ❌", "warning");
+          } else if (confirmAction.type === 'DELETE') {
+              await deletePaymentRequest(confirmAction.id);
+              showToast("এন্ট্রি ডিলিট করা হয়েছে", "info");
+          }
+      } catch (e) {
+          showToast("অ্যাকশন সম্পন্ন হয়নি", "error");
+      } finally {
+          setActionLoading(false);
+          setConfirmAction(null);
+      }
   };
+
+  // --- Sub-Component: Question Edit Modal ---
+  const QuestionEditModal = () => {
+      if (!editingQuestion) return null;
+
+      const handleOptionChange = (idx: number, val: string) => {
+          const newOptions = [...editingQuestion.options];
+          newOptions[idx] = val;
+          setEditingQuestion({ ...editingQuestion, options: newOptions });
+      };
+
+      const handleOptionImageChange = (idx: number, val: string) => {
+          const newImages = [...(editingQuestion.optionsImages || [null, null, null, null])];
+          newImages[idx] = val;
+          setEditingQuestion({ ...editingQuestion, optionsImages: newImages });
+      };
+
+      return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <div className="bg-white dark:bg-gray-800 w-full max-w-4xl rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] animate-in zoom-in-95">
+                  <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Edit2 size={20} className="text-primary"/> প্রশ্ন সম্পাদনা (Edit Question)
+                      </h2>
+                      <button onClick={() => setEditingQuestion(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"><X size={20}/></button>
+                  </div>
+                  
+                  <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 space-y-6">
+                      {/* Meta Data */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 mb-1">Subject</label>
+                              <select 
+                                  value={editingQuestion.subject || ''} 
+                                  onChange={e => setEditingQuestion({...editingQuestion, subject: e.target.value})}
+                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                              >
+                                  <option value="">Select Subject</option>
+                                  {Object.keys(SYLLABUS_DB).map(s => <option key={s} value={s}>{s}</option>)}
+                              </select>
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 mb-1">Chapter</label>
+                              <input 
+                                  type="text" 
+                                  value={editingQuestion.chapter || ''}
+                                  onChange={e => setEditingQuestion({...editingQuestion, chapter: e.target.value})}
+                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 mb-1">Topic</label>
+                              <input 
+                                  type="text" 
+                                  value={editingQuestion.topic || ''}
+                                  onChange={e => setEditingQuestion({...editingQuestion, topic: e.target.value})}
+                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 mb-1">Exam Ref (Question Bank)</label>
+                              <input 
+                                  type="text" 
+                                  value={editingQuestion.examRef || ''}
+                                  onChange={e => setEditingQuestion({...editingQuestion, examRef: e.target.value})}
+                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm placeholder-gray-400"
+                                  placeholder="e.g. medical_23_24"
+                              />
+                          </div>
+                      </div>
+
+                      {/* Question Body */}
+                      <div>
+                          <label className="block text-xs font-bold text-gray-500 mb-1">Question Text</label>
+                          <textarea 
+                              rows={3}
+                              value={editingQuestion.question || ''}
+                              onChange={e => setEditingQuestion({...editingQuestion, question: e.target.value})}
+                              className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
+                          />
+                          <div className="mt-2">
+                              <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Question Image URL (Optional)</label>
+                              <input 
+                                  type="text" 
+                                  value={editingQuestion.questionImage || ''}
+                                  onChange={e => setEditingQuestion({...editingQuestion, questionImage: e.target.value})}
+                                  className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                  placeholder="https://example.com/image.png"
+                              />
+                          </div>
+                      </div>
+
+                      {/* Options */}
+                      <div className="space-y-3">
+                          <label className="block text-xs font-bold text-gray-500">Options</label>
+                          {[0, 1, 2, 3].map(idx => (
+                              <div key={idx} className="flex gap-2 items-start">
+                                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 shrink-0 font-bold text-xs mt-1">
+                                      {String.fromCharCode(65 + idx)}
+                                  </div>
+                                  <div className="flex-1 space-y-2">
+                                      <input 
+                                          type="text" 
+                                          value={editingQuestion.options[idx] || ''}
+                                          onChange={e => handleOptionChange(idx, e.target.value)}
+                                          className={`w-full p-2.5 rounded-xl border text-sm font-tiro ${Number(editingQuestion.correctAnswerIndex) === idx ? 'border-green-500 ring-1 ring-green-500 bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-gray-700 dark:border-gray-600'}`}
+                                          placeholder={`Option ${idx + 1}`}
+                                      />
+                                      <input 
+                                          type="text" 
+                                          value={editingQuestion.optionsImages?.[idx] || ''}
+                                          onChange={e => handleOptionImageChange(idx, e.target.value)}
+                                          className="w-full p-2 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px]"
+                                          placeholder="Option Image URL (Optional)"
+                                      />
+                                  </div>
+                                  <input 
+                                      type="radio" 
+                                      name="correctAnswer"
+                                      checked={Number(editingQuestion.correctAnswerIndex) === idx}
+                                      onChange={() => setEditingQuestion({...editingQuestion, correctAnswerIndex: idx})}
+                                      className="mt-3 w-4 h-4 accent-green-500 cursor-pointer"
+                                  />
+                              </div>
+                          ))}
+                      </div>
+
+                      {/* Explanation */}
+                      <div>
+                          <label className="block text-xs font-bold text-gray-500 mb-1">Explanation</label>
+                          <textarea 
+                              rows={3}
+                              value={editingQuestion.explanation || ''}
+                              onChange={e => setEditingQuestion({...editingQuestion, explanation: e.target.value})}
+                              className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
+                          />
+                          <div className="mt-2">
+                              <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Explanation Image URL (Optional)</label>
+                              <input 
+                                  type="text" 
+                                  value={editingQuestion.explanationImage || ''}
+                                  onChange={e => setEditingQuestion({...editingQuestion, explanationImage: e.target.value})}
+                                  className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                  placeholder="https://example.com/expl-image.png"
+                              />
+                          </div>
+                      </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 mt-4">
+                      <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Cancel</button>
+                      <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg flex items-center gap-2">
+                          <Save size={18}/> Update Question
+                      </button>
+                  </div>
+              </div>
+          </div>
+      );
+  };
+
+  // Card Skeleton for questions
+  const QuestionCardSkeleton = () => (
+    <div className="space-y-4 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 h-48"></div>
+        ))}
+    </div>
+  );
+
+  // --- CONFIRMATION MODAL ---
+  const ConfirmationModal = () => {
+      if (!confirmAction) return null;
+      
+      const isApprove = confirmAction.type === 'APPROVE';
+      const isReject = confirmAction.type === 'REJECT';
+      const isDelete = confirmAction.type === 'DELETE';
+
+      return (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
+              <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden animate-in zoom-in-95">
+                  <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isApprove ? 'bg-green-100 text-green-600' : isReject ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
+                      {isApprove && <Check size={32} strokeWidth={3}/>}
+                      {isReject && <X size={32} strokeWidth={3}/>}
+                      {isDelete && <Trash2 size={32} strokeWidth={3}/>}
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      {isApprove ? 'পেমেন্ট অ্যাপ্রুভ করবেন?' : isReject ? 'পেমেন্ট রিজেক্ট করবেন?' : 'ডিলিট করতে চান?'}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+                      {isApprove ? 'ব্যবহারকারী কোর্সে এক্সেস পেয়ে যাবেন।' : isReject ? 'ব্যবহারকারী অ্যাক্সেস পাবেন না।' : 'এই তথ্যটি আর ফিরিয়ে আনা যাবে না।'}
+                  </p>
+
+                  <div className="flex gap-3">
+                      <button 
+                          disabled={actionLoading}
+                          onClick={() => setConfirmAction(null)} 
+                          className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      >
+                          বাতিল
+                      </button>
+                      <button 
+                          disabled={actionLoading}
+                          onClick={executeConfirmAction}
+                          className={`flex-1 py-3 rounded-xl text-white font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${isApprove ? 'bg-green-600 hover:bg-green-700 shadow-green-200 dark:shadow-none' : 'bg-red-600 hover:bg-red-700 shadow-red-200 dark:shadow-none'}`}
+                      >
+                          {actionLoading ? <Loader2 className="animate-spin" size={18}/> : 'নিশ্চিত করুন'}
+                      </button>
+                  </div>
+              </div>
+          </div>
+      );
+  }
+
+  // --- ACCESS DENIED VIEW ---
+  if (!isAdmin) {
+      return (
+          <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl text-center border border-red-200 dark:border-red-900">
+                  <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Lock size={40} className="text-red-500" />
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">This area is restricted to administrators only.</p>
+                  <button onClick={() => navigate('/dashboard')} className="px-6 py-2 bg-gray-100 dark:bg-gray-700 font-bold rounded-xl">Back to Home</button>
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
@@ -143,7 +443,7 @@ const AdminPage: React.FC = () => {
                       <Database size={16} /> Generator
                    </button>
                    <button onClick={() => setActiveTab('DATABASE')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'DATABASE' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                      <Layers size={16} /> Viewer
+                      <Layers size={16} /> Manager
                    </button>
                    <button onClick={() => setActiveTab('NOTIFICATIONS')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'NOTIFICATIONS' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Bell size={16} /> নোটিফিকেশন
@@ -327,16 +627,28 @@ const AdminPage: React.FC = () => {
                               <div className="flex justify-end gap-2">
                                 {req.status === 'PENDING' && (
                                    <>
-                                    <button onClick={() => approvePayment(req.id)} className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 hover:bg-green-200 rounded-lg transition-colors" title="Approve">
-                                       <Check size={18} />
+                                    <button 
+                                        onClick={() => setConfirmAction({ type: 'APPROVE', id: req.id })} 
+                                        className="px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors text-xs font-bold flex items-center gap-1 shadow-sm"
+                                        title="Approve"
+                                    >
+                                       <Check size={14} /> অ্যাপ্রুভ
                                     </button>
-                                    <button onClick={() => rejectPayment(req.id)} className="p-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 hover:bg-yellow-200 rounded-lg transition-colors" title="Reject">
-                                       <X size={18} />
+                                    <button 
+                                        onClick={() => setConfirmAction({ type: 'REJECT', id: req.id })} 
+                                        className="px-3 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors text-xs font-bold flex items-center gap-1"
+                                        title="Reject"
+                                    >
+                                       <X size={14} /> রিজেক্ট
                                     </button>
                                    </>
                                 )}
-                                <button onClick={() => handleDelete(req.id)} className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors" title="Delete">
-                                   <Trash2 size={18} />
+                                <button 
+                                    onClick={() => setConfirmAction({ type: 'DELETE', id: req.id })} 
+                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+                                    title="Delete"
+                                >
+                                   <Trash2 size={16} />
                                 </button>
                               </div>
                            </td>
@@ -358,101 +670,153 @@ const AdminPage: React.FC = () => {
            <AdminQuestionGenerator />
         )}
 
-        {/* --- TAB: DATABASE VIEWER --- */}
+        {/* --- TAB: DATABASE VIEWER (UPDATED TO MANAGER) --- */}
         {activeTab === 'DATABASE' && (
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in">
-                {/* Filters */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="flex gap-2 w-full md:w-auto">
+                {/* Manager Header & Filters */}
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col xl:flex-row gap-4 items-center justify-between">
+                    <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
+                        <div className="relative flex-1 sm:w-64">
+                            <Search size={16} className="absolute left-3 top-3 text-gray-400"/>
+                            <input 
+                                type="text" 
+                                placeholder="Search questions..." 
+                                value={qSearch}
+                                onChange={e => { setQSearch(e.target.value); setQPage(1); }}
+                                className="w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none"
+                            />
+                        </div>
                         <select 
                             value={qSubject} 
                             onChange={e => { setQSubject(e.target.value); setQChapter(''); setQPage(1); }}
-                            className="p-2 rounded-lg border text-sm bg-white dark:bg-gray-800 dark:border-gray-600"
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
                         >
-                            <option value="">সকল বিষয়</option>
+                            <option value="">All Subjects</option>
                             {Object.keys(SYLLABUS_DB).map(s => <option key={s} value={s}>{s.split('(')[0]}</option>)}
                         </select>
                         <select 
                             value={qChapter} 
                             onChange={e => { setQChapter(e.target.value); setQPage(1); }}
                             disabled={!qSubject}
-                            className="p-2 rounded-lg border text-sm bg-white dark:bg-gray-800 dark:border-gray-600"
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
                         >
-                            <option value="">সকল অধ্যায়</option>
+                            <option value="">All Chapters</option>
                             {qSubject && Object.keys(SYLLABUS_DB[qSubject] || {}).map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
-                    <div className="text-sm text-gray-500">
-                        Total Questions: {totalQuestions}
+                    <div className="text-sm font-bold text-gray-500 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm whitespace-nowrap">
+                        Total: {totalQuestions}
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
+                {/* Professional Question List (Cards) */}
+                <div className="overflow-y-auto min-h-[400px] p-4 space-y-4 bg-gray-50/50 dark:bg-gray-900/30">
                     {loadingQuestions ? (
-                        <div className="p-12 text-center text-gray-500">Loading questions...</div>
+                        <div className="p-4"><QuestionCardSkeleton /></div>
+                    ) : questions.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+                            <Database size={48} className="opacity-20 mb-3"/>
+                            No questions found matching criteria
+                        </div>
                     ) : (
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700">
-                                <tr>
-                                    <th className="p-3 text-xs font-bold text-gray-500 uppercase">Question</th>
-                                    <th className="p-3 text-xs font-bold text-gray-500 uppercase">Subject/Topic</th>
-                                    <th className="p-3 text-xs font-bold text-gray-500 uppercase">Details</th>
-                                    <th className="p-3 text-xs font-bold text-gray-500 uppercase text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {questions.map(q => (
-                                    <tr key={q._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <td className="p-3 w-1/2">
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-200 line-clamp-2">{q.question}</p>
-                                            <div className="flex gap-2 mt-1">
-                                                {q.options.map((o: string, idx: number) => (
-                                                    <span key={idx} className={`text-[10px] px-1.5 py-0.5 rounded ${idx === q.correctAnswerIndex ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                                                        {o}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </td>
-                                        <td className="p-3 text-sm">
-                                            <div className="font-bold text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded inline-block mb-1">{q.subject?.split('(')[0]}</div>
-                                            <div className="text-gray-500 text-xs">{q.chapter}</div>
-                                            <div className="text-gray-400 text-xs italic">{q.topic}</div>
-                                        </td>
-                                        <td className="p-3 text-xs">
-                                            <span className="block mb-1 font-bold text-orange-500">{q.difficulty || 'MEDIUM'}</span>
-                                            <span className="text-gray-400">{new Date(q.createdAt).toLocaleDateString()}</span>
-                                        </td>
-                                        <td className="p-3 text-right">
-                                            <button onClick={() => handleDeleteQuestion(q._id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        questions.map(q => (
+                            <div key={q._id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-all group relative">
+                                {/* Top Badges */}
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold rounded-lg border border-blue-100 dark:border-blue-800">
+                                            {q.subject?.split('(')[0]}
+                                        </span>
+                                        {q.examRef && (
+                                            <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[10px] font-bold rounded-lg border border-purple-100 dark:border-purple-800 flex items-center gap-1">
+                                                <Bookmark size={10} fill="currentColor"/> {q.examRef}
+                                            </span>
+                                        )}
+                                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg">
+                                            {q.chapter}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button 
+                                            onClick={() => setEditingQuestion(q)}
+                                            className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-lg transition-colors" 
+                                            title="Edit"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteQuestion(q._id)} 
+                                            className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Question Content */}
+                                <div className="mb-4">
+                                    <h3 
+                                        className="text-lg font-bold text-gray-900 dark:text-white font-tiro leading-relaxed mb-2"
+                                        dangerouslySetInnerHTML={{ __html: q.question }}
+                                    ></h3>
+                                    {q.questionImage && (
+                                        <img src={q.questionImage} alt="Question" className="max-h-32 rounded-lg object-contain border border-gray-100 dark:border-gray-700"/>
+                                    )}
+                                </div>
+
+                                {/* Options Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                                    {q.options.map((opt: string, idx: number) => (
+                                        <div 
+                                            key={idx} 
+                                            className={`p-2.5 rounded-lg border text-sm flex items-center gap-3 ${idx === Number(q.correctAnswerIndex) ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300' : 'bg-gray-50/50 dark:bg-gray-700/30 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}
+                                        >
+                                            <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-gray-800' : 'border-gray-300 bg-white dark:bg-gray-800'}`}>
+                                                {String.fromCharCode(65 + idx)}
+                                            </span>
+                                            <span className="font-tiro" dangerouslySetInnerHTML={{ __html: opt }}></span>
+                                            {idx === Number(q.correctAnswerIndex) && <Check size={14} className="ml-auto text-green-600"/>}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Explanation */}
+                                {q.explanation && (
+                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border-l-4 border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300">
+                                        <span className="font-bold text-xs uppercase tracking-wider text-gray-400 mb-1 block">Explanation</span>
+                                        <span className="font-tiro leading-relaxed" dangerouslySetInnerHTML={{ __html: q.explanation }}></span>
+                                    </div>
+                                )}
+                            </div>
+                        ))
                     )}
                 </div>
 
                 {/* Pagination */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
-                    <button 
-                        disabled={qPage === 1} 
-                        onClick={() => setQPage(p => p - 1)}
-                        className="p-2 border rounded hover:bg-gray-100 disabled:opacity-50"
-                    >
-                        <ChevronLeft size={16} />
-                    </button>
-                    <span className="px-3 py-2 text-sm font-bold">{qPage}</span>
-                    <button 
-                        disabled={questions.length < 10} 
-                        onClick={() => setQPage(p => p + 1)}
-                        className="p-2 border rounded hover:bg-gray-100 disabled:opacity-50"
-                    >
-                        <ChevronRight size={16} />
-                    </button>
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
+                    <span className="text-xs text-gray-500 font-medium">Showing page {qPage}</span>
+                    <div className="flex gap-2">
+                        <button 
+                            disabled={qPage === 1} 
+                            onClick={() => setQPage(p => p - 1)}
+                            className="p-2 bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 shadow-sm"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+                        <button 
+                            disabled={questions.length < 10} 
+                            onClick={() => setQPage(p => p + 1)}
+                            className="p-2 bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 shadow-sm"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                    </div>
                 </div>
+                
+                {/* Modal Render */}
+                {QuestionEditModal()}
             </div>
         )}
 
@@ -522,6 +886,9 @@ const AdminPage: React.FC = () => {
         )}
 
       </div>
+      
+      {/* Confirmation Modal Render */}
+      <ConfirmationModal />
     </div>
   );
 };

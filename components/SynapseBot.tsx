@@ -1,16 +1,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Minimize2, X, Image as ImageIcon, Send, Sparkles, Bot } from 'lucide-react';
+import { Minimize2, X, Image as ImageIcon, Send, Sparkles, Bot, ExternalLink, ArrowLeft, Trash2, StopCircle, Loader2, CheckCircle, XCircle, HelpCircle } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
+import { useNavigate } from 'react-router-dom';
+import { useCache } from '../contexts/CacheContext';
 
 declare global {
   interface Window {
     MathJax: any;
   }
-}
-
-interface SynapseBotProps {
-  isOpen: boolean;
-  onClose: () => void;
 }
 
 interface Message {
@@ -21,105 +19,19 @@ interface Message {
   sources?: { title: string; uri: string }[];
 }
 
-// ============================================================
-// 🔑 API KEY CONFIGURATION
-// ============================================================
-// নিচে কোটেশনের ভেতর আপনার API Key টি পেস্ট করুন (প্রাইভেট রিপোর জন্য)
-const DIRECT_API_KEY = "AIzaSyAixiDwoE5VWpWsbgs_Er6xDPiIB4QU1LY"; 
+interface MCQData {
+  question: string;
+  options: { label: string; text: string }[];
+  correct: string;
+  explanation: string;
+}
 
-const SynapseBot: React.FC<SynapseBotProps> = ({ isOpen, onClose }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<{ data: string, mimeType: string } | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [chatHistory, setChatHistory] = useState<{ role: string, parts: any[] }[]>([]);
-
-  // --- STYLES ---
-  const styles = `
-    .synapse-bot-container * {
-        scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 transparent;
-    }
-    .synapse-bot-container ::-webkit-scrollbar {
-        width: 6px;
-    }
-    .synapse-bot-container ::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .synapse-bot-container ::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1;
-        border-radius: 20px;
-    }
-    .bot-loading-dot {
-        animation: bot-blink 1.4s infinite both;
-        color: #10b981;
-    }
-    .bot-loading-dot:nth-child(2) { animation-delay: 0.2s; }
-    .bot-loading-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bot-blink {
-        0%, 80%, 100% { opacity: 0; }
-        40% { opacity: 1; }
-    }
-    .mcq-option:hover:not(.disabled) {
-        transform: translateX(3px);
-    }
-    .mcq-explanation.show {
-        display: block;
-        animation: fadeIn 0.5s;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    /* MathJax Container Styling */
-    .math-content {
-        overflow-x: auto;
-        max-width: 100%;
-    }
-  `;
-
-  // --- CONFIG ---
-  const BOT_MODELS = [
-    "gemini-2.5-flash-preview-09-2025",
+const BOT_MODELS = [
+    "gemini-2.5-flash-preview-09-2025", 
     "gemini-2.5-flash-lite"
-  ];
-  
-  // Helper to securely get API Key with crash prevention
-  const getEnvKey = () => {
-    try {
-      // @ts-ignore
-      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
-        // @ts-ignore
-        return import.meta.env.VITE_API_KEY;
-      }
-    } catch (e) {}
-    
-    try {
-      // @ts-ignore
-      if (typeof process !== 'undefined' && process.env && process.env.VITE_API_KEY) {
-        // @ts-ignore
-        return process.env.VITE_API_KEY || process.env.API_KEY;
-      }
-    } catch (e) {}
-    
-    return "";
-  };
+];
 
-  // Securely get API key pool
-  const BOT_KEYS = [
-    DIRECT_API_KEY,
-    getEnvKey(),
-    "AIzaSyBNJxFT8X1ldhADeCUNXpRp-b2k2uM2RIw",
-    "AIzaSyA3Z-b1YZfuHc-e2leBTOiKkGWLawLsRvw",
-    "AIzaSyBgVW3lgdx67iuDAdzT1AXFXx5RNmeJXt0"
-  ].filter(key => key && key.length > 10 && key.startsWith('AIzaSy'));
-
-  const BOT_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
-
-  const SYSTEM_PROMPT = `তুমি হলে HSC পরীক্ষার প্রস্তুতিতে সাহায্য করার জন্য একজন অত্যন্ত জ্ঞানী, বন্ধুত্বপূর্ণ এবং স্মার্ট বড় ভাই (টিউটর)। তোমার সব উত্তর অবশ্যই নির্ভুল, সহজবোধ্য বাংলায় (বাংলা) দিতে হবে। তুমি সবসময় 'তুমি' করে সম্বোধন করবে এবং অনানুষ্ঠানিক, আন্তরিক ভাষায় কথা বলবে, যেন ছোট ভাই বা বন্ধুর সাথে কথা বলছো। তোমার লক্ষ্য হলো কঠিন বিষয়গুলো সরল ও সংক্ষিপ্তভাবে বোঝানো।
+const SYSTEM_PROMPT = `তুমি হলে HSC পরীক্ষার প্রস্তুতিতে সাহায্য করার জন্য একজন অত্যন্ত জ্ঞানী, বন্ধুত্বপূর্ণ এবং স্মার্ট বড় ভাই (টিউটর)। তোমার সব উত্তর অবশ্যই নির্ভুল, সহজবোধ্য বাংলায় (বাংলা) দিতে হবে। তুমি সবসময় 'তুমি' করে সম্বোধন করবে এবং অনানুষ্ঠানিক, আন্তরিক ভাষায় কথা বলবে, যেন ছোট ভাই বা বন্ধুর সাথে কথা বলছো। তোমার লক্ষ্য হলো কঠিন বিষয়গুলো সরল ও সংক্ষিপ্তভাবে বোঝানো।
 
 উত্তরগুলো অবশ্যই সংক্ষিপ্ত, সহজবোধ্য এবং শুধুমাত্র মূল ধারণার উপর মনোযোগ দিতে হবে। আউটপুট হবে শুধুমাত্র প্লেইন টেক্সট।
 
@@ -146,13 +58,33 @@ Use MCQs strategically when:
 - Student asks for practice questions
 - To check if student understood your explanation`;
 
+const SynapseBot: React.FC = () => {
+  const navigate = useNavigate();
+  const { getCache, setCache } = useCache();
+  const cacheKey = 'synapse_bot_state';
+  const cachedState = getCache(cacheKey) || {};
+
+  const [messages, setMessages] = useState<Message[]>(cachedState.messages || []);
+  const [chatHistory, setChatHistory] = useState<{ role: string, parts: any[] }[]>(cachedState.chatHistory || []);
+  const [mcqStates, setMcqStates] = useState<Record<string, { selected: string | null, isCorrect: boolean | null }>>(cachedState.mcqStates || {});
+
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ data: string, mimeType: string } | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // --- EFFECTS ---
   
-  // Trigger MathJax typesetting whenever messages change or bot opens
+  // Save to Cache on Update
+  useEffect(() => {
+      setCache(cacheKey, { messages, chatHistory, mcqStates });
+  }, [messages, chatHistory, mcqStates, setCache, cacheKey]);
+
   useEffect(() => {
     scrollToBottom();
     if (window.MathJax && window.MathJax.typesetPromise) {
-      // Delay slightly to ensure DOM is updated
       setTimeout(() => {
         const chatContainer = document.getElementById('synapse-chat-container');
         if (chatContainer) {
@@ -160,10 +92,54 @@ Use MCQs strategically when:
         }
       }, 100);
     }
-  }, [messages, isOpen]);
+  }, [messages, mcqStates]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+            top: chatContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+  };
+
+  // --- PARSING LOGIC ---
+  const parseMessageContent = (text: string) => {
+    const mcqRegex = /\[MCQ_START\]([\s\S]*?)\[MCQ_END\]/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = mcqRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+      }
+      
+      const mcqContent = match[1].trim();
+      const lines = mcqContent.split('\n').map(l => l.trim()).filter(l => l);
+      const mcqData: MCQData = { question: '', options: [], correct: '', explanation: '' };
+      
+      lines.forEach(line => {
+        if (line.startsWith('Question:')) mcqData.question = line.replace('Question:', '').trim();
+        else if (/^[A-D]\)/.test(line)) {
+          mcqData.options.push({ 
+            label: line.charAt(0), 
+            text: line.substring(2).trim() 
+          });
+        }
+        else if (line.startsWith('Correct:')) mcqData.correct = line.replace('Correct:', '').trim();
+        else if (line.startsWith('Explanation:')) mcqData.explanation = line.replace('Explanation:', '').trim();
+      });
+
+      parts.push({ type: 'mcq', data: mcqData });
+      lastIndex = mcqRegex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push({ type: 'text', content: text.substring(lastIndex) });
+    }
+    
+    return parts;
   };
 
   // --- HANDLERS ---
@@ -186,13 +162,32 @@ Use MCQs strategically when:
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const sendBotMessage = async (modelIndex = 0, keyIndex = 0) => {
+  const clearChat = () => {
+      if(window.confirm("চ্যাট হিস্ট্রি মুছে ফেলতে চান?")) {
+          setMessages([]);
+          setChatHistory([]);
+          setMcqStates({});
+          setCache(cacheKey, null); // Clear cache
+      }
+  }
+
+  const handleMCQOptionClick = (msgId: string, mcqIndex: number, optionLabel: string, correctLabel: string) => {
+      const stateKey = `${msgId}_${mcqIndex}`;
+      if (mcqStates[stateKey]) return; // Already answered
+
+      const isCorrect = optionLabel === correctLabel;
+      setMcqStates(prev => ({
+          ...prev,
+          [stateKey]: { selected: optionLabel, isCorrect }
+      }));
+  };
+
+  const sendBotMessage = async (modelIndex = 0) => {
     const userQuery = input.trim();
+    if (!userQuery && !selectedImage && modelIndex === 0) return;
 
-    if (modelIndex === 0 && keyIndex === 0 && !userQuery && !selectedImage) return;
-
-    // Initial State Update (Only on first attempt)
-    if (modelIndex === 0 && keyIndex === 0) {
+    // Only update UI for user message on first attempt
+    if (modelIndex === 0) {
         const newUserMsg: Message = {
             id: Date.now().toString(),
             role: 'user',
@@ -202,8 +197,14 @@ Use MCQs strategically when:
         setMessages(prev => [...prev, newUserMsg]);
         setLoading(true);
         setInput('');
-        
-        // Prepare History
+        // Reset textarea height
+        const textarea = document.querySelector('textarea');
+        if (textarea) textarea.style.height = 'auto';
+    }
+
+    // Prepare history
+    let currentHistory = [...chatHistory];
+    if (modelIndex === 0) {
         const userParts: any[] = [{ text: userQuery }];
         if (selectedImage) {
             userParts.push({
@@ -213,230 +214,215 @@ Use MCQs strategically when:
                 }
             });
         }
-        setChatHistory(prev => [...prev, { role: "user", parts: userParts }]);
+        currentHistory.push({ role: "user", parts: userParts });
+        setChatHistory(currentHistory);
         removeImage();
     }
 
     const currentModel = BOT_MODELS[modelIndex];
-    // Key rotation logic
-    const currentApiKey = BOT_KEYS[keyIndex % BOT_KEYS.length];
-    if (!currentApiKey) {
-        setMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: 'model',
-            text: "দুঃখিত! API কী পাওয়া যায়নি। দয়া করে অ্যাডমিনকে জানান।"
-        }]);
-        setLoading(false);
-        return;
-    }
-
-    const apiUrl = `${BOT_API_URL}${currentModel}:generateContent?key=${currentApiKey}`;
-
-    // Payload logic
-    let payloadHistory = [...chatHistory];
-    if (modelIndex === 0 && keyIndex === 0) {
-         const userParts: any[] = [{ text: userQuery }];
-         if (selectedImage) {
-             userParts.push({
-                 inlineData: {
-                     mimeType: selectedImage.mimeType,
-                     data: selectedImage.data
-                 }
-             });
-         }
-         payloadHistory.push({ role: "user", parts: userParts });
-    }
-
-    const payload = {
-        contents: payloadHistory,
-        tools: [{ "google_search": {} }],
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        generationConfig: { temperature: 0.2 }
-    };
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+        console.log(`Attempting API call with Model: ${currentModel}`);
+        const response = await ai.models.generateContent({
+            model: currentModel,
+            contents: currentHistory,
+            config: {
+                systemInstruction: SYSTEM_PROMPT,
+                temperature: 0.2,
+                tools: [{ googleSearch: {} }]
+            }
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status}`);
-        }
+        const botText = response.text;
 
-        const result = await response.json();
-        const candidate = result.candidates?.[0];
-
-        if (candidate && candidate.content?.parts?.[0]?.text) {
-            const botText = candidate.content.parts[0].text;
-            
-            // Extract sources
-            let sources: { title: string, uri: string }[] = [];
-            const groundingMetadata = candidate.groundingMetadata;
-            if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                sources = groundingMetadata.groundingAttributions
-                    .map((attr: any) => ({ uri: attr.web?.uri, title: attr.web?.title }))
-                    .filter((s: any) => s.uri && s.title);
+        if (botText) {
+            const sources: { title: string; uri: string }[] = [];
+            const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+            if (chunks) {
+                chunks.forEach((chunk: any) => {
+                    if (chunk.web) sources.push({ title: chunk.web.title, uri: chunk.web.uri });
+                });
             }
 
-            // Update State
-            setMessages(prev => [...prev, {
-                id: Date.now().toString(),
-                role: 'model',
+            setMessages(prev => [...prev, { 
+                id: Date.now().toString(), 
+                role: 'model', 
                 text: botText,
-                sources: sources
+                sources: sources.length > 0 ? sources : undefined
             }]);
             setChatHistory(prev => [...prev, { role: "model", parts: [{ text: botText }] }]);
             setLoading(false);
-            return;
         } else {
             throw new Error("Empty response");
         }
 
-    } catch (error) {
-        console.error(`Attempt failed with ${currentModel}:`, error);
-
+    } catch (error: any) {
+        console.error(`Error with model ${currentModel}:`, error);
+        
         // Failover Logic
-        if (keyIndex < BOT_KEYS.length - 1) {
-             sendBotMessage(modelIndex, keyIndex + 1); // Try next key
-        } else if (modelIndex < BOT_MODELS.length - 1) {
-             sendBotMessage(modelIndex + 1, 0); // Try next model
+        if (modelIndex < BOT_MODELS.length - 1) {
+            console.log(`Switching to next model...`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
+            sendBotMessage(modelIndex + 1);
         } else {
-             // All failed
-             setMessages(prev => [...prev, {
-                id: Date.now().toString(),
-                role: 'model',
-                text: "দুঃখিত! API সংযোগে সমস্যা হচ্ছে। দয়া করে একটু পরে আবার চেষ্টা করুন।"
-             }]);
-             setLoading(false);
+            setMessages(prev => [...prev, { 
+                id: Date.now().toString(), 
+                role: 'model', 
+                text: "দুঃখিত, কোনো মডেলে উত্তর দেওয়া সম্ভব হয়নি। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।" 
+            }]);
+            setLoading(false);
         }
     }
   };
 
-  // --- RENDER HELPERS ---
-
-  const parseMCQ = (text: string) => {
-      const mcqRegex = /\[MCQ_START\]([\s\S]*?)\[MCQ_END\]/g;
-      const parts = [];
-      let lastIndex = 0;
-      let match;
-
-      while ((match = mcqRegex.exec(text)) !== null) {
-          if (match.index > lastIndex) {
-              parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
-          }
-
-          const lines = match[1].trim().split('\n').map(l => l.trim()).filter(l => l);
-          const mcqData = { question: '', options: [] as any[], correct: '', explanation: '' };
-
-          lines.forEach(line => {
-              if (line.startsWith('Question:')) mcqData.question = line.replace('Question:', '').trim();
-              else if (line.match(/^[A-D]\)/)) mcqData.options.push({ label: line.charAt(0), text: line.substring(2).trim() });
-              else if (line.startsWith('Correct:')) mcqData.correct = line.replace('Correct:', '').trim();
-              else if (line.startsWith('Explanation:')) mcqData.explanation = line.replace('Explanation:', '').trim();
-          });
-
-          parts.push({ type: 'mcq', data: mcqData });
-          lastIndex = mcqRegex.lastIndex;
-      }
-      if (lastIndex < text.length) parts.push({ type: 'text', content: text.substring(lastIndex) });
-      return parts.length > 0 ? parts : [{ type: 'text', content: text }];
+  const handleSuggestion = (text: string) => {
+      setInput(text);
   };
-
-  const MCQBlock: React.FC<{ data: any }> = ({ data }) => {
-      const [selected, setSelected] = useState<string | null>(null);
-
-      return (
-          <div className="mcq-container bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4 my-3 shadow-sm">
-              <div className="mcq-question font-bold text-gray-800 dark:text-white mb-3 border-b border-dashed border-blue-200 dark:border-blue-800 pb-2 math-content">
-                  {data.question}
-              </div>
-              <div className="space-y-2">
-                  {data.options.map((opt: any) => {
-                      let btnClass = "mcq-option w-full text-left p-3 rounded-lg border flex items-start gap-3 transition-all ";
-                      if (selected) {
-                          if (opt.label === data.correct) btnClass += "bg-emerald-500 border-emerald-600 text-white font-medium shadow-md";
-                          else if (opt.label === selected) btnClass += "bg-red-50 border-red-300 text-red-800";
-                          else btnClass += "bg-gray-50 border-gray-200 opacity-60 cursor-not-allowed";
-                      } else {
-                          btnClass += "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-emerald-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-300";
-                      }
-                      
-                      return (
-                          <button key={opt.label} onClick={() => !selected && setSelected(opt.label)} disabled={!!selected} className={btnClass}>
-                              <span className="font-bold min-w-[20px]">{opt.label})</span>
-                              <span className="math-content">{opt.text}</span>
-                          </button>
-                      );
-                  })}
-              </div>
-              {selected && (
-                  <div className={`mcq-explanation show mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-500 rounded text-sm text-emerald-900 dark:text-emerald-100 math-content`}>
-                      <strong>ব্যাখ্যা:</strong> {data.explanation}
-                  </div>
-              )}
-          </div>
-      );
-  };
-
-  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 md:w-[450px] md:h-[650px] bg-white dark:bg-gray-800 md:rounded-2xl shadow-2xl z-[100] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700 font-sans animate-in slide-in-from-bottom-5 synapse-bot-container">
-      <style>{styles}</style>
+    <div className="h-full flex flex-col bg-white dark:bg-gray-900 relative">
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-emerald-700 p-4 flex items-center justify-between text-white shadow-lg shrink-0">
+      <div className="px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between sticky top-0 z-20 shadow-sm shrink-0">
          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                <Bot size={20} className="text-white" />
+            <button onClick={() => navigate(-1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors md:hidden">
+                <ArrowLeft size={20} className="text-gray-600 dark:text-gray-300"/>
+            </button>
+            <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white shadow-md">
+                <Bot size={20} />
             </div>
             <div>
-                <h3 className="font-bold text-lg leading-none">Synapse</h3>
-                <p className="text-[10px] text-green-100 opacity-90 font-medium tracking-wide mt-1 italic">তোমার HSC টিউটর বট</p>
+                <h3 className="font-bold text-base md:text-lg text-gray-800 dark:text-white flex items-center gap-2">
+                    Synapse AI <span className="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded text-[10px] font-medium border border-emerald-200 dark:border-emerald-800">BETA</span>
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">তোমার HSC পার্সোনাল টিউটর</p>
             </div>
          </div>
-         <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-            <Minimize2 size={20} />
-         </button>
+         
+         <div className="flex items-center gap-1">
+             <button onClick={clearChat} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors" title="Clear Chat">
+                <Trash2 size={18} />
+             </button>
+         </div>
       </div>
 
-      {/* Messages */}
-      <div id="synapse-chat-container" className="flex-1 overflow-y-auto p-4 bg-[#eef2f6] dark:bg-gray-900 scroll-smooth">
+      {/* Chat Area - Updated scroll logic */}
+      <div 
+        id="synapse-chat-container" 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 bg-gray-50/50 dark:bg-gray-900 scroll-smooth"
+      >
          {messages.length === 0 && (
-             <div className="text-center mt-10 p-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-md mb-4 text-emerald-600">
-                    <Sparkles size={32} />
+             <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-0 animate-in fade-in zoom-in duration-500 delay-100">
+                <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-3xl flex items-center justify-center mb-6 shadow-sm border border-emerald-100 dark:border-gray-700">
+                    <Sparkles size={40} className="text-emerald-500" />
                 </div>
-                <h4 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">Synapse: HSC ডাউট সল্ভার</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">আমি তোমার গণিত, পদার্থবিদ্যা, রসায়ন এবং জীববিজ্ঞানের যেকোনো ডাউট সমাধান করতে পারি। প্রশ্ন করো বা ছবি পাঠাও।</p>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Synapse-এ স্বাগতম!</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[250px] leading-relaxed mb-8">
+                    আমি তোমার গণিত, পদার্থবিদ্যা, রসায়ন এবং জীববিজ্ঞানের যেকোনো ডাউট সমাধান করতে পারি।
+                </p>
+                
+                <div className="flex flex-wrap justify-center gap-2">
+                    {['নিউটনের ৩য় সূত্র কী?', 'DNA এর গঠন', 'Organic Chemistry টিপস', 'Vector Math Solve'].map((s, i) => (
+                        <button 
+                            key={i} 
+                            onClick={() => handleSuggestion(s)}
+                            className="px-4 py-2 bg-white dark:bg-gray-800 border border-emerald-100 dark:border-gray-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 hover:border-emerald-400 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all shadow-sm"
+                        >
+                            {s}
+                        </button>
+                    ))}
+                </div>
              </div>
          )}
 
          {messages.map((msg) => (
-             <div key={msg.id} className={`mb-4 flex flex-col max-w-[90%] ${msg.role === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'}`}>
+             <div key={msg.id} className={`mb-6 flex flex-col ${msg.role === 'user' ? 'ml-auto items-end max-w-[85%]' : 'mr-auto items-start max-w-full md:max-w-[85%]'}`}>
                  {msg.imageUrl && (
-                     <img src={msg.imageUrl} className="max-w-[200px] rounded-lg border border-gray-200 dark:border-gray-700 mb-2 shadow-sm" alt="Upload" />
+                     <div className="mb-2 p-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                         <img src={msg.imageUrl} className="max-w-[200px] max-h-[200px] rounded-lg object-cover" alt="Upload" />
+                     </div>
                  )}
                  
-                 <div className={`p-3 md:p-4 rounded-2xl text-[0.95rem] leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-transparent text-gray-800 dark:text-gray-100 p-0 shadow-none'}`}>
+                 <div className={`px-4 py-3 rounded-2xl text-[13px] md:text-sm leading-relaxed shadow-sm ${
+                     msg.role === 'user' 
+                     ? 'bg-emerald-500 text-white rounded-tr-none' 
+                     : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-none shadow-none p-0 w-full'
+                 }`}>
                      {msg.role === 'user' ? (
                          msg.text
                      ) : (
-                         <div className="math-content">
-                             {parseMCQ(msg.text).map((part, idx) => (
-                                 part.type === 'mcq' ? <MCQBlock key={idx} data={part.data} /> : <p key={idx} className="mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{__html: (part.content || '').replace(/\n/g, '<br/>')}}></p>
-                             ))}
+                         <div className="font-tiro w-full">
+                             {/* Render Parsed Content */}
+                             {parseMessageContent(msg.text).map((part, pIdx) => {
+                                 if (part.type === 'text') {
+                                     // Enhanced Text Formatting for Bold and Line Breaks
+                                     const formattedContent = (part.content || '')
+                                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-white">$1</strong>')
+                                        .replace(/\n/g, '<br/>');
+
+                                     return (
+                                         <p key={pIdx} className="whitespace-pre-wrap mb-2 text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{__html: formattedContent}}></p>
+                                     );
+                                 } else if (part.type === 'mcq' && part.data) {
+                                     const mcq = part.data;
+                                     const stateKey = `${msg.id}_${pIdx}`;
+                                     const state = mcqStates[stateKey] || { selected: null, isCorrect: null };
+                                     
+                                     return (
+                                         <div key={pIdx} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4 my-3 shadow-sm">
+                                             <p className="font-bold text-gray-800 dark:text-white mb-3 border-b border-blue-200 dark:border-blue-800 pb-2 border-dashed">{mcq.question}</p>
+                                             <div className="space-y-2">
+                                                 {mcq.options.map((opt, oIdx) => {
+                                                     const isSelected = state.selected === opt.label;
+                                                     const isCorrect = opt.label === mcq.correct;
+                                                     
+                                                     let btnClass = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20";
+                                                     
+                                                     if (state.selected) {
+                                                         if (isCorrect) btnClass = "bg-emerald-500 text-white border-emerald-600 shadow-md";
+                                                         else if (isSelected) btnClass = "bg-red-100 text-red-700 border-red-200";
+                                                         else btnClass = "opacity-60 grayscale bg-gray-100 dark:bg-gray-800";
+                                                     }
+
+                                                     return (
+                                                         <button 
+                                                             key={oIdx}
+                                                             onClick={() => handleMCQOptionClick(msg.id, pIdx, opt.label, mcq.correct)}
+                                                             disabled={!!state.selected}
+                                                             className={`w-full text-left p-3 rounded-lg border text-sm transition-all flex items-start gap-3 ${btnClass}`}
+                                                         >
+                                                             <span className="font-bold min-w-[20px]">{opt.label})</span>
+                                                             <span>{opt.text}</span>
+                                                             {state.selected && isCorrect && <CheckCircle size={16} className="ml-auto"/>}
+                                                             {state.selected && isSelected && !isCorrect && <XCircle size={16} className="ml-auto"/>}
+                                                         </button>
+                                                     );
+                                                 })}
+                                             </div>
+                                             {state.selected && (
+                                                 <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/10 border-l-4 border-emerald-500 rounded-r-lg text-xs md:text-sm text-emerald-800 dark:text-emerald-200 animate-in fade-in slide-in-from-top-2">
+                                                     <strong>ব্যাখ্যা:</strong> {mcq.explanation}
+                                                 </div>
+                                             )}
+                                         </div>
+                                     );
+                                 }
+                                 return null;
+                             })}
+
                              {msg.sources && msg.sources.length > 0 && (
-                                 <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500">
-                                     <p className="font-bold mb-1">তথ্যসূত্র:</p>
-                                     <ul className="list-disc pl-4 space-y-1">
-                                         {msg.sources.map((s, i) => (
-                                             <li key={i}><a href={s.uri} target="_blank" rel="noreferrer" className="text-emerald-600 underline hover:text-emerald-700">{s.title || 'Source'}</a></li>
-                                         ))}
-                                     </ul>
-                                 </div>
+                                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1"><ExternalLink size={10}/> তথ্যসূত্র:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {msg.sources.map((source, sIdx) => (
+                                            <a key={sIdx} href={source.uri} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-gray-50 dark:bg-gray-700/50 rounded-md text-[10px] text-emerald-600 hover:text-emerald-700 hover:underline truncate max-w-[150px] border border-gray-100 dark:border-gray-700">
+                                                {source.title}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
                              )}
                          </div>
                      )}
@@ -444,45 +430,68 @@ Use MCQs strategically when:
              </div>
          ))}
          
-         <div ref={messagesEndRef} />
+         {loading && (
+             <div className="flex items-center gap-2 mr-auto ml-2 mb-4">
+                 <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center shadow-sm">
+                     <Loader2 size={16} className="animate-spin text-emerald-500" />
+                 </div>
+                 <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                 </div>
+             </div>
+         )}
       </div>
 
-      {/* Input Area */}
-      <div className="p-3 bg-white dark:bg-gray-800 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] shrink-0">
-         {loading && (
-             <div className="flex items-center gap-1 text-sm text-emerald-500 font-medium mb-2 pl-2">
-                 Synapse চিন্তা করছে<span className="bot-loading-dot">.</span><span className="bot-loading-dot">.</span><span className="bot-loading-dot">.</span>
-             </div>
-         )}
-
+      {/* Input Area - Improved */}
+      <div className="p-3 md:p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 z-20 shrink-0 relative">
          {previewUrl && (
-             <div className="mb-2 relative inline-block">
-                 <img src={previewUrl} className="h-20 rounded-lg border-2 border-emerald-500" alt="Preview"/>
-                 <button onClick={removeImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm hover:bg-red-600"><X size={14}/></button>
+             <div className="absolute bottom-full left-4 mb-2 p-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 animate-in slide-in-from-bottom-2 z-30">
+                 <div className="relative">
+                     <img src={previewUrl} className="h-20 w-20 object-cover rounded-lg border border-gray-100 dark:border-gray-700" alt="Preview"/>
+                     <button onClick={removeImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm hover:bg-red-600 border-2 border-white dark:border-gray-800 transition-colors">
+                         <X size={12}/>
+                     </button>
+                 </div>
              </div>
          )}
-
-         <div className="flex items-center gap-2">
-            <label className="p-3 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-full cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                <ImageIcon size={20} />
+         
+         <div className="flex items-end gap-2 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-[24px] border border-gray-200 dark:border-gray-700 focus-within:ring-2 ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-sm">
+            <label className="p-3 text-gray-400 hover:text-emerald-500 cursor-pointer transition-colors rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 shrink-0">
+                <ImageIcon size={22} />
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
             </label>
             
-            <input 
-                type="text" 
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && sendBotMessage()}
-                placeholder="তোমার প্রশ্নটি লিখো..."
-                className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all dark:text-white"
+            <textarea 
+                rows={1}
+                value={input} 
+                onChange={(e) => {
+                    setInput(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                }} 
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendBotMessage();
+                    }
+                }}
+                placeholder="আপনার প্রশ্ন লিখুন..." 
+                className="flex-1 bg-transparent border-none focus:ring-0 text-sm md:text-base text-gray-800 dark:text-white placeholder-gray-400 font-medium py-3 resize-none max-h-[120px]"
+                autoComplete="off"
             />
             
             <button 
-                onClick={() => sendBotMessage()}
-                disabled={loading || (!input.trim() && !selectedImage)}
-                className="p-3 bg-primary text-white rounded-full hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30 transition-all active:scale-95"
+                onClick={() => sendBotMessage()} 
+                disabled={loading || (!input.trim() && !selectedImage)} 
+                className={`p-3 rounded-full shadow-md transition-all active:scale-95 shrink-0 ${
+                    loading || (!input.trim() && !selectedImage)
+                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-lg'
+                }`}
             >
-                <Send size={18} />
+                {loading ? <StopCircle size={20} className="animate-pulse"/> : <Send size={20} className="ml-0.5" />}
             </button>
          </div>
       </div>

@@ -28,10 +28,23 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+    setError('');
     try {
         await loginWithGoogle();
+        // Successful login will trigger onAuthStateChanged in AuthContext
     } catch (err: any) {
-        setError('Google Login Failed. Try again.');
+        console.error("Login Error:", err);
+        let msg = "Google Login Failed.";
+        if (err.code === 'auth/popup-closed-by-user') {
+            msg = "লগইন উইন্ডোটি বন্ধ করা হয়েছে। দয়া করে আবার চেষ্টা করুন।";
+        } else if (err.code === 'auth/popup-blocked') {
+            msg = "পপ-আপ ব্লক করা হয়েছে। ব্রাউজার সেটিং চেক করুন।";
+        } else if (err.code === 'auth/unauthorized-domain') {
+            msg = "এই ডোমেইনটি অথোরাইজড নয়। (Developer Note: Add domain to Firebase Console)";
+        } else if (err.code === 'auth/network-request-failed') {
+            msg = "ইন্টারনেট সংযোগ চেক করুন।";
+        }
+        setError(msg);
     } finally {
         setLoading(false);
     }
@@ -43,7 +56,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     setError('');
 
     if (!isLogin && !validatePhone(phoneNumber)) {
-        setError(t('common_error'));
+        setError("সঠিক মোবাইল নাম্বার দিন (যেমন: 017...)");
         setLoading(false);
         return;
     }
@@ -53,26 +66,29 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Remove default cartoon avatar. Leave photoURL empty to trigger Initial Avatar UI.
         await updateProfile(userCredential.user, {
           displayName: name,
-          photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
+          photoURL: "" 
         });
         
         await syncUserToMongoDB({
             ...userCredential.user,
-            displayName: name
+            displayName: name,
+            photoURL: ""
         }, { phoneNumber });
       }
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/invalid-credential') {
-        setError('Invalid credentials');
+        setError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
       } else if (err.code === 'auth/email-already-in-use') {
-        setError('Email already in use');
+        setError('এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট খোলা আছে।');
       } else if (err.code === 'auth/weak-password') {
-        setError('Password too weak');
+        setError('পাসওয়ার্ড অত্যন্ত দুর্বল (অন্তত ৬ অক্ষর দিন)।');
       } else {
-        setError(t('common_error'));
+        setError('লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
       }
     } finally {
       setLoading(false);
@@ -131,7 +147,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
            <button
              onClick={handleGoogleLogin}
              disabled={loading}
-             className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-3 relative"
+             className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-3 relative disabled:opacity-70 disabled:cursor-not-allowed"
            >
              <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -218,7 +234,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
              <button
                type="submit"
                disabled={loading}
-               className="w-full bg-primary hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95"
+               className="w-full bg-primary hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
              >
                {loading ? (
                  <Loader2 size={24} className="animate-spin" />

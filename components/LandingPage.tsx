@@ -409,8 +409,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                                 </div>
                             </div>
                             <div className="mb-2">
-                                <p className="text-[10px] md:text-xs font-bold text-slate-200">সাদিয়া আফরিন</p>
-                                <p className="text-[8px] md:text-[10px] text-slate-400">ভিকারুননিসা নূন</p>
+                                <p className="text-[10px] md:text-xs font-bold text-slate-200">Sadia Afrin</p>
+                                <p className="text-[8px] md:text-[10px] text-slate-400">Viqarunnisa Noon</p>
                             </div>
                             <div className="w-full h-24 md:h-32 bg-gradient-to-t from-slate-800/80 to-slate-700/30 rounded-t-2xl border-t border-slate-500/30 backdrop-blur-xl relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-slate-400/5 group-hover:bg-slate-400/10 transition-colors"></div>
@@ -429,8 +429,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                                 </div>
                             </div>
                             <div className="mb-2">
-                                <p className="text-xs md:text-sm font-bold text-yellow-100">তাহমিদ খান</p>
-                                <p className="text-[9px] md:text-[10px] text-yellow-500/80">নটর ডেম কলেজ</p>
+                                <p className="text-xs md:text-sm font-bold text-yellow-100">Tahmid Khan</p>
+                                <p className="text-[9px] md:text-[10px] text-yellow-500/80">Notre Dame College</p>
                             </div>
                             <div className="w-full h-36 md:h-48 bg-gradient-to-t from-yellow-900/40 to-yellow-600/10 rounded-t-2xl border-t border-yellow-500/30 backdrop-blur-xl relative overflow-hidden shadow-[0_-10px_40px_-15px_rgba(234,179,8,0.2)] group">
                                 <div className="absolute inset-0 bg-yellow-400/5 group-hover:bg-yellow-400/10 transition-colors"></div>
@@ -451,8 +451,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                                 </div>
                             </div>
                             <div className="mb-2">
-                                <p className="text-[10px] md:text-xs font-bold text-amber-100">রাফি আহমেদ</p>
-                                <p className="text-[8px] md:text-[10px] text-amber-500/80">ঢাকা কলেজ</p>
+                                <p className="text-[10px] md:text-xs font-bold text-amber-100">Rafi Ahmed</p>
+                                <p className="text-[8px] md:text-[10px] text-amber-500/80">Dhaka College</p>
                             </div>
                             <div className="w-full h-16 md:h-24 bg-gradient-to-t from-amber-900/60 to-amber-800/20 rounded-t-2xl border-t border-amber-600/30 backdrop-blur-xl relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-amber-600/5 group-hover:bg-amber-600/10 transition-colors"></div>

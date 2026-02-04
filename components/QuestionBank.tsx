@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Archive, 
@@ -21,11 +20,23 @@ import {
   Activity,
   BrainCircuit,
   Cpu,
-  Loader2
+  Loader2,
+  Calculator,
+  Book,
+  LayoutGrid,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Bookmark
 } from 'lucide-react';
 import { SYLLABUS_DB } from '../services/syllabusData';
-import { fetchQuestionPapersAPI } from '../services/api';
-import { QuestionPaperMetadata } from '../types';
+import { fetchQuestionPapersAPI, fetchQuestionsByExamRefAPI, generateQuizFromDB, saveQuestionAPI, unsaveQuestionAPI, fetchSavedQuestionsAPI } from '../services/api';
+import { QuestionPaperMetadata, QuizQuestion } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from './Toast';
+import { useCache } from '../contexts/CacheContext';
 
 interface Category {
   id: string;
@@ -36,49 +47,70 @@ interface Category {
   papers: QuestionPaperMetadata[];
 }
 
-// Subject Mapping for Chapter-wise view
+// 1. All Available Subject Groups
 const SUBJECT_GROUPS = [
   {
     name: 'জীববিজ্ঞান (Biology)',
+    key: 'Biology', 
     icon: Dna,
     color: 'text-green-600 bg-green-100',
     papers: ['Biology 1st Paper', 'Biology 2nd Paper']
   },
   {
     name: 'রসায়ন (Chemistry)',
+    key: 'Chemistry',
     icon: Beaker,
     color: 'text-orange-600 bg-orange-100',
     papers: ['Chemistry 1st Paper', 'Chemistry 2nd Paper']
   },
   {
     name: 'পদার্থবিজ্ঞান (Physics)',
+    key: 'Physics',
     icon: Atom,
     color: 'text-purple-600 bg-purple-100',
     papers: ['Physics 1st Paper', 'Physics 2nd Paper']
   },
   {
+    name: 'উচ্চতর গণিত (Higher Math)',
+    key: 'Math',
+    icon: Calculator,
+    color: 'text-red-600 bg-red-100',
+    papers: ['Higher Math 1st Paper', 'Higher Math 2nd Paper']
+  },
+  {
     name: 'ইংরেজি (English)',
+    key: 'English',
     icon: Languages,
     color: 'text-blue-600 bg-blue-100',
     papers: ['English']
   },
   {
+    name: 'বাংলা (Bangla)',
+    key: 'Bangla',
+    icon: Book,
+    color: 'text-pink-600 bg-pink-100',
+    papers: ['Bangla 1st Paper', 'Bangla 2nd Paper']
+  },
+  {
     name: 'সাধারণ জ্ঞান (GK)',
+    key: 'General Knowledge',
     icon: Globe,
     color: 'text-cyan-600 bg-cyan-100',
     papers: ['General Knowledge']
   },
   {
-    name: 'মানসিক দক্ষতা (IQ)',
-    icon: BrainCircuit,
-    color: 'text-pink-600 bg-pink-100',
-    papers: ['Mental Ability']
-  },
-  {
     name: 'আইসিটি (ICT)',
+    key: 'ICT',
     icon: Cpu,
     color: 'text-indigo-600 bg-indigo-100',
     papers: ['ICT']
+  },
+  {
+    name: 'মানসিক দক্ষতা (IQ)',
+    key: 'Mental Ability',
+    icon: BrainCircuit,
+    color: 'text-gray-600 bg-gray-100',
+    papers: ['Mental Ability']
   }
 ];
 
@@ -87,22 +119,160 @@ const SOURCE_CONFIG: Record<string, { icon: any, color: string, bg: string, titl
     'Dental': { icon: Activity, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20', title: 'ডেন্টাল প্রশ্নব্যাংক' },
     'BUET': { icon: Cpu, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20', title: 'বুয়েট প্রশ্নব্যাংক' },
     'Dhaka_University_A': { icon: BookOpen, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', title: 'ঢাবি (ক) প্রশ্নব্যাংক' },
-    // Default fallback
+    'Guccho_A': { icon: LayoutGrid, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', title: 'গুচ্ছ (GST) প্রশ্নব্যাংক' },
     'DEFAULT': { icon: Archive, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'অন্যান্য প্রশ্নব্যাংক' }
 };
 
+// Helper to normalize subject names for display
+const getDisplaySubject = (subject: string = '') => {
+    const s = subject.toLowerCase();
+    if (s.includes('physics')) return 'Physics (পদার্থবিজ্ঞান)';
+    if (s.includes('chemistry')) return 'Chemistry (রসায়ন)';
+    if (s.includes('math')) return 'Higher Math (উচ্চতর গণিত)';
+    if (s.includes('biology')) return 'Biology (জীববিজ্ঞান)';
+    if (s.includes('english')) return 'English (ইংরেজি)';
+    if (s.includes('bangla')) return 'Bangla (বাংলা)';
+    if (s.includes('knowledge') || s.includes('gk')) return 'General Knowledge (সাধারণ জ্ঞান)';
+    if (s.includes('ict')) return 'ICT (তথ্য ও যোগাযোগ প্রযুক্তি)';
+    return subject || 'General';
+};
+
+// --- OPTIMIZED CHILD COMPONENT ---
+// This prevents the entire list from re-rendering when one question is interacted with.
+interface RevisionQuestionCardProps {
+    q: QuizQuestion;
+    idx: number;
+    userSelected: number | undefined;
+    showAllAnswers: boolean;
+    isSaved: boolean;
+    onOptionClick: (qIdx: number, oIdx: number) => void;
+    onToggleSave: (question: QuizQuestion) => void;
+}
+
+const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers, isSaved, onOptionClick, onToggleSave }: RevisionQuestionCardProps) => {
+    const isRevealed = showAllAnswers || userSelected !== undefined;
+    const correctIdx = q.correctAnswerIndex;
+
+    const getFont = (text: string = '') => {
+        const isBangla = /[\u0980-\u09FF]/.test(text);
+        return isBangla ? 'font-tiro' : 'font-sans';
+    };
+
+    return (
+        <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative group">
+            {/* Bookmark Button */}
+            <button 
+                onClick={() => onToggleSave(q)}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors z-10"
+                title="Save Question"
+            >
+                <Bookmark size={20} className={isSaved ? 'fill-primary text-primary' : ''}/>
+            </button>
+
+            <div className="flex gap-4 mb-4">
+                <span className="font-bold text-gray-300 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
+                <div className="flex-1 pr-8">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded text-[10px] font-bold border border-blue-100 dark:border-blue-800">{q.subject}</span>
+                        {q.chapter && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded text-[10px] font-bold">{q.chapter}</span>}
+                    </div>
+                    <h3 className={`font-extrabold text-gray-900 dark:text-white text-lg md:text-xl leading-relaxed ${getFont(q.question)}`}>{q.question}</h3>
+                    {q.questionImage && (
+                        <img src={q.questionImage} alt="Question" className="mt-3 max-h-40 rounded-lg object-contain border border-gray-100 dark:border-gray-700" />
+                    )}
+                </div>
+            </div>
+
+            <div className="grid gap-2">
+                {q.options.map((opt, oIdx) => {
+                    let btnClass = "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800";
+                    
+                    if (isRevealed) {
+                        if (oIdx === correctIdx) {
+                            btnClass = "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400 font-bold ring-1 ring-green-500";
+                        } else if (userSelected === oIdx) {
+                            btnClass = "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-400 font-bold ring-1 ring-red-500";
+                        } else {
+                            btnClass = "opacity-50 grayscale border-gray-200 dark:border-gray-700";
+                        }
+                    }
+
+                    return (
+                        <button 
+                            key={oIdx}
+                            onClick={() => onOptionClick(idx, oIdx)}
+                            disabled={showAllAnswers} // If globally revealed, disable interaction to prevent state thrashing
+                            className={`w-full text-left p-3 rounded-xl border text-sm transition-all flex items-start gap-3 ${btnClass}`}
+                        >
+                            <div className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-[10px] opacity-70 shrink-0 mt-0.5 font-sans font-bold">
+                                {['A','B','C','D'][oIdx]}
+                            </div>
+                            <div className="flex-1">
+                                <span className={getFont(opt)}>{opt}</span>
+                                {q.optionsImages?.[oIdx] && (
+                                    <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded object-contain border border-gray-200 dark:border-gray-600" />
+                                )}
+                            </div>
+                            {isRevealed && oIdx === correctIdx && <CheckCircle size={18} className="ml-auto text-green-600 shrink-0"/>}
+                            {isRevealed && userSelected === oIdx && userSelected !== correctIdx && <XCircle size={18} className="ml-auto text-red-600 shrink-0"/>}
+                        </button>
+                    )
+                })}
+            </div>
+
+            {/* Explanation Block - Rendered but hidden with CSS to preserve MathJax layout calculations */}
+            <div className={`mt-4 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl text-sm text-gray-700 dark:text-gray-300 border-l-4 border-blue-400 dark:border-blue-600 overflow-hidden break-words max-w-full ${isRevealed ? 'block animate-in fade-in slide-in-from-top-2' : 'hidden'}`}>
+                <p className="font-bold mb-1 flex items-center gap-2 text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400"><BookOpen size={14}/> ব্যাখ্যা</p>
+                <p className={`whitespace-pre-wrap leading-relaxed ${getFont(q.explanation)}`}>{q.explanation || "কোনো ব্যাখ্যা নেই।"}</p>
+                {q.explanationImage && (
+                    <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-40 rounded object-contain border border-gray-200 dark:border-gray-700" />
+                )}
+            </div>
+        </div>
+    );
+}, (prev, next) => {
+    // Custom comparison for React.memo to ensure minimal re-renders
+    return (
+        prev.userSelected === next.userSelected && 
+        prev.showAllAnswers === next.showAllAnswers &&
+        prev.isSaved === next.isSaved &&
+        prev.q === next.q // Shallow check for q is usually enough as questions don't change
+    );
+});
+
 const QuestionBank: React.FC = () => {
   const navigate = useNavigate();
-  const [papers, setPapers] = useState<QuestionPaperMetadata[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [viewMode, setViewMode] = useState<'YEAR' | 'CHAPTER'>('YEAR');
-  const [loading, setLoading] = useState(true);
+  const { currentUser } = useAuth();
+  const { showToast } = useToast();
+  const { getCache, setCache } = useCache();
   
-  // Chapter View State
+  const cacheKey = 'qbank_state';
+  const cachedData = getCache(cacheKey) || {};
+
+  // State initialized from cache if available
+  const [papers, setPapers] = useState<QuestionPaperMetadata[]>(cachedData.papers || []);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(cachedData.selectedCategoryId || null);
+  const [viewMode, setViewMode] = useState<'YEAR' | 'CHAPTER'>(cachedData.viewMode || 'YEAR');
+  
+  const [loading, setLoading] = useState(!cachedData.papers);
   const [expandedSubject, setExpandedSubject] = useState<string | null>(null);
+
+  // Revision Mode State
+  const [isRevisionMode, setIsRevisionMode] = useState(false);
+  const [revisionQuestions, setRevisionQuestions] = useState<QuizQuestion[]>([]);
+  const [revisionTitle, setRevisionTitle] = useState('');
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
+  const [userSelections, setUserSelections] = useState<Record<number, number>>({});
+  const [savedQuestionIds, setSavedQuestionIds] = useState<Set<string>>(new Set());
+
+  // Update Cache when state changes
+  useEffect(() => {
+      setCache(cacheKey, { papers, selectedCategoryId, viewMode });
+  }, [papers, selectedCategoryId, viewMode, setCache]);
 
   useEffect(() => {
       const loadPapers = async () => {
+          if (!cachedData.papers) setLoading(true);
           try {
               const data = await fetchQuestionPapersAPI();
               setPapers(data);
@@ -115,15 +285,24 @@ const QuestionBank: React.FC = () => {
       loadPapers();
   }, []);
 
-  const categories: Category[] = React.useMemo(() => {
+  // Optimized MathJax: Runs ONCE when revision mode starts.
+  useEffect(() => {
+    if (isRevisionMode && window.MathJax && window.MathJax.typesetPromise) {
+      // Small timeout to allow DOM to settle
+      const timer = setTimeout(() => {
+        window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isRevisionMode, revisionQuestions]); // Removed userSelections dependencies to prevent lag
+
+  const categories = useMemo(() => {
       const groups: Record<string, QuestionPaperMetadata[]> = {};
-      
       papers.forEach(p => {
           const key = p.source;
           if (!groups[key]) groups[key] = [];
           groups[key].push(p);
       });
-
       return Object.keys(groups).map(key => {
           const config = SOURCE_CONFIG[key] || { ...SOURCE_CONFIG['DEFAULT'], title: key };
           return {
@@ -137,21 +316,230 @@ const QuestionBank: React.FC = () => {
       });
   }, [papers]);
 
+  const selectedCategory = useMemo(() => {
+      return categories.find(c => c.id === selectedCategoryId) || null;
+  }, [categories, selectedCategoryId]);
+
+  const filteredSubjectGroups = useMemo(() => {
+      if (!selectedCategory) return [];
+      const availableSubjects = new Set<string>();
+      selectedCategory.papers.forEach(p => {
+          if (p.subjects && Array.isArray(p.subjects)) {
+              p.subjects.forEach(s => availableSubjects.add(s));
+          }
+      });
+      if (availableSubjects.size === 0) return SUBJECT_GROUPS;
+      return SUBJECT_GROUPS.filter(group => {
+          return group.papers.some(paperName => availableSubjects.has(paperName));
+      });
+  }, [selectedCategory]);
+
   const handleStartExam = (title: string, mode: 'YEAR' | 'CHAPTER', extraData?: any) => {
-    // Navigate to QuizArena with config
+    const examId = `past_paper_${Date.now()}`;
     const config = {
       title: title,
-      questions: [], // Initially empty, will fetch in QuizArena
-      time: 60, 
+      questions: [], 
+      timeLimit: 60,
       mode: 'ALL_AT_ONCE',
       type: 'PAST_PAPER',
       ...extraData
     };
     
-    localStorage.setItem('quiz_launch_config', JSON.stringify(config));
-    navigate('/quiz');
+    localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
+    navigate(`/exam/${examId}`);
   };
 
+  const handleStartRevision = async (title: string, type: 'YEAR' | 'CHAPTER', refId: string, subject?: string, chapter?: string) => {
+      setLoading(true);
+      try {
+          let questions: QuizQuestion[] = [];
+          if (type === 'YEAR') {
+              questions = (await fetchQuestionsByExamRefAPI(refId)) as QuizQuestion[];
+          } else if (type === 'CHAPTER' && subject && chapter) {
+              questions = (await generateQuizFromDB({
+                  subject,
+                  chapter,
+                  topics: [],
+                  count: 50
+              })) as QuizQuestion[];
+          }
+
+          if (questions.length > 0) {
+              setRevisionQuestions(questions);
+              setRevisionTitle(title);
+              setIsRevisionMode(true);
+              setShowAllAnswers(false);
+              setUserSelections({});
+              
+              if (currentUser) {
+                  try {
+                      const saved = (await fetchSavedQuestionsAPI(currentUser.uid)) as any[];
+                      const ids = new Set(saved.map((s: any) => s.questionId?._id).filter(Boolean));
+                      setSavedQuestionIds(ids);
+                  } catch (e) {
+                      console.error("Failed to sync saved questions", e);
+                  }
+              }
+          } else {
+              alert("দুঃখিত, এই অংশের জন্য কোনো প্রশ্ন পাওয়া যায়নি।");
+          }
+      } catch (e) {
+          console.error(e);
+          alert("প্রশ্ন লোড করতে সমস্যা হয়েছে।");
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  // useCallback ensures the function reference stays stable, crucial for React.memo child
+  const handleOptionClick = useCallback((qIdx: number, oIdx: number) => {
+      setUserSelections(prev => {
+          // If already selected, do nothing (optional optimization)
+          if (prev[qIdx] === oIdx) return prev;
+          return { ...prev, [qIdx]: oIdx };
+      });
+  }, []);
+
+  const toggleSaveQuestion = useCallback(async (question: QuizQuestion) => {
+      if (!currentUser) { showToast("লগইন প্রয়োজন", "warning"); return; }
+      // @ts-ignore
+      const qId = question._id;
+      if (!qId) return;
+
+      setSavedQuestionIds(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(qId)) {
+              newSet.delete(qId);
+              unsaveQuestionAPI(currentUser.uid, qId).catch(() => {});
+              showToast("বুকমার্ক রিমুভ করা হয়েছে", "info");
+          } else {
+              newSet.add(qId);
+              saveQuestionAPI(currentUser.uid, qId).catch(() => {});
+              showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
+          }
+          return newSet;
+      });
+  }, [currentUser, showToast]);
+
+  // Grouping logic for Revision Mode
+  const groupedRevisionQuestions = useMemo(() => {
+      if (!isRevisionMode) return {} as Record<string, { q: QuizQuestion, originalIdx: number }[]>;
+      const groups: Record<string, { q: QuizQuestion, originalIdx: number }[]> = {};
+      
+      revisionQuestions.forEach((q, idx) => {
+          // Normalize grouping using getDisplaySubject to handle 'Physics 1st' & 'Physics 2nd' as 'Physics' etc.
+          const groupKey = getDisplaySubject(q.subject);
+          if(!groups[groupKey]) groups[groupKey] = [];
+          groups[groupKey].push({ q, originalIdx: idx });
+      });
+      return groups;
+  }, [isRevisionMode, revisionQuestions]);
+
+  // Skeleton Loader for Categories
+  const CategoriesSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+        {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] border border-gray-200 dark:border-gray-700 h-40">
+                <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 mb-4"></div>
+                <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+        ))}
+    </div>
+  );
+
+  // --- REVISION MODE UI ---
+  if (isRevisionMode) {
+      return (
+          <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
+              {/* Revision Header */}
+              <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-20 shadow-sm">
+                  <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                          <button 
+                              onClick={() => setIsRevisionMode(false)}
+                              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                          >
+                              <ChevronLeft size={24} />
+                          </button>
+                          <div>
+                              <h1 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">{revisionTitle}</h1>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {revisionQuestions.length} টি প্রশ্ন | রিভিশন মোড
+                              </p>
+                          </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                          <button 
+                              onClick={() => {
+                                  setShowAllAnswers(prev => !prev);
+                                  // NOTE: We don't clear userSelections here to allow toggling back and forth without losing progress
+                              }}
+                              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${showAllAnswers ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                          >
+                              {showAllAnswers ? <EyeOff size={16}/> : <Eye size={16}/>} 
+                              {showAllAnswers ? 'উত্তর লুকান' : 'উত্তর দেখুন'}
+                          </button>
+                          
+                          <button 
+                              onClick={() => {
+                                  setUserSelections({});
+                                  setShowAllAnswers(false);
+                              }}
+                              className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200"
+                              title="Reset"
+                          >
+                              <RefreshCw size={18}/>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Questions List */}
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
+                  <div className="max-w-3xl mx-auto space-y-8 pb-20">
+                      {Object.entries(groupedRevisionQuestions).map(([subject, items]) => {
+                          const questionsList = items as { q: QuizQuestion, originalIdx: number }[];
+                          return (
+                          <div key={subject} className="space-y-4">
+                              {/* Subject Header - Removed sticky class */}
+                              <div className="flex items-center justify-center my-6">
+                                  <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-6 py-2 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm animate-in zoom-in">
+                                      <span className="font-black text-gray-800 dark:text-white text-sm md:text-base">
+                                          {subject} <span className="text-primary ml-1 font-mono">({questionsList.length})</span>
+                                      </span>
+                                  </div>
+                              </div>
+
+                              {/* Questions for this subject */}
+                              <div className="space-y-6">
+                                  {questionsList.map(({ q, originalIdx }) => {
+                                      // @ts-ignore
+                                      const isSaved = savedQuestionIds.has(q._id);
+                                      return (
+                                          <RevisionQuestionCard
+                                              key={originalIdx}
+                                              idx={originalIdx}
+                                              q={q}
+                                              userSelected={userSelections[originalIdx]}
+                                              showAllAnswers={showAllAnswers}
+                                              isSaved={isSaved}
+                                              onOptionClick={handleOptionClick}
+                                              onToggleSave={toggleSaveQuestion}
+                                          />
+                                      );
+                                  })}
+                              </div>
+                          </div>
+                      )})}
+                  </div>
+              </div>
+          </div>
+      );
+  }
+
+  // --- REGULAR VIEW ---
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
       
@@ -159,9 +547,9 @@ const QuestionBank: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-10 shadow-sm shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
-            {selectedCategory ? (
+            {selectedCategoryId ? (
               <button 
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => setSelectedCategoryId(null)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
               >
                 <ChevronLeft size={24} />
@@ -183,7 +571,7 @@ const QuestionBank: React.FC = () => {
           </div>
 
           {/* Tabs (Only visible when a category is selected) */}
-          {selectedCategory && (
+          {selectedCategoryId && (
             <div className="flex p-1 bg-gray-100 dark:bg-gray-700/50 rounded-xl">
               <button 
                 onClick={() => setViewMode('YEAR')}
@@ -215,15 +603,15 @@ const QuestionBank: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           
           {loading ? (
-              <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary"/></div>
-          ) : !selectedCategory ? (
+              <CategoriesSkeleton />
+          ) : !selectedCategoryId ? (
             /* --- MAIN CATEGORY GRID --- */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-4">
               {categories.length > 0 ? categories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat)}
-                  className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary shadow-sm hover:shadow-md transition-all group text-left flex flex-col h-full"
+                  onClick={() => setSelectedCategoryId(cat.id)}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary shadow-sm hover:shadow-md transition-all group text-left flex flex-col h-full"
                 >
                   <div className={`w-14 h-14 rounded-full ${cat.bg} ${cat.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                     <cat.icon size={28} />
@@ -247,12 +635,12 @@ const QuestionBank: React.FC = () => {
           ) : (
             /* --- INSIDE CATEGORY --- */
             <>
-              {viewMode === 'YEAR' && (
+              {viewMode === 'YEAR' && selectedCategory && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-8">
                   {selectedCategory.papers.map((paper) => (
                     <div 
                       key={paper.id}
-                      className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-primary/50 transition-colors"
+                      className="bg-white dark:bg-gray-800 p-4 rounded-[1.5rem] border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-primary/50 transition-colors"
                     >
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-xs shrink-0">
@@ -269,24 +657,32 @@ const QuestionBank: React.FC = () => {
                         </div>
                       </div>
 
-                      <button 
-                        onClick={() => handleStartExam(paper.title, 'YEAR', { time: paper.time, examRef: paper.id })}
-                        className="px-5 py-2.5 bg-primary hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
-                      >
-                        <Play size={16} fill="currentColor" /> পরীক্ষা দিন
-                      </button>
+                      <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleStartRevision(paper.title, 'YEAR', paper.id)}
+                            className="px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-bold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center gap-2"
+                          >
+                            <Eye size={16}/> রিভিশন দিন
+                          </button>
+                          <button 
+                            onClick={() => handleStartExam(paper.title, 'YEAR', { timeLimit: paper.time, examRef: paper.id })}
+                            className="px-5 py-2.5 bg-primary hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+                          >
+                            <Play size={16} fill="currentColor" /> পরীক্ষা দিন
+                          </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              {viewMode === 'CHAPTER' && (
+              {viewMode === 'CHAPTER' && selectedCategory && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-8">
-                  {SUBJECT_GROUPS.map((subject, idx) => {
+                  {filteredSubjectGroups.map((subject, idx) => {
                     const isExpanded = expandedSubject === subject.name;
                     
                     return (
-                      <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+                      <div key={idx} className="bg-white dark:bg-gray-800 rounded-[1.5rem] border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
                         <button 
                           onClick={() => setExpandedSubject(isExpanded ? null : subject.name)}
                           className={`w-full p-4 flex items-center justify-between transition-colors ${isExpanded ? 'bg-gray-50 dark:bg-gray-700/50' : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'}`}
@@ -318,16 +714,8 @@ const QuestionBank: React.FC = () => {
                                   </div>
                                   <div className="mt-1 space-y-1">
                                     {chapters.map((chapter, cIdx) => (
-                                      <button
+                                      <div
                                         key={cIdx}
-                                        // TODO: Pass specific config to filter ONLY questions from this chapter AND the current selectedCategory source
-                                        // Currently passing a placeholder filter concept
-                                        onClick={() => handleStartExam(`${chapter} (${selectedCategory.title})`, 'CHAPTER', { 
-                                            time: 20, 
-                                            // The backend needs to support filtering by both chapter AND source (examRef prefix) for this to work perfectly.
-                                            // For now, this will load random questions from that chapter.
-                                            // Ideally: filter: { chapter: chapter, source: selectedCategory.id } 
-                                        })}
                                         className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg group transition-colors"
                                       >
                                         <div className="flex items-center gap-3">
@@ -336,10 +724,26 @@ const QuestionBank: React.FC = () => {
                                             {chapter}
                                           </span>
                                         </div>
-                                        <div className="flex items-center text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                          পরীক্ষা দিন <ChevronRight size={14}/>
+                                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                onClick={() => handleStartRevision(chapter, 'CHAPTER', '', paperName, chapter)}
+                                                className="p-1.5 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-500"
+                                                title="Revise"
+                                            >
+                                                <Eye size={14}/>
+                                            </button>
+                                            <button 
+                                                onClick={() => handleStartExam(`${chapter} (${selectedCategory.title})`, 'CHAPTER', { 
+                                                    timeLimit: 20, 
+                                                    // Currently this launches a random quiz from that chapter.
+                                                })}
+                                                className="p-1.5 bg-primary text-white rounded hover:bg-blue-700"
+                                                title="Exam"
+                                            >
+                                                <Play size={14} fill="currentColor"/>
+                                            </button>
                                         </div>
-                                      </button>
+                                      </div>
                                     ))}
                                   </div>
                                 </div>
@@ -350,6 +754,11 @@ const QuestionBank: React.FC = () => {
                       </div>
                     );
                   })}
+                  {filteredSubjectGroups.length === 0 && (
+                      <div className="text-center py-10 text-gray-500">
+                          এই ক্যাটাগরির জন্য কোনো অধ্যায় পাওয়া যায়নি (অথবা কোনো প্রশ্ন ট্যাগ করা নেই)।
+                      </div>
+                  )}
                 </div>
               )}
             </>

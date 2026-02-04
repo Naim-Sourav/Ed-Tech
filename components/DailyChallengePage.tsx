@@ -18,7 +18,7 @@ interface DailyChallengePageProps {
   openSynapse: () => void;
 }
 
-const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) => {
+const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -120,7 +120,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
   };
 
   const handleStart = (quest: any) => { 
-      if (quest.type === 'ASK_AI') openSynapse();
+      if (quest.type === 'ASK_AI') navigate('/bot');
       else if (quest.type === 'EXAM_COMPLETE') navigate('/quiz');
       else if (quest.type === 'PLAY_BATTLE') navigate('/battle');
       else if (quest.type === 'STUDY_TIME') navigate('/tracker');
@@ -154,6 +154,24 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
   };
 
   const questsToRender = activeTab === 'DAILY' ? dailyQuests : activeTab === 'WEEKLY' ? weeklyQuests : lifetimeQuests;
+
+  // Quest List Skeleton
+  const QuestSkeleton = () => (
+    <div className="space-y-4 animate-pulse">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                    <div className="flex-1">
+                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                        <div className="h-3 w-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                    <div className="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        ))}
+    </div>
+  );
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
@@ -198,9 +216,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = ({ openSynapse }) 
          </div>
 
          {loading ? (
-             <div className="flex justify-center py-20">
-                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
-             </div>
+             <QuestSkeleton />
          ) : questsToRender.length === 0 ? (
              <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
                  <p className="text-gray-500">কোনো চ্যালেঞ্জ লোড করা যাচ্ছে না।</p>

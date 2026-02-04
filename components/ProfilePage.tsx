@@ -1,14 +1,14 @@
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth, EnrolledCourse } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import getCroppedImg from '../utils/canvasUtils';
-import Cropper from 'react-easy-crop';
-import { User, Mail, BookOpen, Edit2, Check, X, Camera, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, TrendingUp, BarChart3, AlertCircle, Zap, Filter, GraduationCap, Briefcase, Target, PieChart, Layers, RefreshCw, AlertTriangle, Clock, Play, AlignJustify, LayoutList, FolderPlus, Folder, MoveRight, Upload, Loader2, ZoomIn, ZoomOut, Lock, Swords } from 'lucide-react';
+import { User, Mail, BookOpen, Edit2, Check, X, Camera, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, TrendingUp, BarChart3, AlertCircle, Zap, Filter, GraduationCap, Briefcase, Target, PieChart, Layers, RefreshCw, AlertTriangle, Clock, Play, AlignJustify, LayoutList, FolderPlus, Folder, MoveRight, Upload, Loader2, ZoomIn, ZoomOut, Lock, Swords, CheckCircle, ChevronDown, ChevronUp, CircleDot, HelpCircle, FileQuestion, ChevronLeft, Sparkles } from 'lucide-react';
 import { useToast } from './Toast';
+import { useCache } from '../contexts/CacheContext';
 
 const AVATARS = [
   'https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=b6e3f4',
@@ -23,21 +23,28 @@ const AVATARS = [
   'https://api.dicebear.com/7.x/notionists/svg?seed=Mila&backgroundColor=c0aede'
 ];
 
+const ITEMS_PER_PAGE = 10; // Limits items per page to prevent full-page PDF saves
+
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>(); // Get userID from URL params
   const { currentUser, userAvatar, enrolledCourses, extendedProfile, updateUserProfile } = useAuth();
   const { t } = useLanguage();
   const { showToast } = useToast();
+  const { getCache, setCache } = useCache();
   
-  // Logic to determine if viewing own profile
+  // Logic to determine if you viewing own profile
   const isOwnProfile = !userId || (currentUser && currentUser.uid === userId);
   const viewingUserId = isOwnProfile ? currentUser?.uid : userId;
+  const cacheKey = `profile_${viewingUserId}`;
 
-  const [activeTab, setActiveTab] = useState<'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES'>('INFO');
+  // Cache Initialization
+  const cachedData = getCache(cacheKey) || {};
+
+  const [activeTab, setActiveTab] = useState<'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES'>(cachedData.activeTab || 'INFO');
   
-  // Profile Data State (Might be current user's or fetched public user's)
-  const [profileData, setProfileData] = useState<any>({
+  // Profile Data State
+  const [profileData, setProfileData] = useState<any>(cachedData.profileData || {
       displayName: '',
       photoURL: '',
       email: '',
@@ -48,70 +55,123 @@ const ProfilePage: React.FC = () => {
       stats: null
   });
 
-  // Profile Edit State (Only for own profile)
+  // Profile Edit State
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
-  
-  // Edit Form Fields
   const [editCollege, setEditCollege] = useState('');
   const [editHscBatch, setEditHscBatch] = useState('');
   const [editDepartment, setEditDepartment] = useState('Science');
   const [editTarget, setEditTarget] = useState('Medical');
 
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!cachedData.profileData); // Only load if no cache
   
-  // Image Upload & Crop State
+  // Image Upload State
   const [isUploading, setIsUploading] = useState(false);
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Saved Questions State
-  const [savedQuestions, setSavedQuestions] = useState<any[]>([]);
+  const [savedQuestions, setSavedQuestions] = useState<any[]>(cachedData.savedQuestions || []);
   const [loadingSaved, setLoadingSaved] = useState(false);
-  const [activeFolder, setActiveFolder] = useState<string>('All');
+  const [activeFolder, setActiveFolder] = useState<string>(cachedData.activeFolder || 'General');
   const [newFolderName, setNewFolderName] = useState('');
+  const [customFolders, setCustomFolders] = useState<string[]>(cachedData.customFolders || []); 
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [movingQuestionId, setMovingQuestionId] = useState<string | null>(null);
 
   // Mistakes State
-  const [mistakes, setMistakes] = useState<any[]>([]);
+  const [mistakes, setMistakes] = useState<any[]>(cachedData.mistakes || []);
   const [loadingMistakes, setLoadingMistakes] = useState(false);
   
-  // Filter State (Shared for Saved & Mistakes)
-  const [filterSubject, setFilterSubject] = useState<string>('ALL');
-  const [filterChapter, setFilterChapter] = useState<string>('ALL');
+  // Separate Filter States for Saved and Mistakes
+  const [savedFilterSubject, setSavedFilterSubject] = useState<string>(cachedData.savedFilterSubject || 'ALL');
+  const [savedFilterChapter, setSavedFilterChapter] = useState<string>(cachedData.savedFilterChapter || 'ALL');
+
+  const [mistakeFilterSubject, setMistakeFilterSubject] = useState<string>(cachedData.mistakeFilterSubject || 'ALL');
+  const [mistakeFilterChapter, setMistakeFilterChapter] = useState<string>(cachedData.mistakeFilterChapter || 'ALL');
+
+  // Helpers to get current filter based on active tab
+  const currentFilterSubject = activeTab === 'SAVED' ? savedFilterSubject : mistakeFilterSubject;
+  const currentFilterChapter = activeTab === 'SAVED' ? savedFilterChapter : mistakeFilterChapter;
+
+  const setCurrentFilterSubject = (val: string) => {
+      if (activeTab === 'SAVED') setSavedFilterSubject(val);
+      else if (activeTab === 'MISTAKES') setMistakeFilterSubject(val);
+  };
+
+  const setCurrentFilterChapter = (val: string) => {
+      if (activeTab === 'SAVED') setSavedFilterChapter(val);
+      else if (activeTab === 'MISTAKES') setMistakeFilterChapter(val);
+  };
+
+  const resetCurrentFilters = () => {
+      setCurrentFilterSubject('ALL');
+      setCurrentFilterChapter('ALL');
+  };
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(cachedData.currentPage || 1);
+
+  // Stats Expansion State
+  const [expandedSubjectStats, setExpandedSubjectStats] = useState<Set<string>>(new Set());
 
   // Exam Config Modal
   const [showExamConfig, setShowExamConfig] = useState(false);
   const [examTimeLimit, setExamTimeLimit] = useState(0);
   const [examViewMode, setExamViewMode] = useState<'SINGLE_PAGE' | 'ALL_AT_ONCE'>('SINGLE_PAGE');
 
-  // --- DATA LOADING ---
+  // Scroll Restoration
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  useLayoutEffect(() => {
+    if (scrollContainerRef.current && cachedData.scrollTop) {
+        scrollContainerRef.current.scrollTop = cachedData.scrollTop;
+    }
+  }, []);
+
+  // Save State to Cache on Unmount or Change
+  useEffect(() => {
+    const saveState = () => {
+        setCache(cacheKey, {
+            activeTab,
+            profileData,
+            savedQuestions,
+            mistakes,
+            activeFolder,
+            customFolders,
+            // Save separated filters
+            savedFilterSubject,
+            savedFilterChapter,
+            mistakeFilterSubject,
+            mistakeFilterChapter,
+            currentPage,
+            scrollTop: scrollContainerRef.current?.scrollTop || 0
+        });
+    };
+    saveState(); // Save on every change
+    return saveState; // And on unmount
+  }, [activeTab, profileData, savedQuestions, mistakes, activeFolder, customFolders, savedFilterSubject, savedFilterChapter, mistakeFilterSubject, mistakeFilterChapter, currentPage, setCache, cacheKey]);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [currentFilterSubject, currentFilterChapter, activeFolder, activeTab]);
+
+
+  // --- DATA LOADING ---
   useEffect(() => {
     const loadProfileData = async () => {
         if (!viewingUserId) return;
-        setLoading(true);
+        
+        // Use cache if available, but fetch background update if needed (Stale-While-Revalidate could be implemented, but here we just fetch if empty)
+        if (!cachedData.profileData) {
+            setLoading(true);
+        }
+
         try {
             if (isOwnProfile) {
-                // Load form local context
-                setProfileData({
-                    displayName: currentUser?.displayName || '',
-                    photoURL: userAvatar,
-                    email: currentUser?.email || '',
-                    college: extendedProfile?.college || '',
-                    hscBatch: extendedProfile?.hscBatch || '',
-                    department: extendedProfile?.department || 'Science',
-                    target: extendedProfile?.target || 'Medical',
-                    stats: null // Stats loaded separately
-                });
-                
-                // Init edit form
+                // Initialize edit fields
                 setNewName(currentUser?.displayName || '');
                 setSelectedAvatar(userAvatar || AVATARS[0]);
                 setEditCollege(extendedProfile?.college || '');
@@ -119,29 +179,38 @@ const ProfilePage: React.FC = () => {
                 setEditDepartment(extendedProfile?.department || 'Science');
                 setEditTarget(extendedProfile?.target || 'Medical');
 
-                // Load Stats
-                const data = await fetchUserStatsAPI(viewingUserId);
-                setProfileData((prev: any) => ({ ...prev, stats: data }));
-
+                // If we don't have stats or want to refresh
+                if (!profileData.stats) {
+                    const data = await fetchUserStatsAPI(viewingUserId);
+                    setProfileData((prev: any) => ({ 
+                        ...prev, 
+                        displayName: currentUser?.displayName || '',
+                        photoURL: userAvatar,
+                        email: currentUser?.email || '',
+                        college: extendedProfile?.college || '',
+                        hscBatch: extendedProfile?.hscBatch || '',
+                        department: extendedProfile?.department || 'Science',
+                        target: extendedProfile?.target || 'Medical',
+                        stats: data 
+                    }));
+                }
             } else {
-                // Load from API for other user
                 const data = await fetchUserStatsAPI(viewingUserId);
                 if (data) {
                     setProfileData({
                         displayName: data.user?.displayName || 'Unknown User',
                         photoURL: data.user?.photoURL || AVATARS[0],
-                        email: '', // Don't show email for others
+                        email: '',
                         college: data.user?.college || '',
                         hscBatch: data.user?.hscBatch || '',
                         department: data.user?.department || '',
                         target: data.user?.target || '',
-                        stats: data // Includes points, exams etc
+                        stats: data
                     });
                 }
             }
         } catch (e) {
             console.error("Profile load error", e);
-            showToast("Failed to load profile.", "error");
         } finally {
             setLoading(false);
         }
@@ -150,15 +219,13 @@ const ProfilePage: React.FC = () => {
   }, [viewingUserId, isOwnProfile, currentUser, userAvatar, extendedProfile]);
 
   useEffect(() => {
-    // Only load private data if viewing own profile
-    if (activeTab === 'SAVED' && isOwnProfile && viewingUserId) {
+    if (activeTab === 'SAVED' && isOwnProfile && viewingUserId && savedQuestions.length === 0) {
       loadSavedQuestions();
     }
+    // MISTAKES Tab Logic: Always fetch to ensure freshness, even if cache exists (Silent Refresh)
     if (activeTab === 'MISTAKES' && isOwnProfile && viewingUserId) {
-      loadMistakes();
+      loadMistakes(!!mistakes.length); // Pass true if we have cached data to suppress loading spinner
     }
-    setFilterSubject('ALL');
-    setFilterChapter('ALL');
   }, [activeTab, viewingUserId, isOwnProfile]);
 
   const loadSavedQuestions = async () => {
@@ -166,24 +233,25 @@ const ProfilePage: React.FC = () => {
     setLoadingSaved(true);
     try {
       const data = await fetchSavedQuestionsAPI(viewingUserId);
-      setSavedQuestions(data);
-    } catch (e) {
-      console.error("Failed to load saved questions", e);
-    } finally {
-      setLoadingSaved(false);
-    }
+      const sortedData = data.sort((a: any, b: any) => {
+          const dateA = a.savedAt ? new Date(a.savedAt).getTime() : 0;
+          const dateB = b.savedAt ? new Date(b.savedAt).getTime() : 0;
+          return dateB - dateA;
+      });
+      setSavedQuestions(sortedData);
+    } catch (e) { console.error(e); } finally { setLoadingSaved(false); }
   };
 
-  const loadMistakes = async () => {
+  const loadMistakes = async (silent = false) => {
     if (!viewingUserId) return;
-    setLoadingMistakes(true);
+    if (!silent) setLoadingMistakes(true);
     try {
       const data = await fetchUserMistakesAPI(viewingUserId);
       setMistakes(data);
-    } catch (e) {
-      console.error("Failed to load mistakes", e);
-    } finally {
-      setLoadingMistakes(false);
+    } catch (e) { 
+        console.error(e); 
+    } finally { 
+        setLoadingMistakes(false); 
     }
   };
 
@@ -196,88 +264,46 @@ const ProfilePage: React.FC = () => {
           department: editDepartment, 
           target: editTarget
       });
+      
+      // FIX: Manually update local state to reflect changes immediately
+      // This bypasses the need for a refresh as the cache is also updated by the existing useEffect
+      setProfileData((prev: any) => ({
+          ...prev,
+          displayName: newName,
+          photoURL: selectedAvatar,
+          college: editCollege,
+          hscBatch: editHscBatch,
+          department: editDepartment,
+          target: editTarget
+      }));
+
       setIsEditing(false);
       setShowAvatarSelector(false);
-      showToast("প্রোফাইল সফলভাবে আপডেট হয়েছে", "success");
+      showToast("প্রোফাইল আপডেট হয়েছে", "success");
     } catch (error) {
-      console.error("Failed to update profile", error);
-      showToast("প্রোফাইল আপডেট করতে সমস্যা হয়েছে।", "error");
+      console.error(error);
+      showToast("আপডেট ব্যর্থ হয়েছে", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- IMAGE UPLOAD & CROP LOGIC ---
-
-  const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-        showToast("অনুগ্রহ করে একটি ইমেজ ফাইল নির্বাচন করুন", "warning");
-        return;
-    }
-    
-    // Read file as Data URL for cropping
-    const reader = new FileReader();
-    reader.addEventListener('load', () => {
-        setImageSrc(reader.result?.toString() || '');
-        setZoom(1);
-        setShowAvatarSelector(false); // Close selector when file chosen
-    });
-    reader.readAsDataURL(file);
-    e.target.value = ''; // Reset input
-  };
-
-  const handleUploadCroppedImage = async () => {
-    if (!imageSrc || !croppedAreaPixels) return;
-    
     setIsUploading(true);
     try {
-        // 1. Client-side Crop & Resize (This saves bandwidth)
-        const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels, 0); // 0 Rotation
-        
-        if (!croppedBlob) {
-            throw new Error("Cropping failed");
-        }
-
-        // Convert Blob to File
-        const file = new File([croppedBlob], "profile_pic.jpg", { type: "image/jpeg" });
-
-        // 2. Upload the small, optimized file to Cloudinary
-        const imageUrl = await uploadImageToCloudinary(file);
-        
-        setSelectedAvatar(imageUrl);
-        setImageSrc(null); // Close cropper
-        showToast("ছবি আপডেট সম্পন্ন হয়েছে!", "success");
-    } catch (err) {
-        console.error(err);
-        showToast("আপলোড ব্যর্থ হয়েছে।", "error");
-    } finally {
-        setIsUploading(false);
-    }
+        const url = await uploadImageToCloudinary(file);
+        setSelectedAvatar(url);
+        setShowAvatarSelector(false);
+    } catch (e) { showToast("Upload Failed", "error"); } finally { setIsUploading(false); }
   };
 
-  const cancelCrop = () => {
-      setImageSrc(null);
-      setZoom(1);
-  };
-
-  // ... (Existing CRUD functions remain same: handleDeleteSaved, handleMoveToFolder, etc.)
   const handleDeleteSaved = async (id: string) => {
     if (!currentUser) return;
-    if (!confirm("আপনি কি নিশ্চিত এই প্রশ্নটি ডিলিট করতে চান?")) return;
-    try {
-      await deleteSavedQuestionAPI(currentUser.uid, id);
-      setSavedQuestions(prev => prev.filter(sq => sq._id !== id));
-      showToast("প্রশ্নটি ডিলিট করা হয়েছে", "info");
-    } catch (e) {
-      showToast("ডিলিট করতে সমস্যা হয়েছে।", "error");
-    }
+    await deleteSavedQuestionAPI(currentUser.uid, id);
+    setSavedQuestions(prev => prev.filter(sq => sq._id !== id));
+    showToast("ডিলিট করা হয়েছে", "info");
   };
 
   const handleMoveToFolder = async (savedId: string, folder: string) => {
@@ -286,38 +312,74 @@ const ProfilePage: React.FC = () => {
           await updateSavedQuestionFolderAPI(currentUser.uid, savedId, folder);
           setSavedQuestions(prev => prev.map(sq => sq._id === savedId ? { ...sq, folder } : sq));
           setMovingQuestionId(null);
-          showToast(`Moved to ${folder}`, "success");
+          showToast(`${folder} ফোল্ডারে সরানো হয়েছে`, "success");
       } catch (e) {
-          showToast("Failed to move", "error");
+          showToast("মুভ করা যায়নি", "error");
+      }
+  };
+
+  const handleCreateFolder = () => {
+      if (newFolderName.trim()) {
+          const name = newFolderName.trim();
+          setCustomFolders(prev => {
+              if (prev.includes(name)) return prev;
+              return [...prev, name];
+          });
+          setActiveFolder(name);
+          setNewFolderName('');
+          setIsCreatingFolder(false);
+          showToast("নতুন ফোল্ডার তৈরি হয়েছে", "success");
       }
   };
 
   const handleDeleteMistake = async (id: string) => {
     if (!currentUser) return;
-    if (!confirm("আপনি কি নিশ্চিত এই ভুলটি তালিকা থেকে মুছতে চান?")) return;
-    try {
-        await deleteUserMistakeAPI(currentUser.uid, id);
-        setMistakes(prev => prev.filter(m => m._id !== id));
-        showToast("তালিকা থেকে মুছে ফেলা হয়েছে", "info");
-    } catch (e) {
-        showToast("ডিলিট করতে সমস্যা হয়েছে।", "error");
-    }
+    await deleteUserMistakeAPI(currentUser.uid, id);
+    setMistakes(prev => prev.filter(m => m._id !== id));
+    showToast("ডিলিট করা হয়েছে", "info");
+  };
+
+  const handleChallenge = () => {
+      if (!viewingUserId) return;
+      navigate('/battle', { 
+          state: { 
+              opponent: {
+                  uid: viewingUserId,
+                  name: profileData.displayName,
+                  avatar: profileData.photoURL
+              }
+          } 
+      });
+  };
+
+  const toggleSubjectStats = (subject: string) => {
+      setExpandedSubjectStats(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(subject)) newSet.delete(subject);
+          else newSet.add(subject);
+          return newSet;
+      });
   };
 
   // --- Filtering Logic ---
   const { uniqueSubjects, uniqueChapters, availableFolders } = useMemo(() => {
     const subjects = new Set<string>();
     const chapters = new Set<string>();
-    const folders = new Set<string>(['All', 'General']);
+    
+    // Initial standard folders + custom created ones (Removed 'All')
+    const folders = new Set<string>(['General', ...customFolders]);
     
     const sourceData = activeTab === 'SAVED' ? savedQuestions : mistakes;
 
     sourceData.forEach(item => {
-        const q = activeTab === 'SAVED' ? item.questionId : item;
+        // Both SAVED and MISTAKES now use nested questionId reference
+        const q = item.questionId;
         if (!q) return;
+        
         if (q.subject) subjects.add(q.subject);
         if (q.chapter) {
-            if (filterSubject === 'ALL' || q.subject === filterSubject) {
+            // Use currentFilterSubject to determine chapters available
+            if (currentFilterSubject === 'ALL' || q.subject === currentFilterSubject) {
                 chapters.add(q.chapter);
             }
         }
@@ -331,59 +393,77 @@ const ProfilePage: React.FC = () => {
         uniqueChapters: Array.from(chapters),
         availableFolders: Array.from(folders)
     };
-  }, [activeTab, savedQuestions, mistakes, filterSubject]);
+  }, [activeTab, savedQuestions, mistakes, currentFilterSubject, customFolders]);
 
   const filteredItems = useMemo(() => {
       let sourceData = activeTab === 'SAVED' ? savedQuestions : mistakes;
-      if (activeTab === 'SAVED' && activeFolder !== 'All') {
+      
+      // Apply Folder Filter First (only for saved)
+      if (activeTab === 'SAVED') {
           sourceData = sourceData.filter(item => (item.folder || 'General') === activeFolder);
       }
+
+      // Apply Subject & Chapter Filter using separate states
       return sourceData.filter(item => {
-          const q = activeTab === 'SAVED' ? item.questionId : item;
+          const q = item.questionId;
           if (!q) return false;
-          const matchSubject = filterSubject === 'ALL' || q.subject === filterSubject;
-          const matchChapter = filterChapter === 'ALL' || q.chapter === filterChapter;
+          
+          const matchSubject = currentFilterSubject === 'ALL' || q.subject === currentFilterSubject;
+          const matchChapter = currentFilterChapter === 'ALL' || q.chapter === currentFilterChapter;
+          
           return matchSubject && matchChapter;
       });
-  }, [activeTab, savedQuestions, mistakes, filterSubject, filterChapter, activeFolder]);
+  }, [activeTab, savedQuestions, mistakes, currentFilterSubject, currentFilterChapter, activeFolder]);
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const displayedItems = filteredItems.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+  );
 
-  // --- Exam Logic ---
+  // MathJax Effect - Updated to run after filtering changes and pagination
+  useEffect(() => {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      setTimeout(() => {
+        window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
+      }, 200);
+    }
+  }, [activeTab, displayedItems]);
+
+  // Exam Logic for Mistakes
   const launchExam = () => {
     if (activeTab !== 'MISTAKES') return;
-    const examQuestions = filteredItems.map(m => ({
-        question: m.question,
-        options: m.options,
-        correctAnswerIndex: m.correctAnswerIndex,
-        explanation: m.explanation,
-        subject: m.subject,
-        chapter: m.chapter,
-        topic: m.topic
-    }));
+    const examQuestions = filteredItems.map(m => {
+        const q = m.questionId;
+        if (!q) return null;
+        return {
+            _id: q._id, // IMPORTANT: Pass ID for clearing logic
+            question: q.question,
+            options: q.options,
+            correctAnswerIndex: q.correctAnswerIndex,
+            explanation: q.explanation,
+            subject: q.subject,
+            chapter: q.chapter,
+            topic: q.topic
+        };
+    }).filter(q => q !== null);
+    
     if (examQuestions.length === 0) return;
+    
+    const examId = `mistake_retry_${Date.now()}`;
     const config = {
         questions: examQuestions,
-        time: examTimeLimit,
-        mode: examViewMode
+        timeLimit: examTimeLimit,
+        mode: examViewMode,
+        title: 'Mistake Revision',
+        isPracticeMode: true,
+        isMistakeRetake: true // Enable mistake clearing feature
     };
-    localStorage.setItem('mistake_exam_config', JSON.stringify(config));
+    
+    localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
     setShowExamConfig(false);
-    navigate('/quiz');
-  };
-
-  const handleChallenge = () => {
-      if (!viewingUserId) return;
-      
-      // Store opponent info in navigation state for QuizBattlePrototype
-      navigate('/battle', { 
-          state: { 
-              opponent: {
-                  uid: viewingUserId,
-                  name: profileData.displayName,
-                  avatar: profileData.photoURL
-              }
-          } 
-      });
+    navigate(`/exam/${examId}`);
   };
 
   const getLevel = (points: number) => {
@@ -396,12 +476,109 @@ const ProfilePage: React.FC = () => {
 
   const currentLevel = getLevel(profileData.stats?.points || 0);
 
+  // Helper to render Avatar
+  const renderProfileAvatar = () => {
+    const avatarUrl = isEditing ? selectedAvatar : profileData.photoURL;
+    if (avatarUrl && avatarUrl.startsWith('http')) {
+        return <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover bg-white" />;
+    }
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-primary text-white font-bold text-3xl">
+            {profileData.displayName?.charAt(0).toUpperCase() || 'U'}
+        </div>
+    );
+  };
+
+  // Skeleton Loader for Profile
+  const ProfileSkeleton = () => (
+    <div className="space-y-8 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 h-64 relative">
+            <div className="absolute top-0 left-0 w-full h-32 bg-gray-200 dark:bg-gray-700 rounded-t-3xl"></div>
+            <div className="relative flex flex-col md:flex-row items-center gap-8 mt-12">
+                <div className="w-32 h-32 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-gray-800"></div>
+                <div className="space-y-4 flex-1 w-full">
+                    <div className="h-8 w-1/2 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                    <div className="flex gap-4">
+                        <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/* Stats Skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-24 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"></div>
+            ))}
+        </div>
+    </div>
+  );
+
   if (loading && !profileData.stats) {
-      return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={32}/></div>;
+      return <div className="h-full p-8"><ProfileSkeleton /></div>;
   }
 
+  // Helper component for Filters
+  const FilterSection = () => (
+      <div className="flex flex-wrap items-center gap-2 mb-4 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center justify-center text-gray-500 px-1"><Filter size={18}/></div>
+          <select 
+              value={currentFilterSubject} 
+              onChange={(e) => { setCurrentFilterSubject(e.target.value); setCurrentFilterChapter('ALL'); }}
+              className="flex-1 min-w-[100px] px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 border-none text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary truncate"
+          >
+              <option value="ALL">সকল বিষয়</option>
+              {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <select 
+              value={currentFilterChapter} 
+              onChange={(e) => setCurrentFilterChapter(e.target.value)}
+              className="flex-1 min-w-[100px] px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 border-none text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary truncate"
+          >
+              <option value="ALL">সকল অধ্যায়</option>
+              {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <button 
+            onClick={resetCurrentFilters}
+            className="text-xs text-red-500 hover:text-red-600 font-bold px-2 whitespace-nowrap"
+          >
+            রিসেট
+          </button>
+      </div>
+  );
+
+  // Pagination Component
+  const PaginationControls = () => {
+      if (totalPages <= 1) return null;
+      return (
+          <div className="flex justify-center items-center gap-4 mt-6">
+              <button 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                  <ChevronLeft size={20} />
+              </button>
+              <span className="text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                  Page {currentPage} of {totalPages}
+              </span>
+              <button 
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                  <ChevronRight size={20} />
+              </button>
+          </div>
+      );
+  };
+
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
+    <div 
+        ref={scrollContainerRef}
+        className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors"
+    >
       <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 pb-20">
         
         {/* Header Section */}
@@ -409,11 +586,10 @@ const ProfilePage: React.FC = () => {
           <div className="absolute top-0 left-0 w-full h-24 md:h-32 bg-gradient-to-r from-primary to-blue-600 opacity-10"></div>
           
           <div className="relative flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 mt-2 md:mt-4">
-            
-            {/* Avatar */}
+            {/* Avatar & User Info */}
             <div className="relative group">
                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                  <img src={isEditing ? selectedAvatar : profileData.photoURL} alt="Profile" className="w-full h-full object-cover bg-white" />
+                  {renderProfileAvatar()}
                </div>
                {isEditing && isOwnProfile && (
                  <button 
@@ -423,58 +599,46 @@ const ProfilePage: React.FC = () => {
                     <Camera size={16} className="md:w-5 md:h-5" />
                  </button>
                )}
+               {showAvatarSelector && (
+                   <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 w-64 animate-in fade-in slide-in-from-top-2">
+                       <p className="text-xs font-bold text-gray-500 mb-3">অবতার নির্বাচন করুন</p>
+                       <div className="grid grid-cols-4 gap-2 mb-4">
+                           {AVATARS.map((avi, idx) => (
+                               <button key={idx} onClick={() => { setSelectedAvatar(avi); setShowAvatarSelector(false); }} className="w-10 h-10 rounded-full border hover:border-primary overflow-hidden">
+                                   <img src={avi} className="w-full h-full object-cover"/>
+                               </button>
+                           ))}
+                       </div>
+                       <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
+                           <Upload size={14}/> আপলোড করুন
+                           <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                       </label>
+                   </div>
+               )}
             </div>
 
-            {/* User Info */}
             <div className="flex-1 text-center md:text-left space-y-2 w-full">
                {isEditing && isOwnProfile ? (
                  <div className="grid md:grid-cols-2 gap-4 w-full">
-                    {/* ... Form inputs ... */}
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1">{t('auth_name')}</label>
-                      <input 
-                        type="text" 
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"
-                      />
+                      <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"/>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1">College</label>
-                      <input 
-                        type="text" 
-                        value={editCollege}
-                        onChange={(e) => setEditCollege(e.target.value)}
-                        placeholder="College Name"
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"
-                      />
+                      <input type="text" value={editCollege} onChange={(e) => setEditCollege(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"/>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1">Batch</label>
-                      <input 
-                        type="text" 
-                        value={editHscBatch}
-                        onChange={(e) => setEditHscBatch(e.target.value)}
-                        placeholder="e.g. 2024"
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"
-                      />
+                      <input type="text" value={editHscBatch} onChange={(e) => setEditHscBatch(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"/>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1">Department</label>
-                      <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white">
-                          <option>Science</option>
-                          <option>Arts</option>
-                          <option>Commerce</option>
-                      </select>
+                      <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"><option>Science</option><option>Arts</option><option>Commerce</option></select>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1">Target</label>
-                      <select value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white">
-                          <option>Medical</option>
-                          <option>Engineering (BUET/CKRUET)</option>
-                          <option>University (A Unit)</option>
-                          <option>Guccho</option>
-                      </select>
+                      <select value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white"><option>Medical</option><option>Engineering</option><option>University</option><option>Guccho</option></select>
                     </div>
                  </div>
                ) : (
@@ -486,569 +650,332 @@ const ProfilePage: React.FC = () => {
                                 {currentLevel.name}
                             </span>
                         )}
-                        {!isOwnProfile && <span className="bg-gray-100 dark:bg-gray-700 text-gray-500 text-xs px-2 py-1 rounded">Public View</span>}
                     </div>
-                    
                     <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 mt-2">
-                       {profileData.college && (
-                           <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                               <GraduationCap size={12} className="md:w-3.5 md:h-3.5" /> {profileData.college}
-                           </div>
-                       )}
-                       {profileData.hscBatch && (
-                           <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                               <Calendar size={12} className="md:w-3.5 md:h-3.5" /> Batch: {profileData.hscBatch}
-                           </div>
-                       )}
-                       {profileData.department && (
-                           <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                               <BookOpen size={12} className="md:w-3.5 md:h-3.5" /> {profileData.department}
-                           </div>
-                       )}
-                       {profileData.target && (
-                           <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded font-bold">
-                               <Target size={12} className="md:w-3.5 md:h-3.5" /> {profileData.target} Aspirant
-                           </div>
-                       )}
+                       {profileData.college && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><GraduationCap size={12}/> {profileData.college}</div>}
+                       {profileData.hscBatch && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><Calendar size={12}/> Batch: {profileData.hscBatch}</div>}
+                       {profileData.target && <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded font-bold"><Target size={12}/> {profileData.target} Aspirant</div>}
                     </div>
-
-                    {isOwnProfile && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500 dark:text-gray-400 text-xs mt-2">
-                           <Mail size={12} /> {profileData.email}
-                        </div>
-                    )}
                  </>
                )}
             </div>
 
-            {/* Action Buttons */}
             <div className="w-full md:w-auto">
                {isOwnProfile ? (
                    isEditing ? (
                      <div className="flex gap-2 flex-col md:flex-row w-full">
-                        <button 
-                          onClick={() => { setIsEditing(false); }}
-                          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-bold flex items-center justify-center gap-2"
-                          disabled={loading}
-                        >
-                           <X size={18} /> {t('profile_cancel')}
-                        </button>
-                        <button 
-                          onClick={handleSaveProfile}
-                          className="px-4 py-2 bg-primary text-white rounded-lg font-bold flex items-center justify-center gap-2"
-                          disabled={loading}
-                        >
-                           <Check size={18} /> {t('profile_save')}
-                        </button>
+                        <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-bold flex items-center justify-center gap-2"><X size={18}/> Cancel</button>
+                        <button onClick={handleSaveProfile} className="px-4 py-2 bg-primary text-white rounded-lg font-bold flex items-center justify-center gap-2"><Check size={18}/> Save</button>
                      </div>
                    ) : (
-                     <button 
-                       onClick={() => setIsEditing(true)}
-                       className="px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg font-bold flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 transition-colors w-full md:w-auto"
-                     >
-                        <Edit2 size={16} /> {t('profile_edit')}
-                     </button>
+                     <button onClick={() => setIsEditing(true)} className="px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg font-bold flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 transition-colors w-full md:w-auto"><Edit2 size={16}/> Edit Profile</button>
                    )
                ) : (
-                   <button 
-                       onClick={handleChallenge}
-                       className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none transition-all active:scale-95 w-full md:w-auto"
-                   >
-                       <Swords size={18} /> {t('feat_battle_btn')}
-                   </button>
+                   <button onClick={handleChallenge} className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none transition-all active:scale-95 w-full md:w-auto"><Swords size={18}/> Challenge</button>
                )}
             </div>
           </div>
         </div>
 
-        {/* --- AVATAR SELECTOR MODAL --- */}
-        {showAvatarSelector && isEditing && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
-                <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-800 dark:text-white">Change Picture</h3>
-                        <button onClick={() => setShowAvatarSelector(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><X size={20}/></button>
-                    </div>
-                    
-                    <div className="p-6 overflow-y-auto">
-                        {/* Upload Section */}
-                        <div className="mb-6 p-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                            <input 
-                                type="file" 
-                                accept="image/*" 
-                                className="hidden" 
-                                ref={fileInputRef} 
-                                onChange={handleFileSelect} 
-                                disabled={isUploading}
-                            />
-                            <div className="mb-2 p-3 bg-white dark:bg-gray-700 rounded-full shadow-sm">
-                                {isUploading ? <Loader2 size={24} className="animate-spin text-primary"/> : <Upload size={24} className="text-primary dark:text-blue-400"/>}
-                            </div>
-                            <p className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-1">
-                                Upload Image
-                            </p>
-                            <p className="text-xs text-gray-500">From gallery</p>
-                        </div>
-
-                        {/* Avatar Section */}
-                        <p className="font-bold text-gray-500 dark:text-gray-400 mb-3 text-xs uppercase tracking-wider">Or choose an avatar:</p>
-                        <div className="grid grid-cols-4 gap-3">
-                           {AVATARS.map((avatar, idx) => (
-                              <button 
-                                key={idx}
-                                onClick={() => {
-                                    setSelectedAvatar(avatar);
-                                    setShowAvatarSelector(false);
-                                }}
-                                className={`aspect-square rounded-full border-2 overflow-hidden transition-all bg-white hover:scale-105 ${selectedAvatar === avatar ? 'border-primary ring-2 ring-primary/30' : 'border-transparent hover:border-gray-300'}`}
-                              >
-                                 <img src={avatar} alt={`Avatar ${idx}`} className="w-full h-full object-cover" />
-                              </button>
-                           ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* --- CROP MODAL --- */}
-        {imageSrc && (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
-                        <h3 className="font-bold text-gray-800 dark:text-white">Edit Picture</h3>
-                        <button onClick={cancelCrop} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"><X size={20} className="text-gray-500"/></button>
-                    </div>
-                    
-                    <div className="relative w-full h-[320px] bg-black">
-                        <Cropper
-                            image={imageSrc}
-                            crop={crop}
-                            zoom={zoom}
-                            rotation={0}
-                            aspect={1}
-                            onCropChange={setCrop}
-                            onCropComplete={onCropComplete}
-                            onZoomChange={setZoom}
-                            cropShape="round"
-                            showGrid={false}
-                        />
-                    </div>
-
-                    <div className="p-6 space-y-5 bg-white dark:bg-gray-800">
-                        {/* Zoom Control */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                <span>Zoom</span>
-                                <span>{Math.round((zoom - 1) * 100)}%</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <ZoomOut size={16} className="text-gray-400"/>
-                                <input
-                                    type="range"
-                                    value={zoom}
-                                    min={1}
-                                    max={3}
-                                    step={0.1}
-                                    aria-labelledby="Zoom"
-                                    onChange={(e) => setZoom(Number(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary"
-                                />
-                                <ZoomIn size={16} className="text-gray-400"/>
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-3 pt-2">
-                            <button 
-                                onClick={cancelCrop}
-                                className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                            >
-                                {t('profile_cancel')}
-                            </button>
-                            <button 
-                                onClick={handleUploadCroppedImage}
-                                disabled={isUploading}
-                                className="flex-1 py-3 bg-primary hover:bg-blue-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-500/20"
-                            >
-                                {isUploading ? <Loader2 className="animate-spin" size={18}/> : <Check size={18}/>} 
-                                {t('profile_save')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Navigation Tabs (Restricted for Public Profile) */}
+        {/* Navigation Tabs */}
         <div className="flex p-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 w-full md:w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar">
-           <button onClick={() => setActiveTab('INFO')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'INFO' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-              <LayoutGrid size={16} /> {t('profile_analysis')}
-           </button>
+           <button onClick={() => setActiveTab('INFO')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'INFO' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><LayoutGrid size={16}/> Analysis</button>
            {isOwnProfile ? (
                <>
-                   <button onClick={() => setActiveTab('COURSES')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'COURSES' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-                      <BookOpen size={16} /> {t('profile_courses')}
-                   </button>
+                   <button onClick={() => setActiveTab('COURSES')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'COURSES' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><BookOpen size={16}/> Courses</button>
                    <button onClick={() => setActiveTab('SAVED')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'SAVED' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-                      <Bookmark size={16} /> {t('profile_saved')}
+                       <Bookmark size={16}/> {t('profile_saved')} ({savedQuestions.length})
                    </button>
                    <button onClick={() => setActiveTab('MISTAKES')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'MISTAKES' ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50' : 'text-gray-500 hover:text-red-600 dark:hover:text-red-400'}`}>
-                      <AlertTriangle size={16} /> {t('profile_mistakes')}
+                       <AlertTriangle size={16}/> {t('profile_mistakes')} ({mistakes.length})
                    </button>
                </>
            ) : (
-               // Disabled/Hidden tabs visual cue for public view
-               <div className="flex items-center gap-2 px-4 text-xs text-gray-400 italic">
-                   <Lock size={12}/> Private Data Hidden
-               </div>
+               <div className="flex items-center gap-2 px-4 text-xs text-gray-400 italic"><Lock size={12}/> Private Data Hidden</div>
            )}
         </div>
 
+        {/* --- TAB CONTENT --- */}
+
+        {/* INFO TAB */}
         {activeTab === 'INFO' && profileData.stats && (
-            <div className="space-y-4 md:space-y-6 animate-in fade-in">
-               {/* Quick Stats Grid */}
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                   <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">{t('profile_total_exams')}</p>
-                       <p className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">{profileData.stats.totalExams}</p>
-                   </div>
-                   {/* ... other stats ... */}
-                   <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">{t('quiz_correct')}</p>
-                       <p className="text-xl md:text-2xl font-bold text-green-600">{profileData.stats.totalCorrect}</p>
-                   </div>
-                   <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                       <p className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase mb-1">{t('quiz_wrong')}</p>
-                       <p className="text-xl md:text-2xl font-bold text-red-600">{profileData.stats.totalWrong}</p>
-                   </div>
-                   <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10">
-                       <p className="text-orange-600 dark:text-orange-400 text-[10px] md:text-xs font-bold uppercase mb-1 flex items-center justify-center gap-1"><Zap size={12} fill="currentColor"/> {t('stat_points')}</p>
-                       <p className="text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">{profileData.stats.points}</p>
-                   </div>
-               </div>
-
-               {/* Advanced Analysis Grid */}
-               <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-                   {/* Weakness & Strength (Topic Wise) */}
-                   <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                       <h3 className="font-bold text-gray-800 dark:text-white mb-4 md:mb-6 flex items-center gap-2 text-sm md:text-base">
-                           <TrendingUp size={18} className="text-primary"/> Topic Mastery
-                       </h3>
-                       
-                       <div className="space-y-6">
-                           {/* Strong Topics */}
-                           <div>
-                               <p className="text-xs font-bold text-green-600 uppercase mb-3 flex items-center gap-1"><Award size={12}/> {t('profile_strength')}</p>
-                               <div className="space-y-2">
-                                   {profileData.stats.strongestTopics && profileData.stats.strongestTopics.length > 0 ? (
-                                       profileData.stats.strongestTopics.map((t: any) => (
-                                           <div key={t.topic} className="flex justify-between items-center bg-green-50 dark:bg-green-900/10 px-3 py-2 rounded-lg">
-                                               <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 truncate mr-2">{t.topic || 'Unknown'}</span>
-                                               <span className="text-xs font-bold text-green-600 shrink-0">{t.accuracy.toFixed(0)}%</span>
-                                           </div>
-                                       ))
-                                   ) : <p className="text-xs text-gray-400">No data</p>}
-                               </div>
-                           </div>
-
-                           {/* Weak Topics */}
-                           <div>
-                               <p className="text-xs font-bold text-red-500 uppercase mb-3 flex items-center gap-1"><AlertCircle size={12}/> {t('profile_weakness')}</p>
-                               <div className="space-y-2">
-                                   {profileData.stats.weakestTopics && profileData.stats.weakestTopics.length > 0 ? (
-                                       profileData.stats.weakestTopics.map((t: any) => (
-                                           <div key={t.topic} className="flex justify-between items-center bg-red-50 dark:bg-red-900/10 px-3 py-2 rounded-lg">
-                                               <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 truncate mr-2">{t.topic || 'Unknown'}</span>
-                                               <span className="text-xs font-bold text-red-500 shrink-0">{t.accuracy.toFixed(0)}%</span>
-                                           </div>
-                                       ))
-                                   ) : <p className="text-xs text-gray-400">No data</p>}
-                               </div>
-                           </div>
-                       </div>
-                   </div>
-
-                   {/* Subject Performance - BAR CHART */}
-                   <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col">
-                       <h3 className="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2 text-sm md:text-base">
-                           <BarChart3 size={18} className="text-blue-500"/> Subject Skill
-                       </h3>
-                       
-                       <div className="flex-1 flex flex-col justify-end">
-                           {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) ? (
-                               <div className="text-center py-10 text-gray-400">
-                                   <PieChart size={48} className="mx-auto mb-2 opacity-20" />
-                                   <p>No data found</p>
-                               </div>
-                           ) : (
-                               <div className="w-full">
-                                   <div className="flex items-end gap-3 h-48 sm:h-56 pb-2 px-2">
-                                      {profileData.stats.subjectBreakdown.map((subj: any) => {
-                                          const height = Math.max(10, subj.accuracy); // Minimum height for visibility
-                                          const colorClass = subj.accuracy >= 75 ? 'bg-green-500' : subj.accuracy >= 40 ? 'bg-yellow-500' : 'bg-red-500';
-                                          
-                                          return (
-                                              <div key={subj.subject} className="flex-1 flex flex-col items-center gap-2 group relative">
-                                                  {/* Tooltip */}
-                                                  <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs px-2 py-1 rounded pointer-events-none whitespace-nowrap z-10">
-                                                      {subj.subject}: {subj.accuracy.toFixed(0)}%
-                                                  </div>
-                                                  
-                                                  <div className="w-full max-w-[40px] bg-gray-100 dark:bg-gray-700 rounded-t-lg relative flex flex-col justify-end overflow-hidden h-full">
-                                                      <div 
-                                                        className={`w-full transition-all duration-1000 ease-out ${colorClass} opacity-80 group-hover:opacity-100`} 
-                                                        style={{ height: `${height}%` }}
-                                                      ></div>
-                                                  </div>
-                                              </div>
-                                          )
-                                      })}
-                                   </div>
-                                   {/* X-Axis Labels */}
-                                   <div className="flex gap-3 px-2 border-t border-gray-200 dark:border-gray-700 pt-2">
-                                      {profileData.stats.subjectBreakdown.map((subj: any) => (
-                                          <div key={subj.subject} className="flex-1 text-center">
-                                              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium truncate" title={subj.subject}>
-                                                  {(subj.subject || '').split(' ')[0]}
-                                              </p>
-                                          </div>
-                                      ))}
-                                   </div>
-                               </div>
-                           )}
-                       </div>
-                   </div>
-               </div>
-            </div>
-        )}
-
-        {/* ... Rest of tabs (COURSES, SAVED, MISTAKES) - ONLY SHOW IF OWN PROFILE ... */}
-        {isOwnProfile && activeTab === 'COURSES' && (
-            <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm animate-in fade-in">
-               <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                  <BookOpen size={20} className="text-primary md:w-6 md:h-6" /> {t('profile_courses')}
-               </h2>
-               {enrolledCourses.length > 0 ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {enrolledCourses.map((course) => (
-                       <div key={course.id} className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 hover:border-primary transition-colors">
-                          <h3 className="font-bold text-gray-800 dark:text-white mb-2 text-sm md:text-base">{course.title}</h3>
-                          <div className="flex justify-between items-end mb-1">
-                             <span className="text-xs text-gray-500 dark:text-gray-400">Progress</span>
-                             <span className="text-xs font-bold text-primary dark:text-green-400">{course.progress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                             <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${course.progress}%` }}></div>
-                          </div>
-                       </div>
-                    ))}
-                 </div>
-               ) : (
-                 <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-                    <p>No courses enrolled yet.</p>
-                 </div>
-               )}
-            </div>
-        )}
-
-        {isOwnProfile && activeTab === 'SAVED' && (
             <div className="space-y-6 animate-in fade-in">
-               {/* Folder Nav */}
-               <div className="flex flex-col gap-4">
-                   <div className="flex flex-wrap gap-2 items-center">
-                       {availableFolders.map(folder => (
-                           <button
-                               key={folder}
-                               onClick={() => setActiveFolder(folder)}
-                               className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors border ${activeFolder === folder ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/30 dark:border-purple-700 dark:text-purple-300' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                           >
-                               <Folder size={14} fill={activeFolder === folder ? "currentColor" : "none"}/>
-                               {folder}
-                           </button>
-                       ))}
-                       {/* Add button logic */}
-                       <div className="relative flex items-center">
-                           {isCreatingFolder ? (
-                               <div className="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 p-1">
-                                   <input 
-                                     autoFocus
-                                     className="w-24 text-xs p-1 outline-none bg-transparent dark:text-white"
-                                     placeholder="Name..."
-                                     value={newFolderName}
-                                     onChange={(e) => setNewFolderName(e.target.value)}
-                                     onKeyDown={(e) => {
-                                         if (e.key === 'Enter' && newFolderName.trim()) {
-                                             setIsCreatingFolder(false);
-                                             showToast("To create a folder, move a question to 'New Folder'!", "info");
-                                         }
-                                     }}
-                                   />
-                                   <button onClick={() => setIsCreatingFolder(false)}><X size={12} className="dark:text-white"/></button>
-                               </div>
-                           ) : (
-                               <button 
-                                 onClick={() => setIsCreatingFolder(true)} 
-                                 className="px-2 py-1.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:text-gray-700 hover:border-gray-400 text-xs flex items-center gap-1"
-                               >
-                                   <FolderPlus size={14}/> Add
-                               </button>
-                           )}
-                       </div>
-                   </div>
-               </div>
-               
-               {/* Filters & Content for Saved */}
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-                   <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                      <Bookmark size={20} className="text-primary md:w-6 md:h-6" /> 
-                      {activeFolder === 'All' ? t('common_all') : activeFolder} ({filteredItems.length})
-                   </h2>
-                   
-                   <div className="flex gap-2 w-full md:w-auto">
-                      <div className="relative flex-1 md:min-w-[150px]">
-                         <select 
-                           value={filterSubject}
-                           onChange={(e) => { setFilterSubject(e.target.value); setFilterChapter('ALL'); }}
-                           className="w-full pl-8 pr-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                         >
-                            <option value="ALL">All Subjects</option>
-                            {uniqueSubjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
-                         </select>
-                         <Filter size={14} className="absolute left-3 top-3 text-gray-400" />
-                      </div>
-                      
-                      <div className="relative flex-1 md:min-w-[150px]">
-                         <select 
-                           value={filterChapter}
-                           onChange={(e) => setFilterChapter(e.target.value)}
-                           className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                         >
-                            <option value="ALL">All Chapters</option>
-                            {uniqueChapters.map(chap => <option key={chap} value={chap}>{chap}</option>)}
-                         </select>
-                      </div>
-                   </div>
-               </div>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Total Points</p>
+                        <p className="text-2xl font-black text-primary dark:text-blue-400">{profileData.stats.points}</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Exams Taken</p>
+                        <p className="text-2xl font-black text-gray-800 dark:text-white">{profileData.stats.totalExams}</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Correct Ans</p>
+                        <p className="text-2xl font-black text-green-500">{profileData.stats.totalCorrect}</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Wrong Ans</p>
+                        <p className="text-2xl font-black text-red-500">{profileData.stats.totalWrong}</p>
+                    </div>
+                </div>
 
-               {loadingSaved ? (
-                  <div className="text-center py-12 text-gray-500">{t('common_loading')}</div>
-               ) : filteredItems.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500">
-                     <p>
-                        {savedQuestions.length === 0 
-                           ? "No saved questions yet."
-                           : "No questions in this folder/filter."
-                        }
-                     </p>
-                  </div>
-               ) : (
-                  <div className="space-y-4">
-                     {filteredItems.map((sq) => {
-                        const q = sq.questionId; 
-                        if (!q) return null; 
-                        return (
-                           <div key={sq._id} className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative group">
-                              <div className="absolute top-4 right-4 flex items-center gap-2">
-                                  {/* Move Button */}
-                                  <div className="relative">
-                                      <button 
-                                        onClick={() => setMovingQuestionId(movingQuestionId === sq._id ? null : sq._id)}
-                                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                      >
-                                          <MoveRight size={18} />
-                                      </button>
-                                      {movingQuestionId === sq._id && (
-                                          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in-95">
-                                              <div className="max-h-48 overflow-y-auto">
-                                                  {availableFolders.filter(f => f !== 'All').map(folder => (
-                                                      <button
-                                                          key={folder}
-                                                          onClick={() => handleMoveToFolder(sq._id, folder)}
-                                                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 dark:text-white"
-                                                      >
-                                                          <Folder size={14}/> {folder}
-                                                      </button>
-                                                  ))}
-                                                  <div className="p-2 border-t border-gray-100 dark:border-gray-700">
-                                                      <input 
-                                                        placeholder="New Folder..."
-                                                        className="w-full text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') handleMoveToFolder(sq._id, (e.target as HTMLInputElement).value);
-                                                        }}
-                                                      />
-                                                  </div>
-                                              </div>
-                                          </div>
-                                      )}
-                                  </div>
-                                  <button onClick={() => handleDeleteSaved(sq._id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                    <Trash2 size={18} />
-                                  </button>
-                              </div>
-                              
-                              <div className="flex flex-wrap gap-2 mb-3 pr-20">
-                                 {q.subject && <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-[10px] rounded font-bold text-gray-600 dark:text-gray-300">{q.subject}</span>}
-                                 {q.chapter && <span className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-[10px] rounded font-bold">{q.chapter}</span>}
-                                 {sq.folder && sq.folder !== 'General' && <span className="px-2 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[10px] rounded font-bold flex items-center gap-1"><Folder size={10}/> {sq.folder}</span>}
-                              </div>
+                {/* Subject Performance Detailed */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><PieChart size={18}/> বিষয় ও অধ্যায়ভিত্তিক দক্ষতা</h3>
+                    
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[700px] border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                            <div className="grid grid-cols-12 gap-2 bg-gray-50 dark:bg-gray-900/50 p-3 border-b border-gray-200 dark:border-gray-700 font-bold text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider items-center">
+                                <div className="col-span-3">বিষয় / অধ্যায়</div>
+                                <div className="col-span-2 text-center">চেষ্টা করা</div>
+                                <div className="col-span-1 text-center text-green-600">সঠিক</div>
+                                <div className="col-span-1 text-center text-red-600">ভুল</div>
+                                <div className="col-span-1 text-center text-gray-400">স্কিপড</div>
+                                <div className="col-span-4 text-center">দক্ষতা (Accuracy)</div>
+                            </div>
 
-                              <h3 className="font-bold text-gray-800 dark:text-white mb-4 pr-4 text-base md:text-lg">{q.question}</h3>
-                              
-                              <div className="grid sm:grid-cols-2 gap-2 mb-4">
-                                 {q.options.map((opt: string, idx: number) => (
-                                    <div key={idx} className={`p-3 rounded-lg border text-sm flex items-center gap-2 ${idx === q.correctAnswerIndex ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 font-medium' : 'border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900'}`}>
-                                       <span className="opacity-50 text-xs font-mono min-w-[20px]">({['A','B','C','D'][idx]})</span> 
-                                       <span>{opt}</span>
-                                       {idx === q.correctAnswerIndex && <Check size={16} className="ml-auto text-green-500" />}
+                            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                                {profileData.stats.subjectBreakdown?.map((sub: any, idx: number) => {
+                                    const isExpanded = expandedSubjectStats.has(sub.subject);
+                                    
+                                    const correct = sub.correct || 0;
+                                    const total = sub.total || 0;
+                                    const wrong = sub.wrong !== undefined ? sub.wrong : (total - correct > 0 ? total - correct : 0);
+                                    const skipped = sub.skipped !== undefined ? sub.skipped : 0;
+                                    const attempted = correct + wrong; 
+                                    const accuracy = total > 0 ? (correct / total) * 100 : 0;
+
+                                    return (
+                                        <div key={idx} className="bg-white dark:bg-gray-800 transition-colors">
+                                            {/* Subject Row */}
+                                            <div 
+                                                className="grid grid-cols-12 gap-2 p-4 items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                                onClick={() => toggleSubjectStats(sub.subject)}
+                                            >
+                                                <div className="col-span-3 flex items-center gap-2 font-bold text-sm text-gray-800 dark:text-white truncate">
+                                                    {isExpanded ? <ChevronUp size={16} className="text-gray-400"/> : <ChevronDown size={16} className="text-gray-400"/>}
+                                                    {sub.subject}
+                                                </div>
+                                                <div className="col-span-2 text-center text-xs font-medium text-gray-600 dark:text-gray-300">{attempted} / {total}</div>
+                                                <div className="col-span-1 text-center text-xs font-bold text-green-500">{correct}</div>
+                                                <div className="col-span-1 text-center text-xs font-bold text-red-500">{wrong}</div>
+                                                <div className="col-span-1 text-center text-xs font-bold text-gray-400">{skipped}</div>
+                                                <div className="col-span-4 text-center text-xs font-bold flex flex-col items-center justify-center px-2">
+                                                    <div className="w-full flex justify-between items-center mb-1">
+                                                        <span className={accuracy >= 80 ? 'text-green-500' : accuracy >= 50 ? 'text-yellow-500' : 'text-red-500'}>{Math.round(accuracy)}%</span>
+                                                    </div>
+                                                    <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                        <div className={`h-full ${accuracy >= 80 ? 'bg-green-500' : accuracy >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{width: `${accuracy}%`}}></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Expanded Chapters */}
+                                            {isExpanded && (
+                                                <div className="bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
+                                                    {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
+                                                        Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
+                                                            const cTotal = chapData.total || 0;
+                                                            const cCorrect = chapData.correct || 0;
+                                                            const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
+                                                            const cSkipped = chapData.skipped !== undefined ? chapData.skipped : 0;
+                                                            const cAttempted = cCorrect + cWrong;
+                                                            const cAccuracy = cTotal > 0 ? (cCorrect / cTotal) * 100 : 0;
+
+                                                            return (
+                                                                <div key={cIdx} className="grid grid-cols-12 gap-2 p-3 pl-8 text-xs border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                                                    <div className="col-span-3 font-medium text-gray-600 dark:text-gray-300 truncate" title={chapName}>{chapName}</div>
+                                                                    <div className="col-span-2 text-center text-gray-500">{cAttempted} / {cTotal}</div>
+                                                                    <div className="col-span-1 text-center text-green-600">{cCorrect}</div>
+                                                                    <div className="col-span-1 text-center text-red-500">{cWrong}</div>
+                                                                    <div className="col-span-1 text-center text-gray-400">{cSkipped}</div>
+                                                                    <div className="col-span-4 text-center font-bold text-gray-600 dark:text-gray-400 flex items-center gap-2 justify-center">
+                                                                        <span>{Math.round(cAccuracy)}%</span>
+                                                                        <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                                            <div className={`h-full ${cAccuracy >= 80 ? 'bg-green-500' : cAccuracy >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{width: `${cAccuracy}%`}}></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <div className="p-4 text-center text-xs text-gray-400 italic">No detailed chapter data available.</div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) && (
+                                    <div className="p-8 text-center text-gray-400">কোনো ডাটা পাওয়া যায়নি</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* COURSES TAB */}
+        {activeTab === 'COURSES' && isOwnProfile && (
+            <div className="animate-in fade-in">
+                {enrolledCourses.length === 0 ? (
+                    <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                        <BookOpen size={48} className="mx-auto text-gray-300 mb-3"/>
+                        <p className="text-gray-500 font-medium">কোনো কোর্স এনরোল করা নেই</p>
+                        <button onClick={() => navigate('/courses')} className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold">কোর্স দেখুন</button>
+                    </div>
+                ) : (
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {enrolledCourses.map(course => (
+                            <div key={course.id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
+                                <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2">{course.title}</h3>
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-1">Progress</p>
+                                        <div className="h-1.5 w-32 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div className="h-full bg-primary" style={{width: `${course.progress}%`}}></div>
+                                        </div>
                                     </div>
-                                 ))}
-                              </div>
-                              {q.explanation && (
-                                 <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl text-xs md:text-sm text-gray-700 dark:text-gray-300 border border-blue-100 dark:border-blue-800/50">
-                                    <span className="font-bold block mb-1 text-blue-600 dark:text-blue-400 flex items-center gap-1"><BookOpen size={14}/> {t('quiz_explanation')}:</span> {q.explanation}
-                                 </div>
-                              )}
-                           </div>
-                        );
-                     })}
-                  </div>
-               )}
+                                    <button className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary rounded-lg text-xs font-bold transition-all">চালিয়ে যান</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         )}
 
-        {isOwnProfile && activeTab === 'MISTAKES' && (
-            <div className="space-y-6 animate-in fade-in">
-               {/* Controls */}
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                   <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                      <AlertTriangle size={20} className="text-red-500 md:w-6 md:h-6" /> {t('profile_mistakes')} ({filteredItems.length})
-                   </h2>
-                   
-                   <div className="flex gap-2 w-full md:w-auto">
-                        <div className="relative flex-1 md:min-w-[150px]">
-                            <select 
-                            value={filterSubject}
-                            onChange={(e) => { setFilterSubject(e.target.value); setFilterChapter('ALL'); }}
-                            className="w-full pl-8 pr-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+        {/* SAVED QUESTIONS TAB */}
+        {activeTab === 'SAVED' && isOwnProfile && (
+            <div className="animate-in fade-in space-y-4">
+                
+                {/* Folder & Filter Management */}
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                    <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
+                        {availableFolders.map(f => (
+                            <button 
+                                key={f} 
+                                onClick={() => setActiveFolder(f)}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-2 ${activeFolder === f ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700'}`}
                             >
-                                <option value="ALL">All Subjects</option>
-                                {uniqueSubjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
-                            </select>
-                            <Filter size={14} className="absolute left-3 top-3 text-gray-400" />
-                        </div>
-                        <div className="relative flex-1 md:min-w-[150px]">
-                            <select 
-                            value={filterChapter}
-                            onChange={(e) => setFilterChapter(e.target.value)}
-                            className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                            >
-                                <option value="ALL">All Chapters</option>
-                                {uniqueChapters.map(chap => <option key={chap} value={chap}>{chap}</option>)}
-                            </select>
-                        </div>
-                   </div>
+                                <Folder size={14}/> {f}
+                            </button>
+                        ))}
+                        {isCreatingFolder ? (
+                            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                                <input 
+                                    type="text" 
+                                    value={newFolderName}
+                                    onChange={(e) => setNewFolderName(e.target.value)}
+                                    placeholder="Folder Name"
+                                    className="px-2 py-1.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-primary w-24"
+                                    autoFocus
+                                />
+                                <button onClick={handleCreateFolder} className="p-1.5 bg-green-500 text-white rounded hover:bg-green-600"><Check size={12}/></button>
+                                <button onClick={() => setIsCreatingFolder(false)} className="p-1.5 bg-gray-300 dark:bg-gray-600 text-black dark:text-white rounded hover:bg-gray-400"><X size={12}/></button>
+                            </div>
+                        ) : (
+                            <button onClick={() => setIsCreatingFolder(true)} className="px-3 py-2 rounded-lg text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1 whitespace-nowrap">
+                                <FolderPlus size={14}/> New Folder
+                            </button>
+                        )}
+                    </div>
+                </div>
 
+                {/* Filter Section */}
+                {savedQuestions.length > 0 && <FilterSection />}
+
+                {loadingSaved ? (
+                    <div className="space-y-4 animate-pulse">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="h-32 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"></div>
+                        ))}
+                    </div>
+                ) : filteredItems.length === 0 ? (
+                    <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                        <Bookmark size={48} className="mx-auto text-gray-300 mb-3"/>
+                        <p className="text-gray-500 font-medium">কোনো সেভ করা প্রশ্ন পাওয়া যায়নি</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {displayedItems.map((item) => {
+                            const q = item.questionId;
+                            if (!q) return null;
+                            return (
+                                <div key={item._id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm group">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className="flex flex-wrap gap-2 items-center">
+                                            <span className="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded">{q.subject}</span>
+                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded flex items-center gap-1">
+                                                <Folder size={10}/> {item.folder || 'General'}
+                                            </span>
+                                            
+                                            {/* Move To Dropdown Trigger */}
+                                            <div className="relative">
+                                                <button 
+                                                    onClick={() => setMovingQuestionId(movingQuestionId === item._id ? null : item._id)}
+                                                    className="text-[10px] flex items-center gap-1 text-gray-400 hover:text-primary transition-colors font-bold px-2"
+                                                >
+                                                    <MoveRight size={10}/> Move
+                                                </button>
+                                                
+                                                {movingQuestionId === item._id && (
+                                                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20 w-32 py-1 animate-in fade-in zoom-in-95">
+                                                        {availableFolders.filter(f => f !== (item.folder || 'General')).map(f => (
+                                                            <button 
+                                                                key={f}
+                                                                onClick={() => handleMoveToFolder(item._id, f)}
+                                                                className="block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                {f}
+                                                            </button>
+                                                        ))}
+                                                        <button onClick={() => setMovingQuestionId(null)} className="block w-full text-left px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border-t border-gray-100 dark:border-gray-800 mt-1">Cancel</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <button onClick={() => handleDeleteSaved(item._id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 size={16}/></button>
+                                    </div>
+                                    <h4 className="font-bold text-gray-800 dark:text-white text-sm md:text-base mb-3">{q.question}</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                        {q.options.map((opt: string, i: number) => (
+                                            <div key={i} className={`p-2 rounded border ${i === q.correctAnswerIndex ? 'bg-green-50 border-green-200 text-green-700 font-bold' : 'border-gray-100 dark:border-gray-700'}`}>{opt}</div>
+                                        ))}
+                                    </div>
+                                    <div className="mt-3 text-xs text-gray-500 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                        <span className="font-bold text-primary block mb-1">Explanation:</span>
+                                        <span className="font-tiro">{q.explanation || 'No explanation available.'}</span>
+                                    </div>
+                                    {q.chapter && <div className="mt-2 text-[10px] text-gray-400">Chapter: {q.chapter}</div>}
+                                </div>
+                            );
+                        })}
+                        
+                        <PaginationControls />
+                    </div>
+                )}
+            </div>
+        )}
+
+        {/* MISTAKES TAB */}
+        {activeTab === 'MISTAKES' && isOwnProfile && (
+            <div className="space-y-6 animate-in fade-in">
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                   <div className="flex items-center gap-4">
+                       <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <AlertTriangle size={20} className="text-red-500 md:w-6 md:h-6" /> {t('profile_mistakes')} ({filteredItems.length})
+                       </h2>
+                       <button 
+                           onClick={() => loadMistakes(false)} 
+                           className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors"
+                           title="Refresh"
+                       >
+                           <RefreshCw size={16} className={loadingMistakes ? "animate-spin" : ""} />
+                       </button>
+                   </div>
                    {filteredItems.length > 0 && (
                        <button 
                          onClick={() => setShowExamConfig(true)}
@@ -1059,102 +986,93 @@ const ProfilePage: React.FC = () => {
                    )}
                </div>
 
+               {/* Filter Section */}
+               {mistakes.length > 0 && <FilterSection />}
+               
                {loadingMistakes ? (
-                  <div className="text-center py-12 text-gray-500">{t('common_loading')}</div>
-               ) : mistakes.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500">
-                     <p>Great job! No recorded mistakes.</p>
-                  </div>
+                   <div className="space-y-4 animate-pulse">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="h-32 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"></div>
+                        ))}
+                   </div>
+               ) : filteredItems.length === 0 ? (
+                   <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                       <CheckCircle size={48} className="mx-auto text-green-300 mb-3"/>
+                       <p className="text-gray-500 font-medium">কোনো ভুল পাওয়া যায়নি (ফিল্টার অনুযায়ী)।</p>
+                   </div>
                ) : (
-                  <div className="space-y-4">
-                     {filteredItems.map((m) => (
-                        <div key={m._id} className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-red-100 dark:border-red-900/30 shadow-sm relative group">
-                           <button 
-                                onClick={() => handleDeleteMistake(m._id)}
-                                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors z-10"
-                           >
-                                <Trash2 size={18} />
-                           </button>
-                           <div className="absolute top-4 right-14 text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
-                              Missed {m.wrongCount} times
-                           </div>
-                           <div className="flex flex-wrap gap-2 mb-3 pr-24">
-                               {m.subject && <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-[10px] rounded font-bold text-gray-600 dark:text-gray-300">{m.subject}</span>}
-                               {m.topic && <span className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] rounded font-bold">{m.topic}</span>}
-                           </div>
-                           <h3 className="font-bold text-gray-800 dark:text-white mb-4 text-base md:text-lg">{m.question}</h3>
-                           <div className="grid sm:grid-cols-2 gap-2 mb-4">
-                              {m.options.map((opt: string, idx: number) => (
-                                 <div key={idx} className={`p-3 rounded-lg border text-sm flex items-center gap-2 ${idx === m.correctAnswerIndex ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 font-medium' : 'border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900'}`}>
-                                    <span className="opacity-50 text-xs font-mono min-w-[20px]">({['A','B','C','D'][idx]})</span> 
-                                    <span>{opt}</span>
-                                    {idx === m.correctAnswerIndex && <Check size={16} className="ml-auto text-green-500" />}
-                                 </div>
-                              ))}
-                           </div>
-                           {m.explanation && (
-                              <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-xl text-xs md:text-sm text-gray-700 dark:text-gray-300 border border-red-100 dark:border-red-800/50">
-                                 <span className="font-bold block mb-1 text-red-600 dark:text-red-400 flex items-center gap-1"><BookOpen size={14}/> {t('quiz_explanation')}:</span> {m.explanation}
-                              </div>
-                           )}
+                   <div className="space-y-4">
+                     {displayedItems.map((m) => {
+                        const q = m.questionId;
+                        if (!q) return null;
+                        
+                        return (
+                        <div key={m._id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-red-100 dark:border-red-900/30 shadow-sm relative group">
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="flex gap-2 mb-2">
+                                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold rounded text-gray-500">{q.subject}</span>
+                                    {q.chapter && <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold rounded text-gray-500">{q.chapter}</span>}
+                                    {m.wrongCount > 1 && (
+                                        <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 text-[10px] font-bold rounded flex items-center gap-1">
+                                            <X size={10}/> Missed {m.wrongCount} times
+                                        </span>
+                                    )}
+                                </div>
+                                <button onClick={() => handleDeleteMistake(m._id)} className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                            </div>
+                            
+                            <h3 className="font-bold text-gray-800 dark:text-white mb-4 text-sm md:text-base pr-4">{q.question}</h3>
+                            <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                                {q.options.map((opt: string, i: number) => (
+                                    <div key={i} className={`p-2 rounded border ${i === q.correctAnswerIndex ? 'bg-green-50 border-green-200 text-green-700 font-bold' : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-500'}`}>{opt}</div>
+                                ))}
+                            </div>
+                            <div className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <span className="font-bold text-red-500 block mb-1">Explanation:</span>
+                                {q.explanation || 'No explanation available.'}
+                            </div>
                         </div>
-                     ))}
-                  </div>
+                     )})}
+                     
+                     <PaginationControls />
+                   </div>
                )}
             </div>
         )}
 
       </div>
 
-      {/* Exam Config Modal (Same as before) */}
+      {/* Exam Config Modal */}
       {showExamConfig && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
               <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 border border-gray-200 dark:border-gray-700">
-                  {/* ... Modal content ... */}
                   <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                          <AlertTriangle size={24} className="text-red-500"/> Retake Configuration
-                      </h3>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2"><AlertTriangle size={24} className="text-red-500"/> Retake Configuration</h3>
                       <button onClick={() => setShowExamConfig(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><X size={20} className="text-gray-500"/></button>
                   </div>
                   <div className="space-y-6">
-                      <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-                          <p className="text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">Selected Questions</p>
-                          <div className="flex justify-between items-center">
-                              <span className="text-2xl font-bold text-gray-900 dark:text-white">{filteredItems.length}</span>
-                              <div className="text-xs text-right text-gray-500">
-                                  {filterSubject !== 'ALL' ? filterSubject : 'All Subjects'} <br/>
-                                  {filterChapter !== 'ALL' ? filterChapter : 'All Chapters'}
-                              </div>
-                          </div>
+                      {/* Mistake Clearance Tip (Moved here) */}
+                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800 flex gap-3">
+                           <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-full h-fit text-emerald-600 dark:text-emerald-400">
+                              <Sparkles size={18} />
+                           </div>
+                           <div>
+                              <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-sm">ভুল শুধরানোর সুযোগ!</h4>
+                              <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1 leading-relaxed">
+                                 এই এক্সামে যেসব প্রশ্নের সঠিক উত্তর দিবেন, সেগুলো অটোমেটিকলি আপনার 'ভুল' তালিকা থেকে মুছে যাবে।
+                              </p>
+                           </div>
                       </div>
+
                       <div>
                           <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quiz_time_limit')}</label>
                           <div className="grid grid-cols-4 gap-2">
                               {[0, 10, 20, 30].map(t => (
-                                  <button 
-                                    key={t} 
-                                    onClick={() => setExamTimeLimit(t)}
-                                    className={`py-2 rounded-lg text-xs font-bold border transition-all ${examTimeLimit === t ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'}`}
-                                  >
-                                      {t === 0 ? 'No Limit' : `${t} Min`}
-                                  </button>
+                                  <button key={t} onClick={() => setExamTimeLimit(t)} className={`py-2 rounded-lg text-xs font-bold border transition-all ${examTimeLimit === t ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'}`}>{t === 0 ? 'No Limit' : `${t} Min`}</button>
                               ))}
                           </div>
                       </div>
-                      <div>
-                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quiz_view_mode')}</label>
-                          <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-                              <button onClick={() => setExamViewMode('SINGLE_PAGE')} className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all ${examViewMode === 'SINGLE_PAGE' ? 'bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white' : 'text-gray-500'}`}><LayoutList size={14} /> Single Page</button>
-                              <button onClick={() => setExamViewMode('ALL_AT_ONCE')} className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all ${examViewMode === 'ALL_AT_ONCE' ? 'bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white' : 'text-gray-500'}`}><AlignJustify size={14} /> All at Once</button>
-                          </div>
-                      </div>
-                      <button 
-                        onClick={launchExam}
-                        className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-red-200 dark:shadow-none transition-all"
-                      >
-                          <Play size={18} fill="currentColor"/> {t('hero_btn')}
-                      </button>
+                      <button onClick={launchExam} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-red-200 dark:shadow-none transition-all"><Play size={18} fill="currentColor"/> {t('hero_btn')}</button>
                   </div>
               </div>
           </div>

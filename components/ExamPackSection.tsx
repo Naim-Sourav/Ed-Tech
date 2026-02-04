@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileCheck, ShoppingBag, ArrowRight, Copy, Loader2, X, Check, CheckCircle2, AlertCircle, ChevronLeft, Play, Timer, CheckCircle } from 'lucide-react';
-import { useAdmin } from '../contexts/AdminContext';
+import { FileCheck, ShoppingBag, ArrowRight, Loader2, CheckCircle2, ChevronLeft, Timer, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ExamPack } from '../types';
 import { fetchExamPacksAPI } from '../services/api';
 
 const ExamPackSection: React.FC = () => {
+  const navigate = useNavigate();
   const [packs, setPacks] = useState<ExamPack[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -14,16 +15,7 @@ const ExamPackSection: React.FC = () => {
   const [viewMode, setViewMode] = useState<'LIST' | 'PLAYER'>('LIST');
   const [activePack, setActivePack] = useState<ExamPack | null>(null);
 
-  // Payment State
-  const [selectedPack, setSelectedPack] = useState<ExamPack | null>(null);
-  const [paymentStep, setPaymentStep] = useState<'INFO' | 'FORM' | 'SUCCESS'>('INFO');
-  const [trxId, setTrxId] = useState('');
-  const [senderNumber, setSenderNumber] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  const { submitPaymentRequest } = useAdmin();
-  const { currentUser, isEnrolled } = useAuth();
+  const { isEnrolled } = useAuth();
 
   useEffect(() => {
     const loadPacks = async () => {
@@ -40,53 +32,12 @@ const ExamPackSection: React.FC = () => {
   }, []);
 
   const handleBuyClick = (pack: ExamPack) => {
-    setSelectedPack(pack);
-    setPaymentStep('INFO');
-    setTrxId('');
-    setSenderNumber('');
-    setErrorMsg('');
+    navigate('/payment', { state: { item: pack, type: 'PACK' } });
   };
 
   const openPack = (pack: ExamPack) => {
       setActivePack(pack);
       setViewMode('PLAYER');
-  };
-
-  const handleCopyNumber = () => {
-    navigator.clipboard.writeText('01622190454');
-  };
-
-  const handleSubmitPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!trxId || !senderNumber || !selectedPack || !currentUser) return;
-
-    setIsVerifying(true);
-    setErrorMsg('');
-    
-    try {
-      await submitPaymentRequest({
-        userId: currentUser.uid,
-        userName: currentUser.displayName || 'Unknown',
-        userEmail: currentUser.email || '',
-        courseId: selectedPack.id,
-        courseTitle: selectedPack.title, // Treating Pack as Course in DB for now
-        amount: selectedPack.price,
-        trxId: trxId,
-        senderNumber: senderNumber
-      });
-      setPaymentStep('SUCCESS');
-    } catch (error: any) {
-      console.error("Submission failed:", error);
-      setErrorMsg(error.message || "পেমেন্ট সাবমিট করতে সমস্যা হয়েছে।");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const closePaymentModal = () => {
-    setSelectedPack(null);
-    setPaymentStep('INFO');
-    setErrorMsg('');
   };
 
   // Theme helper
@@ -99,6 +50,28 @@ const ExamPackSection: React.FC = () => {
       default: return 'text-gray-600 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-gray-800 dark:border-gray-700';
     }
   };
+
+  // Skeleton Loader
+  const PacksSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl animate-pulse">
+        {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 h-64 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 dark:border-gray-700 h-24 bg-gray-50 dark:bg-gray-900">
+                    <div className="flex justify-between mb-4">
+                        <div className="w-20 h-6 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                    <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-4 w-5/6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl mt-4"></div>
+                </div>
+            </div>
+        ))}
+    </div>
+  );
 
   // --- RENDER: PACK PLAYER (Exam List) ---
   if (viewMode === 'PLAYER' && activePack) {
@@ -173,7 +146,7 @@ const ExamPackSection: React.FC = () => {
             </header>
 
             {loading ? (
-                <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary"/></div>
+                <PacksSkeleton />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
                     {packs.map(pack => {
@@ -239,98 +212,6 @@ const ExamPackSection: React.FC = () => {
                 </div>
             )}
         </div>
-
-        {/* Payment Modal */}
-        {selectedPack && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-800 dark:text-white">পেমেন্ট ফর্ম</h3>
-                        <button onClick={closePaymentModal}><X size={20} className="text-gray-500" /></button>
-                    </div>
-                    
-                    <div className="p-6">
-                        {errorMsg && (
-                            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-100 dark:border-red-800 flex items-start gap-2">
-                                <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                                <span>{errorMsg}</span>
-                            </div>
-                        )}
-
-                        {paymentStep === 'INFO' && (
-                            <div className="space-y-6">
-                                <div className="text-center">
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">আপনি কিনছেন</p>
-                                    <h2 className="text-xl font-bold text-primary dark:text-green-400">{selectedPack.title}</h2>
-                                    <p className="text-2xl font-bold text-gray-800 dark:text-white mt-2">৳{selectedPack.price}</p>
-                                </div>
-
-                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 font-medium">নিচের নাম্বারে <strong>Send Money</strong> করুন:</p>
-                                    <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg border border-blue-200 dark:border-blue-700">
-                                        <span className="font-mono text-lg font-bold text-blue-600 dark:text-blue-400">01622190454</span>
-                                        <button onClick={handleCopyNumber} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500"><Copy size={18} /></button>
-                                    </div>
-                                    <div className="flex gap-2 mt-3 justify-center">
-                                        <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded">bKash</span>
-                                        <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">Nagad</span>
-                                    </div>
-                                </div>
-
-                                <button onClick={() => setPaymentStep('FORM')} className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors">পেমেন্ট সম্পন্ন করেছি</button>
-                            </div>
-                        )}
-
-                        {paymentStep === 'FORM' && (
-                            <form onSubmit={handleSubmitPayment} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">প্রেরক নম্বর</label>
-                                    <input 
-                                        required
-                                        type="text" 
-                                        placeholder="01XXXXXXXXX"
-                                        value={senderNumber}
-                                        onChange={(e) => setSenderNumber(e.target.value)}
-                                        className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">TrxID</label>
-                                    <input 
-                                        required
-                                        type="text" 
-                                        placeholder="Example: 9H7XXXXX"
-                                        value={trxId}
-                                        onChange={(e) => setTrxId(e.target.value)}
-                                        className="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white uppercase"
-                                    />
-                                </div>
-                                <button 
-                                    type="submit" 
-                                    disabled={isVerifying}
-                                    className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                                >
-                                    {isVerifying ? <Loader2 className="animate-spin" /> : 'জমা দিন'}
-                                </button>
-                            </form>
-                        )}
-
-                        {paymentStep === 'SUCCESS' && (
-                            <div className="text-center py-6">
-                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Check size={32} />
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-800 dark:text-white">রিকোয়েস্ট জমা হয়েছে!</h3>
-                                <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
-                                    অ্যাডমিন কনফার্ম করলে প্যাকটি আপনার অ্যাকাউন্টে যুক্ত হবে।
-                                </p>
-                                <button onClick={closePaymentModal} className="mt-6 px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-lg">ঠিক আছে</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        )}
     </div>
   );
 };
