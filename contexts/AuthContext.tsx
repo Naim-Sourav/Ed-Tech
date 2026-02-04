@@ -16,6 +16,8 @@ export interface UserProfileExtended {
   department?: string;
   target?: string;
   phoneNumber?: string;
+  version?: string; // New: Bangla/English
+  dailyStudyGoal?: string; // New: e.g., "4-6 Hours"
 }
 
 interface AuthContextType {
@@ -45,7 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); // Firebase Auth Loading
   const [profileLoading, setProfileLoading] = useState(true); // Profile Data Fetching Loading
-  const [userAvatar, setUserAvatar] = useState<string>('default');
+  // Set default to empty string so UI renders initial instead of "default" placeholder logic
+  const [userAvatar, setUserAvatar] = useState<string>('');
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [extendedProfile, setExtendedProfile] = useState<UserProfileExtended | null>(null);
 
@@ -54,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!currentUser) return false;
       // If profile is still loading, we can't determine completion yet, assume false but handled by UI
       if (!extendedProfile) return false;
-      return !!(extendedProfile.target && extendedProfile.college);
+      return !!(extendedProfile.target && extendedProfile.college && extendedProfile.hscBatch);
   }, [currentUser, extendedProfile]);
 
   useEffect(() => {
@@ -70,15 +73,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfileLoading(true); // Start profile loading
         if (user.photoURL) {
           setUserAvatar(user.photoURL);
+        } else {
+          setUserAvatar(''); // Ensure empty string if null
         }
 
         try {
-           // Parallel fetching for speed
+           // CRITICAL FIX: Ensure user exists in Backend BEFORE fetching stats
+           // This prevents 404 errors on first login
+           await syncUserToMongoDB(user);
+
+           // Now fetch data in parallel
            const [courses, stats] = await Promise.all([
                fetchUserEnrollments(user.uid),
-               fetchUserStatsAPI(user.uid),
-               // Initial Sync (fire and forget, don't await strictly if not needed for UI immediately, but safer to await)
-               syncUserToMongoDB(user) 
+               fetchUserStatsAPI(user.uid)
            ]);
 
            setEnrolledCourses(courses);
@@ -89,7 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                    hscBatch: stats.user.hscBatch,
                    department: stats.user.department,
                    target: stats.user.target,
-                   phoneNumber: stats.user.phoneNumber
+                   phoneNumber: stats.user.phoneNumber,
+                   version: stats.user.version,
+                   dailyStudyGoal: stats.user.dailyStudyGoal
                });
            }
         } catch (err) {

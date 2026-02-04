@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PaymentRequest } from '../types';
 import { 
@@ -8,6 +9,7 @@ import {
   sendNotificationAPI,
   fetchAdminStatsAPI 
 } from '../services/api';
+import { useAuth } from './AuthContext';
 
 interface AdminStats {
   totalRevenue: number;
@@ -38,7 +40,11 @@ export const useAdmin = () => {
   return context;
 };
 
+// Define the Admin Email
+const ADMIN_EMAIL = "nurnaimsourav@gmail.com";
+
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { currentUser } = useAuth();
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([]);
   const [stats, setStats] = useState<AdminStats>({
     totalRevenue: 0,
@@ -49,9 +55,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     totalExams: 0
   });
   
-  const isAdmin = true; // In a real app, verify via API/Token
+  // Dynamic Admin Check
+  const isAdmin = currentUser?.email === ADMIN_EMAIL;
 
   const refreshRequests = async () => {
+    // Prevent non-admins from fetching sensitive data
+    if (!isAdmin) return;
+
     try {
       const [requests, fetchedStats] = await Promise.all([
           fetchPaymentsFromAPI(),
@@ -76,13 +86,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   useEffect(() => {
-    refreshRequests();
-  }, []);
+    if (isAdmin) {
+        refreshRequests();
+    }
+  }, [isAdmin]);
 
   const submitPaymentRequest = async (requestData: Omit<PaymentRequest, 'id' | 'status' | 'timestamp'>) => {
     try {
       await submitPaymentToAPI(requestData);
-      await refreshRequests(); 
+      // Only refresh if the submitter is also an admin (testing purpose), otherwise user doesn't need admin data
+      if (isAdmin) await refreshRequests(); 
     } catch (e) {
       console.error("Error submitting payment:", e);
       throw e;
@@ -90,6 +103,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const approvePayment = async (id: string) => {
+    if (!isAdmin) return;
     try {
       await updatePaymentStatusAPI(id, 'APPROVED');
       await refreshRequests();
@@ -100,6 +114,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const rejectPayment = async (id: string) => {
+    if (!isAdmin) return;
     try {
       await updatePaymentStatusAPI(id, 'REJECTED');
       await refreshRequests();
@@ -109,6 +124,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deletePaymentRequest = async (id: string) => {
+    if (!isAdmin) return;
     try {
       await deletePaymentAPI(id);
       await refreshRequests();
@@ -118,6 +134,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const sendNotification = async (title: string, message: string, type: 'INFO' | 'WARNING' | 'SUCCESS') => {
+    if (!isAdmin) return;
     try {
       await sendNotificationAPI({ title, message, type });
     } catch (e) {
