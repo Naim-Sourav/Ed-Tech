@@ -279,10 +279,10 @@ const ProfilePage: React.FC = () => {
 
       setIsEditing(false);
       setShowAvatarSelector(false);
-      showToast("প্রোফাইল আপডেট হয়েছে", "success");
+      showToast("à¦ªà§à¦°à§‹à¦«à¦¾à¦‡à¦² à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà§‡à¦›à§‡", "success");
     } catch (error) {
       console.error(error);
-      showToast("আপডেট ব্যর্থ হয়েছে", "error");
+      showToast("à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à§Ÿà§‡à¦›à§‡", "error");
     } finally {
       setLoading(false);
     }
@@ -303,7 +303,7 @@ const ProfilePage: React.FC = () => {
     if (!currentUser) return;
     await deleteSavedQuestionAPI(currentUser.uid, id);
     setSavedQuestions(prev => prev.filter(sq => sq._id !== id));
-    showToast("ডিলিট করা হয়েছে", "info");
+    showToast("à¦¡à¦¿à¦²à¦¿à¦Ÿ à¦•à¦°à¦¾ à¦¹à§Ÿà§‡à¦›à§‡", "info");
   };
 
   const handleMoveToFolder = async (savedId: string, folder: string) => {
@@ -312,9 +312,9 @@ const ProfilePage: React.FC = () => {
           await updateSavedQuestionFolderAPI(currentUser.uid, savedId, folder);
           setSavedQuestions(prev => prev.map(sq => sq._id === savedId ? { ...sq, folder } : sq));
           setMovingQuestionId(null);
-          showToast(`${folder} ফোল্ডারে সরানো হয়েছে`, "success");
+          showToast(`${folder} à¦«à§‹à¦²à§à¦¡à¦¾à¦°à§‡ à¦¸à¦°à¦¾à¦¨à§‹ à¦¹à§Ÿà§‡à¦›à§‡`, "success");
       } catch (e) {
-          showToast("মুভ করা যায়নি", "error");
+          showToast("à¦®à§à¦­ à¦•à¦°à¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿", "error");
       }
   };
 
@@ -328,7 +328,7 @@ const ProfilePage: React.FC = () => {
           setActiveFolder(name);
           setNewFolderName('');
           setIsCreatingFolder(false);
-          showToast("নতুন ফোল্ডার তৈরি হয়েছে", "success");
+          showToast("à¦¨à¦¤à§à¦¨ à¦«à§‹à¦²à§à¦¡à¦¾à¦° à¦¤à§ˆà¦°à¦¿ à¦¹à§Ÿà§‡à¦›à§‡", "success");
       }
   };
 
@@ -336,7 +336,7 @@ const ProfilePage: React.FC = () => {
     if (!currentUser) return;
     await deleteUserMistakeAPI(currentUser.uid, id);
     setMistakes(prev => prev.filter(m => m._id !== id));
-    showToast("ডিলিট করা হয়েছে", "info");
+    showToast("à¦¡à¦¿à¦²à¦¿à¦Ÿ à¦•à¦°à¦¾ à¦¹à§Ÿà§‡à¦›à§‡", "info");
   };
 
   const handleChallenge = () => {
@@ -528,7 +528,7 @@ const ProfilePage: React.FC = () => {
               onChange={(e) => { setCurrentFilterSubject(e.target.value); setCurrentFilterChapter('ALL'); }}
               className="flex-1 min-w-[100px] px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 border-none text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary truncate"
           >
-              <option value="ALL">সকল বিষয়</option>
+              <option value="ALL">à¦¸à¦•à¦² à¦¬à¦¿à¦·à§Ÿ</option>
               {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select 
@@ -536,14 +536,14 @@ const ProfilePage: React.FC = () => {
               onChange={(e) => setCurrentFilterChapter(e.target.value)}
               className="flex-1 min-w-[100px] px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 border-none text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary truncate"
           >
-              <option value="ALL">সকল অধ্যায়</option>
+              <option value="ALL">à¦¸à¦•à¦² à¦…à¦§à§à¦¯à¦¾à§Ÿ</option>
               {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <button 
             onClick={resetCurrentFilters}
             className="text-xs text-red-500 hover:text-red-600 font-bold px-2 whitespace-nowrap"
           >
-            রিসেট
+            à¦°à¦¿à¦¸à§‡à¦Ÿ
           </button>
       </div>
   );
@@ -554,7 +554,7 @@ const ProfilePage: React.FC = () => {
       return (
           <div className="flex justify-center items-center gap-4 mt-6">
               <button 
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() => setCurrentPage((prev: number) => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                   className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
               >
@@ -564,7 +564,7 @@ const ProfilePage: React.FC = () => {
                   Page {currentPage} of {totalPages}
               </span>
               <button 
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
                   className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
               >
@@ -601,7 +601,7 @@ const ProfilePage: React.FC = () => {
                )}
                {showAvatarSelector && (
                    <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 w-64 animate-in fade-in slide-in-from-top-2">
-                       <p className="text-xs font-bold text-gray-500 mb-3">অবতার নির্বাচন করুন</p>
+                       <p className="text-xs font-bold text-gray-500 mb-3">à¦…à¦¬à¦¤à¦¾à¦° à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¨ à¦•à¦°à§à¦¨</p>
                        <div className="grid grid-cols-4 gap-2 mb-4">
                            {AVATARS.map((avi, idx) => (
                                <button key={idx} onClick={() => { setSelectedAvatar(avi); setShowAvatarSelector(false); }} className="w-10 h-10 rounded-full border hover:border-primary overflow-hidden">
@@ -610,7 +610,7 @@ const ProfilePage: React.FC = () => {
                            ))}
                        </div>
                        <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
-                           <Upload size={14}/> আপলোড করুন
+                           <Upload size={14}/> à¦†à¦ªà¦²à§‹à¦¡ à¦•à¦°à§à¦¨
                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                        </label>
                    </div>
@@ -722,17 +722,17 @@ const ProfilePage: React.FC = () => {
 
                 {/* Subject Performance Detailed */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                    <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><PieChart size={18}/> বিষয় ও অধ্যায়ভিত্তিক দক্ষতা</h3>
+                    <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><PieChart size={18}/> à¦¬à¦¿à¦·à§Ÿ à¦“ à¦…à¦§à§à¦¯à¦¾à§Ÿà¦­à¦¿à¦¤à§à¦¤à¦¿à¦• à¦¦à¦•à§à¦·à¦¤à¦¾</h3>
                     
                     <div className="overflow-x-auto">
                         <div className="min-w-[700px] border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                             <div className="grid grid-cols-12 gap-2 bg-gray-50 dark:bg-gray-900/50 p-3 border-b border-gray-200 dark:border-gray-700 font-bold text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider items-center">
-                                <div className="col-span-3">বিষয় / অধ্যায়</div>
-                                <div className="col-span-2 text-center">চেষ্টা করা</div>
-                                <div className="col-span-1 text-center text-green-600">সঠিক</div>
-                                <div className="col-span-1 text-center text-red-600">ভুল</div>
-                                <div className="col-span-1 text-center text-gray-400">স্কিপড</div>
-                                <div className="col-span-4 text-center">দক্ষতা (Accuracy)</div>
+                                <div className="col-span-3">à¦¬à¦¿à¦·à§Ÿ / à¦…à¦§à§à¦¯à¦¾à§Ÿ</div>
+                                <div className="col-span-2 text-center">à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à¦¾</div>
+                                <div className="col-span-1 text-center text-green-600">à¦¸à¦ à¦¿à¦•</div>
+                                <div className="col-span-1 text-center text-red-600">à¦­à§à¦²</div>
+                                <div className="col-span-1 text-center text-gray-400">à¦¸à§à¦•à¦¿à¦ªà¦¡</div>
+                                <div className="col-span-4 text-center">à¦¦à¦•à§à¦·à¦¤à¦¾ (Accuracy)</div>
                             </div>
 
                             <div className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -808,7 +808,7 @@ const ProfilePage: React.FC = () => {
                                     );
                                 })}
                                 {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) && (
-                                    <div className="p-8 text-center text-gray-400">কোনো ডাটা পাওয়া যায়নি</div>
+                                    <div className="p-8 text-center text-gray-400">à¦•à§‹à¦¨à§‹ à¦¡à¦¾à¦Ÿà¦¾ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿</div>
                                 )}
                             </div>
                         </div>
@@ -823,8 +823,8 @@ const ProfilePage: React.FC = () => {
                 {enrolledCourses.length === 0 ? (
                     <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
                         <BookOpen size={48} className="mx-auto text-gray-300 mb-3"/>
-                        <p className="text-gray-500 font-medium">কোনো কোর্স এনরোল করা নেই</p>
-                        <button onClick={() => navigate('/courses')} className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold">কোর্স দেখুন</button>
+                        <p className="text-gray-500 font-medium">à¦•à§‹à¦¨à§‹ à¦•à§‹à¦°à§à¦¸ à¦à¦¨à¦°à§‹à¦² à¦•à¦°à¦¾ à¦¨à§‡à¦‡</p>
+                        <button onClick={() => navigate('/courses')} className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold">à¦•à§‹à¦°à§à¦¸ à¦¦à§‡à¦–à§à¦¨</button>
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 gap-4">
@@ -838,7 +838,7 @@ const ProfilePage: React.FC = () => {
                                             <div className="h-full bg-primary" style={{width: `${course.progress}%`}}></div>
                                         </div>
                                     </div>
-                                    <button className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary rounded-lg text-xs font-bold transition-all">চালিয়ে যান</button>
+                                    <button className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary rounded-lg text-xs font-bold transition-all">à¦šà¦¾à¦²à¦¿à§Ÿà§‡ à¦¯à¦¾à¦¨</button>
                                 </div>
                             </div>
                         ))}
@@ -896,7 +896,7 @@ const ProfilePage: React.FC = () => {
                 ) : filteredItems.length === 0 ? (
                     <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
                         <Bookmark size={48} className="mx-auto text-gray-300 mb-3"/>
-                        <p className="text-gray-500 font-medium">কোনো সেভ করা প্রশ্ন পাওয়া যায়নি</p>
+                        <p className="text-gray-500 font-medium">à¦•à§‹à¦¨à§‹ à¦¸à§‡à¦­ à¦•à¦°à¦¾ à¦ªà§à¦°à¦¶à§à¦¨ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -998,7 +998,7 @@ const ProfilePage: React.FC = () => {
                ) : filteredItems.length === 0 ? (
                    <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
                        <CheckCircle size={48} className="mx-auto text-green-300 mb-3"/>
-                       <p className="text-gray-500 font-medium">কোনো ভুল পাওয়া যায়নি (ফিল্টার অনুযায়ী)।</p>
+                       <p className="text-gray-500 font-medium">à¦•à§‹à¦¨à§‹ à¦­à§à¦² à¦ªà¦¾à¦“à§Ÿà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿ (à¦«à¦¿à¦²à§à¦Ÿà¦¾à¦° à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€)à¥¤</p>
                    </div>
                ) : (
                    <div className="space-y-4">
@@ -1057,9 +1057,9 @@ const ProfilePage: React.FC = () => {
                               <Sparkles size={18} />
                            </div>
                            <div>
-                              <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-sm">ভুল শুধরানোর সুযোগ!</h4>
+                              <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-sm">à¦­à§à¦² à¦¶à§à¦§à¦°à¦¾à¦¨à§‹à¦° à¦¸à§à¦¯à§‹à¦—!</h4>
                               <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1 leading-relaxed">
-                                 এই এক্সামে যেসব প্রশ্নের সঠিক উত্তর দিবেন, সেগুলো অটোমেটিকলি আপনার 'ভুল' তালিকা থেকে মুছে যাবে।
+                                 à¦à¦‡ à¦à¦•à§à¦¸à¦¾à¦®à§‡ à¦¯à§‡à¦¸à¦¬ à¦ªà§à¦°à¦¶à§à¦¨à§‡à¦° à¦¸à¦ à¦¿à¦• à¦‰à¦¤à§à¦¤à¦° à¦¦à¦¿à¦¬à§‡à¦¨, à¦¸à§‡à¦—à§à¦²à§‹ à¦…à¦Ÿà§‹à¦®à§‡à¦Ÿà¦¿à¦•à¦²à¦¿ à¦†à¦ªà¦¨à¦¾à¦° 'à¦­à§à¦²' à¦¤à¦¾à¦²à¦¿à¦•à¦¾ à¦¥à§‡à¦•à§‡ à¦®à§à¦›à§‡ à¦¯à¦¾à¦¬à§‡à¥¤
                               </p>
                            </div>
                       </div>
