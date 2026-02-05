@@ -1,6 +1,6 @@
 
 import { QuizQuestion } from '../types';
-import { GST_A_23_24 } from '../data/gst_a_23_24_paper';
+import GST_A_23_24_QUESTIONS from '../data/gst_a_23_24_questions.json';
 
 export interface PastPaper {
   id: string;
@@ -12,6 +12,17 @@ export interface PastPaper {
   questions: QuizQuestion[];
   tags: string[];
 }
+
+const GST_A_23_24: PastPaper = {
+  id: 'gst_a_23_24',
+  title: 'GST Unit-A (2023-24)',
+  year: '2023-24',
+  source: 'GST',
+  description: 'General Science & Technology (GST) Admission Test 2023-24 Question Paper',
+  totalTime: 60,
+  questions: GST_A_23_24_QUESTIONS as unknown as QuizQuestion[],
+  tags: ['GST', 'Admission', '2023-24']
+};
 
 // Aggregating all papers here
 export const PAST_PAPERS_DB: PastPaper[] = [
