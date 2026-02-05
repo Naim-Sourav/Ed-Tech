@@ -51,22 +51,22 @@ interface BattleStats {
 type Phase = 'MENU' | 'CREATE' | 'JOIN' | 'LOBBY' | 'GAME' | 'RESULT';
 
 const REACTION_EMOJIS = [
-    { label: 'Fire', icon: '🔥' },
-    { label: 'Clap', icon: '👏' },
-    { label: 'Shocked', icon: '😮' },
-    { label: 'Think', icon: '🤔' },
-    { label: 'GG', icon: '💪' }
+    { label: 'Fire', icon: 'ðŸ”¥' },
+    { label: 'Clap', icon: 'ðŸ‘' },
+    { label: 'Shocked', icon: 'ðŸ˜®' },
+    { label: 'Think', icon: 'ðŸ¤”' },
+    { label: 'GG', icon: 'ðŸ’ª' }
 ];
 
 const BATTLE_SUBJECTS = [
-    { id: 'Physics', label: 'পদার্থবিজ্ঞান', icon: Atom, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800' },
-    { id: 'Chemistry', label: 'রসায়ন', icon: Beaker, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
-    { id: 'Math', label: 'উচ্চতর গণিত', icon: Calculator, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800' },
-    { id: 'Biology', label: 'জীববিজ্ঞান', icon: Dna, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800' },
-    { id: 'ICT', label: 'আইসিটি', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
-    { id: 'English', label: 'ইংরেজি', icon: BookOpen, color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20', border: 'border-teal-200 dark:border-teal-800' },
-    { id: 'Bangla', label: 'বাংলা', icon: Book, color: 'text-pink-500', bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-200 dark:border-pink-800' },
-    { id: 'General Knowledge', label: 'সাধারণ জ্ঞান', icon: Globe, color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-900/20', border: 'border-cyan-200 dark:border-cyan-800' },
+    { id: 'Physics', label: 'à¦ªà¦¦à¦¾à¦°à§à¦¥à¦¬à¦¿à¦œà§à¦žà¦¾à¦¨', icon: Atom, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800' },
+    { id: 'Chemistry', label: 'à¦°à¦¸à¦¾à§Ÿà¦¨', icon: Beaker, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
+    { id: 'Math', label: 'à¦‰à¦šà§à¦šà¦¤à¦° à¦—à¦£à¦¿à¦¤', icon: Calculator, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800' },
+    { id: 'Biology', label: 'à¦œà§€à¦¬à¦¬à¦¿à¦œà§à¦žà¦¾à¦¨', icon: Dna, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800' },
+    { id: 'ICT', label: 'à¦†à¦‡à¦¸à¦¿à¦Ÿà¦¿', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
+    { id: 'English', label: 'à¦‡à¦‚à¦°à§‡à¦œà¦¿', icon: BookOpen, color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20', border: 'border-teal-200 dark:border-teal-800' },
+    { id: 'Bangla', label: 'à¦¬à¦¾à¦‚à¦²à¦¾', icon: Book, color: 'text-pink-500', bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-200 dark:border-pink-800' },
+    { id: 'General Knowledge', label: 'à¦¸à¦¾à¦§à¦¾à¦°à¦£ à¦œà§à¦žà¦¾à¦¨', icon: Globe, color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-900/20', border: 'border-cyan-200 dark:border-cyan-800' },
 ];
 
 const QuizBattlePrototype: React.FC = () => {
@@ -323,7 +323,7 @@ const QuizBattlePrototype: React.FC = () => {
   const handleCreate = async () => {
     if (!currentUser) return;
     if (config.subjects.length === 0) {
-        showToast("অনুগ্রহ করে একটি বিষয় সিলেক্ট করুন", "warning");
+        showToast("à¦…à¦¨à§à¦—à§à¦°à¦¹ à¦•à¦°à§‡ à¦à¦•à¦Ÿà¦¿ à¦¬à¦¿à¦·à§Ÿ à¦¸à¦¿à¦²à§‡à¦•à§à¦Ÿ à¦•à¦°à§à¦¨", "warning");
         return;
     }
     
@@ -336,7 +336,7 @@ const QuizBattlePrototype: React.FC = () => {
       });
       
       if (qResult.length === 0) {
-          showToast("এই বিষয়ে পর্যাপ্ত প্রশ্ন নেই। অন্য বিষয় চেষ্টা করুন।", "warning");
+          showToast("à¦à¦‡ à¦¬à¦¿à¦·à§Ÿà§‡ à¦ªà¦°à§à¦¯à¦¾à¦ªà§à¦¤ à¦ªà§à¦°à¦¶à§à¦¨ à¦¨à§‡à¦‡à¥¤ à¦…à¦¨à§à¦¯ à¦¬à¦¿à¦·à§Ÿ à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤", "warning");
           setLoading(false);
           return;
       }
@@ -348,7 +348,7 @@ const QuizBattlePrototype: React.FC = () => {
       setRoomId(newRoomId);
       if (opponentInfo) {
           sendNotificationAPI({
-              title: "⚔️ Battle Challenge!",
+              title: "âš”ï¸ Battle Challenge!",
               message: `${currentUser.displayName} is challenging you!`,
               type: "BATTLE_CHALLENGE",
               target: opponentInfo.uid,
@@ -456,10 +456,10 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="p-2.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-2xl">
                         <Settings size={28} />
                     </div>
-                    ব্যাটল কনফিগারেশন
+                    à¦¬à§à¦¯à¦¾à¦Ÿà¦² à¦•à¦¨à¦«à¦¿à¦—à¦¾à¦°à§‡à¦¶à¦¨
                 </h2>
                 <button onClick={() => setPhase('MENU')} className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition-colors text-sm">
-                    বাতিল
+                    à¦¬à¦¾à¦¤à¦¿à¦²
                 </button>
             </div>
 
@@ -468,7 +468,7 @@ const QuizBattlePrototype: React.FC = () => {
                 {/* 1. Subject Selection Grid */}
                 <div>
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 block flex items-center gap-2">
-                        <Layers size={14}/> বিষয় নির্বাচন করুন
+                        <Layers size={14}/> à¦¬à¦¿à¦·à§Ÿ à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¨ à¦•à¦°à§à¦¨
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                         {BATTLE_SUBJECTS.map(subj => {
@@ -494,14 +494,14 @@ const QuizBattlePrototype: React.FC = () => {
                 {config.subjects.length > 0 && (
                     <div className="animate-in fade-in slide-in-from-top-4">
                         <label className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
-                            <BookOpen size={14}/> অধ্যায় (Chapter)
+                            <BookOpen size={14}/> à¦…à¦§à§à¦¯à¦¾à§Ÿ (Chapter)
                         </label>
                         <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
                             <button
                                 onClick={() => setConfig({ ...config, chapters: ['Full Syllabus'] })}
                                 className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${config.chapters.includes('Full Syllabus') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-black dark:border-white' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-400'}`}
                             >
-                                সম্পূর্ণ সিলেবাস
+                                à¦¸à¦®à§à¦ªà§‚à¦°à§à¦£ à¦¸à¦¿à¦²à§‡à¦¬à¦¾à¦¸
                             </button>
                             {chapters.map((chap, idx) => {
                                 const isChapSelected = config.chapters.includes(chap);
@@ -525,13 +525,13 @@ const QuizBattlePrototype: React.FC = () => {
                 {/* 3. Game Settings (Grid) */}
                 <div>
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 block flex items-center gap-2">
-                        <Settings size={14}/> গেম সেটিংস
+                        <Settings size={14}/> à¦—à§‡à¦® à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-900/50 p-6 rounded-3xl border border-gray-100 dark:border-gray-700">
                         {/* Question Count */}
                         <div>
                             <div className="flex justify-between mb-2">
-                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Hash size={16}/> প্রশ্ন সংখ্যা</span>
+                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Hash size={16}/> à¦ªà§à¦°à¦¶à§à¦¨ à¦¸à¦‚à¦–à§à¦¯à¦¾</span>
                                 <span className="text-sm font-black text-primary">{config.questionCount}</span>
                             </div>
                             <input 
@@ -549,7 +549,7 @@ const QuizBattlePrototype: React.FC = () => {
                         {/* Time Per Question */}
                         <div>
                             <div className="flex justify-between mb-2">
-                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Clock size={16}/> সময় (সেকেন্ড)</span>
+                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Clock size={16}/> à¦¸à¦®à§Ÿ (à¦¸à§‡à¦•à§‡à¦¨à§à¦¡)</span>
                                 <span className="text-sm font-black text-orange-500">{config.timePerQuestion}s</span>
                             </div>
                             <input 
@@ -572,7 +572,7 @@ const QuizBattlePrototype: React.FC = () => {
                         onClick={handleCreate} 
                         className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 text-white font-black text-lg shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                     >
-                        <Zap fill="currentColor"/> ব্যাটল রুম তৈরি করুন
+                        <Zap fill="currentColor"/> à¦¬à§à¦¯à¦¾à¦Ÿà¦² à¦°à§à¦® à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨
                     </button>
                 </div>
             </div>
@@ -582,10 +582,10 @@ const QuizBattlePrototype: React.FC = () => {
 
   const renderJoin = () => (
     <div className="max-w-md w-full p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 animate-in zoom-in">
-        <h2 className="text-2xl font-black mb-6 text-gray-800 dark:text-white">রুম জয়েন করুন</h2>
+        <h2 className="text-2xl font-black mb-6 text-gray-800 dark:text-white">à¦°à§à¦® à¦œà§Ÿà§‡à¦¨ à¦•à¦°à§à¦¨</h2>
         <div className="space-y-6">
             <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">রুম কোড দিন</label>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">à¦°à§à¦® à¦•à§‹à¦¡ à¦¦à¦¿à¦¨</label>
                 <input 
                     type="text" 
                     value={inputRoomId}
@@ -595,8 +595,8 @@ const QuizBattlePrototype: React.FC = () => {
                 />
             </div>
             <div className="flex gap-3">
-                <button onClick={() => setPhase('MENU')} className="px-6 py-4 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold dark:text-white">পিছনে</button>
-                <button onClick={handleJoin} className="flex-1 py-4 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black shadow-lg">জয়েন ব্যাটল</button>
+                <button onClick={() => setPhase('MENU')} className="px-6 py-4 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold dark:text-white">à¦ªà¦¿à¦›à¦¨à§‡</button>
+                <button onClick={handleJoin} className="flex-1 py-4 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black shadow-lg">à¦œà§Ÿà§‡à¦¨ à¦¬à§à¦¯à¦¾à¦Ÿà¦²</button>
             </div>
         </div>
     </div>
@@ -648,17 +648,17 @@ const QuizBattlePrototype: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-1">
                     <Swords size={24} className="text-orange-500 mb-1"/>
                     <span className="text-2xl font-black text-gray-800 dark:text-white">{myStats.totalMatches}</span>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ম্যাচ খেলেছেন</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">à¦®à§à¦¯à¦¾à¦š à¦–à§‡à¦²à§‡à¦›à§‡à¦¨</span>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-1">
                     <Crown size={24} className="text-yellow-500 mb-1"/>
                     <span className="text-2xl font-black text-gray-800 dark:text-white">{myStats.wins}</span>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">জয়লাভ</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">à¦œà§Ÿà¦²à¦¾à¦­</span>
                 </div>
                 <div className="col-span-2 md:col-span-1 bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-1">
                     <Percent size={24} className="text-green-500 mb-1"/>
                     <span className="text-2xl font-black text-gray-800 dark:text-white">{myStats.winRate}%</span>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">জয়ের হার</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">à¦œà§Ÿà§‡à¦° à¦¹à¦¾à¦°</span>
                 </div>
             </div>
 
@@ -674,8 +674,8 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-4">
                         <UserPlus size={24}/>
                     </div>
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white">রুম তৈরি করুন</h3>
-                    <p className="text-sm text-gray-500 mt-1">বন্ধুদের ইনভাইট করুন এবং কাস্টম কুইজ খেলুন।</p>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white">à¦°à§à¦® à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨</h3>
+                    <p className="text-sm text-gray-500 mt-1">à¦¬à¦¨à§à¦§à§à¦¦à§‡à¦° à¦‡à¦¨à¦­à¦¾à¦‡à¦Ÿ à¦•à¦°à§à¦¨ à¦à¦¬à¦‚ à¦•à¦¾à¦¸à§à¦Ÿà¦® à¦•à§à¦‡à¦œ à¦–à§‡à¦²à§à¦¨à¥¤</p>
                 </button>
 
                 <button 
@@ -688,15 +688,15 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="w-12 h-12 bg-white/20 dark:bg-gray-200 rounded-2xl flex items-center justify-center mb-4">
                         <Swords size={24}/>
                     </div>
-                    <h3 className="text-xl font-black">জয়েন করুন</h3>
-                    <p className="text-sm opacity-70 mt-1">কোড ব্যবহার করে বিদ্যমান রুমে প্রবেশ করুন।</p>
+                    <h3 className="text-xl font-black">à¦œà§Ÿà§‡à¦¨ à¦•à¦°à§à¦¨</h3>
+                    <p className="text-sm opacity-70 mt-1">à¦•à§‹à¦¡ à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦° à¦•à¦°à§‡ à¦¬à¦¿à¦¦à§à¦¯à¦®à¦¾à¦¨ à¦°à§à¦®à§‡ à¦ªà§à¦°à¦¬à§‡à¦¶ à¦•à¦°à§à¦¨à¥¤</p>
                 </button>
             </div>
 
             {/* Recent History Mock */}
             <div>
                 <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
-                    <History size={16}/> রিসেন্ট অ্যাক্টিভিটি
+                    <History size={16}/> à¦°à¦¿à¦¸à§‡à¦¨à§à¦Ÿ à¦…à§à¦¯à¦¾à¦•à§à¦Ÿà¦¿à¦­à¦¿à¦Ÿà¦¿
                 </h3>
                 <div className="space-y-3">
                     <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
@@ -706,7 +706,7 @@ const QuizBattlePrototype: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-800 dark:text-white">Victory vs Tahmid</p>
-                                <p className="text-[10px] text-gray-500">Physics • 5 Questions</p>
+                                <p className="text-[10px] text-gray-500">Physics â€¢ 5 Questions</p>
                             </div>
                         </div>
                         <span className="text-green-600 font-bold text-sm">+50 XP</span>
@@ -718,7 +718,7 @@ const QuizBattlePrototype: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-800 dark:text-white">Defeat vs Sarah</p>
-                                <p className="text-[10px] text-gray-500">Biology • 10 Questions</p>
+                                <p className="text-[10px] text-gray-500">Biology â€¢ 10 Questions</p>
                             </div>
                         </div>
                         <span className="text-red-500 font-bold text-sm">-10 XP</span>
@@ -748,7 +748,7 @@ const QuizBattlePrototype: React.FC = () => {
         </div>
 
         <div className="p-6 pb-20 text-center space-y-4">
-            {battleState?.hostId === currentUser?.uid ? (
+            {battleState && battleState.hostId === currentUser?.uid ? (
                 <button 
                     onClick={() => startRTDBBattle(roomId)} 
                     disabled={Object.keys(battleState.players).length < 2} 
@@ -959,7 +959,7 @@ const QuizBattlePrototype: React.FC = () => {
 
                     <div className="flex flex-col gap-3">
                         <button onClick={() => setShowComparison(true)} className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
-                            <Eye size={18} /> প্রশ্ন ও উত্তর দেখুন (Analysis)
+                            <Eye size={18} /> à¦ªà§à¦°à¦¶à§à¦¨ à¦“ à¦‰à¦¤à§à¦¤à¦° à¦¦à§‡à¦–à§à¦¨ (Analysis)
                         </button>
                         <div className="grid grid-cols-2 gap-3">
                             <button onClick={resetToMenu} className="py-4 bg-gray-800 hover:bg-gray-700 rounded-2xl font-bold text-sm transition-colors border border-gray-700">Main Menu</button>
@@ -972,8 +972,8 @@ const QuizBattlePrototype: React.FC = () => {
                     {/* Analysis Header */}
                     <div className="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-[#0F172A] z-10">
                         <div>
-                            <h2 className="text-lg font-black text-white">ম্যাচ এনালাইসিস</h2>
-                            <p className="text-xs text-gray-400">কে কি উত্তর দিয়েছে দেখুন</p>
+                            <h2 className="text-lg font-black text-white">à¦®à§à¦¯à¦¾à¦š à¦à¦¨à¦¾à¦²à¦¾à¦‡à¦¸à¦¿à¦¸</h2>
+                            <p className="text-xs text-gray-400">à¦•à§‡ à¦•à¦¿ à¦‰à¦¤à§à¦¤à¦° à¦¦à¦¿à§Ÿà§‡à¦›à§‡ à¦¦à§‡à¦–à§à¦¨</p>
                         </div>
                         <button onClick={() => setShowComparison(false)} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
                             <X size={20} />
