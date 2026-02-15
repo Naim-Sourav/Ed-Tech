@@ -3,33 +3,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Dhrubok | HSC & Admission AI Tutor</title>
     
+    <!-- PWA & Mobile Meta Tags -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dhrubok">
+    <meta name="application-name" content="Dhrubok">
+    <link rel="apple-touch-icon" href="https://api.dicebear.com/7.x/shapes/svg?seed=Dhrubok&backgroundColor=1565C0">
+
     <!-- Standard SEO -->
-    <meta name="description" content="Dhrubok (ধ্রুবক) - An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students featuring concept explanation, quiz generation, and admission information." />
-    <meta name="keywords" content="HSC, Admission, Bangladesh, AI Tutor, Quiz, Medical, Engineering, University, Dhrubok, Dhruobo" />
-    <meta name="author" content="Dhrubok Team" />
+    <meta name="description" content="Dhrubok (ধ্রুবক) - An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students." />
 
-    <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://shikkha-shohayok.web.app/" />
-    <meta property="og:title" content="Dhrubok - HSC & Admission Prep" />
-    <meta property="og:description" content="Your personal AI tutor for Physics, Chemistry, Math, Biology and Admission Tests. Join thousands of students today!" />
-    <meta property="og:image" content="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://shikkha-shohayok.web.app/" />
-    <meta property="twitter:title" content="Dhrubok - HSC & Admission Prep" />
-    <meta property="twitter:description" content="An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students." />
-    <meta property="twitter:image" content="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop" />
-    
+    <!-- Tailwind & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.maateen.me/kalpurush/font.css" rel="stylesheet">
+    
     <script>
       tailwind.config = {
         darkMode: 'class',
@@ -40,13 +35,22 @@
               tiro: ['Kalpurush', 'sans-serif'],
             },
             colors: {
-              primary: '#1565C0', // Deep Royal Blue
-              secondary: '#0288D1', // Bright Blue
+              primary: '#1565C0',
+              secondary: '#0288D1',
               accent: '#E3F2FD',
-              dark: '#0D47A1',
-              emerald: { 
-                500: '#10b981',
-                600: '#059669',
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.3s ease-out forwards',
+              'slide-up': 'slideUp 0.3s ease-out forwards',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
               }
             }
           }
@@ -65,130 +69,75 @@
           ignoreHtmlClass: 'tex2jax_ignore',
           processHtmlClass: 'tex2jax_process'
         },
-        chtml: {
-          scale: 1,
-          minScale: 0.5
-        },
-        startup: {
-          typeset: true
-        }
+        chtml: { scale: 1, minScale: 0.5 },
+        startup: { typeset: true }
       };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
     <style>
       body {
         font-family: 'Hind Siliguri', sans-serif;
         margin: 0;
         padding: 0;
+        /* App-like Behavior CSS */
+        -webkit-tap-highlight-color: transparent; /* Remove blue tap box */
+        user-select: none; /* Disable text selection for UI feel */
+        -webkit-user-select: none;
+        overscroll-behavior-y: none; /* Disable pull-to-refresh */
+        touch-action: pan-y; /* Optimize touch */
       }
       
-      /* --- MATHJAX FIX: Prevents breaking text --- */
+      /* Allow text selection only in specific readable areas if needed */
+      p, h1, h2, h3, h4, h5, span, article {
+        user-select: text;
+        -webkit-user-select: text;
+      }
+      
+      /* Smooth Scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Custom Scrollbar (Hidden mostly for mobile feel) */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      .dark ::-webkit-scrollbar-thumb { background: #374151; }
+
+      /* MJX Fix */
       mjx-container {
         display: inline-block !important;
         margin: 0 2px !important;
         vertical-align: middle !important;
-        max-width: 100% !important;
-        line-height: 0 !important;
-      }
-      
-      mjx-container[display="true"] {
-        display: block !important;
-        margin: 1em 0 !important;
-        text-align: center !important;
       }
 
-      /* Custom scrollbar for better aesthetics */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1; 
-      }
-      .dark ::-webkit-scrollbar-track {
-        background: #1f2937; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #90CAF9; /* Light blue tint */
-        border-radius: 4px;
-      }
-      .dark ::-webkit-scrollbar-thumb {
-        background: #1E88E5; /* Dark blue tint */
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #1565C0; 
-      }
-      /* Global transition for smooth theme switching */
-      *, *::before, *::after {
-        transition-property: background-color, border-color, color, fill, stroke;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 200ms;
-      }
-
-      /* Pre-loader Styles */
+      /* Loader */
       #app-loading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: #f9fafb; /* gray-50 */
-        z-index: 9999;
-        transition: opacity 0.5s ease-out;
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background-color: #f9fafb; z-index: 9999; transition: opacity 0.5s ease-out;
       }
       @media (prefers-color-scheme: dark) {
-        #app-loading {
-          background-color: #111827; /* gray-900 */
-        }
-        #app-loading .logo-box {
-          background-color: #1f2937 !important; /* gray-800 */
-          color: #fff !important;
-        }
-        #app-loading p {
-          color: #9ca3af !important; /* gray-400 */
-        }
+        #app-loading { background-color: #111827; }
+        #app-loading .logo-box { background-color: #1f2937 !important; color: #fff !important; }
+        #app-loading p { color: #9ca3af !important; }
       }
       .logo-box {
-        width: 80px;
-        height: 80px;
-        background-color: #fff;
-        border-radius: 50%; /* Circle like logo */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        font-weight: bold;
-        color: #1565C0; /* Blue */
-        box-shadow: 0 10px 25px rgba(21, 101, 192, 0.2);
-        margin-bottom: 24px;
-        animation: pulse 2s infinite;
-        border: 4px solid #E3F2FD;
+        width: 80px; height: 80px; background-color: #fff; border-radius: 20px;
+        display: flex; align-items: center; justify-content: center; font-size: 32px;
+        font-weight: bold; color: #1565C0; box-shadow: 0 10px 25px rgba(21, 101, 192, 0.2);
+        margin-bottom: 24px; animation: bounce 2s infinite;
       }
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #e5e7eb;
-        border-top: 4px solid #1565C0; /* Blue */
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      .loading-text {
-        margin-top: 16px;
-        color: #4b5563;
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 0.05em;
-      }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
       }
     </style>
 <script type="importmap">
@@ -205,21 +154,34 @@
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "path": "https://esm.sh/path@^0.12.7",
-    "react-easy-crop": "https://esm.sh/react-easy-crop@^5.5.6"
+    "react-easy-crop": "https://esm.sh/react-easy-crop@^5.5.6",
+    "lottie-react": "https://esm.sh/lottie-react@^2.4.1"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 fixed inset-0 overflow-hidden transition-colors duration-200">
-    <div id="root" class="h-full">
-      <!-- Initial Loading State (Visible immediately before React loads) -->
+  <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 fixed inset-0 overflow-hidden">
+    <div id="root" class="h-full w-full">
       <div id="app-loading">
         <div class="logo-box">ধ্রু</div>
-        <div class="spinner"></div>
-        <p class="loading-text">ধ্রুবক লোড হচ্ছে...</p>
+        <p class="loading-text text-sm font-bold opacity-70">প্রস্তুতি চলছে...</p>
       </div>
     </div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // Use relative path './sw.js' to fix origin mismatch errors in cloud previews
+          navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+              console.log('SW registered successfully:', registration.scope);
+            })
+            .catch(registrationError => {
+              console.warn('SW registration failed (Common in dev/preview modes):', registrationError);
+            });
+        });
+      }
+    </script>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
