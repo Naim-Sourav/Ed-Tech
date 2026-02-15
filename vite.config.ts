@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     // Use repository name as base for GitHub Pages deployment
-    base: process.env.NODE_ENV === 'production' ? '/Ed-Tech/' : '/', 
+    base: mode === 'production' ? '/Ed-Tech/' : '/', 
     resolve: {
       alias: {
         '@': path.resolve('./src'), // আপনার ফোল্ডার স্ট্রাকচার অনুযায়ী পাথ ঠিক করা হলো
