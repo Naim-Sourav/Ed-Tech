@@ -346,7 +346,7 @@ const GSTCoursePage: React.FC = () => {
                 onClick={handleEnroll}
                 className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-3.5 rounded-full font-bold text-sm md:text-base shadow-2xl flex items-center gap-2 hover:scale-105 transition-transform"
             >
-                🔥 সিট সীমিত! মাত্র ৳৫০০ তে জয়েন করুন
+                🔥 সিট সীমিত! বিনামূল্যে জয়েন করুন
             </button>
         </div>
 

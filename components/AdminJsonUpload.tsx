@@ -17,6 +17,7 @@ const EXAM_SOURCES = [
     { id: 'Dhaka_University_A', label: 'ঢাকা বিশ্ববিদ্যালয় (ক ইউনিট)' },
     { id: 'BUET', label: 'বুয়েট (BUET)' },
     { id: 'Engineering_Guccho', label: 'ইঞ্জিনিয়ারিং গুচ্ছ (CKRUET)' },
+    { id: 'BUTEX_Affiliated', label: 'বুটেক্স অধিভুক্ত ইঞ্জিনিয়ারিং কলেজ' },
     { id: 'Guccho_A', label: 'গুচ্ছ (GST) ক ইউনিট' },
     { id: 'Agriculture', label: 'কৃষি গুচ্ছ' },
     { id: 'AFMC', label: 'আর্মড ফোর্সেস মেডিকেল (AFMC)' }

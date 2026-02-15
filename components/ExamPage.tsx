@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { QuizQuestion } from '../types';
 import { useCache } from '../contexts/CacheContext';
+import Confetti from './Confetti'; // Use existing confetti instead of Lottie to be safe
 
 // Helper to normalize subject names for display (Same as QuestionBank)
 const getDisplaySubject = (subject: string = '') => {
@@ -33,100 +34,70 @@ const ExamPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { t } = useLanguage();
   const { showToast } = useToast();
-  const { clearCache } = useCache(); // Import clearCache
+  const { clearCache } = useCache(); 
 
-  // --- DYNAMIC STORAGE KEYS (USER SPECIFIC) ---
-  // We use the User UID in the keys to separate data for different users on the same browser
   const uid = currentUser?.uid || 'guest';
-  
-  const CONFIG_KEY = `exam_config_${examId}`; // Config is shared (the exam paper itself)
-  const SESSION_KEY = `exam_progress_${uid}_${examId}`; // Progress is tied to the specific user
+  const CONFIG_KEY = `exam_config_${examId}`; 
+  const SESSION_KEY = `exam_progress_${uid}_${examId}`; 
 
   // --- STATE ---
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<'EXAM' | 'RESULT'>('EXAM');
-  
-  // Config & Data
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [config, setConfig] = useState<any>(null);
   
-  // Exam State
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(0); 
   const [examDuration, setExamDuration] = useState(0);
   const [savedQuestionIndices, setSavedQuestionIndices] = useState<Set<number>>(new Set());
-  
-  // Persistence State
   const [expiryTimestamp, setExpiryTimestamp] = useState<number | null>(null);
   
-  // UI State
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<'ALL' | 'CORRECT' | 'WRONG' | 'SKIPPED'>('ALL');
   
-  // Rapid Fire State
   const [rapidFireWrongAttempt, setRapidFireWrongAttempt] = useState<number | null>(null);
   const [isRapidFireCorrect, setIsRapidFireCorrect] = useState(false);
 
-  // Streak Celebration State
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [streakData, setStreakData] = useState<{ streak: number, activityLog: string[] } | null>(null);
-
-  // Mistake Clearing State
   const [clearedMistakesCount, setClearedMistakesCount] = useState(0);
 
-  // Helper for fonts
   const getFont = (text: string = '') => {
     const isBangla = /[\u0980-\u09FF]/.test(text);
     return isBangla ? 'font-tiro' : 'font-sans';
   };
 
-  // Helper to get week days for calendar (FIXED: Timezone Aware)
   const getWeekDays = () => {
       const today = new Date();
-      // Get today's date string in BD Timezone to compare for 'isToday'
       const todayStr = today.toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-      
-      const currentDay = today.getDay(); // 0=Sun, 6=Sat
+      const currentDay = today.getDay(); 
       const diff = currentDay === 6 ? 0 : -(currentDay + 1);
       const startOfWeek = new Date(today);
       startOfWeek.setDate(today.getDate() + diff);
-      
       const days = [];
       const banglaDays = ['শনি', 'রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র'];
-      
       for (let i = 0; i < 7; i++) {
           const d = new Date(startOfWeek);
           d.setDate(startOfWeek.getDate() + i);
-          // Force Dhaka timezone string for comparison with backend data
           const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-          days.push({
-              name: banglaDays[i],
-              date: dateStr,
-              isToday: dateStr === todayStr
-          });
+          days.push({ name: banglaDays[i], date: dateStr, isToday: dateStr === todayStr });
       }
       return days;
   };
 
-  // --- INITIALIZATION ---
   useEffect(() => {
     if (!examId || !currentUser) {
-        // If user not loaded yet, wait. If no ID, redirect.
         if (!examId) navigate('/dashboard');
         return;
     }
 
     const initExam = async () => {
         setLoading(true);
-        
         try {
-            // 0. Check Database for Existing Result
             const existingResult = await fetchExamResultAPI(currentUser.uid, examId);
-            
             if (existingResult) {
-                // If found, load the result state
                 setConfig(existingResult.config || {});
                 setQuestions(existingResult.questions || []);
                 setUserAnswers(existingResult.userAnswers || []);
@@ -136,12 +107,9 @@ const ExamPage: React.FC = () => {
             }
         } catch (e) {
             console.error("Failed to check exam status", e);
-            // Fallback: Proceed to check local storage or start new
         }
 
-        // 1. Check for saved session (Progress) for THIS USER (Resume functionality)
         const savedSession = localStorage.getItem(SESSION_KEY);
-        // 2. Check for initial config (Created by generator) - This is device specific, not user specific
         const storedConfig = localStorage.getItem(CONFIG_KEY);
 
         if (!storedConfig && !savedSession) {
@@ -150,46 +118,33 @@ const ExamPage: React.FC = () => {
             return;
         }
 
-        // --- RESUME SESSION ---
         if (savedSession) {
             const session = JSON.parse(savedSession);
-            setConfig(session.config); // Restore config from session
+            setConfig(session.config);
             setQuestions(session.questions);
             setUserAnswers(session.userAnswers);
             setCurrentQIndex(session.currentQIndex);
             setSavedQuestionIndices(new Set(session.savedIndices));
             setExamDuration(session.duration || 0);
             
-            // Restore Timer Logic
             if (session.expiryTime) {
                 setExpiryTimestamp(session.expiryTime);
                 const remaining = Math.floor((session.expiryTime - Date.now()) / 1000);
-                if (remaining <= 0) {
-                    setTimeLeft(0);
-                } else {
-                    setTimeLeft(remaining);
-                }
+                if (remaining <= 0) setTimeLeft(0); else setTimeLeft(remaining);
             } else {
-                setTimeLeft(0); // Unlimited time or practice
+                setTimeLeft(0); 
             }
-            
             setLoading(false);
             return; 
         }
 
-        // --- NEW EXAM START (First time for this ID) ---
         if (storedConfig) {
             const parsedConfig = JSON.parse(storedConfig);
             setConfig(parsedConfig);
-
             let qs: QuizQuestion[] = [];
-
-            // Scenario 1: Questions passed directly
             if (parsedConfig.questions && parsedConfig.questions.length > 0) {
                 qs = parsedConfig.questions;
-            } 
-            // Scenario 2: Need to fetch by ID (e.g. Past Paper)
-            else if (parsedConfig.type === 'PAST_PAPER' && parsedConfig.examRef) {
+            } else if (parsedConfig.type === 'PAST_PAPER' && parsedConfig.examRef) {
                 try {
                     qs = await fetchQuestionsByExamRefAPI(parsedConfig.examRef);
                 } catch (e) {
@@ -206,7 +161,6 @@ const ExamPage: React.FC = () => {
                 return;
             }
 
-            // Shuffle if needed (Practice mode usually shuffled)
             if (parsedConfig.shuffle) {
                 qs = qs.sort(() => 0.5 - Math.random());
             }
@@ -215,7 +169,6 @@ const ExamPage: React.FC = () => {
             setUserAnswers(new Array(qs.length).fill(null));
             setCurrentQIndex(0);
             
-            // Timer Setup
             let expiry: number | null = null;
             if (parsedConfig.timeLimit > 0) {
                 const seconds = parsedConfig.timeLimit * 60;
@@ -225,32 +178,23 @@ const ExamPage: React.FC = () => {
             } else {
                 setTimeLeft(0);
             }
-            
             setLoading(false);
         }
     };
-
     initExam();
-  }, [examId, currentUser]); // Re-run if user changes
+  }, [examId, currentUser]); 
 
-  // --- PERSISTENCE EFFECT ---
   useEffect(() => {
-      // Only save session if step is EXAM
       if (!loading && questions.length > 0 && step === 'EXAM' && examId && currentUser) {
           const sessionData = {
-              config, // Save config inside session to be self-contained
-              questions,
-              userAnswers,
-              currentQIndex,
+              config, questions, userAnswers, currentQIndex,
               savedIndices: Array.from(savedQuestionIndices),
-              expiryTime: expiryTimestamp,
-              duration: examDuration
+              expiryTime: expiryTimestamp, duration: examDuration
           };
           localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
       }
   }, [userAnswers, currentQIndex, savedQuestionIndices, examDuration, questions, step, loading, expiryTimestamp, examId, currentUser]);
 
-  // --- MATHJAX SUPPORT ---
   useEffect(() => {
     if (!loading && window.MathJax && window.MathJax.typesetPromise) {
       setTimeout(() => {
@@ -262,23 +206,19 @@ const ExamPage: React.FC = () => {
     }
   }, [loading, currentQIndex, step, reviewFilter, isRapidFireCorrect]);
 
-  // --- TIMER LOGIC ---
   useEffect(() => {
     let interval: any;
     if (!loading && step === 'EXAM' && (!config?.isPracticeMode || config?.timeLimit > 0)) {
       interval = setInterval(() => {
         setExamDuration(prev => prev + 1);
-        
         if (config?.timeLimit > 0) {
-          // If we have an absolute expiry timestamp, calculate remainder from that
           if (expiryTimestamp) {
               const now = Date.now();
               const diff = Math.ceil((expiryTimestamp - now) / 1000);
-              
               if (diff <= 0) {
                   setTimeLeft(0);
                   clearInterval(interval);
-                  handleSubmitExam(true); // Auto submit
+                  handleSubmitExam(true); 
               } else {
                   setTimeLeft(diff);
               }
@@ -291,40 +231,26 @@ const ExamPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [loading, step, config, expiryTimestamp]);
 
-  // --- ACTIONS ---
-
   const handleOptionSelect = (qIndex: number, optionIndex: number) => {
-      // Rapid Fire Logic
       if (config?.mode === 'RAPID_FIRE') {
-          if (isRapidFireCorrect) return; // Prevent clicking after correct answer
-
+          if (isRapidFireCorrect) return; 
           const correctIndex = questions[qIndex].correctAnswerIndex;
           if (optionIndex === correctIndex) {
-              // Correct Answer
               setIsRapidFireCorrect(true);
               setRapidFireWrongAttempt(null);
-              
-              // Mark answer
               const newAns = [...userAnswers];
               newAns[qIndex] = optionIndex;
               setUserAnswers(newAns);
           } else {
-              // Wrong Answer
               setRapidFireWrongAttempt(optionIndex);
               showToast("ভুল উত্তর, আবার চেষ্টা করুন!", "error");
           }
           return;
       }
-
-      // Standard Logic
-      // In practice mode, if already answered, don't change
       if (config?.isPracticeMode && userAnswers[qIndex] !== null) return;
-      
       const newAns = [...userAnswers];
       newAns[qIndex] = optionIndex;
       setUserAnswers(newAns);
-
-      // Instant MathJax update for explanation in Practice Mode
       if (config?.isPracticeMode && window.MathJax) {
           setTimeout(() => {
               const expBox = document.getElementById(`explanation-${qIndex}`);
@@ -347,11 +273,9 @@ const ExamPage: React.FC = () => {
     if (!currentUser) { showToast("লগইন প্রয়োজন", "warning"); return; }
     const q = questions[index];
     const newSet = new Set(savedQuestionIndices);
-    
     try {
       // @ts-ignore
-      if (!q._id) return; // Only save if ID exists from DB
-      
+      if (!q._id) return; 
       if (newSet.has(index)) {
         newSet.delete(index);
         setSavedQuestionIndices(newSet);
@@ -367,7 +291,6 @@ const ExamPage: React.FC = () => {
         showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
       }
     } catch (e) {
-      // Revert on error
       if (newSet.has(index)) newSet.delete(index); else newSet.add(index);
       setSavedQuestionIndices(newSet);
       showToast("বুকমার্ক আপডেট করা যায়নি", "error");
@@ -375,13 +298,10 @@ const ExamPage: React.FC = () => {
   };
 
   const handleSubmitExam = async (autoSubmit = false) => {
-    // 1. Clear active session for this user
     localStorage.removeItem(SESSION_KEY);
-    
     setShowSubmitModal(false);
     setStep('RESULT');
     
-    // Stats Calculation
     const correctCount = userAnswers.filter((ans, idx) => ans === questions[idx]?.correctAnswerIndex).length;
     const wrongCount = userAnswers.filter((ans, idx) => ans !== null && ans !== questions[idx]?.correctAnswerIndex).length;
     const skippedCount = questions.length - (correctCount + wrongCount);
@@ -390,22 +310,17 @@ const ExamPage: React.FC = () => {
     const finalScore = Math.max(0, rawScore);
     const percentage = Math.round((finalScore / questions.length) * 100);
 
-    // Save to Database (Even for Rapid Fire, we save it as a practice session)
     if (currentUser && examId) {
         try {
             const topicStats: any[] = []; 
             const mistakes = questions.filter((_, i) => userAnswers[i] !== null && userAnswers[i] !== questions[i].correctAnswerIndex);
             
-            // 1. Record Activity for Streak & Show Celebration
             const activityRes = await recordUserActivityAPI(currentUser.uid);
-            
-            // Show modal ONLY if streak was updated (incremented/reset) today
             if (activityRes.success && activityRes.streakUpdated) {
                 setStreakData({ streak: activityRes.streak, activityLog: activityRes.activityLog });
                 setShowStreakModal(true);
             }
 
-            // 2. Save Results (Including exam context to restore result page later)
             await saveExamResultAPI(currentUser.uid, {
                 examId: examId,
                 subject: questions[0]?.subject || 'General',
@@ -421,7 +336,6 @@ const ExamPage: React.FC = () => {
                 config
             });
             
-            // IMPORTANT: Invalidate Cache so Profile & Dashboard fetch fresh data
             clearCache(`profile_${currentUser.uid}`);
             clearCache(`dashboard_${currentUser.uid}`);
             
@@ -430,20 +344,15 @@ const ExamPage: React.FC = () => {
             
             if (autoSubmit) showToast("সময় শেষ! অটো সাবমিট হয়েছে।", "info");
 
-            // 3. SPECIAL: Mistake Retake Logic
             if (config?.isMistakeRetake) {
-                // Find all correctly answered questions that have an ID
                 // @ts-ignore
                 const solvedIds = questions.filter((q, i) => userAnswers[i] === q.correctAnswerIndex && q._id).map(q => q._id);
-                
                 if (solvedIds.length > 0) {
                     await clearMistakesAPI(currentUser.uid, solvedIds);
                     setClearedMistakesCount(solvedIds.length);
-                    // Clear profile cache again to reflect removed mistakes
                     clearCache(`profile_${currentUser.uid}`);
                 }
             }
-
         } catch (e) {
             console.error(e);
         }
@@ -453,7 +362,7 @@ const ExamPage: React.FC = () => {
   const handleExit = () => {
       if (step === 'EXAM') {
           if (window.confirm("আপনি কি নিশ্চিত যে এক্সাম থেকে বের হতে চান?")) {
-              localStorage.removeItem(SESSION_KEY); // Clear session
+              localStorage.removeItem(SESSION_KEY);
               navigate(-1);
           }
       } else {
@@ -472,8 +381,6 @@ const ExamPage: React.FC = () => {
       }
   };
 
-  // --- RENDER HELPERS ---
-
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -488,13 +395,11 @@ const ExamPage: React.FC = () => {
           </div>
        );
     }
-
     const totalSeconds = config.timeLimit * 60;
     const percentage = (timeLeft / totalSeconds) * 100;
     const radius = 18;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (timeLeft / totalSeconds) * circumference;
-    
     let colorClass = 'text-emerald-500';
     if (percentage <= 20) colorClass = 'text-red-500';
     else if (percentage <= 50) colorClass = 'text-yellow-500';
@@ -513,12 +418,7 @@ const ExamPage: React.FC = () => {
   if (loading) {
       return (
         <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-            <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 dark:bg-primary/40 rounded-full blur-xl animate-pulse"></div>
-                <div className="h-16 w-16 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center shadow-xl border border-gray-100 dark:border-gray-700 relative z-10 animate-bounce">
-                    <span className="text-2xl font-bold text-primary">ধ্রু</span>
-                </div>
-            </div>
+            <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             <p className="mt-6 text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">প্রশ্নপত্র লোড হচ্ছে...</p>
         </div>
       );
@@ -531,7 +431,6 @@ const ExamPage: React.FC = () => {
       
       return (
         <div id="exam-container" className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors relative">
-            {/* Header */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex justify-between items-center sticky top-0 z-20 shadow-sm">
                 <div className="flex items-center gap-3">
                     <button onClick={handleExit} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-400">
@@ -549,20 +448,16 @@ const ExamPage: React.FC = () => {
                 {renderTimer()}
             </div>
 
-            {/* Progress Bar (Single Page Mode) */}
             {(viewMode === 'SINGLE_PAGE' || isRapidFire) && (
                 <div className="h-1 bg-gray-200 dark:bg-gray-700 w-full">
                     <div className={`h-full transition-all duration-300 ${isRapidFire ? 'bg-red-500' : 'bg-primary'}`} style={{ width: `${((currentQIndex + 1) / questions.length) * 100}%` }}></div>
                 </div>
             )}
 
-            {/* Content Area */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
                 <div className={`mx-auto pb-20 ${viewMode === 'ALL_AT_ONCE' ? 'max-w-4xl' : 'max-w-2xl'}`}>
-                    
                     {viewMode === 'SINGLE_PAGE' || isRapidFire ? (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                            {/* Question Card */}
                             <div className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 relative">
                                 <span className={`absolute top-4 left-4 text-4xl font-black select-none -z-0 ${isRapidFire ? 'text-red-50 dark:text-red-900/10' : 'text-gray-100 dark:text-gray-700'}`}>
                                     {String(currentQIndex + 1).padStart(2, '0')}
@@ -583,7 +478,6 @@ const ExamPage: React.FC = () => {
                                 </button>
                             </div>
 
-                            {/* Options */}
                             <div className="space-y-3">
                                 {questions[currentQIndex].options.map((opt, idx) => {
                                     const isSelected = userAnswers[currentQIndex] === idx;
@@ -630,7 +524,6 @@ const ExamPage: React.FC = () => {
                                 })}
                             </div>
 
-                            {/* Explanation (Updated for Rapid Fire) */}
                             {((config?.isPracticeMode && !isRapidFire && userAnswers[currentQIndex] !== null) || (isRapidFire && isRapidFireCorrect)) && (
                                 <div id={`explanation-${currentQIndex}`} className="mt-6 p-5 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 animate-in slide-in-from-bottom-2 overflow-hidden break-words max-w-full">
                                     <div className="flex items-center gap-2 mb-2 font-bold text-blue-700 dark:text-blue-300 text-sm">
@@ -645,7 +538,6 @@ const ExamPage: React.FC = () => {
                                 </div>
                             )}
 
-                            {/* Next Button for Rapid Fire */}
                             {isRapidFire && isRapidFireCorrect && (
                                 <div className="mt-6 flex justify-center animate-in slide-in-from-bottom-2">
                                     <button 
@@ -658,10 +550,8 @@ const ExamPage: React.FC = () => {
                             )}
                         </div>
                     ) : (
-                        /* ALL AT ONCE MODE */
                         <div className="flex flex-col lg:flex-row gap-6">
                             <div className="flex-1 space-y-8">
-                                {/* FLAT LIST (For All Exams) */}
                                 <div className="space-y-6">
                                     {questions.map((q, idx) => (
                                         <div key={idx} id={`q-${idx}`} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm scroll-mt-32">
@@ -695,7 +585,6 @@ const ExamPage: React.FC = () => {
                                 </div>
                             </div>
                             
-                            {/* Desktop Sidebar for Navigation */}
                             <div className="hidden lg:block w-72 shrink-0">
                                 <div className="sticky top-24 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm max-h-[80vh] overflow-y-auto">
                                     <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 text-sm flex items-center gap-2"><LayoutGrid size={16}/> প্রশ্ন তালিকা</h3>
@@ -717,7 +606,6 @@ const ExamPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Bottom Bar - Hidden in Rapid Fire */}
             {!isRapidFire && (
                 <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 z-30">
                     <div className="max-w-4xl mx-auto flex justify-between items-center">
@@ -764,7 +652,6 @@ const ExamPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Mobile Nav Modal (All at once mode) */}
             {showMobileNav && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4" onClick={() => setShowMobileNav(false)}>
                     <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl p-4 shadow-2xl animate-in slide-in-from-bottom-10" onClick={e => e.stopPropagation()}>
@@ -786,7 +673,6 @@ const ExamPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Submit Confirmation Modal */}
             {showSubmitModal && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95">
@@ -817,12 +703,12 @@ const ExamPage: React.FC = () => {
       return (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-500">
               <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden text-center animate-in zoom-in-95 duration-500">
-                  {/* Decorative Elements */}
                   <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-orange-100 to-transparent dark:from-orange-900/20 dark:to-transparent pointer-events-none"></div>
                   
                   <div className="relative z-10">
-                      <div className="inline-flex justify-center items-center p-6 bg-orange-100 dark:bg-orange-900/30 rounded-full mb-6 animate-bounce shadow-lg shadow-orange-500/20">
-                          <Flame size={64} className="text-orange-500 fill-orange-500 drop-shadow-md"/>
+                      <div className="w-32 h-32 mx-auto mb-4">
+                          <Confetti /> {/* Confetti fallback if Lottie breaks */}
+                          <Flame size={80} className="text-orange-500 fill-orange-500 mx-auto animate-pulse" />
                       </div>
                       
                       <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-2">
@@ -871,21 +757,18 @@ const ExamPage: React.FC = () => {
   // --- RESULT VIEW ---
   if (step === 'RESULT') {
       const isRapidFire = config?.mode === 'RAPID_FIRE';
-      // Cast questions to QuizQuestion[] explicitly to resolve type inference issues
       const resultQuestions = questions as QuizQuestion[];
 
       if (isRapidFire) {
           return (
             <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
                 <div className="max-w-3xl mx-auto space-y-8 pb-20">
-                    
-                    {/* Rapid Fire Success Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-[80px] -mt-20"></div>
                         
                         <div className="relative z-10 flex flex-col items-center">
-                            <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 dark:text-red-400 shadow-inner">
-                                <Flame size={48} />
+                            <div className="w-32 h-32 mb-6">
+                                <Flame size={80} className="text-orange-500 fill-orange-500 animate-pulse mx-auto" />
                             </div>
                             <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-2">
                                 অভিনন্দন! 🔥
@@ -905,7 +788,6 @@ const ExamPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Question Overview */}
                     <div className="space-y-4">
                         <h3 className="font-extrabold text-gray-900 dark:text-white text-lg px-2">প্রশ্নগুলোর ওভারভিউ</h3>
                         {resultQuestions.map((q, idx) => (
@@ -931,7 +813,6 @@ const ExamPage: React.FC = () => {
           );
       }
 
-      // Standard Result View Logic (unchanged)
       const correctCount = userAnswers.filter((ans, idx) => ans === resultQuestions[idx]?.correctAnswerIndex).length;
       const wrongCount = userAnswers.filter((ans, idx) => ans !== null && ans !== resultQuestions[idx]?.correctAnswerIndex).length;
       const skippedCount = resultQuestions.length - (correctCount + wrongCount);
@@ -942,7 +823,6 @@ const ExamPage: React.FC = () => {
 
       const correctP = (correctCount / resultQuestions.length) * 100;
       const wrongP = (wrongCount / resultQuestions.length) * 100;
-      // Skipped fills the rest implicitly in conic gradient logic
 
       const filteredQuestions = resultQuestions.map((q, idx) => ({ q, idx })).filter(({ q, idx }) => {
         if (reviewFilter === 'CORRECT') return userAnswers[idx] === q.correctAnswerIndex;
@@ -954,11 +834,8 @@ const ExamPage: React.FC = () => {
       return (
         <div id="exam-container" className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
             <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 pb-20">
-                
-                {/* CLEARED MISTAKES CARD (New) */}
                 {clearedMistakesCount > 0 && (
                     <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center mb-6 animate-in zoom-in relative overflow-hidden">
-                        {/* Decorative Background */}
                         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                         <div className="relative z-10">
                             <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-800/50 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-600 dark:text-emerald-300">
@@ -974,7 +851,6 @@ const ExamPage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Result Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 md:p-10 shadow-sm border border-gray-200 dark:border-gray-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-20 -mt-20"></div>
                     
@@ -1006,7 +882,6 @@ const ExamPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Pie Chart (Donut) */}
                         <div className="relative w-40 h-40 md:w-56 md:h-56 shrink-0">
                             <div 
                                 className="w-full h-full rounded-full shadow-inner"
@@ -1018,7 +893,6 @@ const ExamPage: React.FC = () => {
                                     )`
                                 }}
                             ></div>
-                            {/* Inner Circle for Donut Effect */}
                             <div className="absolute inset-4 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-sm">
                                 <span className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white">{percentage}%</span>
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Accuracy</span>
@@ -1036,7 +910,6 @@ const ExamPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Question Review Section */}
                 <div className="space-y-6">
                     <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                         {(['ALL', 'CORRECT', 'WRONG', 'SKIPPED'] as const).map(filter => (

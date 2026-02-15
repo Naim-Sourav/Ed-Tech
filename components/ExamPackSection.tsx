@@ -1,19 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { FileCheck, ShoppingBag, ArrowRight, Loader2, CheckCircle2, ChevronLeft, Timer, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ExamPack } from '../types';
 import { fetchExamPacksAPI } from '../services/api';
 
 const ExamPackSection: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [packs, setPacks] = useState<ExamPack[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Navigation State
-  const [viewMode, setViewMode] = useState<'LIST' | 'PLAYER'>('LIST');
-  const [activePack, setActivePack] = useState<ExamPack | null>(null);
+  // Navigation State derived from URL
+  const activePackId = searchParams.get('packId');
+  const activePack = activePackId ? packs.find(p => p.id === activePackId) : null;
+  const viewMode = activePack ? 'PLAYER' : 'LIST';
 
   const { isEnrolled } = useAuth();
 
@@ -36,8 +38,11 @@ const ExamPackSection: React.FC = () => {
   };
 
   const openPack = (pack: ExamPack) => {
-      setActivePack(pack);
-      setViewMode('PLAYER');
+      setSearchParams({ packId: pack.id });
+  };
+
+  const closePack = () => {
+      setSearchParams({});
   };
 
   // Theme helper
@@ -89,7 +94,7 @@ const ExamPackSection: React.FC = () => {
               <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between shadow-sm z-20">
                 <div className="flex items-center gap-3">
                     <button 
-                        onClick={() => setViewMode('LIST')} 
+                        onClick={closePack} 
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
                         <ChevronLeft size={20} className="text-gray-600 dark:text-gray-300" />

@@ -43,6 +43,7 @@ const PaymentPage: React.FC = () => {
 
   const MERCHANT_NUMBER = "01622190454";
   const finalAmount = Math.max(0, item.price - discount);
+  const isFree = finalAmount === 0;
 
   const handleCopyNumber = () => {
     navigator.clipboard.writeText(MERCHANT_NUMBER);
@@ -76,16 +77,20 @@ const PaymentPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!trxId || !senderNumber || !currentUser) return;
+    if (!currentUser) return;
 
-    if (trxId.length < 6) {
-        showToast("সঠিক TrxID প্রদান করুন", "warning");
-        return;
-    }
+    if (!isFree) {
+        if (!trxId || !senderNumber) return;
 
-    if (senderNumber.length < 11) {
-        showToast("সঠিক মোবাইল নাম্বার দিন", "warning");
-        return;
+        if (trxId.length < 6) {
+            showToast("সঠিক TrxID প্রদান করুন", "warning");
+            return;
+        }
+
+        if (senderNumber.length < 11) {
+            showToast("সঠিক মোবাইল নাম্বার দিন", "warning");
+            return;
+        }
     }
 
     setIsSubmitting(true);
@@ -98,8 +103,8 @@ const PaymentPage: React.FC = () => {
         courseId: item.id,
         courseTitle: item.title,
         amount: finalAmount, // Sending the discounted amount
-        trxId: trxId,
-        senderNumber: senderNumber
+        trxId: isFree ? 'FREE_ENROLL' : trxId,
+        senderNumber: isFree ? 'FREE' : senderNumber
       });
       setIsSuccess(true);
       // Removed window.scrollTo because container scrolls now, handled by layout
@@ -119,9 +124,11 @@ const PaymentPage: React.FC = () => {
                   <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                       <CheckCircle size={48} className="text-green-600 dark:text-green-400" strokeWidth={3} />
                   </div>
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">পেমেন্ট রিকোয়েস্ট সফল!</h2>
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{isFree ? 'এনরোলমেন্ট সফল!' : 'পেমেন্ট রিকোয়েস্ট সফল!'}</h2>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 leading-relaxed">
-                      আপনার পেমেন্ট তথ্য আমাদের কাছে জমা হয়েছে। অ্যাডমিন ভেরিফিকেশনের পর (সর্বোচ্চ ২৪ ঘণ্টা) আপনার কোর্সে এক্সেস চালু হয়ে যাবে।
+                      {isFree 
+                        ? 'আপনার ফ্রি এনরোলমেন্ট সম্পন্ন হয়েছে। ড্যাশবোর্ড থেকে কোর্সটি এক্সেস করতে পারবেন।'
+                        : 'আপনার পেমেন্ট তথ্য আমাদের কাছে জমা হয়েছে। অ্যাডমিন ভেরিফিকেশনের পর (সর্বোচ্চ ২৪ ঘণ্টা) আপনার কোর্সে এক্সেস চালু হয়ে যাবে।'}
                   </p>
                   <div className="space-y-3">
                       <button onClick={() => navigate('/dashboard')} className="w-full py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl shadow-lg transition-transform active:scale-95">
@@ -146,7 +153,7 @@ const PaymentPage: React.FC = () => {
                   <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300"/>
               </button>
               <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <ShieldCheck size={20} className="text-green-600"/> সিকিউর চেকআউট
+                  <ShieldCheck size={20} className="text-green-600"/> {isFree ? 'ফ্রি এনরোলমেন্ট' : 'সিকিউর চেকআউট'}
               </h1>
           </div>
       </div>
@@ -171,7 +178,8 @@ const PaymentPage: React.FC = () => {
                           </div>
                       </div>
 
-                      {/* Coupon Code Section */}
+                      {/* Coupon Code Section - Hide if already free */}
+                      {!isFree && (
                       <div className="mb-6">
                           <label className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 block">কুপন কোড (যদি থাকে)</label>
                           {!appliedCoupon ? (
@@ -201,11 +209,12 @@ const PaymentPage: React.FC = () => {
                           )}
                           {couponError && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12}/> {couponError}</p>}
                       </div>
+                      )}
 
                       <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-2">
                           <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                               <span>কোর্স ফি</span>
-                              <span>৳{item.price}</span>
+                              <span>{item.price === 0 ? 'FREE' : `৳${item.price}`}</span>
                           </div>
                           {discount > 0 && (
                               <div className="flex justify-between text-sm font-bold text-green-600 dark:text-green-400">
@@ -215,7 +224,9 @@ const PaymentPage: React.FC = () => {
                           )}
                           <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-100 dark:border-gray-700">
                               <span className="font-bold text-gray-800 dark:text-white">মোট প্রদেয়</span>
-                              <span className="text-xl font-black text-primary dark:text-blue-400">৳{finalAmount}</span>
+                              <span className="text-xl font-black text-primary dark:text-blue-400">
+                                  {finalAmount === 0 ? 'FREE' : `৳${finalAmount}`}
+                              </span>
                           </div>
                       </div>
 
@@ -228,6 +239,9 @@ const PaymentPage: React.FC = () => {
               {/* Right Column: Payment Process */}
               <div className="lg:col-span-2 order-1 lg:order-2 space-y-6">
                   
+                  {/* Step 1 & 2: Show only if not free */}
+                  {!isFree && (
+                  <>
                   {/* Step 1: Method Selection */}
                   <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -280,15 +294,19 @@ const PaymentPage: React.FC = () => {
                           </div>
                       </div>
                   </div>
+                  </>
+                  )}
 
-                  {/* Step 3: Verification Form */}
+                  {/* Step 3: Verification Form / Confirmation */}
                   <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center text-xs">৩</span>
-                          তথ্য দিন
+                          <span className="w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center text-xs">{isFree ? '১' : '৩'}</span>
+                          {isFree ? 'কনফার্মেশন' : 'তথ্য দিন'}
                       </h3>
 
                       <form onSubmit={handleSubmit} className="space-y-4">
+                          {!isFree && (
+                          <>
                           <div>
                               <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">যে নাম্বার থেকে টাকা পাঠিয়েছেন</label>
                               <div className="relative">
@@ -317,18 +335,22 @@ const PaymentPage: React.FC = () => {
                                   />
                               </div>
                           </div>
+                          </>
+                          )}
 
                           <div className="pt-4">
                               <button 
                                   type="submit" 
                                   disabled={isSubmitting}
-                                  className={`w-full py-4 rounded-xl font-bold text-white text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${paymentMethod === 'BKASH' ? 'bg-[#e2136e] hover:bg-[#c1105e] shadow-[#e2136e]/30' : 'bg-[#ec1c24] hover:bg-[#c4161d] shadow-[#ec1c24]/30'}`}
+                                  className={`w-full py-4 rounded-xl font-bold text-white text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${isFree ? 'bg-green-600 hover:bg-green-700' : (paymentMethod === 'BKASH' ? 'bg-[#e2136e] hover:bg-[#c1105e] shadow-[#e2136e]/30' : 'bg-[#ec1c24] hover:bg-[#c4161d] shadow-[#ec1c24]/30')}`}
                               >
-                                  {isSubmitting ? <Loader2 className="animate-spin" /> : 'পেমেন্ট যাচাই করুন'}
+                                  {isSubmitting ? <Loader2 className="animate-spin" /> : (isFree ? 'ফ্রি এনরোল করুন' : 'পেমেন্ট যাচাই করুন')}
                               </button>
-                              <p className="text-center text-xs text-gray-400 mt-3">
-                                  ভুল তথ্য দিলে ভেরিফিকেশনে বিলম্ব হতে পারে।
-                              </p>
+                              {!isFree && (
+                                <p className="text-center text-xs text-gray-400 mt-3">
+                                    ভুল তথ্য দিলে ভেরিফিকেশনে বিলম্ব হতে পারে।
+                                </p>
+                              )}
                           </div>
                       </form>
                   </div>

@@ -1,22 +1,22 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   GraduationCap, Home, PieChart, Moon, Sun, Swords, 
   Library, LogOut, User, ShieldCheck, Bell, Trophy, Archive, 
   Monitor, Zap, Info, AlertTriangle, CheckCircle, Check, MailOpen,
-  LayoutGrid, Bot, BookOpen, ChevronRight, X
+  LayoutGrid, Bot, BookOpen, ChevronRight, X, Download, Share
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Notification } from '../types';
+import { useToast } from './Toast';
 
 interface NavigationProps {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   themeMode?: 'light' | 'dark' | 'system';
   toggleTheme: () => void;
-  // Notification Props passed from App
   notifications: Notification[];
   readNotificationIds: Set<string>;
   setReadNotificationIds: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -39,9 +39,52 @@ const Navigation: React.FC<NavigationProps> = ({
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const { showToast } = useToast();
   
-  // Notification UI State
   const [filter, setFilter] = useState<'ALL' | 'UNREAD'>('ALL');
+  
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    // 1. Capture the install prompt event
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // We don't need to set showInstallBtn true here anymore, we show it by default unless installed
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+
+    // 2. Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
+        setIsAppInstalled(true);
+    }
+
+    // 3. Detect iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      // Android/Chrome: Show native prompt
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else if (isIOS) {
+      // iOS Instruction
+      showToast("Safari মেনু থেকে 'Add to Home Screen'-এ ক্লিক করুন", "info");
+    } else {
+      // Other browsers fallback
+      showToast("ব্রাউজার মেনু থেকে 'Install App' বা 'Add to Home Screen' সিলেক্ট করুন", "info");
+    }
+  };
 
   const unreadCount = useMemo(() => {
       return notifications.filter(n => !readNotificationIds.has(n.id)).length;
@@ -55,15 +98,13 @@ const Navigation: React.FC<NavigationProps> = ({
   }, [notifications, filter, readNotificationIds]);
 
   const handleNotificationClick = (notification: Notification) => {
-     // Mark as read
      setReadNotificationIds(prev => new Set(prev).add(notification.id));
-
      if(notification.actionLink) {
-        if(notification.type === 'BATTLE_CHALLENGE' && notification.metadata && notification.metadata.roomId) {
+        if(notification.type === 'BATTLE_CHALLENGE' && notification.metadata?.roomId) {
             localStorage.setItem('battle_join_room', notification.metadata.roomId);
         }
         navigate(notification.actionLink);
-        setIsNotificationOpen(false); // Close drawer
+        setIsNotificationOpen(false); 
      }
   };
 
@@ -86,13 +127,13 @@ const Navigation: React.FC<NavigationProps> = ({
     { path: '/admission', label: t('nav_admission'), icon: <GraduationCap size={18} /> },
   ];
 
-  // Mobile Bottom Nav Items
+  // Mobile Bottom Nav Items - Optimized for touch
   const mobileNavItems = [
-    { path: '/dashboard', label: 'Home', icon: <Home size={22} /> },
-    { path: '/tracker', label: 'Planner', icon: <PieChart size={22} /> },
-    { path: '/courses', label: 'Courses', icon: <BookOpen size={22} /> },
-    { path: '/bot', label: 'Doubt', icon: <Bot size={22} /> },
-    { path: '/profile', label: 'Profile', icon: <User size={22} /> },
+    { path: '/dashboard', label: 'Home', icon: <Home size={24} /> },
+    { path: '/tracker', label: 'Planner', icon: <PieChart size={24} /> },
+    { path: '/courses', label: 'Courses', icon: <BookOpen size={24} /> },
+    { path: '/bot', label: 'Doubt', icon: <Bot size={24} /> },
+    { path: '/profile', label: 'Profile', icon: <User size={24} /> },
   ];
 
   const handleLogout = async () => {
@@ -129,7 +170,6 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Helper to render user avatar or initial
   const renderAvatar = () => {
     if (userAvatar && userAvatar.startsWith('http')) {
         return <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />;
@@ -142,29 +182,26 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   if (!currentUser) return null;
-
-  // Define Admin Email Constant to match context logic
   const ADMIN_EMAIL = "nurnaimsourav@gmail.com";
 
   return (
     <>
-      {/* Mobile Overlay (High Z-Index) */}
+      {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] md:hidden transition-opacity duration-300"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      {/* Notification Drawer (Right Side) */}
+      {/* Notification Drawer */}
       {isNotificationOpen && (
         <>
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[160]"
             onClick={() => setIsNotificationOpen(false)}
           />
-          <div className="fixed inset-y-0 right-0 w-80 md:w-96 bg-white dark:bg-gray-900 z-[170] shadow-2xl border-l border-gray-200 dark:border-gray-800 flex flex-col animate-in slide-in-from-right-full duration-500 ease-out">
-             {/* Header */}
+          <div className="fixed inset-y-0 right-0 w-80 md:w-96 bg-white dark:bg-gray-900 z-[170] shadow-2xl border-l border-gray-200 dark:border-gray-800 flex flex-col animate-in slide-in-from-right duration-300">
              <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                  <h4 className="text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
                      নোটিফিকেশন <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">{unreadCount}</span>
@@ -172,42 +209,39 @@ const Navigation: React.FC<NavigationProps> = ({
                  <div className="flex items-center gap-2">
                     {unreadCount > 0 && (
                         <button onClick={markAllAsRead} className="text-[10px] font-bold text-gray-500 hover:text-primary flex items-center gap-1 transition-colors">
-                            <Check size={12}/> সব পঠিত করুন
+                            <Check size={12}/> সব পঠিত
                         </button>
                     )}
-                    <button onClick={() => setIsNotificationOpen(false)} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                    <button onClick={() => setIsNotificationOpen(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
                         <X size={20}/>
                     </button>
                  </div>
              </div>
 
-             {/* Filter Tabs */}
              <div className="p-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
                  <div className="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-xl">
                      <button 
                          onClick={() => setFilter('ALL')}
                          className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${filter === 'ALL' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                      >
-                         সব (All)
+                         সব
                      </button>
                      <button 
                          onClick={() => setFilter('UNREAD')}
                          className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${filter === 'UNREAD' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                      >
-                         অপঠিত (Unread)
+                         অপঠিত
                      </button>
                  </div>
              </div>
 
-             {/* List */}
              <div className="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30 dark:bg-black/20">
                 {displayedNotifications.length === 0 ? (
                    <div className="p-10 text-center flex flex-col items-center justify-center text-gray-400 mt-20">
                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
-                         {filter === 'UNREAD' ? <MailOpen size={24} className="opacity-50"/> : <Bell size={24} className="opacity-50"/>}
+                         <Bell size={24} className="opacity-50"/>
                        </div>
                        <p className="text-sm font-medium">কোনো নোটিফিকেশন নেই</p>
-                       {filter === 'UNREAD' && <p className="text-[10px] opacity-70">সবগুলো পড়া হয়ে গেছে!</p>}
                    </div>
                 ) : (
                    displayedNotifications.map(n => {
@@ -216,10 +250,10 @@ const Navigation: React.FC<NavigationProps> = ({
                           <div 
                              key={n.id} 
                              onClick={() => handleNotificationClick(n)}
-                             className={`p-4 border-b border-gray-100 dark:border-gray-800 transition-colors cursor-pointer group relative ${isRead ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800' : 'bg-blue-50/40 dark:bg-blue-900/10 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
+                             className={`p-4 border-b border-gray-100 dark:border-gray-800 transition-colors cursor-pointer active:bg-gray-100 dark:active:bg-gray-800 relative ${isRead ? 'bg-white dark:bg-gray-900' : 'bg-blue-50/40 dark:bg-blue-900/10'}`}
                           >
                              {!isRead && (
-                                 <span className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full ring-2 ring-white dark:ring-gray-900"></span>
+                                 <span className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full"></span>
                              )}
                              
                              <div className="flex gap-3">
@@ -237,12 +271,6 @@ const Navigation: React.FC<NavigationProps> = ({
                                          <span className="text-[9px] text-gray-400 whitespace-nowrap">{new Date(n.date).toLocaleDateString()}</span>
                                      </div>
                                      <p className={`text-[11px] leading-relaxed line-clamp-2 ${isRead ? 'text-gray-500 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{n.message}</p>
-                                     
-                                     {n.actionLink && (
-                                         <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-white bg-primary px-3 py-1 rounded-full hover:bg-blue-700 transition-colors shadow-sm">
-                                             {n.type === 'BATTLE_CHALLENGE' ? 'Join Battle' : 'View Details'} <ChevronRight size={10}/>
-                                         </div>
-                                     )}
                                  </div>
                              </div>
                           </div>
@@ -254,25 +282,23 @@ const Navigation: React.FC<NavigationProps> = ({
         </>
       )}
 
-      {/* Sidebar (Desktop & Mobile Drawer - Z-Index 150 to stay ABOVE bottom nav) */}
+      {/* Desktop Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         md:relative md:translate-x-0 transition duration-300 ease-in-out
         w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-[150] flex flex-col shadow-2xl md:shadow-none h-full
       `}>
-        {/* Header - Compact Padding */}
-        <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-900 relative">
+        <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 bg-gradient-to-br from-primary to-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/30">
+            <div className="h-9 w-9 bg-gradient-to-br from-primary to-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
               ধ্রু
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-none tracking-tight">ধ্রুবক</h1>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5 tracking-wide">{t('nav_prep')}</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-none">ধ্রুবক</h1>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">{t('nav_prep')}</p>
             </div>
           </div>
           
-          {/* Desktop Notification Bell Trigger */}
           <div className="relative md:block hidden">
              <button 
                 onClick={() => setIsNotificationOpen(true)} 
@@ -286,14 +312,13 @@ const Navigation: React.FC<NavigationProps> = ({
           </div>
         </div>
 
-        {/* User Profile - Compact */}
         <div className="p-4 border-b border-gray-100 dark:border-gray-800">
           <Link 
             to="/profile"
             onClick={() => setIsMobileMenuOpen(false)}
             className={`w-full p-3 rounded-2xl flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left group border border-transparent hover:border-gray-100 dark:hover:border-gray-700 ${isActive('/profile') ? 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700' : ''}`}
           >
-            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white dark:border-gray-600 shadow-sm group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white dark:border-gray-600 shadow-sm">
                {renderAvatar()}
             </div>
             <div className="overflow-hidden flex-1">
@@ -307,7 +332,6 @@ const Navigation: React.FC<NavigationProps> = ({
           </Link>
         </div>
 
-        {/* Navigation Items - Scrollable area */}
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => (
             <Link
@@ -324,8 +348,18 @@ const Navigation: React.FC<NavigationProps> = ({
               <span>{item.label}</span>
             </Link>
           ))}
+
+          {/* PWA Install Button (Always visible unless installed) */}
+          {!isAppInstalled && (
+            <button
+              onClick={handleInstallClick}
+              className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400"
+            >
+              {isIOS ? <Share size={18} /> : <Download size={18} />}
+              <span>অ্যাপ ইনস্টল করুন</span>
+            </button>
+          )}
           
-          {/* Admin Button - Restricted to specific email */}
           {currentUser.email === ADMIN_EMAIL && (
             <Link
               to="/admin"
@@ -342,7 +376,6 @@ const Navigation: React.FC<NavigationProps> = ({
           )}
         </nav>
 
-        {/* Theme & Footer - Compact */}
         <div className="p-4 border-t border-gray-100 dark:border-gray-800 space-y-3 bg-white dark:bg-gray-900">
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -358,57 +391,47 @@ const Navigation: React.FC<NavigationProps> = ({
                 <LogOut size={16} /> {t('nav_logout')}
             </button>
           </div>
-
           <div className="text-[10px] text-center text-gray-400 dark:text-gray-600 font-medium">
-            <p>© ২০২৪ ধ্রুবক | v1.0</p>
+            <p>© ২০২৪ ধ্রুবক | v1.1 PWA</p>
           </div>
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation (Floating & Glassmorphic) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100]">
-        {/* Gradient Fade for content underneath */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-gray-900/90 dark:via-gray-900/50 pointer-events-none"></div>
+      {/* App-like Bottom Navigation (Fixed & Glassmorphic) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] pb-safe-area">
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-gray-900 dark:via-gray-900/80 pointer-events-none"></div>
         
-        {/* The Navbar */}
-        <div className="bg-white/80 dark:bg-gray-900/85 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-800 pb-safe pt-1 shadow-lg relative">
-            <div className="flex items-center justify-around h-16 px-2">
-              {mobileNavItems.map((item, idx) => {
-                const active = item.path ? isActive(item.path) : false;
-                
-                return (
-                  <Link 
-                    key={idx} 
-                    to={item.path!} 
-                    className="flex-1 flex flex-col items-center justify-center h-full active:scale-90 transition-transform duration-200 group"
-                  >
-                    <div className={`p-1.5 rounded-2xl transition-all duration-300 relative ${
-                        active 
-                        ? 'text-primary dark:text-blue-400 -translate-y-1' 
-                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'
-                    }`}>
-                        {/* Active Background Glow Pill */}
+        <div className="mx-4 mb-4 relative">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700 rounded-[2rem] shadow-2xl shadow-gray-200/50 dark:shadow-black/50">
+                <div className="flex items-center justify-around h-16 px-1">
+                  {mobileNavItems.map((item, idx) => {
+                    const active = item.path ? isActive(item.path) : false;
+                    
+                    return (
+                      <Link 
+                        key={idx} 
+                        to={item.path!} 
+                        className="flex-1 flex flex-col items-center justify-center h-full active:scale-90 transition-transform duration-200 group"
+                      >
+                        <div className={`p-2 rounded-full transition-all duration-300 relative ${
+                            active 
+                            ? 'text-white bg-primary -translate-y-6 shadow-lg shadow-blue-500/40 ring-4 ring-white dark:ring-gray-900' 
+                            : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'
+                        }`}>
+                            {React.cloneElement(item.icon as React.ReactElement<any>, { 
+                                strokeWidth: active ? 2.5 : 2,
+                                size: active ? 24 : 22
+                            })}
+                        </div>
                         {active && (
-                            <div className="absolute inset-0 bg-blue-50 dark:bg-blue-900/20 rounded-2xl -z-10 scale-110"></div>
+                            <span className="absolute bottom-2 text-[10px] font-bold text-primary dark:text-blue-400 animate-in fade-in slide-in-from-bottom-2">
+                                {item.label}
+                            </span>
                         )}
-                        
-                        {/* Icon with fill effect on active */}
-                        {React.cloneElement(item.icon as React.ReactElement, { 
-                            fill: active ? "currentColor" : "none",
-                            fillOpacity: active ? 0.2 : 0,
-                            strokeWidth: active ? 2.5 : 2
-                        })}
-                    </div>
-                    <span className={`text-[10px] mt-0.5 transition-all duration-300 ${
-                        active 
-                        ? 'font-bold text-primary dark:text-blue-400 scale-100' 
-                        : 'font-medium text-gray-400 dark:text-gray-500 scale-90 opacity-80'
-                    }`}>
-                        {item.label}
-                    </span>
-                  </Link>
-                )
-              })}
+                      </Link>
+                    )
+                  })}
+                </div>
             </div>
         </div>
       </div>

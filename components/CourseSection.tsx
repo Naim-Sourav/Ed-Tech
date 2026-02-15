@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BookOpen, CheckCircle, Users, ArrowRight, X, Check, FileText, Lock, ChevronLeft, Activity, PlayCircle, ShoppingBag, Info } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -55,7 +55,7 @@ const COURSES: Course[] = [
     id: 'gst-super-focus',
     title: 'GST সুপার ফোকাস চ্যালেঞ্জ',
     subtitle: '৪৫ দিনের চ্যালেঞ্জ। ডিসিপ্লিন, ডেডিকেশন, ডমিনেশন।',
-    price: 500,
+    price: 0, // FREE
     originalPrice: 1500,
     students: 1540,
     theme: 'orange',
@@ -74,10 +74,12 @@ const COURSES: Course[] = [
 const CourseSection: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
-  // Main Views: LIST, PLAYER
-  const [viewMode, setViewMode] = useState<'LIST' | 'PLAYER'>('LIST');
-  const [activeCourse, setActiveCourse] = useState<Course | null>(null);
+  // URL Params State Logic
+  const activeCourseId = searchParams.get('courseId');
+  const activeCourse = activeCourseId ? COURSES.find(c => c.id === activeCourseId) || null : null;
+  const viewMode = activeCourse ? 'PLAYER' : 'LIST';
   
   // Contexts
   const { isEnrolled } = useAuth();
@@ -99,14 +101,16 @@ const CourseSection: React.FC = () => {
       if (courseId === 'gst-super-focus') {
           navigate('/gst-special');
       } else {
-          // Future courses navigation
           console.log("Details for", courseId);
       }
   };
 
   const openPlayer = (course: Course) => {
-      setActiveCourse(course);
-      setViewMode('PLAYER');
+      setSearchParams({ courseId: course.id });
+  }
+
+  const closePlayer = () => {
+      setSearchParams({});
   }
 
   // --- STYLES HELPER ---
@@ -153,26 +157,26 @@ const CourseSection: React.FC = () => {
   const renderCourseCard = (course: Course, isOwned: boolean) => {
       const themeStyles = getThemeStyles(course.theme);
       return (
-        <div key={course.id} className="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all group">
-            <div className={`p-6 border-b border-gray-100 dark:border-gray-700 ${themeStyles.bg}`}>
-                <div className="flex justify-between items-start mb-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${themeStyles.badge}`}>
+        <div key={course.id} className="bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all group">
+            <div className={`p-5 md:p-6 border-b border-gray-100 dark:border-gray-700 ${themeStyles.bg}`}>
+                <div className="flex justify-between items-start mb-3 md:mb-4">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider ${themeStyles.badge}`}>
                         {course.badge}
                     </span>
-                    <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
-                        <Users size={16}/> {course.students}
+                    <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs md:text-sm">
+                        <Users size={14} className="md:w-4 md:h-4"/> {course.students}
                     </div>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{course.title}</h2>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">{course.subtitle}</p>
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-1">{course.title}</h2>
+                <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm">{course.subtitle}</p>
             </div>
 
-            <div className="p-6 flex-1 flex flex-col">
-                <div className="space-y-3 mb-6 flex-1">
+            <div className="p-5 md:p-6 flex-1 flex flex-col">
+                <div className="space-y-2 md:space-y-3 mb-4 md:mb-6 flex-1">
                     {course.features.map((feat, idx) => (
                         <div key={idx} className="flex items-start gap-2">
-                            <CheckCircle size={16} className={`mt-0.5 shrink-0 ${themeStyles.text}`}/>
-                            <span className="text-sm text-gray-600 dark:text-gray-300">{feat}</span>
+                            <CheckCircle size={14} className={`mt-0.5 shrink-0 ${themeStyles.text} md:w-4 md:h-4`}/>
+                            <span className="text-xs md:text-sm text-gray-600 dark:text-gray-300">{feat}</span>
                         </div>
                     ))}
                 </div>
@@ -180,35 +184,39 @@ const CourseSection: React.FC = () => {
                 {/* View Details Button */}
                 <button
                     onClick={() => handleViewDetails(course.id)}
-                    className="w-full mb-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 group"
+                    className="w-full mb-3 md:mb-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-xs md:text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 group"
                 >
-                    <Info size={16} className="group-hover:text-primary transition-colors"/> বিস্তারিত জানুন
+                    <Info size={14} className="group-hover:text-primary transition-colors md:w-4 md:h-4"/> বিস্তারিত জানুন
                 </button>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div>
                         {isOwned ? (
-                            <span className="text-green-600 font-bold text-sm flex items-center gap-1"><CheckCircle size={14}/> {t('course_active')}</span>
+                            <span className="text-green-600 font-bold text-xs md:text-sm flex items-center gap-1"><CheckCircle size={12} className="md:w-3.5 md:h-3.5"/> {t('course_active')}</span>
                         ) : (
                             <>
-                                <span className="text-xs text-gray-400 line-through block">৳{course.originalPrice}</span>
-                                <span className="text-xl font-bold text-gray-900 dark:text-white">৳{course.price}</span>
+                                <span className="text-[10px] md:text-xs text-gray-400 line-through block">৳{course.originalPrice}</span>
+                                {course.price === 0 ? (
+                                    <span className="text-lg md:text-xl font-black text-green-600 dark:text-green-400">FREE</span>
+                                ) : (
+                                    <span className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">৳{course.price}</span>
+                                )}
                             </>
                         )}
                     </div>
                     {isOwned ? (
                         <button 
                             onClick={() => openPlayer(course)}
-                            className={`px-6 py-2.5 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95 ${themeStyles.button}`}
+                            className={`px-5 py-2 md:px-6 md:py-2.5 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95 text-xs md:text-sm ${themeStyles.button}`}
                         >
-                            {t('course_enroll')} <ArrowRight size={16}/>
+                            {t('course_enroll')} <ArrowRight size={14} className="md:w-4 md:h-4"/>
                         </button>
                     ) : (
                         <button 
                             onClick={() => handleEnrollClick(course)}
-                            className="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 rounded-xl font-bold transition-all shadow-lg active:scale-95"
+                            className="px-5 py-2 md:px-6 md:py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 rounded-xl font-bold transition-all shadow-lg active:scale-95 text-xs md:text-sm"
                         >
-                            {t('course_buy')}
+                            {course.price === 0 ? "ফ্রি এনরোল" : t('course_buy')}
                         </button>
                     )}
                 </div>
@@ -224,16 +232,16 @@ const CourseSection: React.FC = () => {
     return (
       <div className="h-full flex flex-col bg-gray-100 dark:bg-gray-900 overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between shadow-sm z-20">
-           <div className="flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 md:py-3 flex items-center justify-between shadow-sm z-20">
+           <div className="flex items-center gap-2 md:gap-3">
              <button 
-               onClick={() => setViewMode('LIST')} 
+               onClick={closePlayer} 
                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
              >
-               <ChevronLeft size={18} className="text-gray-600 dark:text-gray-300" />
+               <ChevronLeft size={18} className="text-gray-600 dark:text-gray-300 md:w-5 md:h-5" />
              </button>
              <div>
-               <h3 className="font-bold text-gray-800 dark:text-white text-sm md:text-base line-clamp-1">{activeCourse.title}</h3>
+               <h3 className="font-bold text-gray-800 dark:text-white text-xs md:text-base line-clamp-1">{activeCourse.title}</h3>
              </div>
            </div>
         </div>
@@ -243,19 +251,19 @@ const CourseSection: React.FC = () => {
             <div className="flex-1 bg-black flex items-center justify-center relative">
                 {activeItem?.type === 'LIVE' ? (
                     <div className="text-center text-white p-4">
-                        <PlayCircle size={48} className="mx-auto mb-2 opacity-50" />
-                        <p>Video Player Placeholder</p>
-                        <p className="text-sm text-gray-400">{activeItem.title}</p>
+                        <PlayCircle size={40} className="mx-auto mb-2 opacity-50 md:w-12 md:h-12" />
+                        <p className="text-sm">Video Player Placeholder</p>
+                        <p className="text-xs text-gray-400 mt-1">{activeItem.title}</p>
                     </div>
                 ) : activeItem?.type === 'NOTE' ? (
                     <div className="text-center text-white p-4">
-                        <FileText size={48} className="mx-auto mb-2 opacity-50" />
-                        <p>PDF Viewer Placeholder</p>
+                        <FileText size={40} className="mx-auto mb-2 opacity-50 md:w-12 md:h-12" />
+                        <p className="text-sm">PDF Viewer Placeholder</p>
                     </div>
                 ) : (
                     <div className="text-center text-white p-4">
-                        <Activity size={48} className="mx-auto mb-2 opacity-50" />
-                        <p>Quiz Interface Placeholder</p>
+                        <Activity size={40} className="mx-auto mb-2 opacity-50 md:w-12 md:h-12" />
+                        <p className="text-sm">Quiz Interface Placeholder</p>
                     </div>
                 )}
             </div>
@@ -264,7 +272,7 @@ const CourseSection: React.FC = () => {
             <div className="w-full md:w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
                 {activeCourse.syllabus?.map((module, idx) => (
                     <div key={idx} className="border-b border-gray-100 dark:border-gray-700">
-                        <div className="p-3 bg-gray-50 dark:bg-gray-900/50 font-bold text-xs md:text-sm text-gray-700 dark:text-gray-300 sticky top-0">
+                        <div className="p-3 bg-gray-50 dark:bg-gray-900/50 font-bold text-xs text-gray-700 dark:text-gray-300 sticky top-0">
                             {module.title}
                         </div>
                         <div>
@@ -280,8 +288,8 @@ const CourseSection: React.FC = () => {
                                          item.type === 'NOTE' ? <FileText size={14}/> : <Activity size={14}/>}
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-xs md:text-sm font-medium line-clamp-2">{item.title}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{item.duration}</p>
+                                        <p className="text-xs font-medium line-clamp-2">{item.title}</p>
+                                        <p className="text-[10px] text-gray-400 mt-0.5">{item.duration}</p>
                                     </div>
                                 </button>
                             ))}
@@ -297,30 +305,30 @@ const CourseSection: React.FC = () => {
   // --- RENDER: LIST VIEW ---
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
+        <div className="flex-1 overflow-y-auto p-3 md:p-8 pb-40">
             
             {/* Section: Active Courses */}
-            <div className="mb-10">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                    <CheckCircle className="text-green-500" size={24}/> আপনার কোর্সসমূহ
+            <div className="mb-8 md:mb-10">
+                <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white mb-3 md:mb-4 flex items-center gap-2">
+                    <CheckCircle className="text-green-500" size={20}/> আপনার কোর্সসমূহ
                 </h2>
                 
                 {myCourses.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
                         {myCourses.map(course => renderCourseCard(course, true))}
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center border border-dashed border-gray-300 dark:border-gray-700">
-                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                            <BookOpen size={32}/>
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 text-center border border-dashed border-gray-300 dark:border-gray-700">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 text-gray-400">
+                            <BookOpen size={24} className="md:w-8 md:h-8"/>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-700 dark:text-gray-200 mb-2">কোনো এক্টিভ কোর্স নেই</h3>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 max-w-sm mx-auto">
+                        <h3 className="text-base md:text-lg font-bold text-gray-700 dark:text-gray-200 mb-1">কোনো এক্টিভ কোর্স নেই</h3>
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-sm mx-auto">
                             আপনার প্রস্তুতি শুরু করতে নিচের তালিকা থেকে পছন্দের কোর্সে এনরোল করুন।
                         </p>
                         <button 
                             onClick={() => document.getElementById('available-courses')?.scrollIntoView({ behavior: 'smooth'})} 
-                            className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg hover:bg-blue-700 transition-colors"
+                            className="px-5 py-2 md:px-6 md:py-2.5 bg-primary text-white rounded-xl font-bold text-xs md:text-sm shadow-lg hover:bg-blue-700 transition-colors"
                         >
                             কোর্স দেখুন
                         </button>
@@ -330,10 +338,10 @@ const CourseSection: React.FC = () => {
 
             {/* Section: Available Courses */}
             <div id="available-courses">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                    <ShoppingBag className="text-orange-500" size={24}/> চলমান ও আপকামিং কোর্স
+                <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white mb-3 md:mb-4 flex items-center gap-2">
+                    <ShoppingBag className="text-orange-500" size={20}/> চলমান ও আপকামিং কোর্স
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-5xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 max-w-5xl">
                     {availableCourses.map(course => renderCourseCard(course, false))}
                 </div>
             </div>
