@@ -279,8 +279,8 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const useFiftyFifty = () => {
-      if (powerUps.fiftyFifty <= 0 || hasAnswered) return;
-      const q = battleState!.questions[currentQIndex];
+      if (!battleState || powerUps.fiftyFifty <= 0 || hasAnswered) return;
+      const q = battleState.questions[currentQIndex];
       const correctIdx = Number(q.correctAnswerIndex);
       const wrongIndices = [0, 1, 2, 3].filter(i => i !== correctIdx);
       const toDisable = wrongIndices.sort(() => 0.5 - Math.random()).slice(0, 2);
@@ -426,8 +426,9 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const renderTimer = () => {
+      if (!battleState) return null;
       const circumference = 2 * Math.PI * 18;
-      const progress = (timeLeft / battleState!.config.timePerQuestion) * circumference;
+      const progress = (timeLeft / battleState.config.timePerQuestion) * circumference;
       const colorClass = timeLeft > 10 ? 'text-emerald-500' : timeLeft > 5 ? 'text-yellow-500' : 'text-red-500';
       
       return (
