@@ -374,10 +374,12 @@ const QuizBattlePrototype: React.FC = () => {
 
   const renderLobbyPlayers = () => {
     if (!battleState) return null;
-    const players = Object.values(battleState.players) as BattlePlayer[];
+    // Capture state to local variable for TS null check
+    const room = battleState; 
+    const players = Object.values(room.players) as BattlePlayer[];
     
-    const host = players.find(p => p.uid === battleState.hostId);
-    const guest = players.find(p => p.uid !== battleState.hostId);
+    const host = players.find(p => p.uid === room.hostId);
+    const guest = players.find(p => p.uid !== room.hostId);
 
     return (
         <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-2xl mx-auto gap-8 mt-8">
@@ -427,8 +429,11 @@ const QuizBattlePrototype: React.FC = () => {
 
   const renderTimer = () => {
       if (!battleState) return null;
+      // Capture state for safety
+      const config = battleState.config;
+      
       const circumference = 2 * Math.PI * 18;
-      const progress = (timeLeft / battleState.config.timePerQuestion) * circumference;
+      const progress = (timeLeft / config.timePerQuestion) * circumference;
       const colorClass = timeLeft > 10 ? 'text-emerald-500' : timeLeft > 5 ? 'text-yellow-500' : 'text-red-500';
       
       return (
@@ -769,10 +774,11 @@ const QuizBattlePrototype: React.FC = () => {
   );
 
   if (phase === 'GAME') {
-    const question = battleState?.questions[currentQIndex];
+    if (!battleState) return null;
+    const question = battleState.questions[currentQIndex];
     if (!question) return null;
 
-    const players = (Object.values(battleState?.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
+    const players = (Object.values(battleState.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
     const opponent = players.find(p => p.uid !== currentUser?.uid);
     const bothAnswered = hasAnswered && opponent?.answers?.[currentQIndex] !== undefined;
 
@@ -791,7 +797,7 @@ const QuizBattlePrototype: React.FC = () => {
             <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm font-black text-gray-500 border border-gray-100 dark:border-gray-700">
-                        {currentQIndex + 1}/{battleState?.questions.length}
+                        {currentQIndex + 1}/{battleState.questions.length}
                     </div>
                     {streak >= 3 && (
                         <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">
@@ -856,7 +862,7 @@ const QuizBattlePrototype: React.FC = () => {
                 )}
 
                 {/* Host Control: Next Question */}
-                {bothAnswered && battleState?.hostId === currentUser?.uid && (
+                {bothAnswered && battleState.hostId === currentUser?.uid && (
                     <div className="fixed bottom-24 left-0 right-0 flex justify-center z-50 animate-in slide-in-from-bottom-4">
                         <button 
                             onClick={skipToNextQuestion}
@@ -917,7 +923,8 @@ const QuizBattlePrototype: React.FC = () => {
   }
 
   if (phase === 'RESULT') {
-    const sorted = (Object.values(battleState?.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
+    if (!battleState) return null;
+    const sorted = (Object.values(battleState.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
     const winner = sorted[0];
     const isWinner = winner.uid === currentUser?.uid;
 
@@ -983,7 +990,7 @@ const QuizBattlePrototype: React.FC = () => {
 
                     {/* Questions List */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                        {battleState?.questions.map((q, idx) => (
+                        {battleState.questions.map((q, idx) => (
                             <div key={idx} className="bg-white/5 p-5 rounded-3xl border border-white/10">
                                 <div className="flex gap-3 mb-4">
                                     <span className="font-black text-white/20 text-xl font-mono">{String(idx+1).padStart(2,'0')}</span>
