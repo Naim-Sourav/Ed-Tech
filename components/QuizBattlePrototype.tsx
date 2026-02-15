@@ -757,10 +757,10 @@ const QuizBattlePrototype: React.FC = () => {
             {battleState?.hostId === currentUser?.uid ? (
                 <button 
                     onClick={() => startRTDBBattle(roomId)} 
-                    disabled={Object.keys(battleState.players).length < 2} 
+                    disabled={Object.keys(battleState?.players || {}).length < 2} 
                     className="w-full py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl font-black text-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform"
                 >
-                    {Object.keys(battleState.players).length < 2 ? 'Waiting for Opponent...' : <><Swords size={24}/> START BATTLE</>}
+                    {Object.keys(battleState?.players || {}).length < 2 ? 'Waiting for Opponent...' : <><Swords size={24}/> START BATTLE</>}
                 </button>
             ) : (
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 flex items-center justify-center gap-3 animate-pulse">

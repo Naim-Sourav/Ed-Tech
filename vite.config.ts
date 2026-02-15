@@ -7,8 +7,8 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
-    // Use relative base to ensure assets work in both root and subpath environments (Cloudflare & IDX)
-    base: './', 
+    // Use repository name as base for GitHub Pages deployment
+    base: process.env.NODE_ENV === 'production' ? '/Ed-Tech/' : '/', 
     resolve: {
       alias: {
         '@': path.resolve('./src'), // আপনার ফোল্ডার স্ট্রাকচার অনুযায়ী পাথ ঠিক করা হলো
