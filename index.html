@@ -168,20 +168,6 @@
         <p class="loading-text text-sm font-bold opacity-70">প্রস্তুতি চলছে...</p>
       </div>
     </div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          // Use relative path './sw.js' to fix origin mismatch errors in cloud previews
-          navigator.serviceWorker.register('./sw.js')
-            .then(registration => {
-              console.log('SW registered successfully:', registration.scope);
-            })
-            .catch(registrationError => {
-              console.warn('SW registration failed (Common in dev/preview modes):', registrationError);
-            });
-        });
-      }
-    </script>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
