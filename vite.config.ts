@@ -16,13 +16,9 @@ export default defineConfig(({ mode }) => {
     },
     // এই অংশটি প্রিভিউ সমস্যা সমাধান করবে
     server: {
-      host: true, // এটি প্রিভিউকে পারমিশন দেয়
-      cors: true, // এটি ব্লকিং সমস্যা দূর করে
+      host: true, // Allow access from network (required for preview and cloud environments)
+      cors: true, // Enable CORS to prevent request blocking
       port: 5173,
-      strictPort: true, // পোর্ট ফিক্সড রাখবে
-      hmr: {
-        clientPort: 443 // Google AI Studio বা ক্লাউড প্রিভিউ-এর জন্য এটি মাঝে মাঝে লাগে
-      }
     },
     build: {
       outDir: 'dist',
