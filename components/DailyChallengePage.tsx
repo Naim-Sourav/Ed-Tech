@@ -65,7 +65,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
             // Merge User Progress with Static Lifetime Quests
             const updatedLifetime = MILESTONE_QUESTS.map(q => {
                 let currentProgress = 0;
-                let isClaimed = false; // Mock, in real app check against stats.claimedLifetimeIds
+                const isClaimed = false; // Mock, in real app check against stats.claimedLifetimeIds
                 
                 if (q.type === 'EXAM_COMPLETE') currentProgress = stats.totalExams || 0;
                 else if (q.type === 'HIGH_SCORE') currentProgress = stats.totalCorrect > 0 ? Math.floor(stats.totalCorrect / 10) : 0; 

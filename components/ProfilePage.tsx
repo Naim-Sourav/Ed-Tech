@@ -6,22 +6,12 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import getCroppedImg from '../utils/canvasUtils';
-import { User, Mail, BookOpen, Edit2, Check, X, Camera, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, TrendingUp, BarChart3, AlertCircle, Zap, Filter, GraduationCap, Briefcase, Target, PieChart, Layers, RefreshCw, AlertTriangle, Clock, Play, AlignJustify, LayoutList, FolderPlus, Folder, MoveRight, Upload, Loader2, ZoomIn, ZoomOut, Lock, Swords, CheckCircle, ChevronDown, ChevronUp, CircleDot, HelpCircle, FileQuestion, ChevronLeft, Sparkles } from 'lucide-react';
+import { Camera, Edit2, LogOut, MapPin, Save, User, X, BookOpen, Clock, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, TrendingUp, BarChart3, AlertCircle, Zap, Filter, GraduationCap, Briefcase, Target, PieChart, Layers, RefreshCw, AlertTriangle, Play, AlignJustify, LayoutList, FolderPlus, Folder, MoveRight, Upload, Loader2, ZoomIn, ZoomOut, Lock, Swords, CheckCircle, ChevronDown, ChevronUp, CircleDot, HelpCircle, FileQuestion, ChevronLeft, Sparkles, Check } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 
-const AVATARS = [
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=b6e3f4',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Aneka&backgroundColor=c0aede',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Bob&backgroundColor=ffdfbf',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Willow&backgroundColor=b6e3f4',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Jack&backgroundColor=d1d4f9',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Bella&backgroundColor=ffdfbf',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Oliver&backgroundColor=c0aede',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Sophie&backgroundColor=ffd5dc',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Leo&backgroundColor=ffdfbf',
-  'https://api.dicebear.com/7.x/notionists/svg?seed=Mila&backgroundColor=c0aede'
-];
+
+const AVATARS: string[] = [];
 
 const ITEMS_PER_PAGE = 10; // Limits items per page to prevent full-page PDF saves
 
@@ -71,6 +61,7 @@ const ProfilePage: React.FC = () => {
   const [editTarget, setEditTarget] = useState('Medical');
 
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+
   const [loading, setLoading] = useState(!cachedData.profileData); // Only load if no cache
   
   // Image Upload State
@@ -428,14 +419,34 @@ const ProfilePage: React.FC = () => {
       currentPage * ITEMS_PER_PAGE
   );
 
-  // MathJax Effect - Updated to run after filtering changes and pagination
+  // MathJax Effect - Robust polling to ensure rendering
   useEffect(() => {
-    if (window.MathJax && window.MathJax.typesetPromise) {
-      setTimeout(() => {
-        window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
-      }, 200);
-    }
-  }, [activeTab, displayedItems]);
+    let attempts = 0;
+    
+    const intervalId = setInterval(() => {
+      attempts++;
+      const savedContainer = document.getElementById('saved-questions-container');
+      const mistakesContainer = document.getElementById('mistakes-container');
+      
+      if (window.MathJax && window.MathJax.typesetPromise && (savedContainer || mistakesContainer)) {
+        const targets = [];
+        if (savedContainer) targets.push(savedContainer);
+        if (mistakesContainer) targets.push(mistakesContainer);
+        
+        window.MathJax.typesetPromise(targets)
+          .then(() => {
+            clearInterval(intervalId);
+          })
+          .catch((err: any) => console.log('MathJax typeset failed:', err));
+      }
+
+      if (attempts > 20) {
+        clearInterval(intervalId);
+      }
+    }, 500);
+
+    return () => clearInterval(intervalId);
+  }, [activeTab, displayedItems, loadingSaved, loadingMistakes]);
 
   // Exam Logic for Mistakes
   const launchExam = () => {
@@ -475,8 +486,8 @@ const ProfilePage: React.FC = () => {
   const getLevel = (points: number) => {
     if (points < 100) return { name: 'Novice', color: 'bg-gray-400' };
     if (points < 500) return { name: 'Apprentice', color: 'bg-green-500' };
-    if (points < 1000) return { name: 'Scholar', color: 'bg-blue-500' };
-    if (points < 2000) return { name: 'Master', color: 'bg-indigo-500' };
+    if (points < 1000) return { name: 'Scholar', color: 'bg-orange-500' };
+    if (points < 2000) return { name: 'Master', color: 'bg-orange-600' };
     return { name: 'Grandmaster', color: 'bg-orange-500' };
   };
 
@@ -485,13 +496,23 @@ const ProfilePage: React.FC = () => {
   // Helper to render Avatar
   const renderProfileAvatar = () => {
     const avatarUrl = isEditing ? selectedAvatar : profileData.photoURL;
-    if (avatarUrl && avatarUrl.startsWith('http')) {
-        return <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover bg-white" />;
-    }
-    return (
+    const content = (avatarUrl && avatarUrl.startsWith('http') && avatarUrl !== 'false') ? (
+        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover bg-white" />
+    ) : (
         <div className="w-full h-full flex items-center justify-center bg-primary text-white font-bold text-2xl md:text-3xl">
             {profileData.displayName?.charAt(0).toUpperCase() || 'U'}
         </div>
+    );
+
+    return (
+        <>
+            {isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
+                    <Loader2 className="animate-spin text-white" size={24} />
+                </div>
+            )}
+            {content}
+        </>
     );
   };
 
@@ -589,7 +610,7 @@ const ProfilePage: React.FC = () => {
         
         {/* Header Section */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2rem] p-4 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-20 md:h-32 bg-gradient-to-r from-primary to-blue-600 opacity-10"></div>
+          <div className="absolute top-0 left-0 w-full h-20 md:h-32 bg-gradient-to-r from-primary to-orange-600 opacity-10"></div>
           
           <div className="relative flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 mt-2 md:mt-4">
             {/* Avatar & User Info */}
@@ -607,16 +628,10 @@ const ProfilePage: React.FC = () => {
                )}
                {showAvatarSelector && (
                    <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 w-64 animate-in fade-in slide-in-from-top-2">
-                       <p className="text-xs font-bold text-gray-500 mb-3">অবতার নির্বাচন করুন</p>
-                       <div className="grid grid-cols-4 gap-2 mb-4">
-                           {AVATARS.map((avi, idx) => (
-                               <button key={idx} onClick={() => { setSelectedAvatar(avi); setShowAvatarSelector(false); }} className="w-10 h-10 rounded-full border hover:border-primary overflow-hidden">
-                                   <img src={avi} className="w-full h-full object-cover"/>
-                               </button>
-                           ))}
-                       </div>
+                       <p className="text-xs font-bold text-gray-500 mb-3">প্রোফাইল ছবি পরিবর্তন করুন</p>
+
                        <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
-                           <Upload size={14}/> আপলোড করুন
+                           <Upload size={14}/> ছবি আপলোড করুন
                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                        </label>
                    </div>
@@ -660,6 +675,7 @@ const ProfilePage: React.FC = () => {
                     <div className="flex flex-wrap justify-center md:justify-start gap-2 text-[10px] md:text-sm text-gray-600 dark:text-gray-300 mt-1">
                        {profileData.college && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><GraduationCap size={12}/> {profileData.college}</div>}
                        {profileData.hscBatch && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><Calendar size={12}/> Batch: {profileData.hscBatch}</div>}
+                       {profileData.department && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><Briefcase size={12}/> {profileData.department}</div>}
                        {profileData.target && <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded font-bold"><Target size={12}/> {profileData.target} Aspirant</div>}
                     </div>
                  </>
@@ -706,118 +722,193 @@ const ProfilePage: React.FC = () => {
         {/* INFO TAB */}
         {activeTab === 'INFO' && profileData.stats && (
             <div className="space-y-4 md:space-y-6 animate-in fade-in">
-                {/* Stats Grid */}
+                {/* Stats Grid - Redesigned */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Total Points</p>
-                        <p className="text-xl md:text-2xl font-black text-primary dark:text-blue-400">{profileData.stats.points}</p>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-primary/50 transition-all">
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="p-2.5 rounded-full bg-primary/10 text-primary">
+                            <Award size={20} />
+                        </div>
+                        <div className="text-center relative z-10">
+                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.points}</p>
+                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Total Points</p>
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Exams Taken</p>
-                        <p className="text-xl md:text-2xl font-black text-gray-800 dark:text-white">{profileData.stats.totalExams}</p>
+                    
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-orange-500/50 transition-all">
+                        <div className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="p-2.5 rounded-full bg-orange-500/10 text-orange-600">
+                            <FileQuestion size={20} />
+                        </div>
+                        <div className="text-center relative z-10">
+                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.totalExams}</p>
+                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Exams Taken</p>
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Correct Ans</p>
-                        <p className="text-xl md:text-2xl font-black text-green-500">{profileData.stats.totalCorrect}</p>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-green-500/50 transition-all">
+                        <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="p-2.5 rounded-full bg-green-500/10 text-green-600">
+                            <CheckCircle size={20} />
+                        </div>
+                        <div className="text-center relative z-10">
+                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.totalCorrect}</p>
+                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Correct Ans</p>
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Wrong Ans</p>
-                        <p className="text-xl md:text-2xl font-black text-red-500">{profileData.stats.totalWrong}</p>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-red-500/50 transition-all">
+                        <div className="absolute inset-0 bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="p-2.5 rounded-full bg-red-500/10 text-red-600">
+                            <X size={20} />
+                        </div>
+                        <div className="text-center relative z-10">
+                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.totalWrong}</p>
+                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Wrong Ans</p>
+                        </div>
                     </div>
                 </div>
 
                 {/* Subject Performance Detailed */}
+                {/* Subject Performance Detailed - Redesigned */}
                 <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                    <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 text-sm md:text-base"><PieChart size={16}/> বিষয় ও অধ্যায়ভিত্তিক দক্ষতা</h3>
+                    <h3 className="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2 text-base md:text-lg">
+                        <PieChart size={20} className="text-primary"/> বিষয় ও অধ্যায়ভিত্তিক এনালাইসিস
+                    </h3>
                     
-                    <div className="overflow-x-auto">
-                        <div className="min-w-[500px] md:min-w-[700px] border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                            <div className="grid grid-cols-12 gap-2 bg-gray-50 dark:bg-gray-900/50 p-2 md:p-3 border-b border-gray-200 dark:border-gray-700 font-bold text-[9px] md:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider items-center">
-                                <div className="col-span-3">বিষয় / অধ্যায়</div>
-                                <div className="col-span-2 text-center">চেষ্টা করা</div>
-                                <div className="col-span-1 text-center text-green-600">সঠিক</div>
-                                <div className="col-span-1 text-center text-red-600">ভুল</div>
-                                <div className="col-span-1 text-center text-gray-400">স্কিপড</div>
-                                <div className="col-span-4 text-center">দক্ষতা (Accuracy)</div>
-                            </div>
+                    <div className="space-y-4">
+                        {profileData.stats.subjectBreakdown?.map((sub: any, idx: number) => {
+                            const isExpanded = expandedSubjectStats.has(sub.subject);
+                            
+                            const correct = sub.correct || 0;
+                            const total = sub.total || 0;
+                            const wrong = sub.wrong !== undefined ? sub.wrong : (total - correct > 0 ? total - correct : 0);
+                            const skipped = sub.skipped !== undefined ? sub.skipped : 0;
+                            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-                            <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                                {profileData.stats.subjectBreakdown?.map((sub: any, idx: number) => {
-                                    const isExpanded = expandedSubjectStats.has(sub.subject);
-                                    
-                                    const correct = sub.correct || 0;
-                                    const total = sub.total || 0;
-                                    const wrong = sub.wrong !== undefined ? sub.wrong : (total - correct > 0 ? total - correct : 0);
-                                    const skipped = sub.skipped !== undefined ? sub.skipped : 0;
-                                    const attempted = correct + wrong; 
-                                    const accuracy = total > 0 ? (correct / total) * 100 : 0;
+                            // Determine Color based on accuracy
+                            let statusColor = "text-red-500";
+                            let statusBg = "bg-red-50 dark:bg-red-900/20";
+                            let statusLabel = "Weak";
+                            
+                            if (accuracy >= 80) {
+                                statusColor = "text-green-500";
+                                statusBg = "bg-green-50 dark:bg-green-900/20";
+                                statusLabel = "Strong";
+                            } else if (accuracy >= 60) {
+                                statusColor = "text-orange-500";
+                                statusBg = "bg-orange-50 dark:bg-orange-900/20";
+                                statusLabel = "Good";
+                            } else if (accuracy >= 40) {
+                                statusColor = "text-yellow-500";
+                                statusBg = "bg-yellow-50 dark:bg-yellow-900/20";
+                                statusLabel = "Average";
+                            }
 
-                                    return (
-                                        <div key={idx} className="bg-white dark:bg-gray-800 transition-colors">
-                                            {/* Subject Row */}
-                                            <div 
-                                                className="grid grid-cols-12 gap-2 p-3 md:p-4 items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                                onClick={() => toggleSubjectStats(sub.subject)}
-                                            >
-                                                <div className="col-span-3 flex items-center gap-1 md:gap-2 font-bold text-xs md:text-sm text-gray-800 dark:text-white truncate">
-                                                    {isExpanded ? <ChevronUp size={14} className="text-gray-400"/> : <ChevronDown size={14} className="text-gray-400"/>}
-                                                    {sub.subject}
-                                                </div>
-                                                <div className="col-span-2 text-center text-[10px] md:text-xs font-medium text-gray-600 dark:text-gray-300">{attempted} / {total}</div>
-                                                <div className="col-span-1 text-center text-[10px] md:text-xs font-bold text-green-500">{correct}</div>
-                                                <div className="col-span-1 text-center text-[10px] md:text-xs font-bold text-red-500">{wrong}</div>
-                                                <div className="col-span-1 text-center text-[10px] md:text-xs font-bold text-gray-400">{skipped}</div>
-                                                <div className="col-span-4 text-center text-[10px] md:text-xs font-bold flex flex-col items-center justify-center px-2">
-                                                    <div className="w-full flex justify-between items-center mb-1">
-                                                        <span className={accuracy >= 80 ? 'text-green-500' : accuracy >= 50 ? 'text-yellow-500' : 'text-red-500'}>{Math.round(accuracy)}%</span>
-                                                    </div>
-                                                    <div className="w-full h-1 md:h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                        <div className={`h-full ${accuracy >= 80 ? 'bg-green-500' : accuracy >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{width: `${accuracy}%`}}></div>
-                                                    </div>
-                                                </div>
+                            return (
+                                <div key={idx} className="border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden transition-all hover:shadow-md bg-gray-50/50 dark:bg-gray-800/50">
+                                    {/* Subject Header Card */}
+                                    <div 
+                                        className="p-4 cursor-pointer bg-white dark:bg-gray-800 flex flex-col md:flex-row gap-4 md:items-center justify-between"
+                                        onClick={() => toggleSubjectStats(sub.subject)}
+                                    >
+                                        {/* Left: Info */}
+                                        <div className="flex items-center gap-3 md:w-1/4">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusBg} ${statusColor}`}>
+                                                <BookOpen size={18} />
                                             </div>
+                                            <div>
+                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm md:text-base">{sub.subject}</h4>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{total} Questions</p>
+                                            </div>
+                                        </div>
 
-                                            {/* Expanded Chapters */}
-                                            {isExpanded && (
-                                                <div className="bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
-                                                    {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
-                                                        Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
-                                                            const cTotal = chapData.total || 0;
-                                                            const cCorrect = chapData.correct || 0;
-                                                            const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
-                                                            const cSkipped = chapData.skipped !== undefined ? chapData.skipped : 0;
-                                                            const cAttempted = cCorrect + cWrong;
-                                                            const cAccuracy = cTotal > 0 ? (cCorrect / cTotal) * 100 : 0;
+                                        {/* Middle: Progress Bar */}
+                                        <div className="flex-1 md:px-4">
+                                            <div className="flex justify-between text-xs font-bold mb-1.5">
+                                                <span className="text-green-600">Correct: {correct}</span>
+                                                <span className="text-red-500">Wrong: {wrong}</span>
+                                                <span className="text-gray-400">Skip: {skipped}</span>
+                                            </div>
+                                            <div className="h-2.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
+                                                <div style={{ width: `${(correct/total)*100}%` }} className="bg-green-500 h-full" />
+                                                <div style={{ width: `${(wrong/total)*100}%` }} className="bg-red-500 h-full" />
+                                                <div style={{ width: `${(skipped/total)*100}%` }} className="bg-gray-300 dark:bg-gray-600 h-full" />
+                                            </div>
+                                        </div>
 
-                                                            return (
-                                                                <div key={cIdx} className="grid grid-cols-12 gap-2 p-2 md:p-3 pl-6 md:pl-8 text-[10px] md:text-xs border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-800/50">
-                                                                    <div className="col-span-3 font-medium text-gray-600 dark:text-gray-300 truncate" title={chapName}>{chapName}</div>
-                                                                    <div className="col-span-2 text-center text-gray-500">{cAttempted} / {cTotal}</div>
-                                                                    <div className="col-span-1 text-center text-green-600">{cCorrect}</div>
-                                                                    <div className="col-span-1 text-center text-red-500">{cWrong}</div>
-                                                                    <div className="col-span-1 text-center text-gray-400">{cSkipped}</div>
-                                                                    <div className="col-span-4 text-center font-bold text-gray-600 dark:text-gray-400 flex items-center gap-2 justify-center">
-                                                                        <span>{Math.round(cAccuracy)}%</span>
-                                                                        <div className="w-8 md:w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                                            <div className={`h-full ${cAccuracy >= 80 ? 'bg-green-500' : cAccuracy >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{width: `${cAccuracy}%`}}></div>
-                                                                        </div>
+                                        {/* Right: Accuracy & Toggle */}
+                                        <div className="flex items-center justify-between md:justify-end gap-4 md:w-1/4 mt-2 md:mt-0">
+                                            <div className="text-right">
+                                                <span className={`text-lg font-black ${statusColor}`}>{accuracy}%</span>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase">Accuracy</p>
+                                            </div>
+                                            <div className={`p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                <ChevronDown size={16} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Expanded Chapters */}
+                                    {isExpanded && (
+                                        <div className="p-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700">
+                                            <h5 className="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
+                                                <List size={12}/> অধ্যায়ভিত্তিক বিশ্লেষণ
+                                            </h5>
+                                            
+                                            {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
+                                                        const cTotal = chapData.total || 0;
+                                                        const cCorrect = chapData.correct || 0;
+                                                        const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
+                                                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                                        const cSkipped = chapData.skipped !== undefined ? chapData.skipped : 0;
+                                                        const cAccuracy = cTotal > 0 ? Math.round((cCorrect / cTotal) * 100) : 0;
+                                                        
+                                                        let cColor = "bg-red-500";
+                                                        if (cAccuracy >= 80) cColor = "bg-green-500";
+                                                        else if (cAccuracy >= 60) cColor = "bg-orange-500";
+                                                        else if (cAccuracy >= 40) cColor = "bg-yellow-500";
+
+                                                        return (
+                                                            <div key={cIdx} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-sm">
+                                                                <div className="flex-1 min-w-0 pr-3">
+                                                                    <h6 className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate mb-1" title={chapName}>{chapName}</h6>
+                                                                    <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                                                                        <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">{cTotal} Q</span>
+                                                                        <span className="text-green-600">{cCorrect} ✓</span>
+                                                                        <span className="text-red-500">{cWrong} ✕</span>
                                                                     </div>
                                                                 </div>
-                                                            );
-                                                        })
-                                                    ) : (
-                                                        <div className="p-4 text-center text-xs text-gray-400 italic">No detailed chapter data available.</div>
-                                                    )}
+                                                                <div className="flex flex-col items-end gap-1">
+                                                                    <span className="text-xs font-black text-gray-700 dark:text-gray-300">{cAccuracy}%</span>
+                                                                    <div className="w-12 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                                        <div style={{ width: `${cAccuracy}%` }} className={`h-full ${cColor}`} />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-4 text-xs text-gray-400 italic">
+                                                    কোনো অধ্যায়ভিত্তিক ডাটা পাওয়া যায়নি
                                                 </div>
                                             )}
                                         </div>
-                                    );
-                                })}
-                                {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) && (
-                                    <div className="p-8 text-center text-gray-400">কোনো ডাটা পাওয়া যায়নি</div>
-                                )}
-                            </div>
-                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                        
+                        {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) && (
+                             <div className="text-center py-10 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                                 <BarChart3 size={40} className="mx-auto text-gray-300 mb-3"/>
+                                 <p className="text-gray-500 font-medium text-sm">কোনো এনালাইসিস ডাটা নেই</p>
+                                 <p className="text-xs text-gray-400 mt-1">কুইজ বা এক্সাম দিলে এখানে বিস্তারিত দেখা যাবে</p>
+                             </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -844,7 +935,18 @@ const ProfilePage: React.FC = () => {
                                             <div className="h-full bg-primary" style={{width: `${course.progress}%`}}></div>
                                         </div>
                                     </div>
-                                    <button className="px-3 py-1.5 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary rounded-lg text-[10px] md:text-xs font-bold transition-all">চালিয়ে যান</button>
+                                    <button 
+                                        onClick={() => {
+                                            if (course.id === 'gst-super-focus' || course.id === 'med-final-24') {
+                                                navigate(`/exam-batch/${course.id}`);
+                                            } else {
+                                                navigate(`/courses`); // Fallback for now, or specific player page
+                                            }
+                                        }}
+                                        className="px-3 py-1.5 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary rounded-lg text-[10px] md:text-xs font-bold transition-all"
+                                    >
+                                        চালিয়ে যান
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -905,7 +1007,7 @@ const ProfilePage: React.FC = () => {
                         <p className="text-gray-500 font-medium text-xs">কোনো সেভ করা প্রশ্ন পাওয়া যায়নি</p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div id="saved-questions-container" className="space-y-3">
                         {displayedItems.map((item) => {
                             const q = item.questionId;
                             if (!q) return null;
@@ -913,7 +1015,7 @@ const ProfilePage: React.FC = () => {
                                 <div key={item._id} className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm group">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex flex-wrap gap-2 items-center">
-                                            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded">{q.subject}</span>
+                                            <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-[9px] font-bold rounded">{q.subject}</span>
                                             <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[9px] font-bold rounded flex items-center gap-1">
                                                 <Folder size={10}/> {item.folder || 'General'}
                                             </span>
@@ -1006,7 +1108,7 @@ const ProfilePage: React.FC = () => {
                        <p className="text-gray-500 font-medium text-xs">কোনো ভুল পাওয়া যায়নি (ফিল্টার অনুযায়ী)।</p>
                    </div>
                ) : (
-                   <div className="space-y-3">
+                   <div id="mistakes-container" className="space-y-3">
                      {displayedItems.map((m) => {
                         const q = m.questionId;
                         if (!q) return null;
@@ -1082,6 +1184,7 @@ const ProfilePage: React.FC = () => {
               </div>
           </div>
       )}
+
     </div>
   );
 };

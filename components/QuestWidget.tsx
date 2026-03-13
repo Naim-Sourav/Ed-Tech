@@ -21,7 +21,7 @@ const QuestWidget: React.FC<QuestWidgetProps> = ({ quests, onQuestUpdate }) => {
   const getIcon = (iconName?: string) => {
       switch(iconName) {
           case 'Target': return <Target size={18} className="text-red-500" />;
-          case 'FileCheck': return <FileCheck size={18} className="text-blue-500" />;
+          case 'FileCheck': return <FileCheck size={18} className="text-orange-500" />;
           case 'Clock': return <Clock size={18} className="text-purple-500" />;
           case 'Swords': return <Swords size={18} className="text-orange-500" />;
           case 'Bot': return <Bot size={18} className="text-green-500" />;

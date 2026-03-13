@@ -24,6 +24,31 @@ const ConceptTutor: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
+    
+    // --- ROBUST MATHJAX LOADING ---
+    let attempts = 0;
+    const intervalId = setInterval(() => {
+      attempts++;
+      const renderMath = () => {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise()
+            .then(() => {
+              if (intervalId) clearInterval(intervalId);
+            })
+            .catch((err: any) => console.log('MathJax typeset failed: ', err));
+        }
+      };
+
+      renderMath();
+
+      if (attempts > 15) { // Stop after 7.5 seconds
+        clearInterval(intervalId);
+      }
+    }, 500);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [messages]);
 
   const handleSend = async () => {

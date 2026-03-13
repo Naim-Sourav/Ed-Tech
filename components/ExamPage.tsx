@@ -4,15 +4,19 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
-import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI } from '../services/api';
+import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI, reportQuestionAPI, generateQuizFromDB, fetchQuestionPapersAPI, syncUserToMongoDB, fetchSavedQuestionsAPI } from '../services/api';
+import { fetchPublicExamLeaderboard, getUserRank, submitGuestExamResult, fetchPublicExam } from '../services/publicExamService';
 import { 
   Clock, ChevronRight, CheckCircle, XCircle, 
   BookOpen, Bookmark, LayoutGrid, HelpCircle, 
-  Trophy, RefreshCw, Home, LayoutList, X, Flame, ArrowRight, Calendar, Check
+  Trophy, RefreshCw, Home, LayoutList, X, Flame, ArrowRight, Calendar, Check, Flag, AlertTriangle, Loader2,
+  User, Mail, Lock
 } from 'lucide-react';
 import { QuizQuestion } from '../types';
 import { useCache } from '../contexts/CacheContext';
 import Confetti from './Confetti'; // Use existing confetti instead of Lottie to be safe
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../services/firebase';
 
 // Helper to normalize subject names for display (Same as QuestionBank)
 const getDisplaySubject = (subject: string = '') => {
@@ -51,6 +55,7 @@ const ExamPage: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0); 
   const [examDuration, setExamDuration] = useState(0);
   const [savedQuestionIndices, setSavedQuestionIndices] = useState<Set<number>>(new Set());
+  const [flaggedQuestionIndices, setFlaggedQuestionIndices] = useState<Set<number>>(new Set());
   const [expiryTimestamp, setExpiryTimestamp] = useState<number | null>(null);
   
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -63,6 +68,26 @@ const ExamPage: React.FC = () => {
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [streakData, setStreakData] = useState<{ streak: number, activityLog: string[] } | null>(null);
   const [clearedMistakesCount, setClearedMistakesCount] = useState(0);
+
+  // Leaderboard State
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardPage, setLeaderboardPage] = useState(1);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const ITEMS_PER_PAGE = 5;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // View Mode State
+  const [viewMode, setViewMode] = useState<'SINGLE_PAGE' | 'ALL_AT_ONCE'>('SINGLE_PAGE');
+
+  // Guest Auth State
+  const [guestExamInfo, setGuestExamInfo] = useState<any>(null);
+  const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPassword, setGuestPassword] = useState('');
+  const [guestName, setGuestName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
 
   const getFont = (text: string = '') => {
     const isBangla = /[\u0980-\u09FF]/.test(text);
@@ -88,31 +113,85 @@ const ExamPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!examId || !currentUser) {
-        if (!examId) navigate('/dashboard');
+    if (!examId) {
+        navigate('/dashboard');
         return;
     }
 
     const initExam = async () => {
         setLoading(true);
-        try {
-            const existingResult = await fetchExamResultAPI(currentUser.uid, examId);
-            if (existingResult) {
-                setConfig(existingResult.config || {});
-                setQuestions(existingResult.questions || []);
-                setUserAnswers(existingResult.userAnswers || []);
-                setStep('RESULT'); 
-                setLoading(false);
-                return;
+        
+        // If user is logged in, check for existing result
+        if (currentUser) {
+            try {
+                const existingResult = await fetchExamResultAPI(currentUser.uid, examId);
+                if (existingResult) {
+                    setConfig(existingResult.config || {});
+                    setQuestions(existingResult.questions || []);
+                    setUserAnswers(existingResult.userAnswers || []);
+                    setStep('RESULT'); 
+                    setLoading(false);
+                    return;
+                }
+            } catch (e) {
+                console.error("Failed to check exam status", e);
             }
-        } catch (e) {
-            console.error("Failed to check exam status", e);
         }
 
         const savedSession = localStorage.getItem(SESSION_KEY);
         const storedConfig = localStorage.getItem(CONFIG_KEY);
 
+        // If no session/config, try fetching public exam
         if (!storedConfig && !savedSession) {
+            try {
+                const publicExam = await fetchPublicExam(examId);
+                if (publicExam) {
+                    // If guest, just show the landing page with info
+                    if (!currentUser) {
+                        setGuestExamInfo(publicExam);
+                        setLoading(false);
+                        return;
+                    }
+
+                    const newConfig = {
+                        title: publicExam.title,
+                        timeLimit: publicExam.duration,
+                        totalMarks: publicExam.totalMarks,
+                        negativeMarking: publicExam.negativeMarking,
+                        mode: 'ALL_AT_ONCE',
+                        type: 'PUBLIC_EXAM',
+                        isPracticeMode: false
+                    };
+                    setConfig(newConfig);
+                    
+                    // Normalize questions to ensure correctAnswerIndex exists and _id is set
+                    const normalizedQuestions = publicExam.questions.map((q: any) => ({
+                        ...q,
+                        correctAnswerIndex: q.correctAnswerIndex ?? q.correctAnswer,
+                        _id: q._id || q.id // Ensure _id exists if id is present
+                    }));
+                    
+                    setQuestions(normalizedQuestions);
+                    setUserAnswers(new Array(normalizedQuestions.length).fill(null));
+                    setCurrentQIndex(0);
+                    
+                    const seconds = publicExam.duration * 60;
+                    setTimeLeft(seconds);
+                    setExpiryTimestamp(Date.now() + (seconds * 1000));
+                    setLoading(false);
+                    return;
+                }
+            } catch (e) {
+                console.error("Failed to fetch public exam", e);
+            }
+
+            if (!currentUser) {
+                // If failed to fetch public exam and no user, redirect
+                showToast("এই এক্সাম আইডি পাওয়া যায়নি বা মেয়াদোত্তীর্ণ।", "error");
+                navigate('/auth');
+                return;
+            }
+
             showToast("এই এক্সাম আইডি পাওয়া যায়নি বা মেয়াদোত্তীর্ণ।", "error");
             navigate('/dashboard');
             return;
@@ -124,7 +203,7 @@ const ExamPage: React.FC = () => {
             setQuestions(session.questions);
             setUserAnswers(session.userAnswers);
             setCurrentQIndex(session.currentQIndex);
-            setSavedQuestionIndices(new Set(session.savedIndices));
+            // Don't rely solely on session for saved indices, we'll sync with DB
             setExamDuration(session.duration || 0);
             
             if (session.expiryTime) {
@@ -152,6 +231,39 @@ const ExamPage: React.FC = () => {
                     showToast("প্রশ্ন লোড করা যাচ্ছে না।", "error");
                     navigate('/dashboard');
                     return;
+                }
+            } else if (parsedConfig.type === 'CHAPTER_WISE') {
+                try {
+                    // Fetch papers to filter by source if provided
+                    const allowedExamRefs = new Set<string>();
+                    if (parsedConfig.source) {
+                        const papers = await fetchQuestionPapersAPI();
+                        papers
+                            .filter(p => p.source === parsedConfig.source)
+                            .forEach(p => allowedExamRefs.add(p.id));
+                    }
+
+                    // Fetch questions (mixed sources)
+                    const rawQuestions = (await generateQuizFromDB({
+                        subject: parsedConfig.subject,
+                        chapter: parsedConfig.chapter,
+                        topics: [],
+                        count: 100 // Fetch more to allow filtering
+                    })) as QuizQuestion[];
+
+                    // Filter by source
+                    if (parsedConfig.source && allowedExamRefs.size > 0) {
+                        qs = rawQuestions.filter(q => q.examRef && allowedExamRefs.has(q.examRef));
+                    } else {
+                        qs = rawQuestions;
+                    }
+                    
+                    // Limit to 20
+                    qs = qs.slice(0, 20);
+                    
+                } catch (e) {
+                    console.error(e);
+                    showToast("অধ্যায়ভিত্তিক প্রশ্ন লোড করা যাচ্ছে না।", "error");
                 }
             }
 
@@ -184,8 +296,80 @@ const ExamPage: React.FC = () => {
     initExam();
   }, [examId, currentUser]); 
 
+  // Sync Saved Questions from DB
   useEffect(() => {
-      if (!loading && questions.length > 0 && step === 'EXAM' && examId && currentUser) {
+      if (currentUser && questions.length > 0) {
+          fetchSavedQuestionsAPI(currentUser.uid).then((savedQs: any[]) => {
+              console.log("DEBUG: Fetched Saved Questions:", savedQs);
+              const savedIds = new Set(savedQs.map((sq: any) => {
+                  // Handle populated questionId object
+                  if (sq.questionId && typeof sq.questionId === 'object') {
+                      return sq.questionId._id || sq.questionId.id;
+                  }
+                  // Handle string ID or direct object
+                  return sq.questionId || sq.id || sq._id;
+              }));
+              console.log("DEBUG: Saved IDs Set:", Array.from(savedIds));
+              
+              const indices = new Set<number>();
+              questions.forEach((q, index) => {
+                  const qId = q._id || q.id;
+                  // console.log(`DEBUG: Checking Q[${index}] ID: ${qId} -> ${savedIds.has(qId)}`);
+                  if (qId && savedIds.has(qId)) {
+                      indices.add(index);
+                  }
+              });
+              console.log("DEBUG: Matched Indices:", Array.from(indices));
+              setSavedQuestionIndices(indices);
+          }).catch((err: any) => console.error("Failed to sync saved questions", err));
+      }
+  }, [currentUser, questions]); 
+
+  const handleGuestAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError('');
+
+    try {
+        if (authMode === 'LOGIN') {
+            await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
+        } else {
+            const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
+            await updateProfile(userCredential.user, {
+                displayName: guestName,
+                photoURL: "" 
+            });
+            await syncUserToMongoDB({
+                ...userCredential.user,
+                displayName: guestName,
+                photoURL: ""
+            }, { phoneNumber: "" });
+        }
+        // Auth state change will trigger useEffect to re-run initExam
+    } catch (err: any) {
+        console.error(err);
+        if (err.code === 'auth/invalid-credential') {
+            setAuthError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
+        } else if (err.code === 'auth/email-already-in-use') {
+            setAuthError('এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট খোলা আছে।');
+        } else if (err.code === 'auth/weak-password') {
+            setAuthError('পাসওয়ার্ড অত্যন্ত দুর্বল (অন্তত ৬ অক্ষর দিন)।');
+        } else {
+            setAuthError('লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
+        }
+    } finally {
+        setAuthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+      if (config?.mode) {
+          setViewMode(config.mode);
+      }
+  }, [config]);
+
+  useEffect(() => {
+    if (!loading && questions.length > 0 && step === 'EXAM' && examId && currentUser) {
           const sessionData = {
               config, questions, userAnswers, currentQIndex,
               savedIndices: Array.from(savedQuestionIndices),
@@ -195,15 +379,26 @@ const ExamPage: React.FC = () => {
       }
   }, [userAnswers, currentQIndex, savedQuestionIndices, examDuration, questions, step, loading, expiryTimestamp, examId, currentUser]);
 
+  // MathJax Effect - Robust polling to ensure rendering
   useEffect(() => {
-    if (!loading && window.MathJax && window.MathJax.typesetPromise) {
-      setTimeout(() => {
-        const container = document.getElementById('exam-container');
-        if (container) {
-          window.MathJax.typesetPromise([container]).catch((err: any) => console.error('MathJax error:', err));
-        }
-      }, 150);
-    }
+    let attempts = 0;
+
+    const intervalId = setInterval(() => {
+      attempts++;
+      const container = document.getElementById('exam-container');
+      if (window.MathJax && window.MathJax.typesetPromise && container) {
+        window.MathJax.typesetPromise([container])
+          .then(() => {
+            clearInterval(intervalId);
+          })
+          .catch((err: any) => console.log('MathJax typeset failed:', err));
+      }
+      if (attempts > 20) {
+        clearInterval(intervalId);
+      }
+    }, 500);
+
+    return () => clearInterval(intervalId);
   }, [loading, currentQIndex, step, reviewFilter, isRapidFireCorrect]);
 
   useEffect(() => {
@@ -230,6 +425,45 @@ const ExamPage: React.FC = () => {
     }
     return () => clearInterval(interval);
   }, [loading, step, config, expiryTimestamp]);
+
+  useEffect(() => {
+    if (step === 'RESULT' && examId && config?.type === 'PUBLIC_EXAM') {
+      setLeaderboardLoading(true);
+      fetchPublicExamLeaderboard(examId)
+        .then((data: any[]) => {
+            setLeaderboard(data);
+            
+            // Find user in fetched leaderboard
+            const userIndex = data.findIndex(entry => 
+                (entry.userId && entry.userId === currentUser?.uid)
+            );
+
+            if (userIndex !== -1) {
+                setUserRank(userIndex + 1);
+            } else {
+                // If not in fetched list, try to fetch specific rank
+                // We need the score. But score is calculated in render or handleSubmit.
+                // We should probably store score in state or calculate it here.
+                // But wait, score is not in state in ExamPage, it's calculated on the fly in render.
+                // That's bad design in ExamPage, but I have to work with it.
+                // Actually, handleSubmit calculates it.
+                // Let's look at handleSubmit. It calculates score but doesn't set it to a state variable accessible here easily unless I add one.
+                // Or I can recalculate it here.
+                const correctCount = userAnswers.filter((ans, idx) => ans === questions[idx]?.correctAnswerIndex).length;
+                const wrongCount = userAnswers.filter((ans, idx) => ans !== null && ans !== questions[idx]?.correctAnswerIndex).length;
+                const negativeMark = config?.negativeMarking || 0;
+                const rawScore = correctCount - (wrongCount * negativeMark);
+                const finalScore = Math.max(0, rawScore);
+                
+                getUserRank(examId, finalScore, examDuration).then(rank => {
+                    if (rank) setUserRank(rank);
+                });
+            }
+        })
+        .catch(err => console.error(err))
+        .finally(() => setLeaderboardLoading(false));
+    }
+  }, [step, examId, currentUser, config, userAnswers, questions, examDuration]);
 
   const handleOptionSelect = (qIndex: number, optionIndex: number) => {
       if (config?.mode === 'RAPID_FIRE') {
@@ -272,46 +506,97 @@ const ExamPage: React.FC = () => {
   const toggleSaveQuestion = async (index: number) => {
     if (!currentUser) { showToast("লগইন প্রয়োজন", "warning"); return; }
     const q = questions[index];
-    const newSet = new Set(savedQuestionIndices);
+    
+    // Check if question has a valid ID
+    const questionId = q._id || q.id;
+    if (!questionId) {
+        showToast("প্রশ্নটি সেভ করা যাচ্ছে না (ID নেই)", "error");
+        return;
+    }
+
+    const isCurrentlySaved = savedQuestionIndices.has(index);
+    
+    // Optimistic Update
+    setSavedQuestionIndices(prev => {
+        const newSet = new Set(prev);
+        if (isCurrentlySaved) {
+            newSet.delete(index);
+        } else {
+            newSet.add(index);
+        }
+        return newSet;
+    });
+
     try {
-      // @ts-ignore
-      if (!q._id) return; 
-      if (newSet.has(index)) {
-        newSet.delete(index);
-        setSavedQuestionIndices(newSet);
-        // @ts-ignore
-        await unsaveQuestionAPI(currentUser.uid, q._id);
+      if (isCurrentlySaved) {
+        await unsaveQuestionAPI(currentUser.uid, questionId);
         showToast("বুকমার্ক রিমুভ করা হয়েছে", "info");
       } else {
-        newSet.add(index);
-        setSavedQuestionIndices(newSet);
-        // @ts-ignore
-        await saveQuestionAPI(currentUser.uid, q._id);
+        await saveQuestionAPI(currentUser.uid, questionId);
         updateQuestProgressAPI(currentUser.uid, 'SAVE_QUESTION', 1);
         showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
       }
     } catch (e) {
-      if (newSet.has(index)) newSet.delete(index); else newSet.add(index);
-      setSavedQuestionIndices(newSet);
+      // Revert on error
+      setSavedQuestionIndices(prev => {
+          const newSet = new Set(prev);
+          if (isCurrentlySaved) {
+              newSet.add(index);
+          } else {
+              newSet.delete(index);
+          }
+          return newSet;
+      });
       showToast("বুকমার্ক আপডেট করা যায়নি", "error");
     }
   };
 
-  const handleSubmitExam = async (autoSubmit = false) => {
-    localStorage.removeItem(SESSION_KEY);
-    setShowSubmitModal(false);
-    setStep('RESULT');
-    
-    const correctCount = userAnswers.filter((ans, idx) => ans === questions[idx]?.correctAnswerIndex).length;
-    const wrongCount = userAnswers.filter((ans, idx) => ans !== null && ans !== questions[idx]?.correctAnswerIndex).length;
-    const skippedCount = questions.length - (correctCount + wrongCount);
-    const negativeMark = config?.negativeMarking || 0;
-    const rawScore = correctCount - (wrongCount * negativeMark);
-    const finalScore = Math.max(0, rawScore);
-    const percentage = Math.round((finalScore / questions.length) * 100);
+  const toggleFlagQuestion = (index: number) => {
+    setFlaggedQuestionIndices(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(index)) {
+            newSet.delete(index);
+            showToast("ফ্ল্যাগ রিমুভ করা হয়েছে", "info");
+        } else {
+            newSet.add(index);
+            showToast("প্রশ্নটি ফ্ল্যাগ করা হয়েছে", "warning");
+        }
+        return newSet;
+    });
+  };
 
-    if (currentUser && examId) {
-        try {
+  const handleReportQuestion = async (index: number) => {
+    if (!currentUser) { showToast("লগইন প্রয়োজন", "warning"); return; }
+    const q = questions[index];
+    // @ts-ignore
+    if (!q._id) { showToast("এই প্রশ্নটি রিপোর্ট করা সম্ভব নয়", "error"); return; }
+    
+    const reason = prompt("রিপোর্টের কারণ লিখুন (যেমন: ভুল উত্তর, ভুল প্রশ্ন):");
+    if (!reason) return;
+
+    try {
+        // @ts-ignore
+        await reportQuestionAPI(q._id, currentUser.uid, reason);
+        showToast("রিপোর্ট এডমিন প্যানেলে পাঠানো হয়েছে", "success");
+    } catch (e) {
+        showToast("রিপোর্ট পাঠানো যায়নি", "error");
+    }
+  };
+
+  const handleSubmitExam = async (autoSubmit = false) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
+    try {
+        const correctCount = userAnswers.filter((ans, idx) => ans === questions[idx]?.correctAnswerIndex).length;
+        const wrongCount = userAnswers.filter((ans, idx) => ans !== null && ans !== questions[idx]?.correctAnswerIndex).length;
+        const skippedCount = questions.length - (correctCount + wrongCount);
+        const negativeMark = config?.negativeMarking || 0;
+        const rawScore = correctCount - (wrongCount * negativeMark);
+        const finalScore = Math.max(0, rawScore);
+        const percentage = Math.round((finalScore / questions.length) * 100);
+
+        if (currentUser && examId) {
             const topicStats: any[] = []; 
             const mistakes = questions.filter((_, i) => userAnswers[i] !== null && userAnswers[i] !== questions[i].correctAnswerIndex);
             
@@ -335,6 +620,27 @@ const ExamPage: React.FC = () => {
                 questions,
                 config
             });
+
+            // If Public Exam, also save to public leaderboard
+            if (config?.type === 'PUBLIC_EXAM') {
+                const answersMap: Record<number, number> = {};
+                userAnswers.forEach((ans, idx) => {
+                    if (ans !== null) answersMap[idx] = ans;
+                });
+
+                await submitGuestExamResult(examId, {
+                    name: currentUser.displayName || 'User',
+                    email: currentUser.email || '',
+                    phone: currentUser.phoneNumber || ''
+                }, {
+                    score: finalScore,
+                    correct: correctCount,
+                    wrong: wrongCount,
+                    skipped: skippedCount,
+                    total: questions.length,
+                    answers: answersMap
+                }, examDuration, currentUser.uid);
+            }
             
             clearCache(`profile_${currentUser.uid}`);
             clearCache(`dashboard_${currentUser.uid}`);
@@ -346,16 +652,22 @@ const ExamPage: React.FC = () => {
 
             if (config?.isMistakeRetake) {
                 // @ts-ignore
-                const solvedIds = questions.filter((q, i) => userAnswers[i] === q.correctAnswerIndex && q._id).map(q => q._id);
+                const solvedIds = questions.filter((q, i) => userAnswers[i] === q.correctAnswerIndex && q._id).map(q => q._id as string);
                 if (solvedIds.length > 0) {
                     await clearMistakesAPI(currentUser.uid, solvedIds);
                     setClearedMistakesCount(solvedIds.length);
                     clearCache(`profile_${currentUser.uid}`);
                 }
             }
-        } catch (e) {
-            console.error(e);
         }
+    } catch (e) {
+        console.error(e);
+        showToast("সাবমিট করতে সমস্যা হয়েছে", "error");
+    } finally {
+        localStorage.removeItem(SESSION_KEY);
+        setShowSubmitModal(false);
+        setStep('RESULT');
+        setIsSubmitting(false);
     }
   };
 
@@ -376,7 +688,7 @@ const ExamPage: React.FC = () => {
           setStep('EXAM');
           setUserAnswers(new Array(questions.length).fill(null));
           setCurrentQIndex(0);
-          setTimeLeft(config.timeLimit * 60);
+          setTimeLeft(config?.timeLimit ? config.timeLimit * 60 : 0);
           setExamDuration(0);
       }
   };
@@ -387,7 +699,16 @@ const ExamPage: React.FC = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const formatDuration = (seconds: number) => {
+    if (seconds === undefined || seconds === null) return '-';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}m ${s}s`;
+  };
+
   const renderTimer = () => {
+    if (!config) return null;
+    
     if (config?.timeLimit === 0) {
        return (
           <div className="flex items-center gap-2 px-4 py-2 rounded-full font-mono font-bold text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
@@ -397,88 +718,251 @@ const ExamPage: React.FC = () => {
     }
     const totalSeconds = config.timeLimit * 60;
     const percentage = (timeLeft / totalSeconds) * 100;
-    const radius = 18;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (timeLeft / totalSeconds) * circumference;
-    let colorClass = 'text-emerald-500';
-    if (percentage <= 20) colorClass = 'text-red-500';
-    else if (percentage <= 50) colorClass = 'text-yellow-500';
+    
+    // Timer Color Logic
+    let bgColor = 'bg-emerald-500';
+    if (percentage <= 20) bgColor = 'bg-red-500';
+    else if (percentage <= 50) bgColor = 'bg-yellow-500';
 
     return (
-        <div className="relative w-12 h-12 flex items-center justify-center group">
-            <svg className="w-full h-full transform -rotate-90 drop-shadow-sm">
-                <circle cx="24" cy="24" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-gray-100 dark:text-gray-700" />
-                <circle cx="24" cy="24" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} className={`${colorClass} transition-all duration-1000 ease-linear`} strokeLinecap="round" />
-            </svg>
-            <span className={`absolute font-mono font-bold text-[10px] ${colorClass} ${timeLeft <= 60 ? 'animate-pulse' : ''}`}>{formatTime(timeLeft)}</span>
+        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700/50 rounded-full px-3 py-1 border border-gray-200 dark:border-gray-600">
+            <div className="relative w-4 h-4">
+                 <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-gray-300 dark:text-gray-600" />
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2" fill="transparent" strokeDasharray={44} strokeDashoffset={44 - (percentage / 100) * 44} className={`${percentage <= 20 ? 'text-red-500' : percentage <= 50 ? 'text-yellow-500' : 'text-emerald-500'} transition-all duration-1000 ease-linear`} strokeLinecap="round" />
+                </svg>
+            </div>
+            <span className={`font-mono font-bold text-xs ${percentage <= 20 ? 'text-red-500 animate-pulse' : 'text-gray-700 dark:text-gray-300'}`}>
+                {formatTime(timeLeft)}
+            </span>
         </div>
     );
   };
 
-  if (loading) {
+  if (loading || isSubmitting) {
       return (
         <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
             <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            <p className="mt-6 text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">প্রশ্নপত্র লোড হচ্ছে...</p>
+            <p className="mt-6 text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">
+                {isSubmitting ? "ফলাফল সাবমিট হচ্ছে..." : "প্রশ্নপত্র লোড হচ্ছে..."}
+            </p>
         </div>
+      );
+  }
+
+  // --- GUEST LANDING VIEW ---
+  if (!currentUser && guestExamInfo) {
+      return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
+              <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                  
+                  {/* Minimal Header */}
+                  <div className="bg-white dark:bg-gray-800 p-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
+                          <Trophy size={14} /> Public Exam
+                      </div>
+                      <h1 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight mb-1">
+                          {guestExamInfo.title}
+                      </h1>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                          {getDisplaySubject(guestExamInfo.subject)}
+                      </p>
+
+                      {/* Quick Stats Row */}
+                      <div className="flex items-center gap-4 mt-4 text-xs font-medium text-gray-600 dark:text-gray-300">
+                          <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1.5 rounded-lg">
+                              <Clock size={14} className="text-primary" />
+                              {guestExamInfo.duration} Min
+                          </div>
+                          <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1.5 rounded-lg">
+                              <CheckCircle size={14} className="text-emerald-500" />
+                              {guestExamInfo.totalMarks} Marks
+                          </div>
+                          <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1.5 rounded-lg">
+                              <HelpCircle size={14} className="text-orange-500" />
+                              {guestExamInfo.questions?.length || 0} Qs
+                          </div>
+                      </div>
+                  </div>
+
+                  {/* Auth Section */}
+                  <div className="p-6 pt-6">
+                      {/* Auth Tabs */}
+                      <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-xl mb-6">
+                          <button
+                              onClick={() => setAuthMode('LOGIN')}
+                              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${authMode === 'LOGIN' ? 'bg-white dark:bg-gray-600 text-primary shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}
+                          >
+                              লগইন
+                          </button>
+                          <button
+                              onClick={() => setAuthMode('REGISTER')}
+                              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${authMode === 'REGISTER' ? 'bg-white dark:bg-gray-600 text-primary shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}
+                          >
+                              রেজিস্ট্রেশন
+                          </button>
+                      </div>
+
+                      {authError && (
+                          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium rounded-lg flex items-center gap-2">
+                              <AlertTriangle size={14} /> {authError}
+                          </div>
+                      )}
+
+                      <form onSubmit={handleGuestAuth} className="space-y-3">
+                          {authMode === 'REGISTER' && (
+                              <>
+                                  <div>
+                                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">আপনার নাম</label>
+                                      <div className="relative">
+                                          <User size={16} className="absolute left-3 top-3 text-gray-400" />
+                                          <input
+                                              type="text"
+                                              required
+                                              value={guestName}
+                                              onChange={(e) => setGuestName(e.target.value)}
+                                              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white text-sm transition-all"
+                                              placeholder="সম্পূর্ণ নাম"
+                                          />
+                                      </div>
+                                  </div>
+                              </>
+                          )}
+
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">ইমেইল</label>
+                              <div className="relative">
+                                  <Mail size={16} className="absolute left-3 top-3 text-gray-400" />
+                                  <input
+                                      type="email"
+                                      required
+                                      value={guestEmail}
+                                      onChange={(e) => setGuestEmail(e.target.value)}
+                                      className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white text-sm transition-all"
+                                      placeholder="example@mail.com"
+                                  />
+                              </div>
+                          </div>
+
+                          <div>
+                              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">পাসওয়ার্ড</label>
+                              <div className="relative">
+                                  <Lock size={16} className="absolute left-3 top-3 text-gray-400" />
+                                  <input
+                                      type="password"
+                                      required
+                                      value={guestPassword}
+                                      onChange={(e) => setGuestPassword(e.target.value)}
+                                      className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white text-sm transition-all"
+                                      placeholder="******"
+                                  />
+                              </div>
+                          </div>
+
+                          <button
+                              type="submit"
+                              disabled={authLoading}
+                              className="w-full bg-primary hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 active:scale-95 disabled:opacity-70 mt-4"
+                          >
+                              {authLoading ? <Loader2 size={18} className="animate-spin" /> : (authMode === 'LOGIN' ? 'শুরু করুন' : 'রেজিস্টার করুন')} <ArrowRight size={18} />
+                          </button>
+                      </form>
+                      
+                      <p className="text-[10px] text-center text-gray-400 mt-4">
+                          এক্সাম শুরু করার মাধ্যমে আপনি আমাদের শর্তাবলীতে সম্মত হচ্ছেন।
+                      </p>
+                  </div>
+              </div>
+          </div>
       );
   }
 
   // --- EXAM VIEW ---
   if (step === 'EXAM') {
-      const viewMode = config?.mode || 'SINGLE_PAGE';
       const isRapidFire = config?.mode === 'RAPID_FIRE';
+      
+      // Safety check to prevent crash if questions are missing or index is out of bounds
+      if (!questions || questions.length === 0 || !questions[currentQIndex]) {
+          return (
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p className="mt-6 text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">
+                    প্রশ্নপত্র লোড হচ্ছে...
+                </p>
+            </div>
+          );
+      }
       
       return (
         <div id="exam-container" className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors relative">
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-                <div className="flex items-center gap-3">
-                    <button onClick={handleExit} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-400">
-                        <X size={20}/>
+            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-2 flex justify-between items-center sticky top-0 z-30 shadow-sm h-14 shrink-0">
+                <div className="flex items-center gap-2">
+                    <button onClick={handleExit} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-400">
+                        <X size={18}/>
                     </button>
                     <div>
-                        <h1 className="text-sm md:text-base font-bold text-gray-800 dark:text-white line-clamp-1 flex items-center gap-2">
-                            {config?.title || 'Exam'} {isRapidFire && <Flame size={16} className="text-red-500 fill-current animate-pulse"/>}
+                        <h1 className="text-xs font-bold text-gray-800 dark:text-white line-clamp-1 flex items-center gap-1">
+                            {config?.title || 'Exam'} {isRapidFire && <Flame size={14} className="text-red-500 fill-current animate-pulse"/>}
                         </h1>
-                        <p className="text-[10px] text-gray-500 font-bold">
-                            {viewMode === 'SINGLE_PAGE' || isRapidFire ? `Question ${currentQIndex + 1}/${questions.length}` : `${userAnswers.filter(a => a !== null).length}/${questions.length} Answered`}
+                        <p className="text-[9px] text-gray-500 font-bold">
+                            {viewMode === 'SINGLE_PAGE' || isRapidFire ? `Q ${currentQIndex + 1}/${questions.length}` : `${userAnswers.filter(a => a !== null).length}/${questions.length} Done`}
                         </p>
                     </div>
                 </div>
-                {renderTimer()}
+
+                <div className="flex items-center gap-3">
+                    {!isRapidFire && (
+                        <button 
+                            onClick={() => setViewMode(prev => prev === 'SINGLE_PAGE' ? 'ALL_AT_ONCE' : 'SINGLE_PAGE')}
+                            className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        >
+                            {viewMode === 'SINGLE_PAGE' ? <LayoutList size={14}/> : <LayoutGrid size={14}/>}
+                            {viewMode === 'SINGLE_PAGE' ? 'All Questions' : 'Single View'}
+                        </button>
+                    )}
+                    {renderTimer()}
+                </div>
             </div>
 
             {(viewMode === 'SINGLE_PAGE' || isRapidFire) && (
-                <div className="h-1 bg-gray-200 dark:bg-gray-700 w-full">
+                <div className="h-0.5 bg-gray-100 dark:bg-gray-700 w-full shrink-0">
                     <div className={`h-full transition-all duration-300 ${isRapidFire ? 'bg-red-500' : 'bg-primary'}`} style={{ width: `${((currentQIndex + 1) / questions.length) * 100}%` }}></div>
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
-                <div className={`mx-auto pb-20 ${viewMode === 'ALL_AT_ONCE' ? 'max-w-4xl' : 'max-w-2xl'}`}>
+            <div className="flex-1 overflow-y-auto p-3 md:p-6 scroll-smooth bg-gray-50 dark:bg-gray-900">
+                <div className={`mx-auto pb-24 h-full flex flex-col ${viewMode === 'ALL_AT_ONCE' ? 'max-w-4xl' : 'max-w-xl'}`}>
                     {viewMode === 'SINGLE_PAGE' || isRapidFire ? (
-                        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                            <div className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 relative">
-                                <span className={`absolute top-4 left-4 text-4xl font-black select-none -z-0 ${isRapidFire ? 'text-red-50 dark:text-red-900/10' : 'text-gray-100 dark:text-gray-700'}`}>
-                                    {String(currentQIndex + 1).padStart(2, '0')}
-                                </span>
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col h-full">
+                            {/* Question Card */}
+                            <div className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-3 relative overflow-hidden shrink-0">
+                                <div className="flex justify-between items-start gap-3 mb-2 relative z-10">
+                                    <span className="text-3xl font-black select-none text-gray-100 dark:text-gray-700/50 font-mono tracking-tighter">
+                                        {String(currentQIndex + 1).padStart(2, '0')}
+                                    </span>
+                                    
+                                    <button 
+                                        onClick={() => toggleSaveQuestion(currentQIndex)} 
+                                        className={`p-2 rounded-full transition-all duration-300 ${savedQuestionIndices.has(currentQIndex) ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary'}`}
+                                    >
+                                        <Bookmark size={16} className={savedQuestionIndices.has(currentQIndex) ? 'fill-current' : ''} strokeWidth={2.5}/>
+                                    </button>
+                                </div>
+
                                 <div className="relative z-10">
-                                    <h2 className={`text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white leading-relaxed mb-2 ${getFont(questions[currentQIndex].question)}`}>
+                                    <h2 className={`text-base md:text-xl font-bold text-gray-800 dark:text-white leading-snug mb-2 ${getFont(questions[currentQIndex].question)}`}>
                                         {questions[currentQIndex].question}
                                     </h2>
                                     {questions[currentQIndex].questionImage && (
-                                        <img src={questions[currentQIndex].questionImage} alt="Question" className="max-h-64 rounded-lg object-contain mt-2 border border-gray-200 dark:border-gray-700" />
+                                        <div className="mt-2 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-1">
+                                            <img src={questions[currentQIndex].questionImage} alt="Question" className="w-full max-h-40 object-contain rounded" />
+                                        </div>
                                     )}
                                 </div>
-                                <button 
-                                    onClick={() => toggleSaveQuestion(currentQIndex)} 
-                                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors"
-                                >
-                                    <Bookmark size={20} className={savedQuestionIndices.has(currentQIndex) ? 'fill-primary text-primary' : ''}/>
-                                </button>
                             </div>
 
-                            <div className="space-y-3">
+                            {/* Options List - Scrollable if needed */}
+                            <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                                 {questions[currentQIndex].options.map((opt, idx) => {
                                     const isSelected = userAnswers[currentQIndex] === idx;
                                     const isPractice = config?.isPracticeMode;
@@ -488,15 +972,15 @@ const ExamPage: React.FC = () => {
                                     let btnClass = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700";
                                     
                                     if (isRapidFire) {
-                                        if (isRapidFireCorrect && isCorrect) btnClass = "bg-green-500 border-green-500 text-white animate-pulse";
-                                        else if (rapidFireWrongAttempt === idx) btnClass = "bg-red-500 border-red-500 text-white animate-shake";
+                                        if (isRapidFireCorrect && isCorrect) btnClass = "bg-green-500 border-green-500 text-white";
+                                        else if (rapidFireWrongAttempt === idx) btnClass = "bg-red-500 border-red-500 text-white";
                                     } 
                                     else if (isPractice && userAnswers[currentQIndex] !== null) {
                                         if (isCorrect) btnClass = "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400";
                                         else if (isSelected) btnClass = "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-400";
                                         else btnClass = "opacity-50 grayscale";
                                     } else if (isSelected) {
-                                        btnClass = "bg-primary border-primary text-white shadow-lg shadow-primary/20";
+                                        btnClass = "bg-primary border-primary text-white shadow-md shadow-primary/20";
                                     }
 
                                     return (
@@ -504,20 +988,20 @@ const ExamPage: React.FC = () => {
                                             key={idx}
                                             onClick={() => handleOptionSelect(currentQIndex, idx)}
                                             disabled={(isPractice && userAnswers[currentQIndex] !== null && !isRapidFire) || isRapidFireCorrect}
-                                            className={`w-full p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.99] flex items-center justify-between group ${btnClass}`}
+                                            className={`w-full p-3 rounded-xl border text-left transition-all active:scale-[0.98] flex items-center justify-between group ${btnClass}`}
                                         >
                                             <div className="flex items-center gap-3 w-full">
-                                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs shrink-0 ${isSelected && !isPractice && !isRapidFire ? 'border-white bg-white/20' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center font-bold text-[10px] shrink-0 ${isSelected && !isPractice && !isRapidFire ? 'border-white bg-white/20' : 'border-gray-300 dark:border-gray-600'}`}>
                                                     {['A','B','C','D'][idx]}
                                                 </div>
                                                 <div className="flex-1">
-                                                    {opt && <span className={`text-sm md:text-base font-medium ${getFont(opt)}`}>{opt}</span>}
-                                                    {optImage && <img src={optImage} alt={`Option ${idx}`} className="mt-2 max-h-24 rounded object-contain border border-white/20" />}
+                                                    {opt && <span className={`text-sm font-medium ${getFont(opt)}`}>{opt}</span>}
+                                                    {optImage && <img src={optImage} alt={`Option ${idx}`} className="mt-1 max-h-16 rounded object-contain border border-white/20" />}
                                                 </div>
                                             </div>
                                             {isPractice && (userAnswers[currentQIndex] !== null || isRapidFire) && (
-                                                (isCorrect && (userAnswers[currentQIndex] !== null || isRapidFireCorrect)) ? <CheckCircle size={20}/> : 
-                                                ((isSelected || rapidFireWrongAttempt === idx) && <XCircle size={20}/>)
+                                                (isCorrect && (userAnswers[currentQIndex] !== null || isRapidFireCorrect)) ? <CheckCircle size={16}/> : 
+                                                ((isSelected || rapidFireWrongAttempt === idx) && <XCircle size={16}/>)
                                             )}
                                         </button>
                                     )
@@ -525,15 +1009,15 @@ const ExamPage: React.FC = () => {
                             </div>
 
                             {((config?.isPracticeMode && !isRapidFire && userAnswers[currentQIndex] !== null) || (isRapidFire && isRapidFireCorrect)) && (
-                                <div id={`explanation-${currentQIndex}`} className="mt-6 p-5 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 animate-in slide-in-from-bottom-2 overflow-hidden break-words max-w-full">
-                                    <div className="flex items-center gap-2 mb-2 font-bold text-blue-700 dark:text-blue-300 text-sm">
+                                <div id={`explanation-${currentQIndex}`} className="mt-6 p-5 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-800 animate-in slide-in-from-bottom-2 overflow-hidden break-words max-w-full">
+                                    <div className="flex items-center gap-2 mb-2 font-bold text-orange-700 dark:text-orange-300 text-sm">
                                         <BookOpen size={16}/> ব্যাখ্যা
                                     </div>
                                     <p className={`text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap ${getFont(questions[currentQIndex].explanation)}`}>
                                         {questions[currentQIndex].explanation || "No explanation available."}
                                     </p>
                                     {questions[currentQIndex].explanationImage && (
-                                        <img src={questions[currentQIndex].explanationImage} alt="Explanation" className="mt-2 max-h-48 rounded object-contain border border-blue-200 dark:border-blue-800" />
+                                        <img src={questions[currentQIndex].explanationImage} alt="Explanation" className="mt-2 max-h-48 rounded object-contain border border-orange-200 dark:border-orange-800" />
                                     )}
                                 </div>
                             )}
@@ -563,7 +1047,11 @@ const ExamPage: React.FC = () => {
                                                         {q.questionImage && <img src={q.questionImage} alt="Question" className="mt-2 max-h-40 rounded object-contain border border-gray-100 dark:border-gray-700" />}
                                                     </div>
                                                 </div>
-                                                <button onClick={() => toggleSaveQuestion(idx)} className="text-gray-400 hover:text-primary"><Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary text-primary' : ''}/></button>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => toggleSaveQuestion(idx)} className={`p-2 rounded-lg transition-colors ${savedQuestionIndices.has(idx) ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`} title="Bookmark">
+                                                        <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary' : ''}/>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="grid gap-2">
                                                 {q.options.map((opt, oIdx) => (
@@ -629,7 +1117,7 @@ const ExamPage: React.FC = () => {
                                 ) : (
                                     <button 
                                         onClick={() => setCurrentQIndex(prev => Math.min(questions.length - 1, prev + 1))}
-                                        className="px-8 py-2.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all text-sm flex items-center gap-2"
+                                        className="px-8 py-2.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-orange-200 dark:shadow-none hover:bg-orange-700 transition-all text-sm flex items-center gap-2"
                                     >
                                         Next <ChevronRight size={16}/>
                                     </button>
@@ -758,6 +1246,13 @@ const ExamPage: React.FC = () => {
   if (step === 'RESULT') {
       const isRapidFire = config?.mode === 'RAPID_FIRE';
       const resultQuestions = questions as QuizQuestion[];
+
+      // Leaderboard Pagination Logic
+      const paginatedLeaderboard = leaderboard.slice((leaderboardPage - 1) * ITEMS_PER_PAGE, leaderboardPage * ITEMS_PER_PAGE);
+      const totalPages = Math.ceil(leaderboard.length / ITEMS_PER_PAGE);
+      const isUserInView = paginatedLeaderboard.some(entry => 
+          (entry.userId && entry.userId === currentUser?.uid)
+      );
 
       if (isRapidFire) {
           return (
@@ -904,13 +1399,152 @@ const ExamPage: React.FC = () => {
                         <button onClick={handleRetake} className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2 text-sm">
                             <RefreshCw size={18}/> আবার পরীক্ষা দিন
                         </button>
-                        <button onClick={() => navigate('/dashboard')} className="flex-1 py-3 rounded-xl bg-primary text-white font-bold hover:bg-blue-700 flex items-center justify-center gap-2 text-sm shadow-lg shadow-blue-200 dark:shadow-none">
+                        <button onClick={() => navigate('/dashboard')} className="flex-1 py-3 rounded-xl bg-primary text-white font-bold hover:bg-orange-700 flex items-center justify-center gap-2 text-sm shadow-lg shadow-orange-200 dark:shadow-none">
                             <Home size={18}/> ড্যাশবোর্ড
                         </button>
                     </div>
                 </div>
 
                 <div className="space-y-6">
+                    {/* Leaderboard Section - Only for Public Exams */}
+                    {config?.type === 'PUBLIC_EXAM' && (
+                        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg text-yellow-600 dark:text-yellow-400">
+                                    <Trophy size={24} />
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Merit List</h2>
+                            </div>
+
+                            {leaderboardLoading ? (
+                                <div className="flex justify-center py-8">
+                                    <Loader2 className="animate-spin text-primary" size={32} />
+                                </div>
+                            ) : leaderboard.length === 0 ? (
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    No attempts yet. Be the first!
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="border-b border-gray-100 dark:border-gray-700">
+                                                    <th className="py-2 px-3 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rank</th>
+                                                    <th className="py-2 px-3 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                                                    <th className="py-2 px-3 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Score</th>
+                                                    <th className="py-2 px-3 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Correct</th>
+                                                    <th className="py-2 px-3 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Wrong</th>
+                                                    <th className="py-2 px-3 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-right">Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                                                {paginatedLeaderboard.map((entry, index) => {
+                                                    const rank = (leaderboardPage - 1) * ITEMS_PER_PAGE + index + 1;
+                                                    const name = entry.name || entry.guestInfo?.name || 'Anonymous';
+                                                    const score = entry.score !== undefined ? entry.score : entry.result?.score;
+                                                    const correct = entry.correct !== undefined ? entry.correct : entry.result?.correct;
+                                                    const wrong = entry.wrong !== undefined ? entry.wrong : entry.result?.wrong;
+                                                    const timeTaken = entry.timeTaken;
+                                                    
+                                                    const isCurrentUser = (entry.userId && entry.userId === currentUser?.uid);
+
+                                                    return (
+                                                        <tr key={entry.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isCurrentUser ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
+                                                            <td className="py-2 px-3">
+                                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                                                    rank === 1 ? 'bg-yellow-100 text-yellow-700' :
+                                                                    rank === 2 ? 'bg-gray-200 text-gray-700' :
+                                                                    rank === 3 ? 'bg-orange-100 text-orange-700' :
+                                                                    'text-gray-500'
+                                                                }`}>
+                                                                    {rank}
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-2 px-3">
+                                                                <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
+                                                                    {name}
+                                                                    {isCurrentUser && <span className="ml-1 text-[9px] bg-orange-100 text-orange-600 px-1 py-0.5 rounded font-bold">YOU</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
+                                                                {score}
+                                                            </td>
+                                                            <td className="py-2 px-3 text-center text-green-600 font-medium text-xs">
+                                                                {correct}
+                                                            </td>
+                                                            <td className="py-2 px-3 text-center text-red-500 font-medium text-xs">
+                                                                {wrong}
+                                                            </td>
+                                                            <td className="py-2 px-3 text-right text-gray-500 text-[10px] font-mono">
+                                                                {formatDuration(timeTaken)}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+
+                                                {!isUserInView && userRank && (
+                                                    <>
+                                                        <tr className="border-t-2 border-dashed border-gray-200 dark:border-gray-700">
+                                                            <td colSpan={6} className="py-1 text-center text-[10px] text-gray-400">...</td>
+                                                        </tr>
+                                                        <tr className="bg-orange-50 dark:bg-orange-900/20 border-t border-orange-100 dark:border-orange-800">
+                                                            <td className="py-2 px-3">
+                                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-orange-600 bg-orange-100">
+                                                                    {userRank}
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-2 px-3">
+                                                                <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
+                                                                    {currentUser?.displayName || 'Anonymous'}
+                                                                    <span className="ml-1 text-[9px] bg-orange-100 text-orange-600 px-1 py-0.5 rounded font-bold">YOU</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
+                                                                {finalScore}
+                                                            </td>
+                                                            <td className="py-2 px-3 text-center text-green-600 font-medium text-xs">
+                                                                {correctCount}
+                                                            </td>
+                                                            <td className="py-2 px-3 text-center text-red-500 font-medium text-xs">
+                                                                {wrongCount}
+                                                            </td>
+                                                            <td className="py-2 px-3 text-right text-gray-500 text-[10px] font-mono">
+                                                                {formatDuration(examDuration)}
+                                                            </td>
+                                                        </tr>
+                                                    </>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {totalPages > 1 && (
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                            <button
+                                                onClick={() => setLeaderboardPage(p => Math.max(1, p - 1))}
+                                                disabled={leaderboardPage === 1}
+                                                className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Previous
+                                            </button>
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                Page {leaderboardPage} of {totalPages}
+                                            </span>
+                                            <button
+                                                onClick={() => setLeaderboardPage(p => Math.min(totalPages, p + 1))}
+                                                disabled={leaderboardPage === totalPages}
+                                                className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                         {(['ALL', 'CORRECT', 'WRONG', 'SKIPPED'] as const).map(filter => (
                             <button
@@ -952,7 +1586,7 @@ const ExamPage: React.FC = () => {
                                                 <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">এড়িয়ে গেছেন</span> :
                                                 <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-[10px] font-bold">ভুল উত্তর</span>
                                             }
-                                            <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] font-bold">{q.chapter || 'General'}</span>
+                                            <span className="bg-orange-50 text-orange-600 px-2 py-0.5 rounded text-[10px] font-bold">{q.chapter || 'General'}</span>
                                         </div>
                                     </div>
                                 </div>

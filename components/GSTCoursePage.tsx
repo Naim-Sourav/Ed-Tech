@@ -83,7 +83,39 @@ const GSTCoursePage: React.FC = () => {
 
   const downloadRoutine = () => {
       showToast("রুটিন ডাউনলোড হচ্ছে...", "success");
-      // Logic to download PDF would go here
+      
+      const routineText = `
+PORAR TABLE - GST SUPER FOCUS CHALLENGE ROUTINE
+-------------------------------------------
+Phase 1: Chapter Wise (Day 01 - 30)
+${PHASE_1_ROUTINE.map(r => `Day ${r.day}: ${r.sub1} | ${r.sub2}`).join('\n')}
+
+Phase 2: Paper Final (Day 31 - 38)
+${PHASE_2_ROUTINE.map(r => `Day ${r.day}: ${r.exam}`).join('\n')}
+
+Phase 3: Subject Final (Day 39 - 42)
+${PHASE_3_ROUTINE.map(r => `Day ${r.day}: ${r.exam}`).join('\n')}
+
+Phase 4: Final Model Test (Day 43 - 45)
+${PHASE_4_ROUTINE.map(r => `Day ${r.day}: ${r.exam}`).join('\n')}
+
+STRICT GUIDELINES:
+1. Three Strike Rule: Miss 3 days = BAN.
+2. Deadline: 07:00 PM for tasks.
+3. Pass Mark: 40%.
+-------------------------------------------
+Discipline • Dedication • Domination
+      `;
+
+      const blob = new Blob([routineText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'PorarTable_GST_Routine.txt';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
   };
 
   return (
@@ -93,7 +125,7 @@ const GSTCoursePage: React.FC = () => {
       <div className="relative bg-gray-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/20 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-600/20 rounded-full blur-[100px]"></div>
         
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-24 relative z-10 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/20 border border-red-500/50 text-red-400 font-bold text-xs uppercase tracking-widest mb-6 animate-pulse">
@@ -200,10 +232,10 @@ const GSTCoursePage: React.FC = () => {
             <h2 className="text-2xl font-black text-gray-900 dark:text-white text-center">৪৫ দিনের কমপ্লিট প্ল্যান</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-5 rounded-2xl border border-blue-100 dark:border-blue-800">
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-5 rounded-2xl border border-orange-100 dark:border-orange-800">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 text-xs font-bold px-3 py-1 rounded-full">Phase 1</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-black text-xl">৩০ দিন</span>
+                        <span className="bg-orange-100 dark:bg-orange-800 text-orange-700 dark:text-orange-200 text-xs font-bold px-3 py-1 rounded-full">Phase 1</span>
+                        <span className="text-orange-600 dark:text-orange-400 font-black text-xl">৩০ দিন</span>
                     </div>
                     <h3 className="font-bold text-gray-800 dark:text-white text-lg">চ্যাপ্টার ওয়াইজ মিশন</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">প্রতিদিন ২টি ভিন্ন বিষয়ের ২য়টি চ্যাপ্টার শেষ করা হবে।</p>
@@ -270,7 +302,7 @@ const GSTCoursePage: React.FC = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {/* Phase 1 */}
-                                <tr className="bg-blue-50/50 dark:bg-blue-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-blue-600 uppercase tracking-widest">Phase 1: Chapter Wise</td></tr>
+                                <tr className="bg-orange-50/50 dark:bg-orange-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-orange-600 uppercase tracking-widest">Phase 1: Chapter Wise</td></tr>
                                 {PHASE_1_ROUTINE.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <td className="p-4 font-bold text-gray-500">Day {row.day}</td>

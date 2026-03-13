@@ -143,7 +143,7 @@ const TypewriterText = () => {
   }, [subIndex, index, reverse, words]);
 
   return (
-    <span className="text-primary dark:text-blue-400">
+    <span className="text-primary dark:text-orange-400">
       {words[index].substring(0, subIndex)}
       <span className={`${blink ? 'opacity-100' : 'opacity-0'} transition-opacity`}>|</span>
     </span>
@@ -164,30 +164,27 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 md:h-20 flex items-center justify-between">
           
           {/* Left Side - Brand Logo */}
-          <div className="flex items-center gap-2 md:gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="relative">
-                  <div className="absolute inset-0 bg-primary/40 rounded-full blur-md group-hover:blur-lg transition-all"></div>
-                  <div className="h-8 w-8 md:h-10 md:w-10 bg-gradient-to-br from-primary to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg md:text-xl relative z-10 shadow-inner border-2 border-white">
-                   ধ্রু
-                  </div>
+          <div className="flex items-center cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <div className="flex items-center gap-1.5 transform group-hover:scale-105 transition-transform">
+                  <img src="/Pshape.svg" alt="Porikkhangon Logo" className="h-10 md:h-12 w-auto object-contain" />
+                  <img src="/letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 md:h-7 w-auto object-contain" />
               </div>
-              <span className="text-lg md:text-xl font-bold tracking-tight block group-hover:text-primary transition-colors">ধ্রুবক</span>
           </div>
 
           {/* Right Side - Buttons */}
           <div className="flex items-center gap-3 md:gap-4">
             <button 
               onClick={onLoginClick}
-              className="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 hidden sm:block px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+              className="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-400 hidden sm:block px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
             >
               লগইন
             </button>
             <button 
               onClick={onLoginClick}
-              className="px-4 py-2 md:px-6 md:py-2.5 bg-primary hover:bg-blue-800 text-white font-bold text-sm md:text-base rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-95 flex items-center gap-2 group border border-transparent hover:border-blue-400/30"
+              className="px-4 py-2 md:px-6 md:py-2.5 bg-primary hover:bg-orange-600 text-white font-bold text-sm md:text-base rounded-xl transition-all shadow-lg shadow-orange-900/20 active:scale-95 flex items-center gap-2 group border border-transparent hover:border-orange-400/30"
             >
               রেজিস্ট্রেশন <ArrowRight size={16} className="md:w-[18px] md:h-[18px] group-hover:translate-x-1 transition-transform" />
             </button>
@@ -202,18 +199,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white dark:from-gray-900 to-transparent pointer-events-none"></div>
         
         {/* Moving Blobs */}
-        <div className="absolute top-20 left-10 w-48 h-48 md:w-72 md:h-72 bg-blue-500/20 rounded-full blur-[80px] md:blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-64 h-64 md:w-96 md:h-96 bg-cyan-500/10 rounded-full blur-[100px] md:blur-[120px] animate-pulse delay-1000"></div>
+        <div className="absolute top-20 left-10 w-48 h-48 md:w-72 md:h-72 bg-orange-500/20 rounded-full blur-[80px] md:blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-64 h-64 md:w-96 md:h-96 bg-orange-500/10 rounded-full blur-[100px] md:blur-[120px] animate-pulse delay-1000"></div>
 
         <div className="max-w-6xl mx-auto text-center relative z-10">
           
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-primary dark:text-blue-400 font-bold text-[10px] md:text-sm mb-6 md:mb-8 border border-blue-200 dark:border-blue-800 animate-in fade-in slide-in-from-bottom-4 duration-700 hover:scale-105 transition-transform cursor-default">
+          <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-primary dark:text-orange-400 font-bold text-[10px] md:text-sm mb-6 md:mb-8 border border-orange-200 dark:border-orange-800 animate-in fade-in slide-in-from-bottom-4 duration-700 hover:scale-105 transition-transform cursor-default">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            তোমার প্রস্তুতির ধ্রুবক
+            তোমার প্রস্তুতির পরীক্ষাঙ্গন
           </div>
           
           {/* Headline */}
@@ -223,7 +220,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           </h1>
           
           <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 px-4">
-            'ধ্রুবক' AI টিউটর, রিয়েল-টাইম কুইজ ব্যাটল এবং স্মার্ট প্রোগ্রেস ট্র্যাকিং এর সাথে নিজেকে প্রস্তুত করো বুয়েট, মেডিকেল বা ঢাকা ভার্সিটির জন্য।
+            'পরীক্ষাঙ্গন' AI টিউটর, রিয়েল-টাইম কুইজ ব্যাটল এবং স্মার্ট প্রোগ্রেস ট্র্যাকিং এর সাথে নিজেকে প্রস্তুত করো বুয়েট, মেডিকেল বা ঢাকা ভার্সিটির জন্য।
           </p>
           
           {/* CTA Buttons */}
@@ -273,9 +270,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       <section id="features" className="py-16 md:py-24 px-4 md:px-6 relative">
         <div className="max-w-7xl mx-auto">
             <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4">
-                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white">কেন <span className="text-primary dark:text-blue-400">ধ্রুবক</span>?</h2>
+                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white">কেন <span className="text-primary dark:text-orange-400">পরীক্ষাঙ্গন</span>?</h2>
                 <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                    ভর্তি যুদ্ধের এই কঠিন সময়ে প্রয়োজন একজন নির্ভরযোগ্য গাইড। ধ্রুবক তোমাকে দিচ্ছে পার্সোনালাইজড কেয়ার, কম্পিটিটিভ এনভায়রনমেন্ট এবং লেটেস্ট টেকনোলজি—যা তোমাকে অন্যদের চেয়ে এক ধাপ এগিয়ে রাখবে।
+                    ভর্তি যুদ্ধের এই কঠিন সময়ে প্রয়োজন একজন নির্ভরযোগ্য গাইড। পরীক্ষাঙ্গন তোমাকে দিচ্ছে পার্সোনালাইজড কেয়ার, কম্পিটিটিভ এনভায়রনমেন্ট এবং লেটেস্ট টেকনোলজি—যা তোমাকে অন্যদের চেয়ে এক ধাপ এগিয়ে রাখবে।
                 </p>
             </div>
 
@@ -289,16 +286,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
 
                     <div className="relative z-10 h-full flex flex-col md:flex-row items-center justify-between gap-8">
                         <div className="space-y-4 max-w-lg flex-1">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-blue-300 backdrop-blur-md">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-orange-300 backdrop-blur-md">
                                 <Sparkles size={12} /> ডেইলি চ্যালেঞ্জ
                             </div>
                             <h3 className="text-3xl md:text-5xl font-bold leading-tight">
-                                নিজেকে যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">লাইভ কুইজ</span> দিয়ে
+                                নিজেকে যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">লাইভ কুইজ</span> দিয়ে
                             </h3>
                             <p className="text-gray-400 text-sm md:text-base leading-relaxed">
                                 প্রতিদিন নতুন নতুন টপিকের উপর মডেল টেস্ট দাও এবং তোমার অবস্থান যাচাই করো। ভুলগুলো থেকে শেখো।
                             </p>
-                            <button className="mt-4 bg-primary hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-900/20 group-hover:scale-105 active:scale-95 w-fit">
+                            <button className="mt-4 bg-primary hover:bg-orange-700 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-orange-900/20 group-hover:scale-105 active:scale-95 w-fit">
                                 পরীক্ষা শুরু করুন <ArrowRight size={18} />
                             </button>
                         </div>
@@ -335,8 +332,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
 
                 {/* Feature 2: Ostad AI (Medium) */}
                 <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all group cursor-pointer relative overflow-hidden min-h-[200px]" onClick={onLoginClick}>
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-blue-500/20 transition-all"></div>
-                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mb-4">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-orange-500/20 transition-all"></div>
+                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-primary dark:text-orange-400 rounded-xl flex items-center justify-center mb-4">
                         <Bot size={24} />
                     </div>
                     <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Synapse AI টিউটর</h3>
@@ -346,7 +343,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                 </div>
 
                 {/* Feature 3: Quiz Battle (Medium) */}
-                <div className="md:col-span-2 bg-gradient-to-br from-secondary to-cyan-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 text-white shadow-lg hover:shadow-cyan-500/30 hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group min-h-[200px]" onClick={onLoginClick}>
+                <div className="md:col-span-2 bg-gradient-to-br from-orange-500 to-orange-700 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 text-white shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group min-h-[200px]" onClick={onLoginClick}>
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
                     <div className="relative z-10">
                         <div className="flex justify-between items-start mb-4 md:mb-6">
@@ -356,7 +353,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                             <span className="bg-white/20 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold backdrop-blur-sm animate-pulse">MULTIPLAYER</span>
                         </div>
                         <h3 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">কুইজ ব্যাটল</h3>
-                        <p className="text-blue-100 text-xs md:text-sm mb-2 md:mb-4">বন্ধুদের চ্যালেঞ্জ করো এবং লাইভ ১ বনাম ১ কুইজ খেলে পয়েন্ট জিতো।</p>
+                        <p className="text-orange-100 text-xs md:text-sm mb-2 md:mb-4">বন্ধুদের চ্যালেঞ্জ করো এবং লাইভ ১ বনাম ১ কুইজ খেলে পয়েন্ট জিতো।</p>
                     </div>
                     <div className="absolute -bottom-6 -right-6 text-white/10 transform rotate-12 group-hover:rotate-0 transition-transform duration-500">
                         <Swords size={80} className="md:w-[120px] md:h-[120px]" />
@@ -371,8 +368,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       <section className="py-10 md:py-24 px-4 md:px-6 bg-[#0f172a] text-white relative overflow-hidden">
          {/* Background Effect */}
          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-blue-600/20 to-purple-900/20 opacity-30 blur-[100px]"></div>
-            <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px]"></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-orange-600/20 to-orange-900/20 opacity-30 blur-[100px]"></div>
+            <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[120px]"></div>
          </div>
 
          <div className="max-w-6xl mx-auto relative z-10">
@@ -401,8 +398,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                         {/* Silver - Left (Sadia) */}
                         <div className="flex flex-col items-center transform translate-y-4 md:translate-y-8 animate-in slide-in-from-bottom-8 duration-700 delay-100">
                             <div className="relative mb-2 group">
-                                <div className="w-14 h-14 md:w-20 md:h-20 rounded-full p-1 bg-gradient-to-br from-slate-300 to-slate-500 shadow-[0_0_20px_rgba(148,163,184,0.3)] relative z-10 group-hover:scale-105 transition-transform duration-300">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sadia&mouth=smile&eyebrows=default" className="w-full h-full object-cover rounded-full border-2 border-slate-900 bg-slate-800" alt="Sadia" />
+                                <div className="w-14 h-14 md:w-20 md:h-20 rounded-full p-1 bg-gradient-to-br from-slate-300 to-slate-500 shadow-[0_0_20px_rgba(148,163,184,0.3)] relative z-10 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                                    <div className="w-full h-full rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-slate-200 font-bold text-xl md:text-3xl">S</div>
                                 </div>
                                 <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-200 text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg border border-slate-600 flex items-center gap-1">
                                     <span className="text-slate-400">#</span>2
@@ -421,8 +418,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                         <div className="flex flex-col items-center z-20 -mt-6 md:mt-0 animate-in slide-in-from-bottom-8 duration-700">
                             <div className="mb-2 relative group">
                                 <Crown size={32} className="text-yellow-400 animate-bounce absolute -top-8 md:-top-14 left-1/2 -translate-x-1/2 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)] md:w-12 md:h-12" fill="currentColor" />
-                                <div className="w-16 h-16 md:w-24 md:h-24 rounded-full p-1 bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-700 shadow-[0_0_30px_rgba(234,179,8,0.4)] relative z-10 group-hover:scale-105 transition-transform duration-300">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Tahmid&mouth=smile&eyebrows=default" className="w-full h-full object-cover rounded-full border-2 border-slate-900 bg-slate-800" alt="Tahmid" />
+                                <div className="w-16 h-16 md:w-24 md:h-24 rounded-full p-1 bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-700 shadow-[0_0_30px_rgba(234,179,8,0.4)] relative z-10 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                                    <div className="w-full h-full rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-yellow-500 font-bold text-2xl md:text-4xl">T</div>
                                 </div>
                                 <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 bg-yellow-500 text-yellow-950 text-xs md:text-sm font-bold px-3 md:px-4 py-0.5 md:py-1 rounded-full shadow-lg border border-yellow-400 flex items-center gap-1">
                                     <span className="text-yellow-800/70">#</span>1
@@ -443,8 +440,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                         {/* Bronze - Right (Rafi) */}
                         <div className="flex flex-col items-center transform translate-y-6 md:translate-y-12 animate-in slide-in-from-bottom-8 duration-700 delay-200">
                             <div className="relative mb-2 group">
-                                <div className="w-14 h-14 md:w-20 md:h-20 rounded-full p-1 bg-gradient-to-br from-amber-600 to-amber-800 shadow-[0_0_20px_rgba(180,83,9,0.3)] relative z-10 group-hover:scale-105 transition-transform duration-300">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Rafi&mouth=smile&eyebrows=default" className="w-full h-full object-cover rounded-full border-2 border-slate-900 bg-slate-800" alt="Rafi" />
+                                <div className="w-14 h-14 md:w-20 md:h-20 rounded-full p-1 bg-gradient-to-br from-amber-600 to-amber-800 shadow-[0_0_20px_rgba(180,83,9,0.3)] relative z-10 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                                    <div className="w-full h-full rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-amber-500 font-bold text-xl md:text-3xl">R</div>
                                 </div>
                                 <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 bg-amber-900 text-amber-100 text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg border border-amber-700 flex items-center gap-1">
                                     <span className="text-amber-400/70">#</span>3
@@ -473,10 +470,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                       <Archive size={14} className="md:w-4 md:h-4"/> ফ্রি এক্সেস
                   </div>
                   <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                      আনলিমিটেড <br className="md:hidden"/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">প্রশ্নব্যাংক সলভ</span>
+                      আনলিমিটেড <br className="md:hidden"/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">প্রশ্নব্যাংক সলভ</span>
                   </h2>
                   <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl leading-relaxed">
-                      টাকা খরচ করে মডেল টেস্ট নয়। ধ্রুবক-এ মেডিকেল, ইঞ্জিনিয়ারিং ও ভার্সিটির বিগত বছরের সকল প্রশ্ন সলভ করো সম্পূর্ণ ফ্রিতে।
+                      টাকা খরচ করে মডেল টেস্ট নয়। পরীক্ষাঙ্গনে মেডিকেল, ইঞ্জিনিয়ারিং ও ভার্সিটির বিগত বছরের সকল প্রশ্ন সলভ করো সম্পূর্ণ ফ্রিতে।
                   </p>
                </div>
                <button onClick={onLoginClick} className="text-gray-900 dark:text-white font-bold hover:text-primary mt-6 md:mt-0 flex items-center gap-2 group border-b-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-all text-sm md:text-base pb-1">
@@ -492,7 +489,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
 
       {/* Final CTA */}
       <section className="py-16 md:py-20 px-4 md:px-6">
-         <div className="max-w-5xl mx-auto bg-gradient-to-r from-primary to-blue-800 rounded-[2rem] md:rounded-[3rem] p-8 md:p-20 text-center text-white relative overflow-hidden shadow-2xl shadow-blue-500/20">
+         <div className="max-w-5xl mx-auto bg-gradient-to-r from-primary to-orange-800 rounded-[2rem] md:rounded-[3rem] p-8 md:p-20 text-center text-white relative overflow-hidden shadow-2xl shadow-orange-500/20">
             {/* Abstract Shapes */}
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
@@ -500,12 +497,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
 
             <div className="relative z-10">
                <h2 className="text-3xl md:text-6xl font-extrabold mb-4 md:mb-6 tracking-tight">দেরি করছো কেন?</h2>
-               <p className="text-base md:text-xl text-blue-100 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
-                  হাজারো শিক্ষার্থী ইতিমধ্যে তাদের প্রস্তুতি শুরু করে দিয়েছে। তুমি কি পিছিয়ে থাকবে? আজই জয়েন করো ধ্রুবক পরিবারে।
+               <p className="text-base md:text-xl text-orange-100 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
+                  হাজারো শিক্ষার্থী ইতিমধ্যে তাদের প্রস্তুতি শুরু করে দিয়েছে। তুমি কি পিছিয়ে থাকবে? আজই জয়েন করো পরীক্ষাঙ্গন পরিবারে।
                </p>
                <button 
                  onClick={onLoginClick}
-                 className="bg-white text-primary px-8 py-3.5 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-bold text-lg md:text-xl hover:bg-blue-50 hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2 md:gap-3 mx-auto w-full sm:w-auto"
+                 className="bg-white text-primary px-8 py-3.5 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-bold text-lg md:text-xl hover:bg-orange-50 hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2 md:gap-3 mx-auto w-full sm:w-auto"
                >
                  <Rocket size={20} className="md:w-6 md:h-6" /> একাউন্ট তৈরি করুন
                </button>
@@ -515,11 +512,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
 
       {/* Footer */}
       <footer className="py-8 md:py-12 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-center">
-        <div className="flex items-center justify-center gap-2 mb-4 md:mb-6 opacity-80">
-           <div className="h-7 w-7 md:h-8 md:w-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-sm md:text-base">
-             ধ্রু
-           </div>
-           <span className="font-bold text-lg md:text-xl text-gray-800 dark:text-white">ধ্রুবক</span>
+        <div className="flex items-center justify-center mb-4 md:mb-6 opacity-80 gap-1.5">
+           <img src="/Pshape.svg" alt="Porikkhangon Logo" className="h-10 md:h-12 w-auto object-contain" />
+           <img src="/letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 md:h-7 w-auto object-contain" />
         </div>
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-6 md:mb-8 text-sm text-gray-500">
             <a href="#" className="hover:text-primary transition-colors">আমাদের সম্পর্কে</a>
@@ -527,7 +522,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <a href="#" className="hover:text-primary transition-colors">যোগাযোগ</a>
             <a href="#" className="hover:text-primary transition-colors">প্রাইভেসি পলিসি</a>
         </div>
-        <p className="text-gray-400 text-xs md:text-sm">© 2024 Dhrubok. Made with ❤️ for Students in Bangladesh.</p>
+        <p className="text-gray-400 text-xs md:text-sm">© 2024 Porikkhangon. Made with ❤️ for Students in Bangladesh.</p>
       </footer>
     </div>
   );

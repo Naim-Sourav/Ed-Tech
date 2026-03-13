@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../contexts/AdminContext';
-import { Check, X, Search, Trash2, Calendar, User, Phone, CreditCard, ShieldCheck, Filter, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, BookOpen, Activity, FileText, FileJson, Edit2, Save, Image as ImageIcon, PlusCircle, AlertTriangle, Loader2, Lock, Bookmark } from 'lucide-react';
+import { Check, X, Search, Trash2, User, Phone, CreditCard, ShieldCheck, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, Activity, FileText, FileJson, Edit2, Save, Image as ImageIcon, Loader2, Lock, Bookmark, Link as LinkIcon } from 'lucide-react';
 import AdminQuestionGenerator from './AdminQuestionGenerator';
 import AdminJsonUpload from './AdminJsonUpload';
-import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI } from '../services/api';
+import AdminPdfUpload from './AdminPdfUpload';
+import AdminPublicExam from './AdminPublicExam';
+import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
-import { QuizQuestion } from '../types';
 import { useNavigate } from 'react-router-dom';
 
 declare global {
@@ -18,7 +19,7 @@ declare global {
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'Q_BANK' | 'DATABASE' | 'JSON_UPLOAD'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'Q_BANK' | 'DATABASE' | 'JSON_UPLOAD' | 'PDF_UPLOAD' | 'PUBLIC_EXAM'>('DASHBOARD');
   const { showToast } = useToast();
   const navigate = useNavigate();
   
@@ -35,6 +36,8 @@ const AdminPage: React.FC = () => {
   const [notifMsg, setNotifMsg] = useState('');
   const [notifType, setNotifType] = useState<'INFO' | 'SUCCESS' | 'WARNING'>('INFO');
   const [sendingNotif, setSendingNotif] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loadingNotifs, setLoadingNotifs] = useState(false);
 
   // Question Manager State
   const [questions, setQuestions] = useState<any[]>([]);
@@ -42,6 +45,8 @@ const AdminPage: React.FC = () => {
   const [qPage, setQPage] = useState(1);
   const [qSubject, setQSubject] = useState('');
   const [qChapter, setQChapter] = useState('');
+  const [qTopic, setQTopic] = useState('');
+  const [qExamRef, setQExamRef] = useState('');
   const [qSearch, setQSearch] = useState('');
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<any | null>(null);
@@ -68,7 +73,7 @@ const AdminPage: React.FC = () => {
         }, 500); // Debounce search
         return () => clearTimeout(timeout);
     }
-  }, [activeTab, qPage, qSubject, qChapter, qSearch, isAdmin]);
+  }, [activeTab, qPage, qSubject, qChapter, qTopic, qExamRef, qSearch, isAdmin]);
 
   // MathJax Trigger on Question Load
   useEffect(() => {
@@ -82,13 +87,58 @@ const AdminPage: React.FC = () => {
   const loadQuestions = async () => {
       setLoadingQuestions(true);
       try {
-          const data = await fetchQuestionsFromBankAPI(qPage, 10, qSubject, qChapter, qSearch);
+          const data = await fetchQuestionsFromBankAPI(qPage, 10, qSubject, qChapter, qTopic, qExamRef, qSearch);
           setQuestions(data.questions);
           setTotalQuestions(data.total);
       } catch (error) {
           console.error(error);
       } finally {
           setLoadingQuestions(false);
+      }
+  };
+
+  const loadNotifications = async () => {
+      setLoadingNotifs(true);
+      try {
+          const data = await fetchNotificationsAPI();
+          setNotifications(data);
+      } catch (error) {
+          console.error(error);
+      } finally {
+          setLoadingNotifs(false);
+      }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'NOTIFICATIONS' && isAdmin) {
+        loadNotifications();
+    }
+  }, [activeTab, isAdmin]);
+
+  const handleDeleteNotification = async (id: string) => {
+      if(!confirm("Delete this notification?")) return;
+      try {
+          await deleteNotificationAPI(id);
+          setNotifications(prev => prev.filter(n => (n.id || n._id) !== id));
+          showToast("Notification deleted", "success");
+      } catch (e) {
+          showToast("Failed to delete", "error");
+      }
+  };
+
+  const handleSendNotification = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setSendingNotif(true);
+      try {
+          await sendNotification(notifTitle, notifMsg, notifType);
+          showToast("নোটিফিকেশন পাঠানো হয়েছে!", "success");
+          setNotifTitle('');
+          setNotifMsg('');
+          loadNotifications();
+      } catch (e) {
+          showToast("পাঠাতে সমস্যা হয়েছে", "error");
+      } finally {
+          setSendingNotif(false);
       }
   };
 
@@ -142,23 +192,6 @@ const AdminPage: React.FC = () => {
       case 'APPROVED': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
       case 'REJECTED': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
       default: return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-    }
-  };
-
-  const handleSendNotification = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!notifTitle || !notifMsg) return;
-
-    setSendingNotif(true);
-    try {
-      await sendNotification(notifTitle, notifMsg, notifType);
-      setNotifTitle('');
-      setNotifMsg('');
-      showToast("নোটিফিকেশন সফলভাবে পাঠানো হয়েছে!", "success");
-    } catch (e) {
-      showToast("নোটিফিকেশন পাঠাতে সমস্যা হয়েছে", "error");
-    } finally {
-      setSendingNotif(false);
     }
   };
 
@@ -242,7 +275,14 @@ const AdminPage: React.FC = () => {
                                   value={editingQuestion.topic || ''}
                                   onChange={e => setEditingQuestion({...editingQuestion, topic: e.target.value})}
                                   className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                                  list="topic-suggestions"
                               />
+                              <datalist id="topic-suggestions">
+                                  {editingQuestion.subject && editingQuestion.chapter && (SYLLABUS_DB[editingQuestion.subject]?.[editingQuestion.chapter] || []).map((t: any) => {
+                                      const topicName = typeof t === 'string' ? t : t.title;
+                                      return <option key={topicName} value={topicName} />
+                                  })}
+                              </datalist>
                           </div>
                           <div>
                               <label className="block text-xs font-bold text-gray-500 mb-1">Exam Ref (Question Bank)</label>
@@ -336,7 +376,7 @@ const AdminPage: React.FC = () => {
 
                   <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 mt-4">
                       <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-                      <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg flex items-center gap-2">
+                      <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-lg flex items-center gap-2">
                           <Save size={18}/> Update Question
                       </button>
                   </div>
@@ -439,6 +479,12 @@ const AdminPage: React.FC = () => {
                    <button onClick={() => setActiveTab('JSON_UPLOAD')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'JSON_UPLOAD' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <FileJson size={16} /> Smart Upload
                    </button>
+                   <button onClick={() => setActiveTab('PDF_UPLOAD')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'PDF_UPLOAD' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <FileText size={16} /> PDF Upload
+                   </button>
+                   <button onClick={() => setActiveTab('PUBLIC_EXAM')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'PUBLIC_EXAM' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <LinkIcon size={16} /> Public Exam
+                   </button>
                    <button onClick={() => setActiveTab('Q_BANK')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'Q_BANK' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Database size={16} /> Generator
                    </button>
@@ -454,6 +500,11 @@ const AdminPage: React.FC = () => {
            {/* Tab Content Divider */}
            <div className="h-6"></div>
         </div>
+
+        {/* --- TAB: PUBLIC EXAM --- */}
+        {activeTab === 'PUBLIC_EXAM' && (
+           <AdminPublicExam />
+        )}
 
         {/* --- TAB: DASHBOARD --- */}
         {activeTab === 'DASHBOARD' && (
@@ -476,7 +527,7 @@ const AdminPage: React.FC = () => {
                  <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><FileText size={64}/></div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">মোট এক্সাম</p>
-                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalExams}</p>
+                    <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalExams}</p>
                     <p className="text-xs text-gray-400 mt-2">Quizzes Taken</p>
                  </div>
 
@@ -665,6 +716,11 @@ const AdminPage: React.FC = () => {
            <AdminJsonUpload />
         )}
 
+        {/* --- TAB: PDF UPLOAD --- */}
+        {activeTab === 'PDF_UPLOAD' && (
+           <AdminPdfUpload />
+        )}
+
         {/* --- TAB: QUESTION BANK GENERATOR --- */}
         {activeTab === 'Q_BANK' && (
            <AdminQuestionGenerator />
@@ -703,6 +759,25 @@ const AdminPage: React.FC = () => {
                             <option value="">All Chapters</option>
                             {qSubject && Object.keys(SYLLABUS_DB[qSubject] || {}).map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
+                        <select 
+                            value={qTopic} 
+                            onChange={e => { setQTopic(e.target.value); setQPage(1); }}
+                            disabled={!qChapter}
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
+                        >
+                            <option value="">All Topics</option>
+                            {qSubject && qChapter && (SYLLABUS_DB[qSubject]?.[qChapter] || []).map((t: any) => {
+                                const topicName = typeof t === 'string' ? t : t.title;
+                                return <option key={topicName} value={topicName}>{topicName}</option>
+                            })}
+                        </select>
+                        <input 
+                            type="text" 
+                            placeholder="Exam Ref..." 
+                            value={qExamRef}
+                            onChange={e => { setQExamRef(e.target.value); setQPage(1); }}
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
+                        />
                     </div>
                     <div className="text-sm font-bold text-gray-500 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm whitespace-nowrap">
                         Total: {totalQuestions}
@@ -724,7 +799,7 @@ const AdminPage: React.FC = () => {
                                 {/* Top Badges */}
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex flex-wrap gap-2">
-                                        <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold rounded-lg border border-blue-100 dark:border-blue-800">
+                                        <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold rounded-lg border border-orange-100 dark:border-orange-800">
                                             {q.subject?.split('(')[0]}
                                         </span>
                                         {q.examRef && (
@@ -740,7 +815,7 @@ const AdminPage: React.FC = () => {
                                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button 
                                             onClick={() => setEditingQuestion(q)}
-                                            className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-lg transition-colors" 
+                                            className="p-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
                                             title="Edit"
                                         >
                                             <Edit2 size={16} />
@@ -825,7 +900,7 @@ const AdminPage: React.FC = () => {
            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 md:p-10 animate-in fade-in slide-in-from-bottom-2">
                <div className="max-w-2xl mx-auto">
                    <div className="text-center mb-8">
-                      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                          <Send size={32} />
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">গ্লোবাল নোটিফিকেশন</h2>
@@ -881,6 +956,40 @@ const AdminPage: React.FC = () => {
                          {sendingNotif ? 'পাঠানো হচ্ছে...' : 'সেন্ড করুন'} <Send size={20} />
                       </button>
                    </form>
+
+                   <div className="mt-12 border-t border-gray-100 dark:border-gray-700 pt-8">
+                       <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Sent Notifications</h3>
+                       {loadingNotifs ? (
+                           <div className="text-center py-4 text-gray-500">Loading...</div>
+                       ) : notifications.length === 0 ? (
+                           <div className="text-center py-4 text-gray-500">No notifications sent yet.</div>
+                       ) : (
+                           <div className="space-y-3">
+                               {notifications.map(n => (
+                                   <div key={n.id || n._id} className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-start">
+                                       <div>
+                                           <div className="flex items-center gap-2 mb-1">
+                                               <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
+                                                   n.type === 'SUCCESS' ? 'bg-green-100 text-green-700' :
+                                                   n.type === 'WARNING' ? 'bg-yellow-100 text-yellow-700' :
+                                                   'bg-orange-100 text-orange-700'
+                                               }`}>{n.type}</span>
+                                               <span className="text-xs text-gray-400">{new Date(n.date).toLocaleDateString()}</span>
+                                           </div>
+                                           <h4 className="font-bold text-gray-800 dark:text-white text-sm">{n.title}</h4>
+                                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{n.message}</p>
+                                       </div>
+                                       <button 
+                                           onClick={() => handleDeleteNotification(n.id || n._id)}
+                                           className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                       >
+                                           <Trash2 size={16} />
+                                       </button>
+                                   </div>
+                               ))}
+                           </div>
+                       )}
+                   </div>
                </div>
            </div>
         )}

@@ -13,7 +13,7 @@ import {
   ArrowRight, ArrowLeft, Atom, Calculator, Globe, Book, Beaker, Dna, 
   Library, ChevronDown, ChevronUp, CheckSquare,
   AlertTriangle, LayoutList, AlignJustify, GraduationCap, Flame, Database,
-  PieChart as PieChartIcon, Zap, BrainCircuit, Cpu, Languages, PlusCircle, ListChecks, LayoutGrid, ChevronLeft
+  PieChart as PieChartIcon, Zap, BrainCircuit, Cpu, Languages, PlusCircle, ListChecks, LayoutGrid, ChevronLeft, Archive
 } from 'lucide-react';
 
 // --- SUBJECT GROUPING FOR UI (Question Bank Style) ---
@@ -121,6 +121,7 @@ const QuizArena: React.FC = () => {
   const [negativeMarking, setNegativeMarking] = useState<number>(0);
   const [examViewMode, setExamViewMode] = useState<ExamViewMode>('SINGLE_PAGE');
   const [isPracticeMode, setIsPracticeMode] = useState(false);
+  const [isReviewExpanded, setIsReviewExpanded] = useState(false);
 
   // DB Stats State
   const [syllabusStats, setSyllabusStats] = useState<any>(null);
@@ -371,7 +372,16 @@ const QuizArena: React.FC = () => {
         for (const chapter of Object.keys(SYLLABUS_DB[subject])) {
             const key = `${subject}-${chapter}`;
             if (topicSelection[key] && topicSelection[key].length > 0) {
-                configs.push({ subject, chapter, topics: topicSelection[key] });
+                // Check if ALL topics are selected
+                const allTopics = getFlattenedTopics(subject, chapter);
+                const selectedTopics = topicSelection[key];
+                const isAllSelected = selectedTopics.length === allTopics.length;
+
+                configs.push({ 
+                    subject, 
+                    chapter, 
+                    topics: isAllSelected ? [] : selectedTopics 
+                });
             }
         }
     }
@@ -463,6 +473,29 @@ const QuizArena: React.FC = () => {
     }
   };
 
+  // --- AUTO-START MODEL TEST ---
+  useEffect(() => {
+    if (location.state?.modelTest) {
+        const { subject, chapter, title, count, time } = location.state.modelTest;
+        
+        // Construct config
+        const config: QuizConfig[] = [{
+            subject,
+            chapter,
+            topics: [] // All topics
+        }];
+
+        // Launch
+        initiateQuizGeneration(config, ExamStandard.HSC, count, undefined, false, {
+            title: title,
+            mode: 'SINGLE_PAGE',
+            timeLimit: time,
+            negativeMarking: 0.25,
+            isPracticeMode: false // Model tests are exams
+        });
+    }
+  }, [location.state]);
+
   const renderStatsBadge = (count: number) => {
       return (
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded text-[9px] md:text-[10px] font-bold bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-400">
@@ -514,13 +547,19 @@ const QuizArena: React.FC = () => {
   if (currentStep === 'SELECTION') {
     return (
       <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors relative">
-        <div className="flex-1 overflow-y-auto overflow-x-hidden md:flex md:flex-col">
+        {/* Background Ambient Glow */}
+        <div className="fixed inset-0 pointer-events-none">
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/5 rounded-full blur-[120px]"></div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overflow-x-hidden md:flex md:flex-col relative z-10">
             
             <div className="flex-1 md:overflow-hidden md:flex md:flex-col">
                 
                     <div className="h-full flex flex-col">
                         {selectionView === 'SUBJECT_GRID' ? (
-                            <div className="overflow-y-auto p-3 md:p-6 pb-24 md:pb-32 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+                            <div className="overflow-y-auto p-4 md:p-6 pb-32 md:pb-32 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
                                 {SUBJECT_GROUPS.map((subject, idx) => {
                                     const selectedCount = getSelectedTopicCountForGroup(subject.papers);
                                     const availableCount = getStatsFor(subject.name);
@@ -529,27 +568,27 @@ const QuizArena: React.FC = () => {
                                         <button
                                             key={idx}
                                             onClick={() => handleSubjectClick(subject.name, subject.papers[0])}
-                                            className={`relative bg-white dark:bg-gray-800 rounded-2xl border p-4 md:p-5 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all group ${isRapidFire ? 'hover:border-red-500/50' : 'hover:border-primary/50'} ${selectedCount > 0 ? 'border-primary dark:border-blue-500 ring-1 ring-primary/20' : 'border-gray-200 dark:border-gray-700'}`}
+                                            className={`relative bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2rem] border p-5 md:p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-xl transition-all duration-300 group active:scale-[0.98] ${isRapidFire ? 'hover:border-red-500/50 hover:shadow-red-500/20' : 'hover:border-primary/50 hover:shadow-primary/20'} ${selectedCount > 0 ? 'border-primary dark:border-blue-500 ring-1 ring-primary/20' : 'border-gray-200 dark:border-white/5'}`}
                                         >
                                             {!isRapidFire && selectedCount > 0 && (
-                                                <div className="absolute top-2 right-2 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm animate-in zoom-in">
-                                                    <Check size={8} /> {selectedCount}
+                                                <div className="absolute top-3 right-3 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg shadow-primary/30 animate-in zoom-in">
+                                                    <Check size={10} strokeWidth={3} /> {selectedCount}
                                                 </div>
                                             )}
                                             
-                                            <div className={`p-3 md:p-4 rounded-full ${subject.color.split(' ')[1]} group-hover:scale-110 transition-transform duration-300`}>
-                                                <subject.icon size={24} className={`${subject.color.split(' ')[0]} dark:text-white md:w-8 md:h-8`} />
+                                            <div className={`p-4 rounded-2xl ${subject.color.split(' ')[1]} group-hover:scale-110 transition-transform duration-300 shadow-inner`}>
+                                                <subject.icon size={28} className={`${subject.color.split(' ')[0]} dark:text-white md:w-8 md:h-8`} strokeWidth={2.5} />
                                             </div>
                                             <div className="text-center">
-                                                <h3 className="font-bold text-gray-900 dark:text-white text-xs md:text-base">
+                                                <h3 className="font-black text-gray-900 dark:text-white text-sm md:text-lg tracking-tight">
                                                     {subject.display}
                                                 </h3>
                                                 {availableCount > 0 && (
-                                                    <p className={`text-[9px] md:text-[10px] font-bold opacity-80 ${isRapidFire ? 'text-red-500' : 'text-primary dark:text-blue-400'}`}>
+                                                    <p className={`text-[10px] md:text-xs font-bold mt-1 ${isRapidFire ? 'text-red-500' : 'text-primary dark:text-blue-400'}`}>
                                                         {availableCount.toLocaleString()} টি প্রশ্ন
                                                     </p>
                                                 )}
-                                                <p className="text-[8px] md:text-[9px] text-gray-400 mt-0.5 hidden md:block">
+                                                <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 mt-1 hidden md:block font-medium uppercase tracking-wider">
                                                     {subject.subDisplay}
                                                 </p>
                                             </div>
@@ -558,21 +597,21 @@ const QuizArena: React.FC = () => {
                                 })}
                             </div>
                         ) : (
-                            <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-900">
-                                {/* Header - Not Sticky, Centered Title */}
-                                <div className="p-3 md:p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+                            <div className="flex-1 flex flex-col h-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+                                {/* Header - Glassmorphic & Sticky */}
+                                <div className="p-4 border-b border-gray-200/50 dark:border-white/5 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-20">
                                     <div className="relative flex items-center justify-between">
                                         
-                                        {/* Left: Back Button with Text */}
+                                        {/* Left: Back Button */}
                                         <button 
                                             onClick={handleBackToGrid}
-                                            className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors text-xs font-bold"
+                                            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors text-xs font-black uppercase tracking-wider bg-gray-100/50 dark:bg-white/5 px-3 py-1.5 rounded-lg hover:bg-gray-200/50 dark:hover:bg-white/10"
                                         >
-                                            <ChevronLeft size={16} /> আরো বিষয়
+                                            <ChevronLeft size={14} strokeWidth={3} /> Back
                                         </button>
 
-                                        {/* Center: Absolute Centered Title */}
-                                        <h3 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-base md:text-lg text-gray-800 dark:text-white flex items-center gap-2 whitespace-nowrap">
+                                        {/* Center: Title */}
+                                        <h3 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-base md:text-lg text-gray-800 dark:text-white flex items-center gap-2 whitespace-nowrap">
                                             {SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.display}
                                         </h3>
 
@@ -583,25 +622,25 @@ const QuizArena: React.FC = () => {
                                                     const paper = activePaperTab || SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers[0] || '';
                                                     if(paper) toggleAllInPaper(paper);
                                                 }}
-                                                className="text-[10px] md:text-xs font-bold text-primary dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                                                className="text-[10px] md:text-xs font-black text-primary dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors uppercase tracking-wider bg-primary/10 dark:bg-blue-500/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 dark:hover:bg-blue-500/20"
                                             >
                                                 {isPaperFullySelected(activePaperTab || SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers[0] || '') ? 'Unselect All' : 'Select All'}
                                             </button>
                                         )}
-                                        {isRapidFire && <div className="w-8"></div>} {/* Spacer for centering if RapidFire */}
+                                        {isRapidFire && <div className="w-16"></div>} 
                                     </div>
                                 </div>
 
-                                {SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers.length! > 1 && (
-                                    <div className="flex p-2 md:p-3 gap-2 md:gap-3 overflow-x-auto no-scrollbar bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
+                                {(SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers.length || 0) > 1 && (
+                                    <div className="flex p-3 gap-3 overflow-x-auto no-scrollbar bg-white/50 dark:bg-gray-900/50 border-b border-gray-200/50 dark:border-white/5 backdrop-blur-sm">
                                         {SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers.map(paper => (
                                             <button
                                                 key={paper}
                                                 onClick={() => handlePaperTabChange(paper)}
-                                                className={`flex-1 py-1.5 md:py-2 px-3 md:px-4 text-xs md:text-sm font-bold rounded-xl transition-all border shadow-sm whitespace-nowrap ${
+                                                className={`flex-1 py-2.5 px-4 text-xs md:text-sm font-bold rounded-xl transition-all border shadow-sm whitespace-nowrap ${
                                                     activePaperTab === paper 
-                                                    ? 'bg-primary text-white border-primary' 
-                                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                    ? 'bg-primary text-white border-primary shadow-primary/30' 
+                                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
                                                 }`}
                                             >
                                                 {paper.includes('1st') ? '১ম পত্র' : paper.includes('2nd') ? '২য় পত্র' : paper}
@@ -610,153 +649,154 @@ const QuizArena: React.FC = () => {
                                     </div>
                                 )}
 
-                                <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-4 pb-40">
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-40 custom-scrollbar">
                                     {(() => {
                                         const paperName = activePaperTab || SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers[0];
                                         if (!paperName) return null;
                                         
                                         const chapters = SYLLABUS_DB[paperName] ? Object.keys(SYLLABUS_DB[paperName]) : [];
-                                        if (chapters.length === 0) return <div className="text-center text-gray-400 py-10 text-xs">কোনো অধ্যায় পাওয়া যায়নি</div>;
+                                        if (chapters.length === 0) return <div className="text-center text-gray-400 py-20 text-sm font-medium">কোনো অধ্যায় পাওয়া যায়নি</div>;
 
                                         return (
-                                            <div key={paperName} className="animate-in fade-in slide-in-from-right-4 duration-300">
-                                                <div className="space-y-2">
-                                                    {chapters.map((chapter, cIdx) => {
-                                                        const chapKey = `${paperName}-${chapter}`;
-                                                        const availableTopics = getTopicsForChapter(paperName, chapter);
-                                                        const selectedTopics = topicSelection[chapKey] || [];
-                                                        let totalItemsCount = 0;
-                                                        availableTopics.forEach(t => {
-                                                            if (typeof t === 'string') totalItemsCount++;
-                                                            else totalItemsCount += (1 + t.subTopics.length);
-                                                        });
-                                                        const isFullySelected = selectedTopics.length === totalItemsCount && totalItemsCount > 0;
-                                                        const isPartiallySelected = selectedTopics.length > 0 && !isFullySelected;
-                                                        const isExpanded = expandedChapterIds.has(chapKey);
-                                                        const chapQ = getStatsFor(paperName, chapter);
+                                            <div key={paperName} className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-3">
+                                                {chapters.map((chapter, cIdx) => {
+                                                    const chapKey = `${paperName}-${chapter}`;
+                                                    const availableTopics = getTopicsForChapter(paperName, chapter);
+                                                    const selectedTopics = topicSelection[chapKey] || [];
+                                                    let totalItemsCount = 0;
+                                                    availableTopics.forEach(t => {
+                                                        if (typeof t === 'string') totalItemsCount++;
+                                                        else totalItemsCount += (1 + t.subTopics.length);
+                                                    });
+                                                    const isFullySelected = selectedTopics.length === totalItemsCount && totalItemsCount > 0;
+                                                    const isPartiallySelected = selectedTopics.length > 0 && !isFullySelected;
+                                                    const isExpanded = expandedChapterIds.has(chapKey);
+                                                    const chapQ = getStatsFor(paperName, chapter);
 
-                                                        // If Rapid Fire, simple click triggers start
-                                                        if (isRapidFire) {
-                                                            return (
-                                                                <button
-                                                                    key={cIdx}
-                                                                    onClick={() => handleStartRapidFire(paperName, chapter)}
-                                                                    className="w-full flex items-center justify-between p-3 md:p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all group text-left bg-white dark:bg-gray-800 shadow-sm"
-                                                                >
-                                                                    <div className="flex items-center gap-3">
-                                                                        <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500">
-                                                                            <Flame size={16} fill="currentColor"/>
-                                                                        </div>
-                                                                        <div>
-                                                                            <span className="text-sm font-bold text-gray-800 dark:text-white block">{chapter}</span>
-                                                                            <span className="text-[10px] text-gray-500">{chapQ} Questions Available</span>
-                                                                        </div>
+                                                    // Rapid Fire Mode Card
+                                                    if (isRapidFire) {
+                                                        return (
+                                                            <button
+                                                                key={cIdx}
+                                                                onClick={() => handleStartRapidFire(paperName, chapter)}
+                                                                className="w-full flex items-center justify-between p-5 rounded-2xl border border-gray-200 dark:border-white/5 hover:border-red-500/50 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all group text-left bg-white dark:bg-gray-800/40 shadow-sm hover:shadow-red-500/10 backdrop-blur-sm"
+                                                            >
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
+                                                                        <Flame size={20} fill="currentColor" className="animate-pulse"/>
                                                                     </div>
-                                                                    <div className="bg-red-600 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                        <Play size={14} fill="currentColor"/>
+                                                                    <div>
+                                                                        <span className="text-base font-bold text-gray-800 dark:text-white block group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{chapter}</span>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{chapQ} Questions</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="bg-red-600 text-white p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 shadow-lg shadow-red-600/30">
+                                                                    <Play size={16} fill="currentColor"/>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    }
+
+                                                    // Standard Selection Mode Card
+                                                    return (
+                                                        <div key={cIdx} className={`rounded-2xl border transition-all duration-300 overflow-hidden ${isFullySelected || isPartiallySelected ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-500/30 shadow-blue-500/5' : 'bg-white dark:bg-gray-800/40 border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/10'}`}>
+                                                            <div className="flex items-center p-1">
+                                                                <button
+                                                                    onClick={() => toggleAllTopicsInChapter(paperName, chapter)}
+                                                                    className="flex-1 flex items-center gap-4 p-3 text-left rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
+                                                                >
+                                                                    <div className={`w-5 h-5 md:w-6 md:h-6 rounded-lg flex items-center justify-center border transition-all duration-300 ${isFullySelected ? 'bg-primary border-primary shadow-lg shadow-primary/30 scale-110' : isPartiallySelected ? 'bg-primary border-primary shadow-lg shadow-primary/30' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/50 group-hover:border-primary/50'}`}>
+                                                                        {isFullySelected && <Check size={14} className="text-white" strokeWidth={4} />}
+                                                                        {isPartiallySelected && <div className="w-2.5 h-2.5 bg-white rounded-sm" />}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <span className={`text-sm md:text-base font-bold block truncate whitespace-normal transition-colors ${isFullySelected || isPartiallySelected ? 'text-primary dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'}`}>
+                                                                            {chapter}
+                                                                        </span>
+                                                                        <div className="flex items-center gap-2 mt-1">
+                                                                            {renderStatsBadge(chapQ)}
+                                                                            {selectedTopics.length > 0 && (
+                                                                                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-black bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded-md">
+                                                                                    {selectedTopics.length}/{totalItemsCount} SELECTED
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
                                                                 </button>
-                                                            );
-                                                        }
-
-                                                        return (
-                                                            <div key={cIdx} className={`rounded-xl border transition-all ${isFullySelected || isPartiallySelected ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
-                                                                <div className="flex items-center p-1">
-                                                                    <button
-                                                                        onClick={() => toggleAllTopicsInChapter(paperName, chapter)}
-                                                                        className="flex-1 flex items-center gap-3 p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                                                    >
-                                                                        <div className={`w-4 h-4 md:w-5 md:h-5 rounded flex items-center justify-center border transition-all ${isFullySelected ? 'bg-primary border-primary' : isPartiallySelected ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700'}`}>
-                                                                            {isFullySelected && <Check size={12} className="text-white md:w-[14px] md:h-[14px]" />}
-                                                                            {isPartiallySelected && <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-white rounded-sm" />}
-                                                                        </div>
-                                                                        <div className="flex-1 min-w-0">
-                                                                            <span className={`text-xs md:text-sm font-bold block truncate whitespace-normal ${isFullySelected || isPartiallySelected ? 'text-primary dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                                                                                {chapter}
-                                                                            </span>
-                                                                            <div className="flex items-center gap-2 mt-0.5">
-                                                                                {renderStatsBadge(chapQ)}
-                                                                                {selectedTopics.length > 0 && (
-                                                                                    <span className="text-[9px] md:text-[10px] text-blue-600 dark:text-blue-400 font-bold">
-                                                                                        {selectedTopics.length}/{totalItemsCount} নির্বাচিত
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    </button>
-                                                                    <button onClick={() => toggleChapterExpansion(chapKey)} className="p-2 md:p-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border-l border-transparent hover:border-gray-200 dark:hover:border-gray-600">
-                                                                        {isExpanded ? <ChevronUp size={18}/> : <ChevronDown size={18}/>}
-                                                                    </button>
-                                                                </div>
-                                                                {isExpanded && (
-                                                                    <div className="border-t border-gray-100 dark:border-gray-700 p-2 md:p-3 bg-gray-50/50 dark:bg-gray-900/30 animate-in slide-in-from-top-2">
-                                                                        <div className="grid grid-cols-1 gap-1 md:gap-2 pl-2 md:pl-8">
-                                                                            {availableTopics.map((item, idx) => {
-                                                                                if (typeof item === 'string') {
-                                                                                    const topic = item;
-                                                                                    const isTopicSelected = selectedTopics.includes(topic);
-                                                                                    const topicCount = getStatsFor(paperName, chapter, topic);
-                                                                                    return (
-                                                                                        <label key={idx} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition-colors group">
-                                                                                            <div className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded border flex items-center justify-center transition-colors ${isTopicSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'}`}>
-                                                                                                {isTopicSelected && <Check size={10} className="text-white" />}
-                                                                                            </div>
-                                                                                            <input type="checkbox" className="hidden" checked={isTopicSelected} onChange={() => toggleTopic(paperName, chapter, topic)} />
-                                                                                            <span className="text-[11px] md:text-xs text-gray-600 dark:text-gray-300 font-medium flex-1 whitespace-normal">{topic}</span>
-                                                                                            {topicCount > 0 && (
-                                                                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                                                                                                    {topicCount}
-                                                                                                </span>
-                                                                                            )}
-                                                                                        </label>
-                                                                                    )
-                                                                                } else {
-                                                                                    const topicKey = `${chapKey}-${item.title}`;
-                                                                                    const isTopicExpanded = expandedTopicIds.has(topicKey);
-                                                                                    const groupItems = [item.title, ...item.subTopics];
-                                                                                    const isGroupFullySelected = groupItems.every(t => selectedTopics.includes(t));
-                                                                                    const isGroupPartiallySelected = groupItems.some(t => selectedTopics.includes(t)) && !isGroupFullySelected;
-                                                                                    return (
-                                                                                        <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 mb-1">
-                                                                                            <div className="flex items-center p-2 bg-gray-50 dark:bg-gray-800/80">
-                                                                                                <button onClick={() => toggleTopicGroup(paperName, chapter, item)} className="flex items-center justify-center p-1 mr-2">
-                                                                                                    <div className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded border flex items-center justify-center transition-colors ${isGroupFullySelected ? 'bg-blue-500 border-blue-500' : isGroupPartiallySelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'}`}>
-                                                                                                        {isGroupFullySelected && <Check size={10} className="text-white" />}
-                                                                                                        {isGroupPartiallySelected && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
-                                                                                                    </div>
-                                                                                                </button>
-                                                                                                <button onClick={() => toggleTopicExpansion(topicKey)} className="flex-1 text-left flex justify-between items-center text-[11px] md:text-xs font-bold text-gray-700 dark:text-gray-200">
-                                                                                                    <span className="whitespace-normal">{item.title}</span>
-                                                                                                    {isTopicExpanded ? <ChevronUp size={14} className="text-gray-400 ml-2 shrink-0"/> : <ChevronDown size={14} className="text-gray-400 ml-2 shrink-0"/>}
-                                                                                                </button>
-                                                                                            </div>
-                                                                                            {isTopicExpanded && (
-                                                                                                <div className="p-2 pl-8 border-t border-gray-100 dark:border-gray-700 space-y-1 bg-white dark:bg-gray-900/20">
-                                                                                                    {item.subTopics.map((sub, sIdx) => {
-                                                                                                        const isSubSelected = selectedTopics.includes(sub);
-                                                                                                        return (
-                                                                                                            <label key={sIdx} className="flex items-center gap-3 p-1.5 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                                                                                <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${isSubSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600'}`}>
-                                                                                                                    {isSubSelected && <Check size={8} className="text-white" />}
-                                                                                                                </div>
-                                                                                                                <input type="checkbox" className="hidden" checked={isSubSelected} onChange={() => toggleTopic(paperName, chapter, sub)} />
-                                                                                                                <span className="text-[10px] md:text-[11px] text-gray-600 dark:text-gray-400 whitespace-normal">{sub}</span>
-                                                                                                            </label>
-                                                                                                        )
-                                                                                                    })}
-                                                                                                </div>
-                                                                                            )}
-                                                                                        </div>
-                                                                                    )
-                                                                                }
-                                                                            })}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                                <button onClick={() => toggleChapterExpansion(chapKey)} className="p-3 m-1 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all">
+                                                                    {isExpanded ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
+                                                                </button>
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                            
+                                                            {isExpanded && (
+                                                                <div className="border-t border-gray-100 dark:border-white/5 p-3 md:p-4 bg-gray-50/50 dark:bg-black/20 animate-in slide-in-from-top-2">
+                                                                    <div className="grid grid-cols-1 gap-2 pl-2 md:pl-4 border-l-2 border-gray-200 dark:border-white/10 ml-3">
+                                                                        {availableTopics.map((item, idx) => {
+                                                                            if (typeof item === 'string') {
+                                                                                const topic = item;
+                                                                                const isTopicSelected = selectedTopics.includes(topic);
+                                                                                const topicCount = getStatsFor(paperName, chapter, topic);
+                                                                                return (
+                                                                                    <label key={idx} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer hover:bg-white dark:hover:bg-white/5 transition-all group">
+                                                                                        <div className={`w-4 h-4 md:w-5 md:h-5 rounded-md border flex items-center justify-center transition-all ${isTopicSelected ? 'bg-blue-500 border-blue-500 shadow-md shadow-blue-500/20' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/50 group-hover:border-blue-400'}`}>
+                                                                                            {isTopicSelected && <Check size={12} className="text-white" strokeWidth={3} />}
+                                                                                        </div>
+                                                                                        <input type="checkbox" className="hidden" checked={isTopicSelected} onChange={() => toggleTopic(paperName, chapter, topic)} />
+                                                                                        <span className={`text-xs md:text-sm font-medium flex-1 whitespace-normal transition-colors ${isTopicSelected ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>{topic}</span>
+                                                                                        {topicCount > 0 && (
+                                                                                            <span className="text-[9px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700">
+                                                                                                {topicCount}
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </label>
+                                                                                )
+                                                                            } else {
+                                                                                // Sub-topic Group Logic (kept similar structure but updated styles)
+                                                                                const topicKey = `${chapKey}-${item.title}`;
+                                                                                const isTopicExpanded = expandedTopicIds.has(topicKey);
+                                                                                const groupItems = [item.title, ...item.subTopics];
+                                                                                const isGroupFullySelected = groupItems.every(t => selectedTopics.includes(t));
+                                                                                const isGroupPartiallySelected = groupItems.some(t => selectedTopics.includes(t)) && !isGroupFullySelected;
+                                                                                return (
+                                                                                    <div key={idx} className="border border-gray-200 dark:border-white/5 rounded-xl overflow-hidden bg-white dark:bg-gray-800/50 mb-2 shadow-sm">
+                                                                                        <div className="flex items-center p-2 bg-gray-50/50 dark:bg-white/5">
+                                                                                            <button onClick={() => toggleTopicGroup(paperName, chapter, item)} className="flex items-center justify-center p-2 mr-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors">
+                                                                                                <div className={`w-4 h-4 md:w-5 md:h-5 rounded-md border flex items-center justify-center transition-all ${isGroupFullySelected ? 'bg-blue-500 border-blue-500 shadow-md' : isGroupPartiallySelected ? 'bg-blue-500 border-blue-500 shadow-md' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/50'}`}>
+                                                                                                    {isGroupFullySelected && <Check size={12} className="text-white" strokeWidth={3} />}
+                                                                                                    {isGroupPartiallySelected && <div className="w-2 h-2 bg-white rounded-sm" />}
+                                                                                                </div>
+                                                                                            </button>
+                                                                                            <button onClick={() => toggleTopicExpansion(topicKey)} className="flex-1 text-left flex justify-between items-center text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-blue-400 transition-colors py-1">
+                                                                                                <span className="whitespace-normal">{item.title}</span>
+                                                                                                {isTopicExpanded ? <ChevronUp size={16} className="text-gray-400 ml-2 shrink-0"/> : <ChevronDown size={16} className="text-gray-400 ml-2 shrink-0"/>}
+                                                                                            </button>
+                                                                                        </div>
+                                                                                        {isTopicExpanded && (
+                                                                                            <div className="p-2 pl-10 border-t border-gray-100 dark:border-white/5 space-y-1 bg-white dark:bg-black/20">
+                                                                                                {item.subTopics.map((sub, sIdx) => {
+                                                                                                    const isSubSelected = selectedTopics.includes(sub);
+                                                                                                    return (
+                                                                                                        <label key={sIdx} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                                                                                            <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-all ${isSubSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                                                                                {isSubSelected && <Check size={10} className="text-white" strokeWidth={3} />}
+                                                                                                            </div>
+                                                                                                            <input type="checkbox" className="hidden" checked={isSubSelected} onChange={() => toggleTopic(paperName, chapter, sub)} />
+                                                                                                            <span className={`text-[11px] md:text-xs font-medium whitespace-normal ${isSubSelected ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>{sub}</span>
+                                                                                                        </label>
+                                                                                                    )
+                                                                                                })}
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                )
+                                                                            }
+                                                                        })}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         );
                                     })()}
@@ -767,25 +807,28 @@ const QuizArena: React.FC = () => {
             </div>
         </div>
         {(!isRapidFire) && (
-            <div className="fixed bottom-[60px] md:bottom-0 left-0 md:left-64 right-0 p-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40">
-                <div className="flex justify-between items-center max-w-6xl mx-auto">
-                    <div className="text-[10px] md:text-xs text-gray-500 font-bold">
-                        মোট {Object.values(topicSelection).flat().length} টি টপিক সিলেক্টেড
+            <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-8 md:w-96 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-2xl rounded-[2rem] z-40 animate-in slide-in-from-bottom-10 duration-500">
+                <div className="flex justify-between items-center mb-3">
+                    <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Selected Topics
                     </div>
-                    <button 
-                        onClick={() => {
-                            if(Object.values(topicSelection).flat().length === 0) {
+                    <div className="text-lg font-black text-primary dark:text-white">
+                        {Object.values(topicSelection).flat().length}
+                    </div>
+                </div>
+                <button 
+                    onClick={() => {
+                        if(Object.values(topicSelection).flat().length === 0) {
                                 showToast("অনুগ্রহ করে অন্তত একটি টপিক সিলেক্ট করুন", "warning");
                                 return;
                             }
                             handleNextStep(); 
                         }} 
                         disabled={Object.values(topicSelection).flat().length === 0} 
-                        className="bg-primary hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 text-xs md:text-sm"
+                        className="w-full bg-primary hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 text-xs md:text-sm"
                     >
                         {t('quiz_next_step')} <ArrowRight size={14} className="md:w-4 md:h-4" />
                     </button>
-                </div>
             </div>
         )}
       </div>
@@ -794,97 +837,312 @@ const QuizArena: React.FC = () => {
 
   // TOPIC CONFIG STEP
   if (currentStep === 'TOPIC_CONFIG') {
+    // Grouping logic
+    const groupedSelection: Record<string, Record<string, string[]>> = {};
+    Object.entries(topicSelection).forEach(([key, rawTopics]) => {
+        const topics = rawTopics as string[];
+        if (topics.length === 0) return;
+        
+        let subjectName = "";
+        let chapterName = "";
+        for(const s of Object.keys(SYLLABUS_DB)) {
+            if (key.startsWith(s)) {
+                subjectName = s;
+                chapterName = key.substring(s.length + 1);
+                break;
+            }
+        }
+        
+        if (subjectName) {
+            if (!groupedSelection[subjectName]) groupedSelection[subjectName] = {};
+            groupedSelection[subjectName][chapterName] = topics;
+        }
+    });
+
+    const totalSelectedTopics = Object.values(topicSelection).flat().length;
+
     return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
-        <div className="p-4 pb-2">
-            <button onClick={handlePrevStep} className="text-gray-500 hover:text-gray-800 dark:hover:text-white flex items-center gap-1 text-xs md:text-sm font-bold">
-                <ChevronLeft size={16}/> পিছনে যান
-            </button>
+      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors relative overflow-hidden">
+        {/* Background Ambient Glow */}
+        <div className="fixed inset-0 pointer-events-none">
+            <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-500/5 rounded-full blur-[120px]"></div>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 pb-40">
-            <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-4 md:gap-6">
-                <div className="md:col-span-2 space-y-4">
-                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-3 text-sm">
-                        <ListChecks size={16} className="text-green-500"/> নির্বাচিত টপিকসমূহ (রিভিউ)
-                    </h3>
-                    {Object.keys(topicSelection).length === 0 ? (
-                        <div className="p-8 text-center bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500 text-xs">কোনো টপিক সিলেক্ট করা হয়নি।</div>
-                    ) : (
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            {Object.entries(topicSelection).map(([key, rawTopics]) => {
-                                const topics = rawTopics as string[];
-                                let subjectName = "";
-                                let chapterName = "";
-                                for(const s of Object.keys(SYLLABUS_DB)) {
-                                    if (key.startsWith(s)) {
-                                        subjectName = s;
-                                        chapterName = key.substring(s.length + 1);
-                                        break;
-                                    }
-                                }
-                                if (topics.length === 0) return null;
-                                return (
-                                    <div key={key} className="p-3 md:p-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-[9px] md:text-[10px] font-bold rounded text-gray-600 dark:text-gray-300">{subjectName}</span>
-                                            <h4 className="font-bold text-gray-800 dark:text-white text-xs md:text-sm whitespace-normal">{chapterName}</h4>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {topics.map(t => (<span key={t} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-[10px] rounded border border-blue-100 dark:border-blue-800 whitespace-normal">{t}</span>))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-                <div className="md:col-span-1 space-y-4">
-                    <div className="md:sticky md:top-0 space-y-4">
-                        <div>
-                            <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-3 text-sm"><Settings size={16} className="text-primary dark:text-blue-400" /> {t('quiz_settings')}</h3>
-                            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm space-y-4">
-                                <div onClick={() => setIsPracticeMode(!isPracticeMode)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${isPracticeMode ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'}`}>
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-1.5 rounded-lg ${isPracticeMode ? 'bg-white text-blue-600 dark:bg-blue-800 dark:text-white' : 'bg-white text-gray-400 dark:bg-gray-600 dark:text-gray-300'}`}><Zap size={16} fill={isPracticeMode ? "currentColor" : "none"} /></div>
-                                        <div><p className={`font-bold text-xs ${isPracticeMode ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>{t('quiz_practice_mode')}</p><p className="text-[9px] text-gray-500 dark:text-gray-400">উত্তর সাথে সাথে দেখা যাবে</p></div>
-                                    </div>
-                                    <div className={`w-8 h-5 rounded-full relative transition-colors ${isPracticeMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-500'}`}><div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isPracticeMode ? 'left-4' : 'left-1'}`}></div></div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Standard (মান)</label>
-                                    <select value={examStandard} onChange={(e) => setExamStandard(e.target.value as ExamStandard)} className="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl font-medium text-xs text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">{Object.values(ExamStandard).map(std => (<option key={std} value={std}>{std}</option>))}</select>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('quiz_question_count')}: <span className="text-primary dark:text-blue-400">{questionCount}</span></label>
-                                    <input type="range" min="5" max="50" step="5" value={questionCount} onChange={(e) => setQuestionCount(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary dark:accent-blue-500"/><div className="flex justify-between text-[10px] text-gray-400 mt-1"><span>5</span><span>50</span></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('quiz_time_limit')}</label>
-                                        <select value={timeLimit} onChange={(e) => setTimeLimit(parseInt(e.target.value))} className="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-800 dark:text-white focus:outline-none"><option value="0">আনলিমিটেড</option><option value="5">৫ মিনিট</option><option value="10">১০ মিনিট</option><option value="15">১৫ মিনিট</option><option value="20">২০ মিনিট</option><option value="30">৩০ মিনিট</option><option value="45">৪৫ মিনিট</option><option value="60">১ ঘণ্টা</option></select>
+
+        {/* Header */}
+        <div className="p-4 pb-2 relative z-10 flex items-center justify-between">
+            <button onClick={handlePrevStep} className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center gap-2 text-sm font-bold bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-xl backdrop-blur-md transition-all hover:bg-white/80 dark:hover:bg-gray-800/80 shadow-sm">
+                <ChevronLeft size={18}/> {t('quiz_prev')}
+            </button>
+            <h2 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">
+                {t('quiz_settings')}
+            </h2>
+            <div className="w-20"></div> {/* Spacer for centering */}
+        </div>
+        
+        <div className="flex-1 overflow-y-auto px-4 pb-32 relative z-10 custom-scrollbar">
+            <div className="max-w-5xl mx-auto grid lg:grid-cols-3 gap-6">
+                
+                {/* Right Column: Exam Settings (Order 1 on Mobile) */}
+                <div className="lg:col-span-1 space-y-5 order-1 lg:order-2">
+                    <div className="flex items-center gap-2 mb-2">
+                         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                            <Settings size={20} />
+                         </div>
+                         <h3 className="font-bold text-gray-800 dark:text-white text-lg">
+                            {t('quiz_settings')}
+                         </h3>
+                    </div>
+
+                    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-white/5 p-5 md:p-6 shadow-lg shadow-gray-200/50 dark:shadow-none space-y-5 md:space-y-6 lg:sticky lg:top-4">
+                        
+                        {/* Practice Mode */}
+                        <div 
+                            onClick={() => setIsPracticeMode(!isPracticeMode)} 
+                            className={`relative overflow-hidden p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 group ${isPracticeMode ? 'bg-blue-50/50 border-blue-500 dark:bg-blue-900/10 dark:border-blue-500' : 'bg-gray-50 border-transparent dark:bg-gray-700/30 hover:border-gray-200 dark:hover:border-gray-600'}`}
+                        >
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2.5 rounded-xl ${isPracticeMode ? 'bg-blue-500 text-white' : 'bg-white dark:bg-gray-600 text-gray-400'}`}>
+                                        <Zap size={20} fill={isPracticeMode ? "currentColor" : "none"} />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('quiz_negative_mark')}</label>
-                                        <select value={negativeMarking} onChange={(e) => setNegativeMarking(parseFloat(e.target.value))} className="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-800 dark:text-white focus:outline-none"><option value="0">0</option><option value="0.25">0.25</option><option value="0.50">0.50</option><option value="1.00">1.00</option></select>
+                                        <p className={`font-bold text-sm ${isPracticeMode ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-200'}`}>
+                                            {t('quiz_practice_mode')}
+                                        </p>
+                                        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+                                            তাৎক্ষণিক উত্তর ও ব্যাখ্যা
+                                        </p>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('quiz_view_mode')}</label>
-                                    <div className="flex bg-gray-50 dark:bg-gray-700 p-1 rounded-lg"><button onClick={() => setExamViewMode('SINGLE_PAGE')} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${examViewMode === 'SINGLE_PAGE' ? 'bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white' : 'text-gray-500'}`}><LayoutList size={12}/> একটি করে</button><button onClick={() => setExamViewMode('ALL_AT_ONCE')} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${examViewMode === 'ALL_AT_ONCE' ? 'bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white' : 'text-gray-500'}`}><AlignJustify size={12}/> সব একসাথে</button></div>
+                                <div className={`w-12 h-7 rounded-full relative transition-colors duration-300 ${isPracticeMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                                    <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-sm ${isPracticeMode ? 'left-6' : 'left-1'}`}></div>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Question Count */}
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    {t('quiz_question_count')}
+                                </label>
+                                <span className="text-sm font-black text-primary dark:text-blue-400 bg-primary/10 dark:bg-blue-500/10 px-3 py-1 rounded-lg">
+                                    {questionCount}
+                                </span>
+                            </div>
+                            <input 
+                                type="range" 
+                                min="5" 
+                                max="50" 
+                                step="5" 
+                                value={questionCount} 
+                                onChange={(e) => setQuestionCount(parseInt(e.target.value))} 
+                                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary dark:accent-blue-500"
+                            />
+                            <div className="flex justify-between text-[10px] font-bold text-gray-400">
+                                <span>5</span>
+                                <span>50</span>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gray-100 dark:bg-gray-700/50"></div>
+
+                        {/* Time & Negative Marking */}
+                        <div className="grid grid-cols-2 gap-4 md:gap-5">
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    {t('quiz_time_limit')}
+                                </label>
+                                <div className="relative">
+                                    <select 
+                                        value={timeLimit} 
+                                        onChange={(e) => setTimeLimit(parseInt(e.target.value))} 
+                                        className="w-full p-2.5 md:p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-bold text-gray-800 dark:text-white appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    >
+                                        <option value="0">আনলিমিটেড</option>
+                                        <option value="5">৫ মিনিট</option>
+                                        <option value="10">১০ মিনিট</option>
+                                        <option value="15">১৫ মিনিট</option>
+                                        <option value="20">২০ মিনিট</option>
+                                        <option value="30">৩০ মিনিট</option>
+                                        <option value="45">৪৫ মিনিট</option>
+                                        <option value="60">১ ঘণ্টা</option>
+                                    </select>
+                                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    {t('quiz_negative_mark')}
+                                </label>
+                                <div className="relative">
+                                    <select 
+                                        value={negativeMarking} 
+                                        onChange={(e) => setNegativeMarking(parseFloat(e.target.value))} 
+                                        className="w-full p-2.5 md:p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-bold text-gray-800 dark:text-white appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    >
+                                        <option value="0">নেই</option>
+                                        <option value="0.25">০.২৫</option>
+                                        <option value="0.50">০.৫০</option>
+                                        <option value="1.00">১.০০</option>
+                                    </select>
+                                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gray-100 dark:bg-gray-700/50"></div>
+
+                        {/* View Mode */}
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                {t('quiz_view_mode')}
+                            </label>
+                            <div className="grid grid-cols-2 gap-2 bg-gray-100 dark:bg-gray-700/50 p-1.5 rounded-xl">
+                                <button 
+                                    onClick={() => setExamViewMode('SINGLE_PAGE')} 
+                                    className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${examViewMode === 'SINGLE_PAGE' ? 'bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                                >
+                                    <LayoutList size={16}/> একটি করে
+                                </button>
+                                <button 
+                                    onClick={() => setExamViewMode('ALL_AT_ONCE')} 
+                                    className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${examViewMode === 'ALL_AT_ONCE' ? 'bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                                >
+                                    <AlignJustify size={16}/> সব একসাথে
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
+                </div>
+
+                {/* Left Column: Selected Topics Review (Order 2 on Mobile) */}
+                <div className="lg:col-span-2 space-y-5 order-2 lg:order-1">
+                    <div 
+                        className="flex items-center justify-between cursor-pointer lg:cursor-default" 
+                        onClick={() => setIsReviewExpanded(!isReviewExpanded)}
+                    >
+                        <div className="flex items-center gap-2">
+                             <div className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg">
+                                <ListChecks size={20} />
+                             </div>
+                             <h3 className="font-bold text-gray-800 dark:text-white text-lg">
+                                নির্বাচিত টপিকসমূহ
+                             </h3>
+                             <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-bold px-2 py-1 rounded-md">
+                                {totalSelectedTopics}
+                             </span>
+                        </div>
+                        <div className="lg:hidden text-gray-500">
+                            {isReviewExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </div>
+                    </div>
+
+                    <div className={`space-y-4 transition-all duration-300 ${isReviewExpanded ? 'block' : 'hidden lg:block'}`}>
+                        {Object.keys(groupedSelection).length === 0 ? (
+                            <div className="p-12 text-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500">
+                                <Archive size={48} className="mx-auto mb-4 opacity-20" />
+                                <p className="font-medium">কোনো টপিক সিলেক্ট করা হয়নি</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {Object.entries(groupedSelection).map(([subject, chapters]) => (
+                                    <div key={subject} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="bg-gray-50/50 dark:bg-white/5 px-5 py-3 border-b border-gray-100 dark:border-white/5 flex items-center gap-3">
+                                            <div className="w-2 h-8 bg-primary rounded-full"></div>
+                                            <h4 className="font-black text-gray-800 dark:text-white text-base uppercase tracking-wide">
+                                                {subject}
+                                            </h4>
+                                        </div>
+                                        <div className="p-5 space-y-4">
+                                            {Object.entries(chapters).map(([chapter, topics]) => (
+                                                <div key={chapter} className="relative pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                                                    <h5 className="font-bold text-gray-700 dark:text-gray-200 text-sm mb-2">
+                                                        {chapter}
+                                                    </h5>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {topics.map(t => (
+                                                            <span key={t} className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 text-xs font-semibold rounded-lg border border-blue-100 dark:border-blue-500/20">
+                                                                {t}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    {!isReviewExpanded && (
+                        <div 
+                            className="lg:hidden p-4 bg-white/50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-center text-sm font-medium text-gray-500 cursor-pointer hover:bg-white/80 dark:hover:bg-gray-800/80 transition-colors"
+                            onClick={() => setIsReviewExpanded(true)}
+                        >
+                            টপিকগুলো দেখতে ক্লিক করুন
+                        </div>
+                    )}
+                </div>
+
+            </div>
+        </div>
+
+        {/* Floating Bottom Bar - Sticky above bottom nav */}
+        <div className="fixed bottom-[calc(80px+env(safe-area-inset-bottom))] left-4 right-4 md:left-auto md:right-8 md:w-auto z-50 animate-in slide-in-from-bottom-10 duration-500">
+             <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border border-gray-200 dark:border-white/10 shadow-2xl rounded-[2rem] p-2 pl-6 flex justify-between items-center gap-4 max-w-2xl mx-auto md:mx-0">
+                <div className="hidden sm:block">
+                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">মোট প্রশ্ন</p>
+                    <p className="text-lg font-black text-gray-800 dark:text-white">{questionCount} টি</p>
+                </div>
+                <div className="block sm:hidden">
+                     <p className="text-xs font-bold text-gray-500 dark:text-gray-400">প্রশ্ন</p>
+                     <p className="text-base font-black text-gray-800 dark:text-white">{questionCount}</p>
+                </div>
+                <div className="flex items-center gap-3 flex-1 justify-end">
+                    <button 
+                        onClick={startCustomQuiz} 
+                        className="bg-primary hover:bg-blue-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-[1.5rem] font-bold flex items-center gap-3 shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95 text-sm md:text-base"
+                    >
+                        <span>{t('quiz_start')}</span>
+                        <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                            <Play fill="currentColor" size={12} /> 
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>
-        <div className="fixed bottom-[60px] md:bottom-0 left-0 md:left-64 right-0 p-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-between items-center transition-colors"><button onClick={handlePrevStep} className="text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2.5 rounded-xl text-xs md:text-sm transition-colors">{t('quiz_prev')}</button><button onClick={startCustomQuiz} className="bg-primary hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-6 py-2.5 md:px-8 md:py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 text-xs md:text-sm"><Play fill="currentColor" size={14} className="md:w-4 md:h-4" /> <span className="md:hidden">Start</span><span className="hidden md:inline">{t('quiz_start')}</span></button></div>
       </div>
     );
   }
 
+  // LOADING STEP
   if (currentStep === 'LOADING') {
-    return (<div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 text-center p-6 transition-colors"><div className="relative"><div className="absolute inset-0 bg-primary/20 dark:bg-primary/40 rounded-full blur-xl animate-pulse"></div><Loader2 size={40} className="text-primary dark:text-blue-400 animate-spin relative z-10" /></div><h3 className="mt-6 text-base md:text-lg font-bold text-gray-800 dark:text-white">{t('common_loading')}</h3><p className="text-gray-500 dark:text-gray-400 mt-1 text-xs max-w-sm">প্রশ্ন তৈরি করা হচ্ছে...</p></div>);
+    return (
+        <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 text-center p-6 transition-colors relative overflow-hidden">
+            {/* Background Ambient Glow */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] animate-pulse"></div>
+            </div>
+            
+            <div className="relative z-10 flex flex-col items-center">
+                <div className="relative mb-8">
+                    <div className="absolute inset-0 bg-primary/30 dark:bg-blue-500/30 rounded-full blur-2xl animate-pulse"></div>
+                    <div className="relative bg-white dark:bg-gray-800 p-6 rounded-full shadow-xl border border-gray-100 dark:border-white/10">
+                        <Loader2 size={48} className="text-primary dark:text-blue-400 animate-spin" strokeWidth={2.5} />
+                    </div>
+                </div>
+                <h3 className="text-xl md:text-2xl font-black text-gray-800 dark:text-white mb-2 tracking-tight">
+                    {t('common_loading')}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium max-w-xs mx-auto animate-pulse">
+                    প্রশ্ন তৈরি করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...
+                </p>
+            </div>
+        </div>
+    );
   }
 
   return null;

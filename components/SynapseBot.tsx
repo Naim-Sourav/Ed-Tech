@@ -27,8 +27,8 @@ interface MCQData {
 }
 
 const BOT_MODELS = [
-    "gemini-2.5-flash-preview-09-2025", 
-    "gemini-2.5-flash-lite"
+    "gemini-3-flash-preview", 
+    "gemini-flash-lite-latest"
 ];
 
 const SYSTEM_PROMPT = `তুমি হলে HSC পরীক্ষার প্রস্তুতিতে সাহায্য করার জন্য একজন অত্যন্ত জ্ঞানী, বন্ধুত্বপূর্ণ এবং স্মার্ট বড় ভাই (টিউটর)। তোমার সব উত্তর অবশ্যই নির্ভুল, সহজবোধ্য বাংলায় (বাংলা) দিতে হবে। তুমি সবসময় 'তুমি' করে সম্বোধন করবে এবং অনানুষ্ঠানিক, আন্তরিক ভাষায় কথা বলবে, যেন ছোট ভাই বা বন্ধুর সাথে কথা বলছো। তোমার লক্ষ্য হলো কঠিন বিষয়গুলো সরল ও সংক্ষিপ্তভাবে বোঝানো।
@@ -84,14 +84,25 @@ const SynapseBot: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-    if (window.MathJax && window.MathJax.typesetPromise) {
-      setTimeout(() => {
+    
+    // Robust MathJax rendering with polling
+    let attempts = 0;
+    const intervalId = setInterval(() => {
+      attempts++;
+      if (window.MathJax && window.MathJax.typesetPromise) {
         const chatContainer = document.getElementById('synapse-chat-container');
         if (chatContainer) {
-            window.MathJax.typesetPromise([chatContainer]).catch((err: any) => console.error('MathJax error:', err));
+          window.MathJax.typesetPromise([chatContainer])
+            .catch((err: any) => console.error('MathJax error:', err));
+          clearInterval(intervalId);
         }
-      }, 100);
-    }
+      }
+      if (attempts >= 20) {
+        clearInterval(intervalId);
+      }
+    }, 500);
+
+    return () => clearInterval(intervalId);
   }, [messages, mcqStates]);
 
   const scrollToBottom = () => {
@@ -203,7 +214,7 @@ const SynapseBot: React.FC = () => {
     }
 
     // Prepare history
-    let currentHistory = [...chatHistory];
+    const currentHistory = [...chatHistory];
     if (modelIndex === 0) {
         const userParts: any[] = [{ text: userQuery }];
         if (selectedImage) {
@@ -220,7 +231,7 @@ const SynapseBot: React.FC = () => {
     }
 
     const currentModel = BOT_MODELS[modelIndex];
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     try {
         console.log(`Attempting API call with Model: ${currentModel}`);

@@ -130,9 +130,9 @@ const Navigation: React.FC<NavigationProps> = ({
   // Mobile Bottom Nav Items - Optimized for touch
   const mobileNavItems = [
     { path: '/dashboard', label: 'Home', icon: <Home size={24} /> },
-    { path: '/tracker', label: 'Planner', icon: <PieChart size={24} /> },
     { path: '/courses', label: 'Courses', icon: <BookOpen size={24} /> },
-    { path: '/bot', label: 'Doubt', icon: <Bot size={24} /> },
+    { path: '/exams', label: 'Exams', icon: <LayoutGrid size={24} /> },
+    { path: '/bot', label: 'AI Bot', icon: <Bot size={24} /> },
     { path: '/profile', label: 'Profile', icon: <User size={24} /> },
   ];
 
@@ -164,7 +164,7 @@ const Navigation: React.FC<NavigationProps> = ({
           case 'SUCCESS': return <CheckCircle size={16} className="text-green-600" />;
           case 'BATTLE_CHALLENGE': return <Swords size={16} className="text-orange-600" />;
           case 'BATTLE_RESULT': return <Trophy size={16} className="text-yellow-600" />;
-          default: return <Info size={16} className="text-blue-600" />;
+          default: return <Info size={16} className="text-orange-600" />;
       }
   };
 
@@ -250,7 +250,7 @@ const Navigation: React.FC<NavigationProps> = ({
                           <div 
                              key={n.id} 
                              onClick={() => handleNotificationClick(n)}
-                             className={`p-4 border-b border-gray-100 dark:border-gray-800 transition-colors cursor-pointer active:bg-gray-100 dark:active:bg-gray-800 relative ${isRead ? 'bg-white dark:bg-gray-900' : 'bg-blue-50/40 dark:bg-blue-900/10'}`}
+                             className={`p-4 border-b border-gray-100 dark:border-gray-800 transition-colors cursor-pointer active:bg-gray-100 dark:active:bg-gray-800 relative ${isRead ? 'bg-white dark:bg-gray-900' : 'bg-orange-50/40 dark:bg-orange-900/10'}`}
                           >
                              {!isRead && (
                                  <span className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full"></span>
@@ -261,7 +261,7 @@ const Navigation: React.FC<NavigationProps> = ({
                                      n.type === 'SUCCESS' ? 'bg-green-100 border-green-200 dark:bg-green-900/30 dark:border-green-800' : 
                                      n.type === 'WARNING' ? 'bg-yellow-100 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800' : 
                                      n.type === 'BATTLE_CHALLENGE' ? 'bg-orange-100 border-orange-200 dark:bg-orange-900/30 dark:border-orange-800' : 
-                                     'bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800'
+                                     'bg-orange-100 border-orange-200 dark:bg-orange-900/30 dark:border-orange-800'
                                  }`}>
                                      {getNotificationIcon(n.type)}
                                  </div>
@@ -289,14 +289,9 @@ const Navigation: React.FC<NavigationProps> = ({
         w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-[150] flex flex-col shadow-2xl md:shadow-none h-full
       `}>
         <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 bg-gradient-to-br from-primary to-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              ধ্রু
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-none">ধ্রুবক</h1>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">{t('nav_prep')}</p>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <img src="/Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain" />
+            <img src="/letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain" />
           </div>
           
           <div className="relative md:block hidden">
@@ -340,7 +335,7 @@ const Navigation: React.FC<NavigationProps> = ({
               onClick={() => setIsMobileMenuOpen(false)}
               className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
                 isActive(item.path)
-                  ? 'bg-blue-50 dark:bg-primary/10 text-primary dark:text-blue-400 shadow-sm'
+                  ? 'bg-orange-50 dark:bg-primary/10 text-primary dark:text-orange-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -392,47 +387,44 @@ const Navigation: React.FC<NavigationProps> = ({
             </button>
           </div>
           <div className="text-[10px] text-center text-gray-400 dark:text-gray-600 font-medium">
-            <p>© ২০২৪ ধ্রুবক | v1.1 PWA</p>
+            <p>© ২০২৪ পরীক্ষাঙ্গন | v1.1 PWA</p>
           </div>
         </div>
       </div>
 
       {/* App-like Bottom Navigation (Fixed & Glassmorphic) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] pb-safe-area">
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-gray-900 dark:via-gray-900/80 pointer-events-none"></div>
-        
-        <div className="mx-4 mb-4 relative">
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700 rounded-[2rem] shadow-2xl shadow-gray-200/50 dark:shadow-black/50">
-                <div className="flex items-center justify-around h-16 px-1">
-                  {mobileNavItems.map((item, idx) => {
-                    const active = item.path ? isActive(item.path) : false;
-                    
-                    return (
-                      <Link 
-                        key={idx} 
-                        to={item.path!} 
-                        className="flex-1 flex flex-col items-center justify-center h-full active:scale-90 transition-transform duration-200 group"
-                      >
-                        <div className={`p-2 rounded-full transition-all duration-300 relative ${
-                            active 
-                            ? 'text-white bg-primary -translate-y-6 shadow-lg shadow-blue-500/40 ring-4 ring-white dark:ring-gray-900' 
-                            : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'
-                        }`}>
-                            {React.cloneElement(item.icon as React.ReactElement<any>, { 
-                                strokeWidth: active ? 2.5 : 2,
-                                size: active ? 24 : 22
-                            })}
-                        </div>
-                        {active && (
-                            <span className="absolute bottom-2 text-[10px] font-bold text-primary dark:text-blue-400 animate-in fade-in slide-in-from-bottom-2">
-                                {item.label}
-                            </span>
-                        )}
-                      </Link>
-                    )
-                  })}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] pb-safe-area bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center justify-around h-16">
+          {mobileNavItems.map((item, idx) => {
+            const active = item.path ? isActive(item.path) : false;
+            
+            return (
+              <Link 
+                key={idx} 
+                to={item.path!} 
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(10);
+                }}
+                className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-200 group ${active ? 'text-primary dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <div className={`p-1 transition-all duration-300 relative ${
+                    active 
+                    ? '-translate-y-1' 
+                    : ''
+                }`}>
+                    {React.cloneElement(item.icon as React.ReactElement<any>, { 
+                        strokeWidth: active ? 2.5 : 2,
+                        size: 24,
+                        fill: active ? "currentColor" : "none",
+                        className: active ? "opacity-100" : "opacity-60"
+                    })}
                 </div>
-            </div>
+                <span className={`text-[10px] font-bold ${active ? 'opacity-100 font-extrabold' : 'opacity-60'}`}>
+                    {item.label}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </div>
     </>

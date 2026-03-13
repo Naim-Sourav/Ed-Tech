@@ -217,7 +217,7 @@ const AdminJsonUpload: React.FC = () => {
                 <textarea 
                     value={rawInput}
                     onChange={(e) => setRawInput(e.target.value)}
-                    className="w-full h-[500px] p-5 rounded-3xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900 font-mono text-[11px] leading-relaxed focus:ring-4 focus:ring-primary/5 outline-none resize-none shadow-inner dark:text-blue-300"
+                    className="w-full h-[500px] p-5 rounded-3xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900 font-mono text-[11px] leading-relaxed focus:ring-4 focus:ring-primary/5 outline-none resize-none shadow-inner dark:text-orange-300"
                     placeholder={`[
   {
     "question": "বলের একক কী?",
@@ -243,7 +243,7 @@ const AdminJsonUpload: React.FC = () => {
             <div className="lg:col-span-7 flex flex-col h-[610px] bg-gray-50/50 dark:bg-gray-900/50 rounded-[2.5rem] border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner">
                 <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center sticky top-0 z-20">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-lg">
+                        <div className="p-2 bg-orange-50 dark:bg-orange-900/30 text-orange-600 rounded-lg">
                             <Eye size={18}/>
                         </div>
                         <h3 className="font-black text-gray-800 dark:text-white text-sm tracking-tight">
@@ -274,7 +274,7 @@ const AdminJsonUpload: React.FC = () => {
                                 <button onClick={() => handleDelete(idx)} className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"><Trash2 size={16}/></button>
                                 
                                 <div className="flex flex-wrap gap-2 mb-4">
-                                    <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-lg border border-blue-100 dark:border-blue-800">{q.subject}</span>
+                                    <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-black rounded-lg border border-orange-100 dark:border-orange-800">{q.subject}</span>
                                     <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-[10px] font-black rounded-lg border border-purple-100 dark:border-purple-800">{q.chapter}</span>
                                 </div>
                                 

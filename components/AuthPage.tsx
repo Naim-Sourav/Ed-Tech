@@ -22,6 +22,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Check for URL params to pre-fill data (e.g. from Public Exam)
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pEmail = params.get('email');
+    const pName = params.get('name');
+    
+    if (pEmail || pName) {
+        setIsLogin(false); // Switch to register mode
+        if (pEmail) setEmail(pEmail);
+        if (pName) setName(pName);
+    }
+  }, []);
+
   const validatePhone = (number: string) => {
     return /^01[3-9]\d{8}$/.test(number);
   };
@@ -100,24 +113,27 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
       {/* Left Side - Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-blue-800 opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-orange-800 opacity-90"></div>
         
         <div className="relative z-10 p-12 text-white max-w-lg">
-          <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-8 shadow-xl border-2 border-white">
-             <span className="text-3xl font-bold">ধ্রু</span>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border-2 border-white overflow-hidden p-2">
+               <img src="/Pshape.svg" alt="Porikkhangon Logo" className="w-full h-full object-contain" />
+            </div>
+            <img src="/letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-10 w-auto object-contain brightness-0 invert" />
           </div>
           <h1 className="text-5xl font-bold mb-6">আপনার লার্নিং জার্নি শুরু হোক এখান থেকেই</h1>
-          <p className="text-lg text-blue-100 leading-relaxed mb-8">
+          <p className="text-lg text-orange-100 leading-relaxed mb-8">
             AI টিউটর, স্মার্ট কুইজ এবং পার্সোনালাইজড সাপোর্টের মাধ্যমে নিজেকে প্রস্তুত করুন সেরা ফলাফলের জন্য।
           </p>
           <div className="flex gap-4">
              <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
                 <span className="font-bold text-2xl">10k+</span>
-                <p className="text-sm text-blue-100">Students</p>
+                <p className="text-sm text-orange-100">Students</p>
              </div>
              <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
                 <span className="font-bold text-2xl">50k+</span>
-                <p className="text-sm text-blue-100">Tests</p>
+                <p className="text-sm text-orange-100">Tests</p>
              </div>
           </div>
         </div>
@@ -234,7 +250,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
              <button
                type="submit"
                disabled={loading}
-               className="w-full bg-primary hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+               className="w-full bg-primary hover:bg-orange-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
              >
                {loading ? (
                  <Loader2 size={24} className="animate-spin" />

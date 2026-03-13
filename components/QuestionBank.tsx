@@ -755,7 +755,10 @@ const QuestionBank: React.FC = () => {
                                             <button 
                                                 onClick={() => handleStartExam(`${chapter} (${selectedCategory.title})`, 'CHAPTER', { 
                                                     timeLimit: 20, 
-                                                    // Currently this launches a random quiz from that chapter.
+                                                    subject: subject.key,
+                                                    chapter: chapter,
+                                                    source: selectedCategory.id,
+                                                    type: 'CHAPTER_WISE'
                                                 })}
                                                 className="p-1 bg-primary text-white rounded hover:bg-blue-700"
                                                 title="Exam"

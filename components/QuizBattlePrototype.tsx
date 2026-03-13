@@ -59,14 +59,14 @@ const REACTION_EMOJIS = [
 ];
 
 const BATTLE_SUBJECTS = [
-    { id: 'Physics', label: 'পদার্থবিজ্ঞান', icon: Atom, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800' },
+    { id: 'Physics', label: 'পদার্থবিজ্ঞান', icon: Atom, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
     { id: 'Chemistry', label: 'রসায়ন', icon: Beaker, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
     { id: 'Math', label: 'উচ্চতর গণিত', icon: Calculator, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800' },
     { id: 'Biology', label: 'জীববিজ্ঞান', icon: Dna, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800' },
     { id: 'ICT', label: 'আইসিটি', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
     { id: 'English', label: 'ইংরেজি', icon: BookOpen, color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20', border: 'border-teal-200 dark:border-teal-800' },
     { id: 'Bangla', label: 'বাংলা', icon: Book, color: 'text-pink-500', bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-200 dark:border-pink-800' },
-    { id: 'General Knowledge', label: 'সাধারণ জ্ঞান', icon: Globe, color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-900/20', border: 'border-cyan-200 dark:border-cyan-800' },
+    { id: 'General Knowledge', label: 'সাধারণ জ্ঞান', icon: Globe, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
 ];
 
 const QuizBattlePrototype: React.FC = () => {
@@ -161,13 +161,25 @@ const QuizBattlePrototype: React.FC = () => {
       }
   }, [currentUser, phase]);
 
-  // MathJax Effect - Runs when question changes to render LaTeX
+  // MathJax Effect - Robust polling to ensure rendering
   useEffect(() => {
-    if (window.MathJax && window.MathJax.typesetPromise && (phase === 'GAME' || phase === 'RESULT' || showComparison)) {
-      setTimeout(() => {
-        window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
-      }, 100);
-    }
+    let attempts = 0;
+
+    const intervalId = setInterval(() => {
+      attempts++;
+      if (window.MathJax && window.MathJax.typesetPromise && (phase === 'GAME' || phase === 'RESULT' || showComparison)) {
+        window.MathJax.typesetPromise()
+          .then(() => {
+            clearInterval(intervalId);
+          })
+          .catch((err: any) => console.log('MathJax typeset failed:', err));
+      }
+      if (attempts > 20) {
+        clearInterval(intervalId);
+      }
+    }, 500);
+
+    return () => clearInterval(intervalId);
   }, [currentQIndex, phase, battleState, showComparison]);
 
   // Realtime Listeners
@@ -279,8 +291,8 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const useFiftyFifty = () => {
-      if (!battleState || powerUps.fiftyFifty <= 0 || hasAnswered) return;
-      const q = battleState.questions[currentQIndex];
+      if (powerUps.fiftyFifty <= 0 || hasAnswered) return;
+      const q = battleState!.questions[currentQIndex];
       const correctIdx = Number(q.correctAnswerIndex);
       const wrongIndices = [0, 1, 2, 3].filter(i => i !== correctIdx);
       const toDisable = wrongIndices.sort(() => 0.5 - Math.random()).slice(0, 2);
@@ -374,12 +386,10 @@ const QuizBattlePrototype: React.FC = () => {
 
   const renderLobbyPlayers = () => {
     if (!battleState) return null;
-    // Capture state to local variable for TS null check
-    const room = battleState; 
-    const players = Object.values(room.players) as BattlePlayer[];
+    const players = Object.values(battleState.players) as BattlePlayer[];
     
-    const host = players.find(p => p.uid === room.hostId);
-    const guest = players.find(p => p.uid !== room.hostId);
+    const host = players.find(p => p.uid === battleState.hostId);
+    const guest = players.find(p => p.uid !== battleState.hostId);
 
     return (
         <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-2xl mx-auto gap-8 mt-8">
@@ -387,7 +397,13 @@ const QuizBattlePrototype: React.FC = () => {
             <div className="flex flex-col items-center animate-in slide-in-from-left-8 duration-500">
                 <div className="relative">
                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-orange-500 p-1 shadow-lg shadow-orange-500/20">
-                        <img src={host?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Host"} className="w-full h-full rounded-full object-cover bg-gray-100" alt="Host"/>
+                        {host?.avatar ? (
+                            <img src={host.avatar} className="w-full h-full rounded-full object-cover bg-gray-100" alt="Host"/>
+                        ) : (
+                            <div className="w-full h-full rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center text-orange-600 dark:text-orange-300 font-bold text-3xl md:text-5xl border-2 border-white dark:border-gray-700">
+                                {host?.name?.charAt(0).toUpperCase() || 'H'}
+                            </div>
+                        )}
                     </div>
                     <Crown size={24} className="absolute -top-3 -right-2 text-yellow-500 fill-yellow-500 drop-shadow-md rotate-12"/>
                 </div>
@@ -407,12 +423,18 @@ const QuizBattlePrototype: React.FC = () => {
                 {guest ? (
                     <>
                         <div className="relative">
-                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-blue-500 p-1 shadow-lg shadow-blue-500/20">
-                                <img src={guest.avatar} className="w-full h-full rounded-full object-cover bg-gray-100" alt="Guest"/>
+                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-orange-500 p-1 shadow-lg shadow-orange-500/20">
+                                {guest.avatar ? (
+                                    <img src={guest.avatar} className="w-full h-full rounded-full object-cover bg-gray-100" alt="Guest"/>
+                                ) : (
+                                    <div className="w-full h-full rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center text-orange-600 dark:text-orange-300 font-bold text-3xl md:text-5xl border-2 border-white dark:border-gray-700">
+                                        {guest.name?.charAt(0).toUpperCase() || 'G'}
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <p className="mt-3 font-black text-lg text-gray-800 dark:text-white">{guest.name}</p>
-                        <span className="px-3 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full mt-1">CHALLENGER</span>
+                        <span className="px-3 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full mt-1">CHALLENGER</span>
                     </>
                 ) : (
                     <div className="flex flex-col items-center opacity-50 animate-pulse">
@@ -428,12 +450,8 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const renderTimer = () => {
-      if (!battleState) return null;
-      // Capture state for safety
-      const config = battleState.config;
-      
       const circumference = 2 * Math.PI * 18;
-      const progress = (timeLeft / config.timePerQuestion) * circumference;
+      const progress = (timeLeft / battleState!.config.timePerQuestion) * circumference;
       const colorClass = timeLeft > 10 ? 'text-emerald-500' : timeLeft > 5 ? 'text-yellow-500' : 'text-red-500';
       
       return (
@@ -518,7 +536,7 @@ const QuizBattlePrototype: React.FC = () => {
                                             // Single Select Logic for simplicity in Battle
                                             setConfig({ ...config, chapters: [chap] });
                                         }}
-                                        className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${isChapSelected ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-400'}`}
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${isChapSelected ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-400'}`}
                                     >
                                         {chap}
                                     </button>
@@ -642,7 +660,7 @@ const QuizBattlePrototype: React.FC = () => {
                                 <Trophy size={14} className="text-yellow-300"/> Rank #42
                             </div>
                             <div className="flex items-center gap-1.5 text-xs font-bold bg-black/20 px-3 py-1.5 rounded-lg">
-                                <Zap size={14} className="text-blue-300"/> {myStats.totalPoints} XP
+                                <Zap size={14} className="text-orange-300"/> {myStats.totalPoints} XP
                             </div>
                         </div>
                     </div>
@@ -757,10 +775,10 @@ const QuizBattlePrototype: React.FC = () => {
             {battleState?.hostId === currentUser?.uid ? (
                 <button 
                     onClick={() => startRTDBBattle(roomId)} 
-                    disabled={Object.keys(battleState?.players || {}).length < 2} 
+                    disabled={!battleState || Object.keys(battleState.players).length < 2} 
                     className="w-full py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl font-black text-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform"
                 >
-                    {Object.keys(battleState?.players || {}).length < 2 ? 'Waiting for Opponent...' : <><Swords size={24}/> START BATTLE</>}
+                    {(!battleState || Object.keys(battleState.players).length < 2) ? 'Waiting for Opponent...' : <><Swords size={24}/> START BATTLE</>}
                 </button>
             ) : (
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 flex items-center justify-center gap-3 animate-pulse">
@@ -774,11 +792,10 @@ const QuizBattlePrototype: React.FC = () => {
   );
 
   if (phase === 'GAME') {
-    if (!battleState) return null;
-    const question = battleState.questions[currentQIndex];
+    const question = battleState?.questions[currentQIndex];
     if (!question) return null;
 
-    const players = (Object.values(battleState.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
+    const players = (Object.values(battleState?.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
     const opponent = players.find(p => p.uid !== currentUser?.uid);
     const bothAnswered = hasAnswered && opponent?.answers?.[currentQIndex] !== undefined;
 
@@ -797,7 +814,7 @@ const QuizBattlePrototype: React.FC = () => {
             <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm font-black text-gray-500 border border-gray-100 dark:border-gray-700">
-                        {currentQIndex + 1}/{battleState.questions.length}
+                        {currentQIndex + 1}/{battleState?.questions.length}
                     </div>
                     {streak >= 3 && (
                         <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse">
@@ -862,7 +879,7 @@ const QuizBattlePrototype: React.FC = () => {
                 )}
 
                 {/* Host Control: Next Question */}
-                {bothAnswered && battleState.hostId === currentUser?.uid && (
+                {bothAnswered && battleState?.hostId === currentUser?.uid && (
                     <div className="fixed bottom-24 left-0 right-0 flex justify-center z-50 animate-in slide-in-from-bottom-4">
                         <button 
                             onClick={skipToNextQuestion}
@@ -923,8 +940,7 @@ const QuizBattlePrototype: React.FC = () => {
   }
 
   if (phase === 'RESULT') {
-    if (!battleState) return null;
-    const sorted = (Object.values(battleState.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
+    const sorted = (Object.values(battleState?.players || {}) as BattlePlayer[]).sort((a,b) => b.score - a.score);
     const winner = sorted[0];
     const isWinner = winner.uid === currentUser?.uid;
 
@@ -966,7 +982,7 @@ const QuizBattlePrototype: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        <button onClick={() => setShowComparison(true)} className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+                        <button onClick={() => setShowComparison(true)} className="w-full py-4 bg-orange-600 hover:bg-orange-500 rounded-2xl font-bold text-sm transition-colors shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
                             <Eye size={18} /> প্রশ্ন ও উত্তর দেখুন (Analysis)
                         </button>
                         <div className="grid grid-cols-2 gap-3">
@@ -990,7 +1006,7 @@ const QuizBattlePrototype: React.FC = () => {
 
                     {/* Questions List */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                        {battleState.questions.map((q, idx) => (
+                        {battleState?.questions.map((q, idx) => (
                             <div key={idx} className="bg-white/5 p-5 rounded-3xl border border-white/10">
                                 <div className="flex gap-3 mb-4">
                                     <span className="font-black text-white/20 text-xl font-mono">{String(idx+1).padStart(2,'0')}</span>

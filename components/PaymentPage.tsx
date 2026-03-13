@@ -56,10 +56,10 @@ const PaymentPage: React.FC = () => {
       setCouponError('');
       if (!couponCode.trim()) return;
 
-      if (couponCode.toUpperCase() === 'DHRUBOKGST') {
+      if (couponCode.toUpperCase() === 'PORARTABLEGST') {
           const discountAmount = Math.round(item.price * 0.20); // 20% Discount
           setDiscount(discountAmount);
-          setAppliedCoupon('DHRUBOKGST');
+          setAppliedCoupon('PORARTABLEGST');
           showToast("২০% ডিসকাউন্ট অ্যাপ্লাই করা হয়েছে!", "success");
       } else {
           setCouponError('দুঃখিত, কুপন কোডটি সঠিক নয়।');
@@ -167,7 +167,7 @@ const PaymentPage: React.FC = () => {
                       <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">অর্ডার সামারি</h3>
                       
                       <div className="flex gap-4 mb-6">
-                          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+                          <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400">
                               <FileText size={24}/>
                           </div>
                           <div className="flex-1">
@@ -224,7 +224,7 @@ const PaymentPage: React.FC = () => {
                           )}
                           <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-100 dark:border-gray-700">
                               <span className="font-bold text-gray-800 dark:text-white">মোট প্রদেয়</span>
-                              <span className="text-xl font-black text-primary dark:text-blue-400">
+                              <span className="text-xl font-black text-primary dark:text-orange-400">
                                   {finalAmount === 0 ? 'FREE' : `৳${finalAmount}`}
                               </span>
                           </div>
