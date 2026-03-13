@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -17,8 +18,6 @@ import LottieAnim from './LottieAnim';
 import { fireAnimData } from '../assets/lottie/fireData';
 import { rankAnimData } from '../assets/lottie/rankData';
 import { pointsAnimData } from '../assets/lottie/pointsData';
-// নতুন যুক্ত করা ইমপোর্ট
-import { NotificationBanner } from './NotificationBanner'; 
 
 // --- CONSTANTS & MOCK DATA ---
 
@@ -364,13 +363,14 @@ const HomeDashboard: React.FC = () => {
 
   return (
     <div className="min-h-full bg-white dark:bg-gray-900 transition-colors pb-6 md:pb-10 relative overflow-hidden">
+      {/* Ambient Background Glows Removed */}
+      
       <div className="max-w-5xl mx-auto px-3 pt-4 md:px-4 md:pt-6 space-y-4 md:space-y-6 animate-page-enter relative z-10">
         
-        {/* নোটিফিকেশন ব্যানার এখানে যুক্ত করা হয়েছে */}
-        <NotificationBanner />
-
         {/* --- HEADER SECTION (PLAIN WHITE) --- */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl md:rounded-3xl p-3 md:p-4 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+            {/* Ambient Glow Removed */}
+            
             <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4 relative z-10">
                 <div className="relative group">
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full p-0.5 border-2 border-white/50 dark:border-gray-600 shadow-lg shadow-indigo-500/20 overflow-hidden transition-transform group-hover:scale-105">
