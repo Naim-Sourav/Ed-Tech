@@ -7,8 +7,8 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
-    // Changed to relative base './' to prevent path issues in different deployment environments (PWA friendliness)
-    base: '/', 
+    // Changed to relative base './' to make it portable across GitHub Pages and Vercel
+    base: './', 
     resolve: {
       alias: {
         '@': path.resolve('.'), 
