@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.naim_sourav.twa",
-        "sha256_cert_fingerprints": ["15:9B:27:B6:7C:5C:98:55:5F:BC:A9:41:FA:8B:05:66:63:5B:DA:9B:50:54:36:F4:0A:B7:EF:C3:CA:E0:4F:23"]
+        "sha256_cert_fingerprints": ["72:42:B1:77:52:E9:F4:62:87:69:7E:AE:43:5B:25:B4:18:40:85:B6:20:64:D6:44:8E:FC:73:E3:E8:25:EE:F0"]
       }
     }]
