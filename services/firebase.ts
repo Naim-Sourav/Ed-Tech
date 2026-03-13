@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
-import { getMessaging } from "firebase/messaging"; // নতুন যুক্ত করা হয়েছে
+import { getMessaging } from "firebase/messaging";
 
 // Firebase Configuration
 const firebaseConfig = {
