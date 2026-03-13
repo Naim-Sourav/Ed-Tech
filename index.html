@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Dhrubok | HSC & Admission AI Tutor</title>
+    <title>Porikkhangon | HSC & Admission AI Tutor</title>
     
     <!-- PWA & Mobile Meta Tags -->
     <link rel="manifest" href="./manifest.json">
@@ -13,50 +13,17 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Dhrubok">
-    <meta name="application-name" content="Dhrubok">
-    <link rel="apple-touch-icon" href="https://api.dicebear.com/7.x/shapes/svg?seed=Dhrubok&backgroundColor=1565C0">
+    <meta name="apple-mobile-web-app-title" content="Porikkhangon">
+    <meta name="application-name" content="Porikkhangon">
+    <link rel="apple-touch-icon" href="/Pshape.svg">
 
     <!-- Standard SEO -->
-    <meta name="description" content="Dhrubok (ধ্রুবক) - An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students." />
+    <meta name="description" content="Porikkhangon (পরীক্ষাঙ্গন) - An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students." />
 
-    <!-- Tailwind & Fonts -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.maateen.me/kalpurush/font.css" rel="stylesheet">
     
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Hind Siliguri', 'sans-serif'],
-              tiro: ['Kalpurush', 'sans-serif'],
-            },
-            colors: {
-              primary: '#1565C0',
-              secondary: '#0288D1',
-              accent: '#E3F2FD',
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.3s ease-out forwards',
-              'slide-up': 'slideUp 0.3s ease-out forwards',
-            },
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(20px)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' },
-              }
-            }
-          }
-        }
-      }
-    </script>
     <script>
       window.MathJax = {
         tex: {
@@ -74,100 +41,27 @@
       };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <style>
-      body {
-        font-family: 'Hind Siliguri', sans-serif;
-        margin: 0;
-        padding: 0;
-        /* App-like Behavior CSS */
-        -webkit-tap-highlight-color: transparent; /* Remove blue tap box */
-        user-select: none; /* Disable text selection for UI feel */
-        -webkit-user-select: none;
-        overscroll-behavior-y: none; /* Disable pull-to-refresh */
-        touch-action: pan-y; /* Optimize touch */
-      }
-      
-      /* Allow text selection only in specific readable areas if needed */
-      p, h1, h2, h3, h4, h5, span, article {
-        user-select: text;
-        -webkit-user-select: text;
-      }
-      
-      /* Smooth Scrolling */
-      html {
-        scroll-behavior: smooth;
-      }
-      
-      /* Custom Scrollbar (Hidden mostly for mobile feel) */
-      ::-webkit-scrollbar {
-        width: 4px;
-        height: 4px;
-      }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-      }
-      .dark ::-webkit-scrollbar-thumb { background: #374151; }
-
-      /* MJX Fix */
-      mjx-container {
-        display: inline-block !important;
-        margin: 0 2px !important;
-        vertical-align: middle !important;
-      }
-
-      /* Loader */
-      #app-loading {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        background-color: #f9fafb; z-index: 9999; transition: opacity 0.5s ease-out;
-      }
-      @media (prefers-color-scheme: dark) {
-        #app-loading { background-color: #111827; }
-        #app-loading .logo-box { background-color: #1f2937 !important; color: #fff !important; }
-        #app-loading p { color: #9ca3af !important; }
-      }
-      .logo-box {
-        width: 80px; height: 80px; background-color: #fff; border-radius: 20px;
-        display: flex; align-items: center; justify-content: center; font-size: 32px;
-        font-weight: bold; color: #1565C0; box-shadow: 0 10px 25px rgba(21, 101, 192, 0.2);
-        margin-bottom: 24px; animation: bounce 2s infinite;
-      }
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-      }
-    </style>
-<script type="importmap">
-{
-  "imports": {
-    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.10.1",
-    "vite": "https://esm.sh/vite@^7.2.7",
-    "firebase/": "https://esm.sh/firebase@^12.6.0/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "path": "https://esm.sh/path@^0.12.7",
-    "react-easy-crop": "https://esm.sh/react-easy-crop@^5.5.6",
-    "lottie-react": "https://esm.sh/lottie-react@^2.4.1"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
-  <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 fixed inset-0 overflow-hidden">
+  </head>
+  <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
     <div id="root" class="h-full w-full">
       <div id="app-loading">
-        <div class="logo-box">ধ্রু</div>
-        <p class="loading-text text-sm font-bold opacity-70">প্রস্তুতি চলছে...</p>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;" class="animate-pulse">
+          <img src="/Pshape.svg" alt="Porikkhangon Logo" style="width: 64px; height: 64px;" />
+          <img src="/letterlogo.svg" alt="Porikkhangon Letter Logo" style="height: 32px; width: auto;" />
+        </div>
+        <p class="loading-text text-sm font-bold opacity-70">পরীক্ষাঙ্গন প্রস্তুত হচ্ছে...</p>
       </div>
     </div>
+    <script>
+      // Force unregister existing SW if any
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    </script>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

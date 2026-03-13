@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 19 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 19 100% 50%;
+    --radius: 1rem;
+  }
+ 
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 19 100% 55%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 19 100% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-gray-200 dark:border-gray-800;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior-y: none;
+    touch-action: pan-y;
+  }
+  
+  /* Allow text selection in specific readable areas */
+  p, h1, h2, h3, h4, h5, span, article, input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+/* Custom Scrollbar (Hidden mostly for mobile feel) */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb { background: #374151; }
+
+/* MJX Fix */
+mjx-container {
+  display: inline-block !important;
+  margin: 0 2px !important;
+  vertical-align: middle !important;
+}
+
+/* Loader */
+#app-loading {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background-color: var(--background); z-index: 9999; transition: opacity 0.5s ease-out;
+}
+.dark #app-loading { background-color: #111827; }
+.dark #app-loading p { color: #9ca3af !important; }
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Safe Area Utilities */
+.pb-safe-area {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+.pt-safe-area {
+  padding-top: env(safe-area-inset-top, 20px);
+}
+
+/* Hide scrollbar for horizontal scrolling elements */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* --- BRAND LOADING ANIMATION --- */
+@keyframes jump {
+    0% { transform: translateY(0) scale(1, 1); animation-timing-function: ease-in; }
+    38% { transform: translateY(160px) scale(1, 1); animation-timing-function: ease-out; }
+    44% { transform: translateY(160px) scale(1.3, 0.7); animation-timing-function: ease-in; }
+    50% { transform: translateY(160px) scale(0.9, 1.1); animation-timing-function: ease-out; }
+    88% { transform: translateY(0) scale(1, 1); animation-timing-function: ease-out; }
+    94% { transform: translateY(-30px) scale(1.15, 0.85); animation-timing-function: ease-in-out; }
+    100% { transform: translateY(0) scale(1, 1); }
+}
+
+@keyframes bump {
+    0%, 88% { transform: translateY(0) scale(1, 1); animation-timing-function: ease-out; }
+    94% { transform: translateY(-30px) scale(1.02, 0.98); animation-timing-function: ease-in-out; }
+    98% { transform: translateY(3px) scale(0.99, 1.01); animation-timing-function: ease-in-out; }
+    100% { transform: translateY(0) scale(1, 1); }
+}
+
+@keyframes shadow-pulse {
+    0% { transform: scale(0.3); opacity: 0.1; animation-timing-function: ease-in; } 
+    38% { transform: scale(1); opacity: 0.8; animation-timing-function: ease-out; }
+    44% { transform: scale(1.2); opacity: 1; animation-timing-function: ease-in; } 
+    50% { transform: scale(1); opacity: 0.8; animation-timing-function: ease-out; }
+    88%, 100% { transform: scale(0.3); opacity: 0.1; }
+}
+
+.animate-jump {
+    transform-origin: 50% 50%;
+    transform-box: fill-box;
+    animation: jump 1.5s infinite;
+}
+
+.animate-bump {
+    transform-origin: 50% 100%;
+    transform-box: fill-box;
+    animation: bump 1.5s infinite;
+}
+
+.animate-shadow-pulse {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: shadow-pulse 1.5s infinite;
+}
+
+
+/* 1. Page Transitions (Slide Up & Fade) */
+.animate-page-enter {
+  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Modal/Popup Zoom In */
+.animate-modal-enter {
+  animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 3. Staggered List Item Entry */
+.animate-slide-in-right {
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 4. Button/Card Click Scale (Active State) */
+.active-scale {
+  @apply transition-transform duration-100 active:scale-[0.97];
+}
+
+/* 5. Hover Lift */
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-1;
+}

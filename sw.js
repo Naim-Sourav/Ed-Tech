@@ -1,9 +1,9 @@
 
-const CACHE_NAME = 'dhrubok-pwa-v3';
+const CACHE_NAME = 'dhrubok-pwa-v4';
 const APP_SHELL = [
-  './',
-  './index.html',
-  './manifest.json'
+  '/',
+  '/index.html',
+  '/manifest.json'
 ];
 
 // 1. Install Event: Cache the App Shell immediately
@@ -44,12 +44,21 @@ self.addEventListener('fetch', (event) => {
   }
 
   // B. Handle Navigation Requests (HTML pages like /dashboard, /profile)
-  // This is CRITICAL for SPA. If offline, always serve index.html for any page route.
+  // This is CRITICAL for SPA. If offline OR server returns 404, always serve index.html.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
+        .then((response) => {
+          // If valid response, return it
+          if (response.status === 200) {
+            return response;
+          }
+          // If 404 or other error, fallback to index.html (SPA routing)
+          return caches.match('/index.html');
+        })
         .catch(() => {
-          return caches.match('./index.html');
+          // If offline, return index.html
+          return caches.match('/index.html');
         })
     );
     return;

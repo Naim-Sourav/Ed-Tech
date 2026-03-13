@@ -24,6 +24,8 @@ export interface ChatMessage {
 }
 
 export interface QuizQuestion {
+  _id?: string; // MongoDB ID
+  id?: string; // Alternative ID
   question: string;
   options: string[];
   correctAnswerIndex: number; // 0-3

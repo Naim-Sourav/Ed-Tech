@@ -1,5 +1,5 @@
 {
-  "name": "3rd copy of Dhrubok - ধ্রুবক",
-  "description": "An AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students featuring concept explanation, quiz generation, and admission information.",
-  "requestFramePermissions": []
+  "name": "Porikkhangon - পরীক্ষাঙ্গন | AI Learning Assistant",
+  "description": "Porikkhangon is an AI-powered comprehensive learning assistant for Bangladeshi HSC and Admission students, featuring concept explanation, quiz generation, and admission information.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"]
 }

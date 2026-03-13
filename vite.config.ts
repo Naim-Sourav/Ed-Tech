@@ -7,18 +7,23 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
-    // Use repository name as base for GitHub Pages deployment
-    base: mode === 'production' ? '/Ed-Tech/' : '/', 
+    // Changed to relative base './' to prevent path issues in different deployment environments (PWA friendliness)
+    base: '/', 
     resolve: {
       alias: {
-        '@': path.resolve('./src'), // আপনার ফোল্ডার স্ট্রাকচার অনুযায়ী পাথ ঠিক করা হলো
+        '@': path.resolve('.'), 
       },
     },
     // এই অংশটি প্রিভিউ সমস্যা সমাধান করবে
     server: {
-      host: true, // Allow access from network (required for preview and cloud environments)
-      cors: true, // Enable CORS to prevent request blocking
-      port: 5173,
+      host: true,
+      cors: true,
+      port: 3000,
+      strictPort: true,
+      allowedHosts: true, 
+      hmr: {
+        clientPort: 443
+      }
     },
     build: {
       outDir: 'dist',
