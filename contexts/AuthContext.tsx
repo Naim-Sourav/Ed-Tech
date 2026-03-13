@@ -8,6 +8,8 @@ export interface EnrolledCourse {
   id: string; 
   title: string;
   progress: number;
+  rollId?: string; // Unique Roll ID for exam batches
+  telegramGroupLink?: string; // Link to the private Telegram group
 }
 
 export interface UserProfileExtended {
@@ -134,24 +136,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => signOut(auth);
 
   const updateUserProfile = async (name: string, photoURL: string, additionalData?: UserProfileExtended) => {
+    const validPhotoURL = (photoURL && photoURL !== 'false') ? photoURL : '';
     if (auth.currentUser) {
       await updateProfile(auth.currentUser, {
         displayName: name,
-        photoURL: photoURL
+        photoURL: validPhotoURL
       });
-      setCurrentUser({ ...auth.currentUser, displayName: name, photoURL: photoURL });
-      setUserAvatar(photoURL);
+      setCurrentUser({ ...auth.currentUser, displayName: name, photoURL: validPhotoURL });
+      setUserAvatar(validPhotoURL);
       
       if (additionalData) {
           setExtendedProfile(prev => ({ ...prev, ...additionalData }));
       }
 
       // Sync update to MongoDB including extended fields
+      // Merge existing extendedProfile to preserve fields like phoneNumber that aren't in additionalData
+      const mergedAdditionalData = {
+          ...extendedProfile,
+          ...additionalData
+      };
+
       await syncUserToMongoDB({ 
           ...auth.currentUser, 
           displayName: name, 
-          photoURL: photoURL
-      }, additionalData);
+          photoURL: validPhotoURL
+      }, mergedAdditionalData);
     }
   };
 
