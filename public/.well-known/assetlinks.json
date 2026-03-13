@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.naim_sourav.twa",
+        "sha256_cert_fingerprints": ["72:42:B1:77:52:E9:F4:62:87:69:7E:AE:43:5B:25:B4:18:40:85:B6:20:64:D6:44:8E:FC:73:E3:E8:25:EE:F0"]
+      }
+    }]
