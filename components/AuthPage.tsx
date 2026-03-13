@@ -49,13 +49,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
         console.error("Login Error:", err);
         let msg = "Google Login Failed.";
         if (err.code === 'auth/popup-closed-by-user') {
-            msg = "à¦²à¦—à¦‡à¦¨ à¦‰à¦‡à¦¨à§à¦¡à§‹à¦Ÿà¦¿ à¦¬à¦¨à§à¦§ à¦•à¦°à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤ à¦¦à§Ÿà¦¾ à¦•à¦°à§‡ à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤";
+            msg = "লগইন উইন্ডোটি বন্ধ করা হয়েছে। দয়া করে আবার চেষ্টা করুন।";
         } else if (err.code === 'auth/popup-blocked') {
-            msg = "à¦ªà¦ª-à¦†à¦ª à¦¬à§à¦²à¦• à¦•à¦°à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤ à¦¬à§à¦°à¦¾à¦‰à¦œà¦¾à¦° à¦¸à§‡à¦Ÿà¦¿à¦‚ à¦šà§‡à¦• à¦•à¦°à§à¦¨à¥¤";
+            msg = "পপ-আপ ব্লক করা হয়েছে। ব্রাউজার সেটিং চেক করুন।";
         } else if (err.code === 'auth/unauthorized-domain') {
-            msg = "à¦à¦‡ à¦¡à§‹à¦®à§‡à¦‡à¦¨à¦Ÿà¦¿ à¦…à¦¥à§‹à¦°à¦¾à¦‡à¦œà¦¡ à¦¨à§Ÿà¥¤ (Developer Note: Add domain to Firebase Console)";
+            msg = "এই ডোমেইনটি অথোরাইজড নয়। (Developer Note: Add domain to Firebase Console)";
         } else if (err.code === 'auth/network-request-failed') {
-            msg = "à¦‡à¦¨à§à¦Ÿà¦¾à¦°à¦¨à§‡à¦Ÿ à¦¸à¦‚à¦¯à§‹à¦— à¦šà§‡à¦• à¦•à¦°à§à¦¨à¥¤";
+            msg = "ইন্টারনেট সংযোগ চেক করুন।";
         }
         setError(msg);
     } finally {
@@ -69,7 +69,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     setError('');
 
     if (!isLogin && !validatePhone(phoneNumber)) {
-        setError("à¦¸à¦ à¦¿à¦• à¦®à§‹à¦¬à¦¾à¦‡à¦² à¦¨à¦¾à¦®à§à¦¬à¦¾à¦° à¦¦à¦¿à¦¨ (à¦¯à§‡à¦®à¦¨: 017...)");
+        setError("সঠিক মোবাইল নাম্বার দিন (যেমন: 017...)");
         setLoading(false);
         return;
     }
@@ -95,13 +95,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/invalid-credential') {
-        setError('à¦‡à¦®à§‡à¦‡à¦² à¦¬à¦¾ à¦ªà¦¾à¦¸à¦“à§Ÿà¦¾à¦°à§à¦¡ à¦­à§à¦² à¦¹à§Ÿà§‡à¦›à§‡à¥¤');
+        setError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
       } else if (err.code === 'auth/email-already-in-use') {
-        setError('à¦à¦‡ à¦‡à¦®à§‡à¦‡à¦² à¦¦à¦¿à§Ÿà§‡ à¦‡à¦¤à¦¿à¦®à¦§à§à¦¯à§‡ à¦à¦•à¦¾à¦‰à¦¨à§à¦Ÿ à¦–à§‹à¦²à¦¾ à¦†à¦›à§‡à¥¤');
+        setError('এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট খোলা আছে।');
       } else if (err.code === 'auth/weak-password') {
-        setError('à¦ªà¦¾à¦¸à¦“à§Ÿà¦¾à¦°à§à¦¡ à¦…à¦¤à§à¦¯à¦¨à§à¦¤ à¦¦à§à¦°à§à¦¬à¦² (à¦…à¦¨à§à¦¤à¦¤ à§¬ à¦…à¦•à§à¦·à¦° à¦¦à¦¿à¦¨)à¥¤');
+        setError('পাসওয়ার্ড অত্যন্ত দুর্বল (অন্তত ৬ অক্ষর দিন)।');
       } else {
-        setError('à¦²à¦—à¦‡à¦¨ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à§Ÿà§‡à¦›à§‡à¥¤ à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤');
+        setError('লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
       }
     } finally {
       setLoading(false);
@@ -122,9 +122,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
             </div>
             <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-10 w-auto object-contain brightness-0 invert" />
           </div>
-          <h1 className="text-5xl font-bold mb-6">à¦†à¦ªà¦¨à¦¾à¦° à¦²à¦¾à¦°à§à¦¨à¦¿à¦‚ à¦œà¦¾à¦°à§à¦¨à¦¿ à¦¶à§à¦°à§ à¦¹à§‹à¦• à¦à¦–à¦¾à¦¨ à¦¥à§‡à¦•à§‡à¦‡</h1>
+          <h1 className="text-5xl font-bold mb-6">আপনার লার্নিং জার্নি শুরু হোক এখান থেকেই</h1>
           <p className="text-lg text-orange-100 leading-relaxed mb-8">
-            AI à¦Ÿà¦¿à¦‰à¦Ÿà¦°, à¦¸à§à¦®à¦¾à¦°à§à¦Ÿ à¦•à§à¦‡à¦œ à¦à¦¬à¦‚ à¦ªà¦¾à¦°à§à¦¸à§‡à¦¾à¦¨à¦¾à¦²à¦¾à¦‡à¦œà¦¡ à¦¸à¦¾à¦ªà§‹à¦°à§à¦Ÿà§‡à¦° à¦®à¦¾à¦§à§à¦¯à¦®à§‡ à¦¨à¦¿à¦œà§‡à¦•à§‡ à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤ à¦•à¦°à§à¦¨ à¦¸à§‡à¦°à¦¾ à¦«à¦²à¦¾à¦«à¦²à§‡à¦° à¦œà¦¨à§à¦¯à¥¤
+            AI টিউটর, স্মার্ট কুইজ এবং পার্সোনালাইজড সাপোর্টের মাধ্যমে নিজেকে প্রস্তুত করুন সেরা ফলাফলের জন্য।
           </p>
           <div className="flex gap-4">
              <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
@@ -144,7 +144,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
         <div className="w-full max-w-md space-y-6">
            <div className="text-center lg:text-left">
               <button onClick={onBack} className="text-sm text-gray-500 hover:text-primary mb-4 flex items-center justify-center lg:justify-start gap-1">
-                 â† {t('auth_back')}
+                 ← {t('auth_back')}
               </button>
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
                 {isLogin ? t('auth_welcome') : t('auth_create_account')}
@@ -242,7 +242,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder="••••••••"
                   />
                 </div>
              </div>

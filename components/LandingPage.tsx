@@ -66,19 +66,19 @@ const QuestionPaperCard = ({ title, sub, icon, color }: any) => (
 
 const QuestionPaperMarquee = () => {
   const row1 = [
-    { title: "à¦®à§‡à¦¡à¦¿à¦•à§‡à¦² à¦­à¦°à§à¦¤à¦¿ à¦ªà¦°à§€à¦•à§à¦·à¦¾", sub: "à§¨à§¦à§¨à§©-à§¨à§ª | à¦¸à§‡à¦Ÿ à¦•", icon: <Activity size={18}/>, color: "from-green-500 to-emerald-500" },
-    { title: "à¦¢à¦¾à¦•à¦¾ à¦¬à¦¿à¦¶à§à¦¬à¦¬à¦¿à¦¦à§à¦¯à¦¾à¦²à§Ÿ (à¦•)", sub: "à§¨à§¦à§¨à§¨-à§¨à§© | à¦ªà¦¦à¦¾à¦°à§à¦¥à¦¬à¦¿à¦œà§à¦žà¦¾à¦¨", icon: <GraduationCap size={18}/>, color: "from-orange-500 to-red-500" },
-    { title: "à¦¬à§à§Ÿà§‡à¦Ÿ à¦ªà§à¦°à¦¿à¦²à¦¿à¦®à¦¿à¦¨à¦¾à¦°à¦¿", sub: "à§¨à§¦à§¨à§§-à§¨à§¨ | à¦¶à¦¿à¦«à¦Ÿ à§§", icon: <Zap size={18}/>, color: "from-blue-500 to-indigo-500" },
-    { title: "à¦°à¦¾à¦œà¦¶à¦¾à¦¹à§€ à¦¬à¦¿à¦¶à§à¦¬à¦¬à¦¿à¦¦à§à¦¯à¦¾à¦²à§Ÿ", sub: "à§¨à§¦à§¨à§©-à§¨à§ª | à¦‡à¦‰à¦¨à¦¿à¦Ÿ à¦¸à¦¿", icon: <BookOpen size={18}/>, color: "from-purple-500 to-pink-500" },
-    { title: "à¦œà¦¾à¦¹à¦¾à¦™à§à¦—à§€à¦°à¦¨à¦—à¦° à¦¢ à¦‡à¦‰à¦¨à¦¿à¦Ÿ", sub: "à§¨à§¦à§¨à§¨-à§¨à§© | à¦œà§€à¦¬à¦¬à¦¿à¦œà§à¦žà¦¾à¦¨", icon: <Dna size={18}/>, color: "from-green-600 to-teal-500" },
+    { title: "মেডিকেল ভর্তি পরীক্ষা", sub: "২০২৩-২৪ | সেট ক", icon: <Activity size={18}/>, color: "from-green-500 to-emerald-500" },
+    { title: "ঢাকা বিশ্ববিদ্যালয় (ক)", sub: "২০২২-২৩ | পদার্থবিজ্ঞান", icon: <GraduationCap size={18}/>, color: "from-orange-500 to-red-500" },
+    { title: "বুয়েট প্রিলিমিনারি", sub: "২০২১-২২ | শিফট ১", icon: <Zap size={18}/>, color: "from-blue-500 to-indigo-500" },
+    { title: "রাজশাহী বিশ্ববিদ্যালয়", sub: "২০২৩-২৪ | ইউনিট সি", icon: <BookOpen size={18}/>, color: "from-purple-500 to-pink-500" },
+    { title: "জাহাঙ্গীরনগর ঢ ইউনিট", sub: "২০২২-২৩ | জীববিজ্ঞান", icon: <Dna size={18}/>, color: "from-green-600 to-teal-500" },
   ];
 
   const row2 = [
-    { title: "à¦—à§à¦šà§à¦› (GST) à¦• à¦‡à¦‰à¦¨à¦¿à¦Ÿ", sub: "à§¨à§¦à§¨à§©-à§¨à§ª | à¦°à¦¸à¦¾à§Ÿà¦¨", icon: <Beaker size={18}/>, color: "from-cyan-500 to-blue-500" },
-    { title: "à¦†à¦°à§à¦®à¦¡ à¦«à§‹à¦°à§à¦¸à§‡à¦¸ à¦®à§‡à¦¡à¦¿à¦•à§‡à¦²", sub: "à§¨à§¦à§¨à§¨-à§¨à§© | à¦¸à¦¾à¦§à¦¾à¦°à¦£ à¦œà§à¦žà¦¾à¦¨", icon: <ShieldCheck size={18}/>, color: "from-red-500 to-rose-500" },
-    { title: "à¦•à§ƒà¦·à¦¿ à¦—à§à¦šà§à¦› à¦­à¦°à§à¦¤à¦¿ à¦ªà¦°à§€à¦•à§à¦·à¦¾", sub: "à§¨à§¦à§¨à§© | à¦‰à¦¦à§à¦­à¦¿à¦¦à¦¬à¦¿à¦œà§à¦žà¦¾à¦¨", icon: <Leaf size={18}/>, color: "from-lime-500 to-green-600" },
-    { title: "à¦šà§à§Ÿà§‡à¦Ÿ à¦•à§à§Ÿà§‡à¦Ÿ à¦°à§à§Ÿà§‡à¦Ÿ", sub: "à§¨à§¦à§¨à§§-à§¨à§¨ | à¦—à¦£à¦¿à¦¤", icon: <Calculator size={18}/>, color: "from-violet-500 to-purple-600" },
-    { title: "à¦¡à§‡à¦¨à§à¦Ÿà¦¾à¦² à¦­à¦°à§à¦¤à¦¿ à¦ªà¦°à§€à¦•à§à¦·à¦¾", sub: "à§¨à§¦à§¨à§©-à§¨à§ª | à¦‡à¦‚à¦°à§‡à¦œà¦¿", icon: <Activity size={18}/>, color: "from-sky-500 to-blue-600" },
+    { title: "গুচ্ছ (GST) ক ইউনিট", sub: "২০২৩-২৪ | রসায়ন", icon: <Beaker size={18}/>, color: "from-cyan-500 to-blue-500" },
+    { title: "আর্মড ফোর্সেস মেডিকেল", sub: "২০২২-২৩ | সাধারণ জ্ঞান", icon: <ShieldCheck size={18}/>, color: "from-red-500 to-rose-500" },
+    { title: "কৃষি গুচ্ছ ভর্তি পরীক্ষা", sub: "২০২৩ | উদ্ভিদবিজ্ঞান", icon: <Leaf size={18}/>, color: "from-lime-500 to-green-600" },
+    { title: "চুয়েট কুয়েট রুয়েট", sub: "২০২১-২২ | গণিত", icon: <Calculator size={18}/>, color: "from-violet-500 to-purple-600" },
+    { title: "ডেন্টাল ভর্তি পরীক্ষা", sub: "২০২৩-২৪ | ইংরেজি", icon: <Activity size={18}/>, color: "from-sky-500 to-blue-600" },
   ];
 
   return (
@@ -112,7 +112,7 @@ const QuestionPaperMarquee = () => {
 };
 
 const TypewriterText = () => {
-  const words = ["à¦®à§‡à¦¡à¦¿à¦•à§‡à¦²", "à¦‡à¦žà§à¦œà¦¿à¦¨à¦¿à§Ÿà¦¾à¦°à¦¿à¦‚", "à¦­à¦¾à¦°à§à¦¸à¦¿à¦Ÿà¦¿ 'à¦•'", "HSC à¦à¦•à¦¾à¦¡à§‡à¦®à¦¿à¦•"];
+  const words = ["মেডিকেল", "ইঞ্জিনিয়ারিং", "ভার্সিটি 'ক'", "HSC একাডেমিক"];
   const [index, setIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [blink, setBlink] = useState(true);
@@ -180,13 +180,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               onClick={onLoginClick}
               className="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-400 hidden sm:block px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
             >
-              à¦²à¦—à¦‡à¦¨
+              লগইন
             </button>
             <button 
               onClick={onLoginClick}
               className="px-4 py-2 md:px-6 md:py-2.5 bg-primary hover:bg-orange-600 text-white font-bold text-sm md:text-base rounded-xl transition-all shadow-lg shadow-orange-900/20 active:scale-95 flex items-center gap-2 group border border-transparent hover:border-orange-400/30"
             >
-              à¦°à§‡à¦œà¦¿à¦¸à§à¦Ÿà§à¦°à§‡à¦¶à¦¨ <ArrowRight size={16} className="md:w-[18px] md:h-[18px] group-hover:translate-x-1 transition-transform" />
+              রেজিস্ট্রেশন <ArrowRight size={16} className="md:w-[18px] md:h-[18px] group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
@@ -210,17 +210,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            à¦¤à§‹à¦®à¦¾à¦° à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤à¦¿à¦° à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨
+            তোমার প্রস্তুতির পরীক্ষাঙ্গন
           </div>
           
           {/* Headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 md:mb-8 leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 text-gray-900 dark:text-white">
-            à¦¸à§à¦¬à¦ªà§à¦¨ à¦à¦–à¦¨ à¦¹à¦¾à¦¤à§‡à¦° à¦®à§à¦ à§‹à§Ÿ<br/>
-            <span className="block mt-2">à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤à¦¿ à¦¹à§‹à¦• <TypewriterText /></span>
+            স্বপ্ন এখন হাতের মুঠোয়<br/>
+            <span className="block mt-2">প্রস্তুতি হোক <TypewriterText /></span>
           </h1>
           
           <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 px-4">
-            'à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨' AI à¦Ÿà¦¿à¦‰à¦Ÿà¦°, à¦°à¦¿à§Ÿà§‡à¦²-à¦Ÿà¦¾à¦‡à¦® à¦•à§à¦‡à¦œ à¦¬à§à¦¯à¦¾à¦Ÿà¦² à¦à¦¬à¦‚ à¦¸à§à¦®à¦¾à¦°à§à¦Ÿ à¦ªà§à¦°à§‹à¦—à§à¦°à§‡à¦¸ à¦Ÿà§à¦°à§à¦¯à¦¾à¦•à¦¿à¦‚ à¦à¦° à¦¸à¦¾à¦¥à§‡ à¦¨à¦¿à¦œà§‡à¦•à§‡ à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤ à¦•à¦°à§‹ à¦¬à§à§Ÿà§‡à¦Ÿ, à¦®à§‡à¦¡à¦¿à¦•à§‡à¦² à¦¬à¦¾ à¦¢à¦¾à¦•à¦¾ à¦­à¦¾à¦°à§à¦¸à¦¿à¦Ÿà¦¿à¦° à¦œà¦¨à§à¦¯à¥¤
+            'পরীক্ষাঙ্গন' AI টিউটর, রিয়েল-টাইম কুইজ ব্যাটল এবং স্মার্ট প্রোগ্রেস ট্র্যাকিং এর সাথে নিজেকে প্রস্তুত করো বুয়েট, মেডিকেল বা ঢাকা ভার্সিটির জন্য।
           </p>
           
           {/* CTA Buttons */}
@@ -229,13 +229,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               onClick={onLoginClick}
               className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl md:rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg shadow-xl shadow-gray-500/20"
             >
-              <Zap size={20} className="fill-yellow-400 text-yellow-400 md:w-[22px] md:h-[22px]" /> à¦¬à¦¿à¦¨à¦¾à¦®à§‚à¦²à§à¦¯à§‡ à¦¶à§à¦°à§ à¦•à¦°à§à¦¨
+              <Zap size={20} className="fill-yellow-400 text-yellow-400 md:w-[22px] md:h-[22px]" /> বিনামূল্যে শুরু করুন
             </button>
             <button 
               onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
               className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group"
             >
-              <Play size={18} className="group-hover:text-primary transition-colors md:w-5 md:h-5" /> à¦¡à§‡à¦®à§‹ à¦¦à§‡à¦–à§à¦¨
+              <Play size={18} className="group-hover:text-primary transition-colors md:w-5 md:h-5" /> ডেমো দেখুন
             </button>
           </div>
 
@@ -244,19 +244,19 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                   <div className="text-center">
                       <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">à¦ªà§à¦°à¦¶à§à¦¨ à¦¸à¦®à§à¦­à¦¾à¦°</p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700">
                       <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">AI à¦¸à¦¾à¦ªà§‹à¦°à§à¦Ÿ</p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
                   </div>
                   <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
                       <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={10} suffix="+" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">à¦¬à¦›à¦°à§‡à¦° à¦ªà§à¦°à¦¶à§à¦¨</p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={4} suffix="à¦Ÿà¦¿" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">à¦®à§‡à¦œà¦° à¦Ÿà¦¾à¦°à§à¦—à§‡à¦Ÿ</p>
+                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
+                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
                   </div>
               </div>
           </div>
@@ -270,9 +270,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       <section id="features" className="py-16 md:py-24 px-4 md:px-6 relative">
         <div className="max-w-7xl mx-auto">
             <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4">
-                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white">à¦•à§‡à¦¨ <span className="text-primary dark:text-orange-400">à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨</span>?</h2>
+                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white">কেন <span className="text-primary dark:text-orange-400">পরীক্ষাঙ্গন</span>?</h2>
                 <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                    à¦­à¦°à§à¦¤à¦¿ à¦¯à§à¦¦à§à¦§à§‡à¦° à¦à¦‡ à¦•à¦ à¦¿à¦¨ à¦¸à¦®à§Ÿà§‡ à¦ªà§à¦°à§Ÿà§‹à¦œà¦¨ à¦à¦•à¦œà¦¨ à¦¨à¦¿à¦°à§à¦­à¦°à¦¯à§‹à¦—à§à¦¯ à¦—à¦¾à¦‡à¦¡à¥¤ à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨ à¦¤à§‹à¦®à¦¾à¦•à§‡ à¦¦à¦¿à¦šà§à¦›à§‡ à¦ªà¦¾à¦°à§à¦¸à§‹à¦¨à¦¾à¦²à¦¾à¦‡à¦œà¦¡ à¦•à§‡à§Ÿà¦¾à¦°, à¦•à¦®à§à¦ªà¦¿à¦Ÿà¦¿à¦Ÿà¦¿à¦­ à¦à¦¨à¦­à¦¾à§Ÿà¦°à¦¨à¦®à§‡à¦¨à§à¦Ÿ à¦à¦¬à¦‚ à¦²à§‡à¦Ÿà§‡à¦¸à§à¦Ÿ à¦Ÿà§‡à¦•à¦¨à§‹à¦²à¦œà¦¿â€”à¦¯à¦¾ à¦¤à§‹à¦®à¦¾à¦•à§‡ à¦…à¦¨à§à¦¯à¦¦à§‡à¦° à¦šà§‡à§Ÿà§‡ à¦à¦• à¦§à¦¾à¦ª à¦à¦—à¦¿à§Ÿà§‡ à¦°à¦¾à¦–à¦¬à§‡à¥¤
+                    ভর্তি যুদ্ধের এই কঠিন সময়ে প্রয়োজন একজন নির্ভরযোগ্য গাইড। পরীক্ষাঙ্গন তোমাকে দিচ্ছে পার্সোনালাইজড কেয়ার, কম্পিটিটিভ এনভায়রনমেন্ট এবং লেটেস্ট টেকনোলজি—যা তোমাকে অন্যদের চেয়ে এক ধাপ এগিয়ে রাখবে।
                 </p>
             </div>
 
@@ -287,16 +287,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                     <div className="relative z-10 h-full flex flex-col md:flex-row items-center justify-between gap-8">
                         <div className="space-y-4 max-w-lg flex-1">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-orange-300 backdrop-blur-md">
-                                <Sparkles size={12} /> à¦¡à§‡à¦‡à¦²à¦¿ à¦šà§à¦¯à¦¾à¦²à§‡à¦žà§à¦œ
+                                <Sparkles size={12} /> ডেইলি চ্যালেঞ্জ
                             </div>
                             <h3 className="text-3xl md:text-5xl font-bold leading-tight">
-                                à¦¨à¦¿à¦œà§‡à¦•à§‡ à¦¯à¦¾à¦šà¦¾à¦‡ à¦•à¦°à§‹ <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">à¦²à¦¾à¦‡à¦­ à¦•à§à¦‡à¦œ</span> à¦¦à¦¿à§Ÿà§‡
+                                নিজেকে যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">লাইভ কুইজ</span> দিয়ে
                             </h3>
                             <p className="text-gray-400 text-sm md:text-base leading-relaxed">
-                                à¦ªà§à¦°à¦¤à¦¿à¦¦à¦¿à¦¨ à¦¨à¦¤à§à¦¨ à¦¨à¦¤à§à¦¨ à¦Ÿà¦ªà¦¿à¦•à§‡à¦° à¦‰à¦ªà¦° à¦®à¦¡à§‡à¦² à¦Ÿà§‡à¦¸à§à¦Ÿ à¦¦à¦¾à¦“ à¦à¦¬à¦‚ à¦¤à§‹à¦®à¦¾à¦° à¦…à¦¬à¦¸à§à¦¥à¦¾à¦¨ à¦¯à¦¾à¦šà¦¾à¦‡ à¦•à¦°à§‹à¥¤ à¦­à§à¦²à¦—à§à¦²à§‹ à¦¥à§‡à¦•à§‡ à¦¶à§‡à¦–à§‹à¥¤
+                                প্রতিদিন নতুন নতুন টপিকের উপর মডেল টেস্ট দাও এবং তোমার অবস্থান যাচাই করো। ভুলগুলো থেকে শেখো।
                             </p>
                             <button className="mt-4 bg-primary hover:bg-orange-700 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-orange-900/20 group-hover:scale-105 active:scale-95 w-fit">
-                                à¦ªà¦°à§€à¦•à§à¦·à¦¾ à¦¶à§à¦°à§ à¦•à¦°à§à¦¨ <ArrowRight size={18} />
+                                পরীক্ষা শুরু করুন <ArrowRight size={18} />
                             </button>
                         </div>
 
@@ -336,9 +336,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                     <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-primary dark:text-orange-400 rounded-xl flex items-center justify-center mb-4">
                         <Bot size={24} />
                     </div>
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Synapse AI à¦Ÿà¦¿à¦‰à¦Ÿà¦°</h3>
+                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Synapse AI টিউটর</h3>
                     <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">
-                        à§¨à§ª/à§­ à¦ªà¦¾à¦°à§à¦¸à§‹à¦¨à¦¾à¦² à¦Ÿà¦¿à¦‰à¦Ÿà¦°à¥¤ à¦¯à§‡à¦•à§‹à¦¨à§‹ à¦•à¦ à¦¿à¦¨ à¦Ÿà¦ªà¦¿à¦• à¦¬à¦¾ à¦®à§à¦¯à¦¾à¦¥ à¦›à¦¬à¦¿ à¦¤à§à¦²à§‡ à¦ªà¦¾à¦ à¦¾à¦“, à¦®à§à¦¹à§‚à¦°à§à¦¤à§‡à¦‡ à¦¸à¦®à¦¾à¦§à¦¾à¦¨ à¦¬à§à¦à§‡ à¦¨à¦¾à¦“à¥¤
+                        ২৪/৭ পার্সোনাল টিউটর। যেকোনো কঠিন টপিক বা ম্যাথ ছবি তুলে পাঠাও, মুহূর্তেই সমাধান বুঝে নাও।
                     </p>
                 </div>
 
@@ -352,8 +352,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                             </div>
                             <span className="bg-white/20 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold backdrop-blur-sm animate-pulse">MULTIPLAYER</span>
                         </div>
-                        <h3 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">à¦•à§à¦‡à¦œ à¦¬à§à¦¯à¦¾à¦Ÿà¦²</h3>
-                        <p className="text-orange-100 text-xs md:text-sm mb-2 md:mb-4">à¦¬à¦¨à§à¦§à§à¦¦à§‡à¦° à¦šà§à¦¯à¦¾à¦²à§‡à¦žà§à¦œ à¦•à¦°à§‹ à¦à¦¬à¦‚ à¦²à¦¾à¦‡à¦­ à§§ à¦¬à¦¨à¦¾à¦® à§§ à¦•à§à¦‡à¦œ à¦–à§‡à¦²à§‡ à¦ªà§Ÿà§‡à¦¨à§à¦Ÿ à¦œà¦¿à¦¤à§‹à¥¤</p>
+                        <h3 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">কুইজ ব্যাটল</h3>
+                        <p className="text-orange-100 text-xs md:text-sm mb-2 md:mb-4">বন্ধুদের চ্যালেঞ্জ করো এবং লাইভ ১ বনাম ১ কুইজ খেলে পয়েন্ট জিতো।</p>
                     </div>
                     <div className="absolute -bottom-6 -right-6 text-white/10 transform rotate-12 group-hover:rotate-0 transition-transform duration-500">
                         <Swords size={80} className="md:w-[120px] md:h-[120px]" />
@@ -376,18 +376,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="flex flex-col md:flex-row items-center gap-8 md:gap-20">
                 <div className="flex-1 space-y-4 text-center md:text-left">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-yellow-400 font-bold text-xs md:text-sm backdrop-blur-md animate-in fade-in slide-in-from-left-4">
-                        <Crown size={16} className="md:w-4 md:h-4" /> à¦¸à¦¿à¦œà¦¨ à§§ à¦°â€à§à¦¯à¦¾à¦™à§à¦•à¦¿à¦‚
+                        <Crown size={16} className="md:w-4 md:h-4" /> সিজন ১ র‍্যাঙ্কিং
                     </div>
                     <h2 className="text-3xl md:text-6xl font-extrabold tracking-tight">
-                        à¦¸à§‡à¦°à¦¾à¦¦à§‡à¦° à¦¤à¦¾à¦²à¦¿à¦•à¦¾à§Ÿ<br/>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-600">à¦¤à§à¦®à¦¿ à¦•à§‹à¦¥à¦¾à§Ÿ?</span>
+                        সেরাদের তালিকায়<br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-600">তুমি কোথায়?</span>
                     </h2>
                     <p className="text-slate-400 text-sm md:text-lg leading-relaxed max-w-xl">
-                        à¦¶à§à¦§à§à¦®à¦¾à¦¤à§à¦° à¦ªà§œà¦¾à¦¶à§‹à¦¨à¦¾ à¦¨à§Ÿ, à¦¶à§‡à¦–à¦¾à¦Ÿà¦¾à¦•à§‡ à¦†à¦®à¦°à¦¾ à¦•à¦°à§‡à¦›à¦¿ à¦—à§‡à¦®à§‡à¦° à¦®à¦¤à§‹ à¦®à¦œà¦¾à¦¦à¦¾à¦°à¥¤ à¦•à§à¦‡à¦œ à¦¦à¦¿à§Ÿà§‡ à¦ªà§Ÿà§‡à¦¨à§à¦Ÿ à¦…à¦°à§à¦œà¦¨ à¦•à¦°à§‹, à¦²à§‡à¦­à§‡à¦² à¦†à¦ª à¦•à¦°à§‹ à¦à¦¬à¦‚ à¦¬à§à¦°à§‹à¦žà§à¦œ à¦¥à§‡à¦•à§‡ à¦²à¦¿à¦œà§‡à¦¨à§à¦¡ à¦²à¦¿à¦—à§‡ à¦ªà§à¦°à¦®à§‹à¦¶à¦¨ à¦¨à¦¾à¦“à¥¤
+                        শুধুমাত্র পড়াশোনা নয়, শেখাটাকে আমরা করেছি গেমের মতো মজাদার। কুইজ দিয়ে পয়েন্ট অর্জন করো, লেভেল আপ করো এবং ব্রোঞ্জ থেকে লিজেন্ড লিগে প্রমোশন নাও।
                     </p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-4">
                         <button onClick={onLoginClick} className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white px-6 md:px-8 py-3 md:py-3.5 rounded-2xl font-bold hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all hover:scale-105 active:scale-95 text-sm md:text-base flex items-center gap-2">
-                            <Trophy size={18}/> à¦²à¦¿à¦¡à¦¾à¦°à¦¬à§‹à¦°à§à¦¡ à¦¦à§‡à¦–à§à¦¨
+                            <Trophy size={18}/> লিডারবোর্ড দেখুন
                         </button>
                     </div>
                 </div>
@@ -467,17 +467,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="flex flex-col md:flex-row justify-between items-end mb-10 md:mb-14">
                <div className="space-y-3 w-full md:w-auto">
                   <div className="flex items-center gap-2 text-primary font-bold tracking-wider uppercase text-xs md:text-sm">
-                      <Archive size={14} className="md:w-4 md:h-4"/> à¦«à§à¦°à¦¿ à¦à¦•à§à¦¸à§‡à¦¸
+                      <Archive size={14} className="md:w-4 md:h-4"/> ফ্রি এক্সেস
                   </div>
                   <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                      à¦†à¦¨à¦²à¦¿à¦®à¦¿à¦Ÿà§‡à¦¡ <br className="md:hidden"/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">à¦ªà§à¦°à¦¶à§à¦¨à¦¬à§à¦¯à¦¾à¦‚à¦• à¦¸à¦²à¦­</span>
+                      আনলিমিটেড <br className="md:hidden"/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">প্রশ্নব্যাংক সলভ</span>
                   </h2>
                   <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl leading-relaxed">
-                      à¦Ÿà¦¾à¦•à¦¾ à¦–à¦°à¦š à¦•à¦°à§‡ à¦®à¦¡à§‡à¦² à¦Ÿà§‡à¦¸à§à¦Ÿ à¦¨à§Ÿà¥¤ à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨à§‡ à¦®à§‡à¦¡à¦¿à¦•à§‡à¦², à¦‡à¦žà§à¦œà¦¿à¦¨à¦¿à§Ÿà¦¾à¦°à¦¿à¦‚ à¦“ à¦­à¦¾à¦°à§à¦¸à¦¿à¦Ÿà¦¿à¦° à¦¬à¦¿à¦—à¦¤ à¦¬à¦›à¦°à§‡à¦° à¦¸à¦•à¦² à¦ªà§à¦°à¦¶à§à¦¨ à¦¸à¦²à¦­ à¦•à¦°à§‹ à¦¸à¦®à§à¦ªà§‚à¦°à§à¦£ à¦«à§à¦°à¦¿à¦¤à§‡à¥¤
+                      টাকা খরচ করে মডেল টেস্ট নয়। পরীক্ষাঙ্গনে মেডিকেল, ইঞ্জিনিয়ারিং ও ভার্সিটির বিগত বছরের সকল প্রশ্ন সলভ করো সম্পূর্ণ ফ্রিতে।
                   </p>
                </div>
                <button onClick={onLoginClick} className="text-gray-900 dark:text-white font-bold hover:text-primary mt-6 md:mt-0 flex items-center gap-2 group border-b-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-all text-sm md:text-base pb-1">
-                  à¦ªà§à¦°à¦¶à§à¦¨ à¦¬à§à¦¯à¦¾à¦‚à¦• à¦à¦•à§à¦¸à¦ªà§à¦²à§‹à¦° à¦•à¦°à§à¦¨ <ArrowRight size={16} className="md:w-[18px] md:h-[18px] group-hover:translate-x-1 transition-transform"/>
+                  প্রশ্ন ব্যাংক এক্সপ্লোর করুন <ArrowRight size={16} className="md:w-[18px] md:h-[18px] group-hover:translate-x-1 transition-transform"/>
                </button>
             </div>
 
@@ -496,15 +496,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-black/10 rounded-full blur-3xl"></div>
 
             <div className="relative z-10">
-               <h2 className="text-3xl md:text-6xl font-extrabold mb-4 md:mb-6 tracking-tight">à¦¦à§‡à¦°à¦¿ à¦•à¦°à¦›à§‹ à¦•à§‡à¦¨?</h2>
+               <h2 className="text-3xl md:text-6xl font-extrabold mb-4 md:mb-6 tracking-tight">দেরি করছো কেন?</h2>
                <p className="text-base md:text-xl text-orange-100 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
-                  à¦¹à¦¾à¦œà¦¾à¦°à§‹ à¦¶à¦¿à¦•à§à¦·à¦¾à¦°à§à¦¥à§€ à¦‡à¦¤à¦¿à¦®à¦§à§à¦¯à§‡ à¦¤à¦¾à¦¦à§‡à¦° à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤à¦¿ à¦¶à§à¦°à§ à¦•à¦°à§‡ à¦¦à¦¿à§Ÿà§‡à¦›à§‡à¥¤ à¦¤à§à¦®à¦¿ à¦•à¦¿ à¦ªà¦¿à¦›à¦¿à§Ÿà§‡ à¦¥à¦¾à¦•à¦¬à§‡? à¦†à¦œà¦‡ à¦œà§Ÿà§‡à¦¨ à¦•à¦°à§‹ à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨ à¦ªà¦°à¦¿à¦¬à¦¾à¦°à§‡à¥¤
+                  হাজারো শিক্ষার্থী ইতিমধ্যে তাদের প্রস্তুতি শুরু করে দিয়েছে। তুমি কি পিছিয়ে থাকবে? আজই জয়েন করো পরীক্ষাঙ্গন পরিবারে।
                </p>
                <button 
                  onClick={onLoginClick}
                  className="bg-white text-primary px-8 py-3.5 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-bold text-lg md:text-xl hover:bg-orange-50 hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2 md:gap-3 mx-auto w-full sm:w-auto"
                >
-                 <Rocket size={20} className="md:w-6 md:h-6" /> à¦à¦•à¦¾à¦‰à¦¨à§à¦Ÿ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨
+                 <Rocket size={20} className="md:w-6 md:h-6" /> একাউন্ট তৈরি করুন
                </button>
             </div>
          </div>
@@ -517,12 +517,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 md:h-7 w-auto object-contain" />
         </div>
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-6 md:mb-8 text-sm text-gray-500">
-            <a href="#" className="hover:text-primary transition-colors">à¦†à¦®à¦¾à¦¦à§‡à¦° à¦¸à¦®à§à¦ªà¦°à§à¦•à§‡</a>
-            <a href="#" className="hover:text-primary transition-colors">à¦•à§‹à¦°à§à¦¸à¦¸à¦®à§‚à¦¹</a>
-            <a href="#" className="hover:text-primary transition-colors">à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦—</a>
-            <a href="#" className="hover:text-primary transition-colors">à¦ªà§à¦°à¦¾à¦‡à¦­à§‡à¦¸à¦¿ à¦ªà¦²à¦¿à¦¸à¦¿</a>
+            <a href="#" className="hover:text-primary transition-colors">আমাদের সম্পর্কে</a>
+            <a href="#" className="hover:text-primary transition-colors">কোর্সসমূহ</a>
+            <a href="#" className="hover:text-primary transition-colors">যোগাযোগ</a>
+            <a href="#" className="hover:text-primary transition-colors">প্রাইভেসি পলিসি</a>
         </div>
-        <p className="text-gray-400 text-xs md:text-sm">Â© 2024 Porikkhangon. Made with â¤ï¸ for Students in Bangladesh.</p>
+        <p className="text-gray-400 text-xs md:text-sm">© 2024 Porikkhangon. Made with ❤️ for Students in Bangladesh.</p>
       </footer>
     </div>
   );
