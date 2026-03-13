@@ -97,14 +97,14 @@ const MOCK_PACKS: ExamPack[] = [
 ];
 
 const MOCK_NOTIFICATIONS: Notification[] = [
-    { id: '1', title: 'Welcome', message: 'Welcome to Dhrubok! (Offline Mode)', type: 'INFO', date: Date.now() },
+    { id: '1', title: 'Welcome', message: 'Welcome to Porikkhangon! (Offline Mode)', type: 'INFO', date: Date.now() },
     { id: '2', title: 'Update', message: 'New Physics questions added.', type: 'SUCCESS', date: Date.now() - 86400000 }
 ];
 
 const MOCK_LEADERBOARD: LeaderboardUser[] = [
-    { uid: '1', displayName: 'Tahmid Khan', photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', points: 5200 },
-    { uid: '2', displayName: 'Sarah Ahmed', photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', points: 4800 },
-    { uid: '3', displayName: 'Rafiqul Islam', photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack', points: 4500 },
+    { uid: '1', displayName: 'Tahmid Khan', photoURL: '', points: 5200 },
+    { uid: '2', displayName: 'Sarah Ahmed', photoURL: '', points: 4800 },
+    { uid: '3', displayName: 'Rafiqul Islam', photoURL: '', points: 4500 },
     { uid: '4', displayName: 'You', photoURL: '', points: 1250 }
 ];
 
@@ -339,10 +339,12 @@ export const fetchQuestionPapersAPI = async (): Promise<QuestionPaperMetadata[]>
   return fetchWithFallback('/question-papers', {}, []);
 };
 
-export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string, search?: string) => {
+export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string, topic?: string, examRef?: string, search?: string) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
   if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(subject)}`;
   if (chapter && chapter !== 'ALL') url += `&chapter=${encodeURIComponent(chapter)}`;
+  if (topic && topic !== 'ALL') url += `&topic=${encodeURIComponent(topic)}`;
+  if (examRef && examRef !== 'ALL') url += `&examRef=${encodeURIComponent(examRef)}`;
   if (search) url += `&search=${encodeURIComponent(search)}`;
   return fetchWithFallback(url, {}, { questions: [], total: 0 });
 };
@@ -353,6 +355,18 @@ export const updateQuestionInBankAPI = async (id: string, questionData: any) => 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(questionData)
   }, { success: true });
+};
+
+export const reportQuestionAPI = async (questionId: string, userId: string, reason: string) => {
+  return fetchWithFallback('/admin/questions/report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ questionId, userId, reason })
+  }, { success: true });
+};
+
+export const fetchReportedQuestionsAPI = async () => {
+  return fetchWithFallback('/admin/questions/reports', {}, []);
 };
 
 export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
@@ -398,6 +412,12 @@ export const sendNotificationAPI = async (data: any) => {
 export const fetchNotificationsAPI = async (): Promise<Notification[]> => {
   const data = await fetchWithFallback('/notifications', {}, MOCK_NOTIFICATIONS);
   return Array.isArray(data) ? data.map((n: any) => ({ ...n, id: n.id || n._id })) : MOCK_NOTIFICATIONS;
+};
+
+export const deleteNotificationAPI = async (id: string) => {
+  return fetchWithFallback(`/admin/notifications/${id}`, {
+    method: 'DELETE'
+  }, { success: true });
 };
 
 export const fetchExamPacksAPI = async (): Promise<ExamPack[]> => {

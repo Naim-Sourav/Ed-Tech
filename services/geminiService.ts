@@ -26,7 +26,9 @@ const getEnvKey = () => {
       // @ts-ignore
       return process.env.VITE_API_KEY;
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn("Failed to retrieve API key from process.env", e);
+  }
   
   return "";
 };
@@ -168,8 +170,39 @@ export const explainConcept = async (
   subject: Subject, 
   history: { role: string; parts: { text: string }[] }[]
 ) => {
-  return ""; 
+  try {
+    const ai = getClient();
+    const systemPrompt = `তুমি হলে একজন বিশেষজ্ঞ শিক্ষক। তোমার কাজ হলো "${subject}" বিষয়ের "${topic}" টপিকটি অত্যন্ত সহজভাবে বুঝিয়ে বলা। 
+    
+    ${LATEX_INSTRUCTION}
+    
+    নির্দেশনা:
+    ১. ভাষা অবশ্যই সহজবোধ্য বাংলা হতে হবে।
+    ২. উদাহরণ দিয়ে বোঝানোর চেষ্টা করবে।
+    ৩. উত্তর খুব বেশি বড় করবে না, তবে মূল পয়েন্টগুলো যেন থাকে।
+    ৪. শুধুমাত্র প্লেইন টেক্সট এবং ল্যাটেক্স ব্যবহার করবে। কোনো বোল্ড বা ইটালিক মার্কডাউন ব্যবহার করবে না।`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: history,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.3
+      }
+    });
+
+    return response.text || "দুঃখিত, আমি উত্তরটি তৈরি করতে পারিনি।";
+  } catch (error) {
+    console.error("Error in explainConcept:", error);
+    throw error;
+  }
 };
+
+const LATEX_INSTRUCTION = `
+For ALL mathematical, physical, and chemical symbols/equations, ALWAYS use LaTeX syntax enclosed within single dollar signs ($). 
+For example, use $\\vec{A} \\times \\vec{B}$ for vector product, $\\theta$ for theta, $\\frac{1}{2}$ for a half, and use subscripts/superscripts correctly (e.g., $H_2O$ for water). 
+Ensure all LaTeX expressions are correctly formatted for MathJax rendering and appear INLINE within the text flow where needed.
+`;
 
 export const generateQuiz = async (
   configs: QuizConfig[],
@@ -211,6 +244,7 @@ export const generateQuiz = async (
     }
 
     prompt += `Instructions:
+    ${LATEX_INSTRUCTION}
     1. ${isPresetMode ? 'Strictly follow the question distribution per subject provided above.' : 'Distribute questions fairly among the topics.'}
     2. Questions MUST be derived strictly from the provided Chapter and Topics.
     3. Language: Bengali (Standard NCTB terminology).
@@ -370,6 +404,7 @@ export const enrichQuestionList = async (
       Raw Data: ${JSON.stringify(chunk)}
 
       Requirements:
+      ${LATEX_INSTRUCTION}
       1. **Subject & Chapter Detection**: Accurately detect the Subject (Physics 1st/2nd Paper, Chemistry 1st/2nd Paper, Biology 1st/2nd Paper, English, General Knowledge) and the specific Chapter Name in Bengali strictly following the NCTB HSC Syllabus.
       2. **Explanation**: Provide a detailed, high-quality explanation for the correct answer. Cite logic from standard textbooks (e.g., Gazi Ajmal, Hazari Nag, Tapan/Ishaq) where applicable. The explanation must be in Bengali.
       3. **Topic**: Identify a short specific topic (e.g. 'Vector', 'Organic Chemistry', 'Grammar').
