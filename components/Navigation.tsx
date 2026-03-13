@@ -79,10 +79,10 @@ const Navigation: React.FC<NavigationProps> = ({
       }
     } else if (isIOS) {
       // iOS Instruction
-      showToast("Safari মেনু থেকে 'Add to Home Screen'-এ ক্লিক করুন", "info");
+      showToast("Safari à¦®à§‡à¦¨à§ à¦¥à§‡à¦•à§‡ 'Add to Home Screen'-à¦ à¦•à§à¦²à¦¿à¦• à¦•à¦°à§à¦¨", "info");
     } else {
       // Other browsers fallback
-      showToast("ব্রাউজার মেনু থেকে 'Install App' বা 'Add to Home Screen' সিলেক্ট করুন", "info");
+      showToast("à¦¬à§à¦°à¦¾à¦‰à¦œà¦¾à¦° à¦®à§‡à¦¨à§ à¦¥à§‡à¦•à§‡ 'Install App' à¦¬à¦¾ 'Add to Home Screen' à¦¸à¦¿à¦²à§‡à¦•à§à¦Ÿ à¦•à¦°à§à¦¨", "info");
     }
   };
 
@@ -153,9 +153,9 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   const getThemeLabel = () => {
-    if (themeMode === 'dark') return 'ডার্ক';
-    if (themeMode === 'system') return 'অটো';
-    return 'লাইট';
+    if (themeMode === 'dark') return 'à¦¡à¦¾à¦°à§à¦•';
+    if (themeMode === 'system') return 'à¦…à¦Ÿà§‹';
+    return 'à¦²à¦¾à¦‡à¦Ÿ';
   };
 
   const getNotificationIcon = (type: string) => {
@@ -204,12 +204,12 @@ const Navigation: React.FC<NavigationProps> = ({
           <div className="fixed inset-y-0 right-0 w-80 md:w-96 bg-white dark:bg-gray-900 z-[170] shadow-2xl border-l border-gray-200 dark:border-gray-800 flex flex-col animate-in slide-in-from-right duration-300">
              <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                  <h4 className="text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                     নোটিফিকেশন <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">{unreadCount}</span>
+                     à¦¨à§‹à¦Ÿà¦¿à¦«à¦¿à¦•à§‡à¦¶à¦¨ <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">{unreadCount}</span>
                  </h4>
                  <div className="flex items-center gap-2">
                     {unreadCount > 0 && (
                         <button onClick={markAllAsRead} className="text-[10px] font-bold text-gray-500 hover:text-primary flex items-center gap-1 transition-colors">
-                            <Check size={12}/> সব পঠিত
+                            <Check size={12}/> à¦¸à¦¬ à¦ªà¦ à¦¿à¦¤
                         </button>
                     )}
                     <button onClick={() => setIsNotificationOpen(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
@@ -224,13 +224,13 @@ const Navigation: React.FC<NavigationProps> = ({
                          onClick={() => setFilter('ALL')}
                          className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${filter === 'ALL' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                      >
-                         সব
+                         à¦¸à¦¬
                      </button>
                      <button 
                          onClick={() => setFilter('UNREAD')}
                          className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${filter === 'UNREAD' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                      >
-                         অপঠিত
+                         à¦…à¦ªà¦ à¦¿à¦¤
                      </button>
                  </div>
              </div>
@@ -241,7 +241,7 @@ const Navigation: React.FC<NavigationProps> = ({
                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
                          <Bell size={24} className="opacity-50"/>
                        </div>
-                       <p className="text-sm font-medium">কোনো নোটিফিকেশন নেই</p>
+                       <p className="text-sm font-medium">à¦•à§‹à¦¨à§‹ à¦¨à§‹à¦Ÿà¦¿à¦«à¦¿à¦•à§‡à¦¶à¦¨ à¦¨à§‡à¦‡</p>
                    </div>
                 ) : (
                    displayedNotifications.map(n => {
@@ -290,8 +290,8 @@ const Navigation: React.FC<NavigationProps> = ({
       `}>
         <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <img src="/Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain" />
-            <img src="/letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain" />
+            <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain" />
+            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain" />
           </div>
           
           <div className="relative md:block hidden">
@@ -351,7 +351,7 @@ const Navigation: React.FC<NavigationProps> = ({
               className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400"
             >
               {isIOS ? <Share size={18} /> : <Download size={18} />}
-              <span>অ্যাপ ইনস্টল করুন</span>
+              <span>à¦…à§à¦¯à¦¾à¦ª à¦‡à¦¨à¦¸à§à¦Ÿà¦² à¦•à¦°à§à¦¨</span>
             </button>
           )}
           
@@ -387,7 +387,7 @@ const Navigation: React.FC<NavigationProps> = ({
             </button>
           </div>
           <div className="text-[10px] text-center text-gray-400 dark:text-gray-600 font-medium">
-            <p>© ২০২৪ পরীক্ষাঙ্গন | v1.1 PWA</p>
+            <p>Â© à§¨à§¦à§¨à§ª à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨ | v1.1 PWA</p>
           </div>
         </div>
       </div>
