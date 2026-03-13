@@ -181,8 +181,8 @@ const MainLayout: React.FC<{
                         </>
                     ) : (
                         <div className="flex items-center gap-1.5">
-                            <img src="/Pshape.svg" alt="Porikkhangon Logo" className="h-10 sm:h-12 w-auto object-contain" />
-                            <img src="/letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 sm:h-8 w-auto object-contain" />
+                            <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-10 sm:h-12 w-auto object-contain" />
+                            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 sm:h-8 w-auto object-contain" />
                         </div>
                     )}
                 </div>
