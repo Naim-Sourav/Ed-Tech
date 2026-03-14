@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navigation from './components/Navigation';
@@ -168,40 +167,51 @@ const MainLayout: React.FC<{
 
       <div className="flex-1 flex flex-col h-full relative w-full">
         {!hideNav && (
-            <div className={`md:hidden fixed top-0 left-0 right-0 z-[60] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800 px-4 py-4 pt-safe-area flex items-center justify-between transition-transform duration-300 ease-in-out ${showTopNav ? 'translate-y-0' : '-translate-y-full'}`}>
-                <div className="flex items-center gap-3">
+            <div className={`md:hidden fixed top-0 left-0 right-0 z-[60] bg-white dark:bg-gray-900 px-4 py-3 pt-safe-area grid grid-cols-3 items-center transition-transform duration-300 ease-in-out ${showTopNav ? 'translate-y-0' : '-translate-y-full'}`}>
+                
+                {/* বাম পাশের অংশ: Menu অথবা Back বাটন */}
+                <div className="flex justify-start">
                     {showBackButton ? (
-                        <>
-                            <button onClick={() => navigate(-1)} className="p-1.5 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300">
-                                <ArrowLeft size={22} />
-                            </button>
-                            <span className="font-bold text-gray-800 dark:text-white text-lg tracking-tight line-clamp-1">
-                                {getTitle(location.pathname)}
-                            </span>
-                        </>
+                        <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors">
+                            <ArrowLeft size={24} />
+                        </button>
+                    ) : (
+                        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors">
+                            <Menu size={24} />
+                        </button>
+                    )}
+                </div>
+
+                {/* মাঝখানের অংশ: লোগো অথবা পেজের নাম */}
+                <div className="flex justify-center items-center">
+                    {showBackButton ? (
+                        <span className="font-bold text-gray-900 dark:text-white text-lg tracking-tight line-clamp-1 text-center">
+                            {getTitle(location.pathname)}
+                        </span>
                     ) : (
                         <div className="flex items-center gap-1.5">
-                            <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-10 sm:h-12 w-auto object-contain" />
-                            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 sm:h-8 w-auto object-contain" />
+                            <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-8 w-auto object-contain drop-shadow-sm" />
+                            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-5 w-auto object-contain" />
                         </div>
                     )}
                 </div>
                 
-                <div className="flex items-center gap-2">
-                    <button onClick={() => setIsNotificationOpen(true)} className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300 relative">
-                        <Bell size={22} />
-                        {unreadCount > 0 && <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-white dark:border-gray-900"></span>}
-                    </button>
-                    <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300">
-                        <Menu size={22} />
+                {/* ডান পাশের অংশ: Notification বাটন */}
+                <div className="flex justify-end">
+                    <button onClick={() => setIsNotificationOpen(true)} className="p-2 -mr-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 relative transition-colors">
+                        <Bell size={24} />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse"></span>
+                        )}
                     </button>
                 </div>
             </div>
         )}
 
+        {/* -webkit-overflow-scrolling:touch যুক্ত করা হয়েছে নেটিভ স্মুথ স্ক্রলিংয়ের জন্য */}
         <main 
             ref={mainContentRef}
-            className={`flex-1 overflow-y-auto overflow-x-hidden transition-colors relative scroll-smooth ${hideNav ? 'p-0' : 'pt-[calc(60px+env(safe-area-inset-top))] pb-[calc(100px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6'}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch] transition-colors relative scroll-smooth ${hideNav ? 'p-0' : 'pt-[calc(60px+env(safe-area-inset-top))] pb-[calc(100px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6'}`}
         >
           {/* Key on location.pathname forces a re-render/animation on route change */}
           <div key={location.pathname} className="h-full animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -238,18 +248,6 @@ const App: React.FC = () => {
     return 'system';
   });
 
-  // Use location hook here to pass to Navigate
-  // We need to wrap Routes in a component to use useLocation, but App is already inside HashRouter?
-  // No, App contains HashRouter. So we cannot use useLocation in App directly if it's outside Router.
-  // Wait, App returns HashRouter. So we cannot use useLocation at the top level of App.
-  
-  // We need to move the routing logic into a child component or handle it differently.
-  // Actually, the Navigate is inside Routes -> Route -> element.
-  // The element prop is evaluated.
-  // But to access 'location' to pass to state, we need to be inside a Router context.
-  
-  // Refactoring App to split Router and Content.
-  
   useEffect(() => {
     const applyTheme = () => {
       const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
