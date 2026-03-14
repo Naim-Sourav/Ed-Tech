@@ -63,11 +63,16 @@ const MainLayout: React.FC<{
         const currentScrollY = mainContentRef.current.scrollTop;
         const diff = currentScrollY - lastScrollY.current;
 
+        // Show header if:
+        // 1. At the very top (buffer of 50px)
+        // 2. Scrolling UP significantly (diff < -5)
         if (currentScrollY < 50) {
             setShowTopNav(true);
         } else if (diff > 5) {
+            // Scrolling DOWN significantly -> Hide
             setShowTopNav(false);
         } else if (diff < -5) {
+            // Scrolling UP significantly -> Show
             setShowTopNav(true);
         }
         
@@ -118,6 +123,7 @@ const MainLayout: React.FC<{
   const isTrackerPage = location.pathname === '/tracker';
   const hideNav = isExamPage || isPaymentPage || isTrackerPage;
 
+  // Main tabs where back button should NOT appear
   const mainTabs = ['/dashboard', '/courses', '/bot', '/profile', '/tracker'];
   const showBackButton = !mainTabs.includes(location.pathname) && location.pathname !== '/';
 
@@ -142,8 +148,7 @@ const MainLayout: React.FC<{
   };
 
   return (
-    {/* এখানে মেইন ব্যাকগ্রাউন্ড bg-gray-50 থেকে পরিবর্তন করে bg-white করা হয়েছে */}
-    <div className="flex h-[100dvh] bg-white dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
+    <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
       {!profileLoading && !isProfileComplete && !location.pathname.startsWith('/exam/') && <OnboardingModal />}
 
       {!hideNav && (
@@ -162,9 +167,9 @@ const MainLayout: React.FC<{
 
       <div className="flex-1 flex flex-col h-full relative w-full">
         {!hideNav && (
-            {/* এখানে top-[-1px] এবং বর্ডার-শ্যাডো রিমুভ করার ক্লাস দেওয়া হয়েছে */}
-            <div className={`md:hidden fixed top-[-1px] left-0 right-0 z-[60] bg-white dark:bg-gray-900 px-4 pb-3 pt-[calc(env(safe-area-inset-top,0px)+0.8rem)] grid grid-cols-3 items-center transition-transform duration-300 ease-in-out border-0 outline-none shadow-none ring-0 ${showTopNav ? 'translate-y-0' : '-translate-y-full'}`}>
+            <div className={`md:hidden fixed top-0 left-0 right-0 z-[60] bg-white dark:bg-gray-900 px-4 py-3 pt-safe-area grid grid-cols-3 items-center transition-transform duration-300 ease-in-out ${showTopNav ? 'translate-y-0' : '-translate-y-full'}`}>
                 
+                {/* বাম পাশের অংশ: Menu অথবা Back বাটন */}
                 <div className="flex justify-start">
                     {showBackButton ? (
                         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors">
@@ -177,6 +182,7 @@ const MainLayout: React.FC<{
                     )}
                 </div>
 
+                {/* মাঝখানের অংশ: লোগো অথবা পেজের নাম */}
                 <div className="flex justify-center items-center">
                     {showBackButton ? (
                         <span className="font-bold text-gray-900 dark:text-white text-lg tracking-tight line-clamp-1 text-center">
@@ -190,6 +196,7 @@ const MainLayout: React.FC<{
                     )}
                 </div>
                 
+                {/* ডান পাশের অংশ: Notification বাটন */}
                 <div className="flex justify-end">
                     <button onClick={() => setIsNotificationOpen(true)} className="p-2 -mr-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 relative transition-colors">
                         <Bell size={24} />
@@ -201,11 +208,12 @@ const MainLayout: React.FC<{
             </div>
         )}
 
+        {/* -webkit-overflow-scrolling:touch যুক্ত করা হয়েছে নেটিভ স্মুথ স্ক্রলিংয়ের জন্য */}
         <main 
             ref={mainContentRef}
-            {/* মেইন কন্টেন্টের ব্যাকগ্রাউন্ড হিসেবে bg-gray-50 এখানে মুভ করা হয়েছে */}
-            className={`flex-1 bg-gray-50 dark:bg-gray-900 overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch] transition-colors relative scroll-smooth ${hideNav ? 'p-0' : 'pt-[calc(60px+env(safe-area-inset-top))] pb-[calc(100px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6'}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch] transition-colors relative scroll-smooth ${hideNav ? 'p-0' : 'pt-[calc(60px+env(safe-area-inset-top))] pb-[calc(100px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6'}`}
         >
+          {/* Key on location.pathname forces a re-render/animation on route change */}
           <div key={location.pathname} className="h-full animate-in fade-in slide-in-from-bottom-4 duration-300">
              <Suspense fallback={<PageLoader />}>
                 {children}
@@ -294,6 +302,7 @@ const AppRoutes: React.FC<{
             <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => window.location.hash = '#/auth'} /> : <Navigate to="/dashboard" />} />
             <Route path="/auth" element={<AuthRoute><AuthPage onBack={() => window.location.hash = '#/'} /></AuthRoute>} />
             
+            {/* Public Exam Route - Accessible to guests */}
             <Route path="/exam/:examId" element={<ExamPage />} />
 
             <Route path="/*" element={
@@ -305,6 +314,7 @@ const AppRoutes: React.FC<{
                       <Route path="/qbank" element={<QuestionBank />} />
                       <Route path="/exams" element={<ExamHub />} />
                       <Route path="/quiz" element={<QuizArena />} />
+                      {/* ExamPage removed from here as it is now top-level */}
                       <Route path="/battle" element={<QuizBattlePrototype />} />
                       <Route path="/leaderboard" element={<LeaderboardPage />} />
                       <Route path="/tracker" element={<StudyTracker />} />
