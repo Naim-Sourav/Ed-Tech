@@ -1,7 +1,6 @@
-
 {
   "short_name": "Porikkhangon",
-  "name": "Porikkhangon - HSC & Admission AI Tutor",
+  "name": "Porikkhangon - HSC &amp; Admission AI Tutor",
   "icons": [
     {
       "src": "./icon-192.png",
@@ -26,5 +25,6 @@
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "id": "porikkhangon-app"
 }
