@@ -1,13 +1,14 @@
+
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import AuthPage from './components/AuthPage';
 import LandingPage from './components/LandingPage';
-import { Menu, Brain, ArrowLeft, Bell } from 'lucide-react';
+import { Menu, ArrowLeft, Bell } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { LanguageProvider } from './contexts/LanguageContext';
-import SynapseBot from './components/SynapseBot';
+import PorikkhangonAI from './components/PorikkhangonAI';
 import OnboardingModal from './components/OnboardingModal';
 import { fetchNotificationsAPI } from './services/api';
 import { Notification } from './types';
@@ -121,7 +122,8 @@ const MainLayout: React.FC<{
   const isExamPage = location.pathname.startsWith('/exam/');
   const isPaymentPage = location.pathname.startsWith('/payment');
   const isTrackerPage = location.pathname === '/tracker';
-  const hideNav = isExamPage || isPaymentPage || isTrackerPage;
+  const isBotPage = location.pathname === '/bot';
+  const hideNav = isExamPage || isPaymentPage || isTrackerPage || isBotPage;
 
   // Main tabs where back button should NOT appear
   const mainTabs = ['/dashboard', '/courses', '/bot', '/profile', '/tracker'];
@@ -142,7 +144,7 @@ const MainLayout: React.FC<{
       case '/qbank': return 'Archives';
       case '/profile': return 'Profile';
       case '/leaderboard': return 'Rankings';
-      case '/bot': return 'Synapse AI';
+      case '/bot': return 'Porikkhangon AI';
       default: return 'Porikkhangon';
     }
   };
@@ -167,51 +169,48 @@ const MainLayout: React.FC<{
 
       <div className="flex-1 flex flex-col h-full relative w-full">
         {!hideNav && (
-            <div className={`md:hidden fixed top-0 left-0 right-0 z-[60] bg-white dark:bg-gray-900 px-4 py-3 pt-safe-area grid grid-cols-3 items-center transition-transform duration-300 ease-in-out ${showTopNav ? 'translate-y-0' : '-translate-y-full'}`}>
-                
-                {/* বাম পাশের অংশ: Menu অথবা Back বাটন */}
-                <div className="flex justify-start">
-                    {showBackButton ? (
-                        <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors">
-                            <ArrowLeft size={24} />
-                        </button>
-                    ) : (
-                        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors">
-                            <Menu size={24} />
+            <div className={`md:hidden fixed top-0 left-0 right-0 z-[60] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800 px-4 py-4 pt-safe-area flex items-center justify-between transition-transform duration-300 ease-in-out ${showTopNav ? 'translate-y-0' : '-translate-y-full'}`}>
+                {/* Left side: Back button and Notification */}
+                <div className="flex items-center gap-1 z-10">
+                    {showBackButton && (
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300">
+                            <ArrowLeft size={22} />
                         </button>
                     )}
+                    <button onClick={() => setIsNotificationOpen(true)} className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300 relative">
+                        <Bell size={22} />
+                        {unreadCount > 0 && <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-white dark:border-gray-900"></span>}
+                    </button>
                 </div>
 
-                {/* মাঝখানের অংশ: লোগো অথবা পেজের নাম */}
-                <div className="flex justify-center items-center">
-                    {showBackButton ? (
-                        <span className="font-bold text-gray-900 dark:text-white text-lg tracking-tight line-clamp-1 text-center">
-                            {getTitle(location.pathname)}
-                        </span>
-                    ) : (
-                        <div className="flex items-center gap-1.5">
-                            <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-8 w-auto object-contain drop-shadow-sm" />
-                            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-5 w-auto object-contain" />
-                        </div>
-                    )}
+                {/* Center: Logo or Title */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[50%] flex justify-center items-center pointer-events-none">
+                    <div className="pointer-events-auto">
+                        {showBackButton ? (
+                            <span className="font-bold text-gray-800 dark:text-white text-lg tracking-tight line-clamp-1">
+                                {getTitle(location.pathname)}
+                            </span>
+                        ) : (
+                            <div className="flex items-center gap-1.5">
+                                <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-10 w-auto object-contain logo-dark-mode" />
+                                <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 w-auto object-contain logo-dark-mode" />
+                            </div>
+                        )}
+                    </div>
                 </div>
                 
-                {/* ডান পাশের অংশ: Notification বাটন */}
-                <div className="flex justify-end">
-                    <button onClick={() => setIsNotificationOpen(true)} className="p-2 -mr-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-800 dark:text-gray-200 relative transition-colors">
-                        <Bell size={24} />
-                        {unreadCount > 0 && (
-                            <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse"></span>
-                        )}
+                {/* Right side: Menu button */}
+                <div className="flex items-center justify-end z-10">
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300">
+                        <Menu size={22} />
                     </button>
                 </div>
             </div>
         )}
 
-        {/* -webkit-overflow-scrolling:touch যুক্ত করা হয়েছে নেটিভ স্মুথ স্ক্রলিংয়ের জন্য */}
         <main 
             ref={mainContentRef}
-            className={`flex-1 overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch] transition-colors relative scroll-smooth ${hideNav ? 'p-0' : 'pt-[calc(60px+env(safe-area-inset-top))] pb-[calc(100px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6'}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden transition-colors relative scroll-smooth ${hideNav ? 'p-0' : 'pt-[calc(60px+env(safe-area-inset-top))] pb-[calc(100px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6'}`}
         >
           {/* Key on location.pathname forces a re-render/animation on route change */}
           <div key={location.pathname} className="h-full animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -248,6 +247,18 @@ const App: React.FC = () => {
     return 'system';
   });
 
+  // Use location hook here to pass to Navigate
+  // We need to wrap Routes in a component to use useLocation, but App is already inside HashRouter?
+  // No, App contains HashRouter. So we cannot use useLocation in App directly if it's outside Router.
+  // Wait, App returns HashRouter. So we cannot use useLocation at the top level of App.
+  
+  // We need to move the routing logic into a child component or handle it differently.
+  // Actually, the Navigate is inside Routes -> Route -> element.
+  // The element prop is evaluated.
+  // But to access 'location' to pass to state, we need to be inside a Router context.
+  
+  // Refactoring App to split Router and Content.
+  
   useEffect(() => {
     const applyTheme = () => {
       const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -322,8 +333,8 @@ const AppRoutes: React.FC<{
                       <Route path="/profile" element={<ProfilePage />} />
                       <Route path="/profile/:userId" element={<ProfilePage />} />
                       <Route path="/admin" element={<AdminPage />} />
-                      <Route path="/challenges" element={<DailyChallengePage openSynapse={() => {}} />} />
-                      <Route path="/bot" element={<SynapseBot />} />
+                      <Route path="/challenges" element={<DailyChallengePage openBot={() => {}} />} />
+                      <Route path="/bot" element={<PorikkhangonAI />} />
                       <Route path="/gst-special" element={<GSTCoursePage />} /> 
                       <Route path="/exam-batch/:courseId" element={<ExamBatchPage />} />
                       <Route path="/payment" element={<PaymentPage />} />

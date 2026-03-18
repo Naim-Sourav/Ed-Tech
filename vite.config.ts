@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode: _mode }) => {
   return {
     plugins: [react()],
     // Changed to relative base './' to make it portable across GitHub Pages and Vercel
