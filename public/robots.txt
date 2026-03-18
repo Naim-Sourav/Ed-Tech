@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://ais-pre-xzkhk2mn7gv66yyut2iqt3-54112967721.run.app/sitemap.xml
+Sitemap: https://naim-sourav.github.io/Ed-Tech/#/sitemap.xml
