@@ -3,6 +3,10 @@ import React, { useState, useEffect } from 'react';
 import Lottie from 'lottie-react';
 import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket, Play, Activity, BookOpen, Clock, Archive, ShieldCheck, RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
 
+// Import Lottie animations directly
+import heroAnimation from '../assets/lottie/hero-animation.json';
+import aiAnimation from '../assets/lottie/learning.json';
+
 interface LandingPageProps {
   onLoginClick: () => void;
 }
@@ -121,21 +125,6 @@ const Leaf = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" 
 // --- MAIN COMPONENT ---
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
-  const [animationData, setAnimationData] = useState<any>(null);
-  const [aiAnimationData, setAiAnimationData] = useState<any>(null);
-
-  useEffect(() => {
-    fetch('/Exams Preparation..json')
-      .then(res => res.json())
-      .then(data => setAnimationData(data))
-      .catch(err => console.error('Error loading animation:', err));
-
-    fetch('/learning.json')
-      .then(res => res.json())
-      .then(data => setAiAnimationData(data))
-      .catch(err => console.error('Error loading AI animation:', err));
-  }, []);
-
   return (
     <main className="h-screen w-full overflow-y-auto bg-white dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors scroll-smooth selection:bg-primary/30">
       
@@ -211,7 +200,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             {/* Right Column: Lottie Animation */}
             <div className="flex justify-center lg:justify-end animate-in fade-in zoom-in duration-1000 delay-200">
               <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] drop-shadow-2xl">
-                {animationData && <Lottie animationData={animationData} loop={true} />}
+                <Lottie animationData={heroAnimation} loop={true} />
               </div>
             </div>
 
@@ -343,7 +332,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="w-full md:w-1/2 flex justify-center animate-in fade-in slide-in-from-left-8 duration-1000">
               <div className="w-56 h-56 md:w-80 md:h-80 lg:w-[500px] lg:h-[500px] drop-shadow-2xl relative">
                 <div className="absolute inset-0 bg-primary/10 rounded-full blur-[60px] animate-pulse"></div>
-                {aiAnimationData && <Lottie animationData={aiAnimationData} loop={true} />}
+                <Lottie animationData={aiAnimation} loop={true} />
               </div>
             </div>
 
