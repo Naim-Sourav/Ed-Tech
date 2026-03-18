@@ -104,7 +104,7 @@ export const fetchPublicExam = async (examId: string) => {
   if (!auth.currentUser) {
     try {
         await signInAnonymously(auth);
-    } catch (e) {
+    } catch (_e) {
         console.warn("Anonymous auth failed (likely disabled in console). Proceeding unauthenticated.");
     }
   }

@@ -3,7 +3,7 @@ import { db } from "./firebase";
 import { 
   collection, addDoc, doc, updateDoc, onSnapshot, 
   query, orderBy, serverTimestamp, deleteDoc, 
-  setDoc, increment, getDoc 
+  setDoc, increment 
 } from "firebase/firestore";
 
 export interface StudyGroup {

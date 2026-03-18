@@ -16,8 +16,8 @@ const getEnvKey = () => {
       // @ts-ignore
       return import.meta.env.VITE_API_KEY;
     }
-  } catch (e) {
-    // console.warn("Environment variable read failed", e);
+  } catch (_e) {
+    // console.warn("Environment variable read failed", _e);
   }
   
   try {
@@ -26,8 +26,8 @@ const getEnvKey = () => {
       // @ts-ignore
       return process.env.VITE_API_KEY;
     }
-  } catch (e) {
-    console.warn("Failed to retrieve API key from process.env", e);
+  } catch (_e) {
+    console.warn("Failed to retrieve API key from process.env", _e);
   }
   
   return "";
@@ -63,7 +63,7 @@ const GENERATIVE_MODELS = [
   "gemini-2.0-flash-lite"
 ];
 
-const SYNAPSE_MODELS = [
+const PORIKKHANGON_MODELS = [
   "gemini-2.5-flash-preview-09-2025", 
   "gemini-2.5-flash-lite",           
   "gemini-2.0-flash",                
@@ -72,7 +72,7 @@ const SYNAPSE_MODELS = [
   "gemini-3-pro"                     
 ];
 
-const SYNAPSE_SYSTEM_PROMPT = `তুমি হলে HSC পরীক্ষার প্রস্তুতিতে সাহায্য করার জন্য একজন অত্যন্ত জ্ঞানী, বন্ধুত্বপূর্ণ এবং স্মার্ট বড় ভাই (টিউটর)। তোমার সব উত্তর অবশ্যই নির্ভুল, সহজবোধ্য বাংলায় (বাংলা) দিতে হবে। তুমি সবসময় 'তুমি' করে সম্বোধন করবে এবং অনানুষ্ঠানিক, আন্তরিক ভাষায় কথা বলবে, যেন ছোট ভাই বা বন্ধুর সাথে কথা বলছো। তোমার লক্ষ্য হলো কঠিন বিষয়গুলো সরল ও সংক্ষিপ্তভাবে বোঝানো।
+const PORIKKHANGON_SYSTEM_PROMPT = `তুমি হলে HSC পরীক্ষার প্রস্তুতিতে সাহায্য করার জন্য একজন অত্যন্ত জ্ঞানী, বন্ধুত্বপূর্ণ এবং স্মার্ট বড় ভাই (টিউটর)। তোমার সব উত্তর অবশ্যই নির্ভুল, সহজবোধ্য বাংলায় (বাংলা) দিতে হবে। তুমি সবসময় 'তুমি' করে সম্বোধন করবে এবং অনানুষ্ঠানিক, আন্তরিক ভাষায় কথা বলবে, যেন ছোট ভাই বা বন্ধুর সাথে কথা বলছো। তোমার লক্ষ্য হলো কঠিন বিষয়গুলো সরল ও সংক্ষিপ্তভাবে বোঝানো।
 
 উত্তরগুলো অবশ্যই সংক্ষিপ্ত, সহজবোধ্য এবং শুধুমাত্র মূল ধারণার উপর মনোযোগ দিতে হবে। আউটপুট হবে শুধুমাত্র প্লেইন টেক্সট।
 
@@ -99,24 +99,24 @@ Use MCQs strategically when:
 - Student asks for practice questions
 - To check if student understood your explanation`;
 
-export interface SynapseResponse {
+export interface PorikkhangonResponse {
   text: string;
   sources: SearchSource[];
 }
 
-export const generateSynapseResponse = async (
+export const generatePorikkhangonResponse = async (
   history: { role: string; parts: { text?: string; inlineData?: any }[] }[]
-): Promise<SynapseResponse> => {
+): Promise<PorikkhangonResponse> => {
   const client = getClient();
   let lastError: any = null;
 
-  for (const model of SYNAPSE_MODELS) {
+  for (const model of PORIKKHANGON_MODELS) {
     try {
       const response = await client.models.generateContent({
         model: model,
         contents: history,
         config: {
-          systemInstruction: SYNAPSE_SYSTEM_PROMPT,
+          systemInstruction: PORIKKHANGON_SYSTEM_PROMPT,
           temperature: 0.2,
           tools: [{ googleSearch: {} }]
         }
@@ -147,10 +147,10 @@ export const generateSynapseResponse = async (
   
   try {
      const response = await client.models.generateContent({
-        model: SYNAPSE_MODELS[0],
+        model: PORIKKHANGON_MODELS[0],
         contents: history,
         config: {
-          systemInstruction: SYNAPSE_SYSTEM_PROMPT,
+          systemInstruction: PORIKKHANGON_SYSTEM_PROMPT,
           temperature: 0.2,
           tools: [{ googleSearch: {} }]
         }
@@ -158,8 +158,8 @@ export const generateSynapseResponse = async (
       if (response.text) {
          return { text: response.text, sources: [] };
       }
-  } catch (e) {
-    console.error("Synapse: Final backoff failed.");
+  } catch (_e) {
+    console.error("Porikkhangon AI: Final backoff failed.");
   }
 
   throw lastError || new Error("Failed to generate response.");

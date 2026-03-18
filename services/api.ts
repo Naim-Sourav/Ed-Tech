@@ -1,8 +1,8 @@
 
 // ... (imports from types.ts)
-import { PaymentRequest, Notification, LeaderboardUser, ExamPack, Quest, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
+import { PaymentRequest, Notification, LeaderboardUser, ExamPack, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
 
-const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
+export const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
 
 // --- MOCK DATA ---
 const MOCK_STATS = {
@@ -119,7 +119,7 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
         try {
             const errorData = await response.json();
             if (errorData && errorData.error) errorMessage = errorData.error;
-        } catch (e) {
+        } catch (_e) {
             // Body wasn't JSON
         }
         throw new Error(errorMessage);
@@ -129,7 +129,7 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
     const text = await response.text();
     try {
         return JSON.parse(text);
-    } catch (e) {
+    } catch (_e) {
         throw new Error("Invalid JSON response (Server might be sending HTML)");
     }
 
@@ -339,6 +339,20 @@ export const fetchQuestionPapersAPI = async (): Promise<QuestionPaperMetadata[]>
   return fetchWithFallback('/question-papers', {}, []);
 };
 
+export const generateSlugsAPI = async () => {
+    try {
+        const response = await fetch(`${API_BASE}/admin/generate-slugs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to generate slugs');
+        return await response.json();
+    } catch (error) {
+        console.error("Error generating slugs:", error);
+        throw error;
+    }
+};
+
 export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string, topic?: string, examRef?: string, search?: string) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
   if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(subject)}`;
@@ -375,7 +389,7 @@ export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
      try {
        const response = await fetch('/data/gst_a_23_24_questions.json');
        return await response.json();
-     } catch (e) {
+     } catch (_e) {
        return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
      }
   }
