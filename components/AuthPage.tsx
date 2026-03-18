@@ -5,7 +5,7 @@ import { auth } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { syncUserToMongoDB } from '../services/api';
-import { Mail, Lock, User, Loader2, LogIn, ArrowRight, Smartphone } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, Smartphone } from 'lucide-react';
 
 interface AuthPageProps {
   onBack: () => void;
@@ -118,9 +118,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
         <div className="relative z-10 p-12 text-white max-w-lg">
           <div className="flex items-center gap-3 mb-8">
             <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border-2 border-white overflow-hidden p-2">
-               <img src="./Pshape.svg" alt="Porikkhangon Logo" className="w-full h-full object-contain" />
+               <img src="./Pshape.svg" alt="Porikkhangon Logo" className="w-full h-full object-contain [filter:invert(1)_hue-rotate(180deg)]" />
             </div>
-            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-10 w-auto object-contain brightness-0 invert" />
+            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-10 w-auto object-contain [filter:invert(1)_hue-rotate(180deg)]" />
           </div>
           <h1 className="text-5xl font-bold mb-6">আপনার লার্নিং জার্নি শুরু হোক এখান থেকেই</h1>
           <p className="text-lg text-orange-100 leading-relaxed mb-8">

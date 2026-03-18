@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowRight, Bot, Search, PieChart, Swords, Library, 
-  Sparkles, Trophy, Zap, Clock, 
-  ChevronRight, Star, Archive, 
-  Flame, CheckCircle, HelpCircle, XCircle, Lightbulb, Play, 
-  Settings, Target, Calendar, Atom, Beaker, Calculator, Dna,
-  BookOpen, Brain, Sun, Moon, CloudSun, Crown, X, LayoutGrid, BarChart2, Medal, TrendingUp, FileText
+  Bot, Swords, 
+  Trophy, Zap, 
+  Star, Archive, 
+  Flame, CheckCircle, 
+  Settings, Atom, Beaker, Calculator, Dna,
+  BookOpen, Brain, Crown, X, LayoutGrid,
+  Target, ArrowRight, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -27,49 +28,6 @@ const SUBJECTS = [
     { name: 'Math', group: 'Higher Math', icon: Calculator, color: 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40 text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-700/50' },
     { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/40 text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-700/50' },
     { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-700/50' },
-];
-
-const MODEL_TESTS = [
-    {
-        id: 'mt1',
-        subject: 'Physics',
-        chapter: 'ভেক্টর',
-        title: 'ভেক্টর - মডেল টেস্ট ১',
-        count: 20,
-        time: 20,
-        icon: Atom,
-        color: 'text-primary dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800'
-    },
-    {
-        id: 'mt2',
-        subject: 'Chemistry',
-        chapter: 'গুণগত রসায়ন',
-        title: 'গুণগত রসায়ন - মডেল টেস্ট ১',
-        count: 20,
-        time: 20,
-        icon: Beaker,
-        color: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800'
-    },
-    {
-        id: 'mt3',
-        subject: 'Biology',
-        chapter: 'কোষ ও এর গঠন',
-        title: 'কোষ ও এর গঠন - মডেল টেস্ট ১',
-        count: 20,
-        time: 20,
-        icon: Dna,
-        color: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800'
-    },
-    {
-        id: 'mt4',
-        subject: 'Higher Math',
-        chapter: 'ম্যাট্রিক্স ও নির্ণায়ক',
-        title: 'ম্যাট্রিক্স - মডেল টেস্ট ১',
-        count: 20,
-        time: 20,
-        icon: Calculator,
-        color: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800'
-    }
 ];
 
 // Pool of high-quality questions with LaTeX
@@ -143,7 +101,6 @@ const HomeDashboard: React.FC = () => {
   const [pollStats, setPollStats] = useState<number[]>([0,0,0,0]);
   
   const [showStreakModal, setShowStreakModal] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Determine Daily Question based on Date
   useEffect(() => {
@@ -163,8 +120,8 @@ const HomeDashboard: React.FC = () => {
         if (!stats) setIsLoading(true);
         try {
             const [statsData, leaderboardData] = await Promise.all([
-                fetchUserStatsAPI(currentUser.uid).catch(e => null),
-                fetchLeaderboardAPI().catch(e => [])
+                fetchUserStatsAPI(currentUser.uid).catch(() => null),
+                fetchLeaderboardAPI().catch(() => [])
             ]);
 
             if (statsData) setStats(statsData);
@@ -241,8 +198,6 @@ const HomeDashboard: React.FC = () => {
   useEffect(() => {
     setGreetingKey(getGreeting());
     loadData();
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
   }, [currentUser]);
 
   const handleQodSubmit = (idx: number) => {
@@ -532,39 +487,6 @@ const HomeDashboard: React.FC = () => {
             </div>
         </div>
 
-        {/* 3. Model Test Section (New) */}
-        <div>
-            <h3 className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 mb-4 px-1 flex items-center gap-2 uppercase tracking-wider">
-                <FileText size={14}/> মডেল টেস্ট (ফ্রি)
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {MODEL_TESTS.map((test, idx) => (
-                    <div 
-                        key={idx}
-                        onClick={() => navigate('/quiz', { state: { modelTest: test } })}
-                        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-4 rounded-3xl border border-gray-200/50 dark:border-gray-700/50 hover:border-primary/50 transition-all cursor-pointer group shadow-sm hover:shadow-lg active-scale relative overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-gray-100 dark:to-gray-700/30 rounded-bl-full opacity-50 transition-all group-hover:scale-110"></div>
-                        <div className="flex items-center gap-4 relative z-10">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${test.color} group-hover:scale-110 transition-transform shadow-sm ring-1 ring-black/5 dark:ring-white/5`}>
-                                <test.icon size={28} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-black text-gray-900 dark:text-white text-sm md:text-base leading-tight mb-1.5 truncate">{test.title}</h4>
-                                <div className="flex items-center gap-2 text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                    <span className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700/50 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-600"><HelpCircle size={10}/> {test.count} প্রশ্ন</span>
-                                    <span className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700/50 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-600"><Clock size={10}/> {test.time} মি.</span>
-                                </div>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm border border-gray-200 dark:border-gray-600 group-hover:border-primary">
-                                <Play size={16} fill="currentColor" className="ml-0.5 text-gray-400 group-hover:text-white dark:text-gray-300 transition-colors"/>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-
         {/* 3. Subject Bubbles - Compact */}
         <div>
             <h3 className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 mb-4 px-1 flex items-center gap-2 uppercase tracking-wider"><BookOpen size={14}/> বিষয়ভিত্তিক অনুশীলন</h3>
@@ -754,7 +676,7 @@ const HomeDashboard: React.FC = () => {
                         <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-4 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.3)] group-hover:scale-110 transition-transform duration-300">
                             <Bot size={24} />
                         </div>
-                        <h3 className="text-xl font-black text-white mb-2 tracking-tight">Synapse <span className="text-indigo-400">AI</span></h3>
+                        <h3 className="text-xl font-black text-white mb-2 tracking-tight">Porikkhangon <span className="text-indigo-400">AI</span></h3>
                         <p className="text-sm text-gray-400 leading-relaxed max-w-[200px]">তোমার পার্সোনাল টিউটর। যেকোনো প্রশ্ন বা ডাউট ক্লিয়ার করো নিমেষেই।</p>
                     </div>
                     <div className="flex items-center gap-2 text-xs font-bold text-indigo-300 uppercase tracking-widest group-hover:gap-3 transition-all">

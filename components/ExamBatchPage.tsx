@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
-  ShieldCheck, Lock, Calendar, Clock, ArrowRight, 
+  Lock, Calendar, Clock, 
   AlertTriangle, CheckCircle, Send, FileText, 
-  Trophy, User, Copy, ExternalLink, Play
+  Trophy, Copy, ExternalLink, Play
 } from 'lucide-react';
 import { useToast } from './Toast';
 

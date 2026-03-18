@@ -2,12 +2,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Clock, CheckCircle, AlertTriangle, FileText, Upload, 
-  Trophy, Target, Calendar, ArrowRight, Zap, ShieldAlert,
+  Clock, AlertTriangle, FileText, Upload, 
+  Trophy, Target, Calendar, ArrowRight, ShieldAlert,
   Flame, BookOpen, CheckSquare, Download, ChevronDown, ChevronUp
 } from 'lucide-react';
-import { useAdmin } from '../contexts/AdminContext';
-import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
 
 // --- ROUTINE DATA ---
@@ -70,8 +68,6 @@ const PHASE_4_ROUTINE = [
 
 const GSTCoursePage: React.FC = () => {
   const navigate = useNavigate();
-  const { submitPaymentRequest } = useAdmin();
-  const { currentUser } = useAuth();
   const { showToast } = useToast();
   const [showFullRoutine, setShowFullRoutine] = useState(false);
 

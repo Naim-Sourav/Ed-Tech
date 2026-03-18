@@ -184,7 +184,7 @@ const AdminPdfUpload: React.FC = () => {
             try {
                 const parsed = JSON.parse(textResponse);
                 if (Array.isArray(parsed)) return parsed;
-            } catch (e) {
+            } catch (_e) {
                 // Ignore
             }
 

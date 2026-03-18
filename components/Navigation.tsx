@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   GraduationCap, Home, PieChart, Moon, Sun, Swords, 
   Library, LogOut, User, ShieldCheck, Bell, Trophy, Archive, 
-  Monitor, Zap, Info, AlertTriangle, CheckCircle, Check, MailOpen,
+  Monitor, Zap, Info, AlertTriangle, CheckCircle, Check,
   LayoutGrid, Bot, BookOpen, ChevronRight, X, Download, Share
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -118,7 +118,7 @@ const Navigation: React.FC<NavigationProps> = ({
     { path: '/dashboard', label: t('nav_home'), icon: <Home size={18} /> },
     { path: '/exams', label: 'Exam Zone', icon: <LayoutGrid size={18} /> },
     { path: '/challenges', label: t('nav_challenges'), icon: <Zap size={18} /> },
-    { path: '/bot', label: 'Synapse AI', icon: <Bot size={18} /> },
+    { path: '/bot', label: 'Porikkhangon AI', icon: <Bot size={18} /> },
     { path: '/courses', label: t('nav_courses'), icon: <Library size={18} /> },
     { path: '/qbank', label: t('nav_qbank'), icon: <Archive size={18} /> },
     { path: '/battle', label: t('nav_battle'), icon: <Swords size={18} /> },
@@ -290,8 +290,8 @@ const Navigation: React.FC<NavigationProps> = ({
       `}>
         <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain" />
-            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain" />
+            <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain logo-dark-mode" />
+            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain logo-dark-mode" />
           </div>
           
           <div className="relative md:block hidden">

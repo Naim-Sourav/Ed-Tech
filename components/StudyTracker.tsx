@@ -2,15 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Plus, Play, Pause, Square, CheckCircle, Circle, 
-  Clock, Calendar, BarChart2, Settings, Trash2, 
-  RotateCcw, Flame, X, ChevronRight, Target, 
-  BookOpen, Zap, Award, MoreVertical, ArrowLeft,
+  Clock, Settings, Trash2, 
+  Flame, X, ChevronRight, Target, 
+  ArrowLeft,
   LayoutDashboard, ListTodo, PieChart as PieChartIcon
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
 import confetti from 'canvas-confetti';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from 'recharts';
 
 // --- Types ---
 type TaskType = 'STUDY' | 'NAMAZ' | 'COACHING' | 'BREAK' | 'OTHER';

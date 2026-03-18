@@ -21,7 +21,6 @@ import {
   Activity,
   BrainCircuit,
   Cpu,
-  Loader2,
   Calculator,
   Book,
   LayoutGrid,
@@ -30,7 +29,8 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  Bookmark
+  Bookmark,
+  Share2
 } from 'lucide-react';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { fetchQuestionPapersAPI, fetchQuestionsByExamRefAPI, generateQuizFromDB, saveQuestionAPI, unsaveQuestionAPI, fetchSavedQuestionsAPI } from '../services/api';
@@ -38,15 +38,6 @@ import { QuestionPaperMetadata, QuizQuestion } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
-
-interface Category {
-  id: string;
-  title: string;
-  icon: React.ElementType;
-  color: string;
-  bg: string;
-  papers: QuestionPaperMetadata[];
-}
 
 // 1. All Available Subject Groups
 const SUBJECT_GROUPS = [
@@ -148,9 +139,10 @@ interface RevisionQuestionCardProps {
     isSaved: boolean;
     onOptionClick: (qIdx: number, oIdx: number) => void;
     onToggleSave: (question: QuizQuestion) => void;
+    onShare: (question: QuizQuestion) => void;
 }
 
-const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers, isSaved, onOptionClick, onToggleSave }: RevisionQuestionCardProps) => {
+const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers, isSaved, onOptionClick, onToggleSave, onShare }: RevisionQuestionCardProps) => {
     const isRevealed = showAllAnswers || userSelected !== undefined;
     const correctIdx = q.correctAnswerIndex;
 
@@ -161,14 +153,23 @@ const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers,
 
     return (
         <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative group">
-            {/* Bookmark Button */}
-            <button 
-                onClick={() => onToggleSave(q)}
-                className="absolute top-3 right-3 md:top-4 md:right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors z-10"
-                title="Save Question"
-            >
-                <Bookmark size={18} className={isSaved ? 'fill-primary text-primary' : ''}/>
-            </button>
+            {/* Action Buttons */}
+            <div className="absolute top-3 right-3 md:top-4 md:right-4 flex gap-2 z-10">
+                <button 
+                    onClick={() => onShare(q)}
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors"
+                    title="Share Question"
+                >
+                    <Share2 size={18} />
+                </button>
+                <button 
+                    onClick={() => onToggleSave(q)}
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors"
+                    title="Save Question"
+                >
+                    <Bookmark size={18} className={isSaved ? 'fill-primary text-primary' : ''}/>
+                </button>
+            </div>
 
             <div className="flex gap-3 md:gap-4 mb-3 md:mb-4">
                 <span className="font-bold text-gray-300 font-mono text-base md:text-lg">{String(idx+1).padStart(2,'0')}</span>
@@ -426,6 +427,25 @@ const QuestionBank: React.FC = () => {
       });
   }, [currentUser, showToast]);
 
+  const handleShare = useCallback((question: QuizQuestion) => {
+      if (!question.slug) {
+          showToast("এই প্রশ্নটি শেয়ার করা যাচ্ছে না।", "warning");
+          return;
+      }
+      const url = `${window.location.origin}/#/question/${question.slug}`;
+      if (navigator.share) {
+          navigator.share({
+              title: question.question,
+              text: 'এই প্রশ্নটি দেখুন!',
+              url: url,
+          }).catch(console.error);
+      } else {
+          navigator.clipboard.writeText(url).then(() => {
+              showToast("লিংক কপি করা হয়েছে!", "success");
+          }).catch(console.error);
+      }
+  }, [showToast]);
+
   // Grouping logic for Revision Mode
   const groupedRevisionQuestions = useMemo(() => {
       if (!isRevisionMode) return {} as Record<string, { q: QuizQuestion, originalIdx: number }[]>;
@@ -547,6 +567,7 @@ const QuestionBank: React.FC = () => {
                                               isSaved={isSaved}
                                               onOptionClick={handleOptionClick}
                                               onToggleSave={toggleSaveQuestion}
+                                              onShare={handleShare}
                                           />
                                       );
                                   })}

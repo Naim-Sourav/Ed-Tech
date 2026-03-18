@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Zap, CheckCircle, Clock, Trophy, Target, ArrowRight, 
-  FileCheck, Swords, Bot, Bookmark, Activity, Dna, Atom, 
-  Beaker, Calculator, Database, Share2, AlertCircle, Play, 
-  Calendar, Crown, Star, Medal, Shield, Lock, Timer
+  Zap, CheckCircle, Clock, Trophy, Target, 
+  FileCheck, Swords, Bot, Bookmark, Play, 
+  Calendar, Crown, Star, Medal, Lock, Timer
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserStatsAPI, claimQuestAPI } from '../services/api';
@@ -15,7 +14,7 @@ import Confetti from './Confetti';
 import { MILESTONE_QUESTS } from '../services/questData';
 
 interface DailyChallengePageProps {
-  openSynapse: () => void;
+  openBot: () => void;
 }
 
 const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
@@ -112,7 +111,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
                   loadData(); 
               }
           }
-      } catch (e) {
+      } catch (_e) {
           showToast("ক্লেইম করতে সমস্যা হয়েছে", "error");
       } finally {
           setClaimingId(null);

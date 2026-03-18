@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Bot, Brain, PieChart, Sparkles, GraduationCap, ArrowRight, CheckCircle2, Trophy, Swords, Zap, Users, Crown, Rocket, Star, ShieldCheck, Play, Activity, BookOpen, FileCheck, Clock, Archive, Database, FileText, Medal, TrendingUp } from 'lucide-react';
+import Lottie from 'lottie-react';
+import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket, Play, Activity, BookOpen, Clock, Archive, ShieldCheck, RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -111,45 +112,6 @@ const QuestionPaperMarquee = () => {
   );
 };
 
-const TypewriterText = () => {
-  const words = ["মেডিকেল", "ইঞ্জিনিয়ারিং", "ভার্সিটি 'ক'", "HSC একাডেমিক"];
-  const [index, setIndex] = useState(0);
-  const [subIndex, setSubIndex] = useState(0);
-  const [blink, setBlink] = useState(true);
-  const [reverse, setReverse] = useState(false);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setBlink(!blink), 500);
-    return () => clearTimeout(timeout);
-  }, [blink]);
-
-  useEffect(() => {
-    if (subIndex === words[index].length + 1 && !reverse) {
-      setTimeout(() => setReverse(true), 1000);
-      return;
-    }
-
-    if (subIndex === 0 && reverse) {
-      setReverse(false);
-      setIndex((prev) => (prev + 1) % words.length);
-      return;
-    }
-
-    const timeout = setTimeout(() => {
-      setSubIndex((prev) => prev + (reverse ? -1 : 1));
-    }, reverse ? 75 : 150);
-
-    return () => clearTimeout(timeout);
-  }, [subIndex, index, reverse, words]);
-
-  return (
-    <span className="text-primary dark:text-orange-400">
-      {words[index].substring(0, subIndex)}
-      <span className={`${blink ? 'opacity-100' : 'opacity-0'} transition-opacity`}>|</span>
-    </span>
-  );
-};
-
 // --- ICONS ---
 const Beaker = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 3h15"/><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M6 14h12"/></svg>;
 const Calculator = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
@@ -159,18 +121,33 @@ const Leaf = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" 
 // --- MAIN COMPONENT ---
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
+  const [animationData, setAnimationData] = useState<any>(null);
+  const [aiAnimationData, setAiAnimationData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/Exams Preparation..json')
+      .then(res => res.json())
+      .then(data => setAnimationData(data))
+      .catch(err => console.error('Error loading animation:', err));
+
+    fetch('/learning.json')
+      .then(res => res.json())
+      .then(data => setAiAnimationData(data))
+      .catch(err => console.error('Error loading AI animation:', err));
+  }, []);
+
   return (
-    <div className="h-screen w-full overflow-y-auto bg-white dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors scroll-smooth selection:bg-primary/30">
+    <main className="h-screen w-full overflow-y-auto bg-white dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors scroll-smooth selection:bg-primary/30">
       
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all">
+      <header className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 md:h-20 flex items-center justify-between">
           
           {/* Left Side - Brand Logo */}
           <div className="flex items-center cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <div className="flex items-center gap-1.5 transform group-hover:scale-105 transition-transform">
-                  <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-10 md:h-12 w-auto object-contain" />
-                  <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 md:h-7 w-auto object-contain" />
+                  <img src="./Pshape.svg" alt="Porikkhangon - HSC & Admission Preparation Logo" className="h-10 md:h-12 w-auto object-contain logo-dark-mode" />
+                  <img src="./letterlogo.svg" alt="Porikkhangon Typography" className="h-6 md:h-7 w-auto object-contain logo-dark-mode" />
               </div>
           </div>
 
@@ -190,7 +167,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             </button>
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
       <section className="relative pt-12 pb-20 md:pt-24 md:pb-32 px-4 md:px-6 overflow-hidden">
@@ -202,45 +179,46 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         <div className="absolute top-20 left-10 w-48 h-48 md:w-72 md:h-72 bg-orange-500/20 rounded-full blur-[80px] md:blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-64 h-64 md:w-96 md:h-96 bg-orange-500/10 rounded-full blur-[100px] md:blur-[120px] animate-pulse delay-1000"></div>
 
-        <div className="max-w-6xl mx-auto text-center relative z-10">
-          
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-primary dark:text-orange-400 font-bold text-[10px] md:text-sm mb-6 md:mb-8 border border-orange-200 dark:border-orange-800 animate-in fade-in slide-in-from-bottom-4 duration-700 hover:scale-105 transition-transform cursor-default">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            তোমার প্রস্তুতির পরীক্ষাঙ্গন
-          </div>
-          
-          {/* Headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 md:mb-8 leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 text-gray-900 dark:text-white">
-            স্বপ্ন এখন হাতের মুঠোয়<br/>
-            <span className="block mt-2">প্রস্তুতি হোক <TypewriterText /></span>
-          </h1>
-          
-          <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 px-4">
-            'পরীক্ষাঙ্গন' AI টিউটর, রিয়েল-টাইম কুইজ ব্যাটল এবং স্মার্ট প্রোগ্রেস ট্র্যাকিং এর সাথে নিজেকে প্রস্তুত করো বুয়েট, মেডিকেল বা ঢাকা ভার্সিটির জন্য।
-          </p>
-          
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300 w-full sm:w-auto px-4">
-            <button 
-              onClick={onLoginClick}
-              className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl md:rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg shadow-xl shadow-gray-500/20"
-            >
-              <Zap size={20} className="fill-yellow-400 text-yellow-400 md:w-[22px] md:h-[22px]" /> বিনামূল্যে শুরু করুন
-            </button>
-            <button 
-              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group"
-            >
-              <Play size={18} className="group-hover:text-primary transition-colors md:w-5 md:h-5" /> ডেমো দেখুন
-            </button>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-16">
+            
+            {/* Left Column: Text & Buttons */}
+            <div className="text-center lg:text-left space-y-6 md:space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+                পরীক্ষা প্রস্তুতির বিশেষ <span className="text-primary dark:text-orange-400">অঙ্গন</span>
+              </h1>
+              
+              <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                এইচএসসি একাডেমিক কিংবা এডমিশন —সবকিছুর পূর্ণাঙ্গ প্রস্তুতি এখন এক জায়গায়। আনলিমিটেড এক্সাম, মডেল টেস্ট, প্রশ্নব্যাংক সলভ, AI টিউটর, কুইজ ব্যাটল এবং স্মার্ট ট্র্যাকিং ছাড়াও দারুণ সব ফিচারের মাধ্যমে নিজেকে গড়ে তোলো সেরাদের সেরা হিসেবে।
+              </p>
+              
+              <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-start justify-center lg:justify-start gap-4 w-full sm:w-auto">
+                <button 
+                  onClick={onLoginClick}
+                  className="w-full sm:w-72 lg:w-80 px-6 py-3.5 md:px-8 md:py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl md:rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg shadow-xl shadow-gray-500/20"
+                >
+                  <Zap size={20} className="fill-yellow-400 text-yellow-400 md:w-[22px] md:h-[22px]" /> পরীক্ষা শুরু করো
+                </button>
+                <button 
+                  onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="w-full sm:w-72 lg:w-80 px-6 py-3.5 md:px-8 md:py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group"
+                >
+                  <Play size={18} className="group-hover:text-primary transition-colors md:w-5 md:h-5" /> ডেমো দেখুন
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Lottie Animation */}
+            <div className="flex justify-center lg:justify-end animate-in fade-in zoom-in duration-1000 delay-200">
+              <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] drop-shadow-2xl">
+                {animationData && <Lottie animationData={animationData} loop={true} />}
+              </div>
+            </div>
+
           </div>
 
           {/* Animated Stats - REPLACED WITH CAPABILITIES */}
-          <div className="mt-12 md:mt-20 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-4xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
+          <div className="mt-16 md:mt-24 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                   <div className="text-center">
                       <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
@@ -279,7 +257,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 md:gap-6 md:grid-rows-2 h-auto md:h-[600px]">
                 
                 {/* Feature 1: Live Exam (Big Card - Focus) - UPDATED TO MATCH HOME PAGE */}
-                <div className="md:col-span-4 row-span-2 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group min-h-[400px] cursor-pointer" onClick={onLoginClick}>
+                <div className="md:col-span-4 md:row-span-2 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group min-h-[400px] cursor-pointer" onClick={onLoginClick}>
                     {/* Abstract Background Elements from HomeDashboard */}
                     <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-primary/30 transition-all duration-700"></div>
                     <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-cyan-500/10 rounded-full blur-[80px] -ml-10 -mb-10"></div>
@@ -330,37 +308,87 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                     </div>
                 </div>
 
-                {/* Feature 2: Ostad AI (Medium) */}
-                <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all group cursor-pointer relative overflow-hidden min-h-[200px]" onClick={onLoginClick}>
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-orange-500/20 transition-all"></div>
-                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-primary dark:text-orange-400 rounded-xl flex items-center justify-center mb-4">
-                        <Bot size={24} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Synapse AI টিউটর</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm">
-                        ২৪/৭ পার্সোনাল টিউটর। যেকোনো কঠিন টপিক বা ম্যাথ ছবি তুলে পাঠাও, মুহূর্তেই সমাধান বুঝে নাও।
-                    </p>
-                </div>
-
                 {/* Feature 3: Quiz Battle (Medium) */}
-                <div className="md:col-span-2 bg-gradient-to-br from-orange-500 to-orange-700 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 text-white shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group min-h-[200px]" onClick={onLoginClick}>
+                <div className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-orange-500 to-orange-700 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group flex flex-col justify-between min-h-[300px]" onClick={onLoginClick}>
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
                     <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-4 md:mb-6">
-                            <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-md rounded-xl md:rounded-2xl flex items-center justify-center">
-                                <Swords size={20} className="md:w-7 md:h-7 text-white" />
+                        <div className="flex justify-between items-start mb-6 md:mb-10">
+                            <div className="w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                                <Swords size={24} className="md:w-10 md:h-10 text-white" />
                             </div>
-                            <span className="bg-white/20 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold backdrop-blur-sm animate-pulse">MULTIPLAYER</span>
+                            <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm animate-pulse">MULTIPLAYER</span>
                         </div>
-                        <h3 className="text-xl md:text-2xl font-bold mb-1 md:mb-2">কুইজ ব্যাটল</h3>
-                        <p className="text-orange-100 text-xs md:text-sm mb-2 md:mb-4">বন্ধুদের চ্যালেঞ্জ করো এবং লাইভ ১ বনাম ১ কুইজ খেলে পয়েন্ট জিতো।</p>
+                        <h3 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">কুইজ ব্যাটল</h3>
+                        <p className="text-orange-100 text-sm md:text-lg leading-relaxed">বন্ধুদের চ্যালেঞ্জ করো এবং লাইভ ১ বনাম ১ কুইজ খেলে পয়েন্ট জিতো। মেধার লড়াইয়ে নিজেকে প্রমাণ করো সবার মাঝে।</p>
                     </div>
-                    <div className="absolute -bottom-6 -right-6 text-white/10 transform rotate-12 group-hover:rotate-0 transition-transform duration-500">
-                        <Swords size={80} className="md:w-[120px] md:h-[120px]" />
+                    <div className="relative z-10 mt-8">
+                        <button className="w-full py-3 bg-white text-primary rounded-xl font-bold text-sm md:text-base hover:bg-orange-50 transition-colors shadow-lg">ব্যাটল শুরু করো</button>
+                    </div>
+                    <div className="absolute -bottom-10 -right-10 text-white/10 transform rotate-12 group-hover:rotate-0 transition-transform duration-700">
+                        <Swords size={120} className="md:w-[200px] md:h-[200px]" />
                     </div>
                 </div>
 
+
             </div>
+        </div>
+      </section>
+
+      {/* AI Bot Feature Section - Redesigned */}
+      <section className="py-10 md:py-32 px-4 md:px-6 bg-gray-50 dark:bg-gray-800/20 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-8 lg:gap-24">
+            
+            {/* Animation Side */}
+            <div className="w-full md:w-1/2 flex justify-center animate-in fade-in slide-in-from-left-8 duration-1000">
+              <div className="w-56 h-56 md:w-80 md:h-80 lg:w-[500px] lg:h-[500px] drop-shadow-2xl relative">
+                <div className="absolute inset-0 bg-primary/10 rounded-full blur-[60px] animate-pulse"></div>
+                {aiAnimationData && <Lottie animationData={aiAnimationData} loop={true} />}
+              </div>
+            </div>
+
+            {/* Content Side */}
+            <div className="w-full md:w-1/2 space-y-6 md:space-y-8 text-center md:text-left animate-in fade-in slide-in-from-right-8 duration-1000 delay-200">
+              <div className="space-y-2 md:space-y-4">
+                <h2 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                  পরীক্ষাঙ্গন <span className="text-primary">AI টিউটর</span>
+                </h2>
+                <div className="h-1.5 w-32 bg-gradient-to-r from-primary to-orange-400 rounded-full mx-auto md:mx-0"></div>
+              </div>
+              
+              <hr className="border-gray-200 dark:border-gray-700 w-full hidden md:block" />
+              
+              <div className="space-y-6">
+                <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                  ২৪/৭ পার্সোনাল টিউটর। যেকোনো কঠিন টপিক বা ম্যাথ ছবি তুলে পাঠাও, মুহূর্তেই সমাধান বুঝে নাও। আমাদের উন্নত AI প্রযুক্তি তোমাকে প্রতিটি প্রশ্নের গভীরে গিয়ে ব্যাখ্যা প্রদান করবে, যেন তোমার শেখা হয় আরও সহজ ও কার্যকর।
+                </p>
+                
+                <div className="hidden md:block">
+                    <ul className="space-y-4">
+                    {[
+                        "যেকোনো প্রশ্নের তাৎক্ষণিক সমাধান",
+                        "ধাপে ধাপে ব্যাখ্যা ও কনসেপ্ট ক্লিয়ারিং",
+                        "২৪ ঘণ্টা এভেইলঅ্যাবল সাপোর্ট"
+                    ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium">
+                        <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center flex-shrink-0">
+                            <Zap size={14} fill="currentColor" />
+                        </div>
+                        {item}
+                        </li>
+                    ))}
+                    </ul>
+                </div>
+              </div>
+
+              <div className="flex justify-center md:justify-start">
+                <button onClick={onLoginClick} className="bg-primary hover:bg-orange-600 text-white px-8 md:px-10 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-lg transition-all shadow-xl shadow-orange-900/20 hover:scale-105 active:scale-95 flex items-center gap-3">
+                    AI টিউটর ব্যবহার করো <ArrowRight size={20} />
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
@@ -487,6 +515,66 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
          </div>
       </section>
 
+      {/* Additional Features Section */}
+      <section className="py-16 md:py-24 px-4 md:px-6 bg-gray-50 dark:bg-gray-800/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">সব ফিচার এক নজরে</h2>
+            <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">পরীক্ষাঙ্গন শুধুমাত্র একটি অ্যাপ নয়, এটি তোমার প্রস্তুতির পূর্ণাঙ্গ ডিজিটাল পার্টনার।</p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {[
+              { icon: <Clock className="text-blue-500" />, title: "স্মার্ট স্টাডি প্ল্যানার", desc: "তোমার সময় অনুযায়ী অটোমেটিক রুটিন তৈরি করে দেবে আমাদের সিস্টেম।" },
+              { icon: <Archive className="text-red-500" />, title: "ভুল সেভ রাখা", desc: "পরীক্ষায় করা ভুলগুলো আলাদাভাবে সেভ থাকবে যাতে পরে রিভিশন দিতে পারো।" },
+              { icon: <RotateCcw className="text-green-500" />, title: "আনলিমিটেড রিটেক", desc: "যেকোনো পরীক্ষা যতবার খুশি ততবার দিয়ে নিজেকে শুধরে নেওয়ার সুযোগ।" },
+              { icon: <Bookmark className="text-purple-500" />, title: "কোশ্চেন সেভ ব্যবস্থা", desc: "গুরুত্বপূর্ণ প্রশ্নগুলো বুকমার্ক করে রাখো এবং যেকোনো সময় প্র্যাকটিস করো।" },
+              { icon: <Swords className="text-orange-500" />, title: "লাইভ কুইজ ব্যাটল", desc: "বন্ধুদের সাথে রিয়েল-টাইম লড়াইয়ে মেতে ওঠো এবং নিজের মেধা যাচাই করো।" },
+              { icon: <Activity className="text-cyan-500" />, title: "স্মার্ট প্রোগ্রেস ট্র্যাকিং", desc: "গ্রাফ এবং চার্টের মাধ্যমে তোমার উন্নতির গ্রাফ দেখো প্রতিদিন।" }
+            ].map((feature, i) => (
+              <div key={i} className="p-6 md:p-8 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all group">
+                <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">{feature.title}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 md:py-24 px-4 md:px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">সাধারণ জিজ্ঞাসা (FAQ)</h2>
+            <p className="text-gray-500 dark:text-gray-400">পরীক্ষাঙ্গন সম্পর্কে আপনার মনে থাকা কিছু প্রশ্নের উত্তর।</p>
+          </div>
+          
+          <div className="space-y-4">
+            {[
+              { q: "পরীক্ষাঙ্গন কি সবার জন্য ফ্রি?", a: "হ্যাঁ, আমাদের অনেক ফিচার সবার জন্য উন্মুক্ত। তবে বিশেষ কিছু প্রিমিয়াম ফিচারের জন্য সাবস্ক্রিপশন প্রয়োজন হতে পারে।" },
+              { q: "এখানে কি কি বিষয়ের প্রস্তুতি নেওয়া যায়?", a: "এখানে বিজ্ঞান বিভাগের সকল বিষয়সহ HSC একাডেমিক এবং এডমিশন প্রস্তুতির সব রিসোর্স রয়েছে।" },
+              { q: "AI টিউটর কিভাবে কাজ করে?", a: "যেকোনো প্রশ্নের ছবি তুলে বা টেক্সট লিখে পাঠালে আমাদের AI টিউটর মুহূর্তেই তার ব্যাখ্যাসহ সমাধান দিয়ে দেয়।" },
+              { q: "কুইজ ব্যাটল কি?", a: "কুইজ ব্যাটল হলো একটি রিয়েল-টাইম মাল্টিপ্লেয়ার গেম যেখানে আপনি অন্য শিক্ষার্থীদের সাথে সরাসরি প্রতিযোগিতায় অংশ নিতে পারেন।" }
+            ].map((faq, i) => (
+              <details key={i} className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <summary className="flex items-center justify-between p-6 cursor-pointer font-bold text-gray-900 dark:text-white list-none">
+                  {faq.q}
+                  <span className="transition-transform group-open:rotate-180">
+                    <ChevronDown size={20} />
+                  </span>
+                </summary>
+                <div className="px-6 pb-6 text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-16 md:py-20 px-4 md:px-6">
          <div className="max-w-5xl mx-auto bg-gradient-to-r from-primary to-orange-800 rounded-[2rem] md:rounded-[3rem] p-8 md:p-20 text-center text-white relative overflow-hidden shadow-2xl shadow-orange-500/20">
@@ -513,8 +601,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       {/* Footer */}
       <footer className="py-8 md:py-12 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-center">
         <div className="flex items-center justify-center mb-4 md:mb-6 opacity-80 gap-1.5">
-           <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-10 md:h-12 w-auto object-contain" />
-           <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 md:h-7 w-auto object-contain" />
+           <img src="./Pshape.svg" alt="Porikkhangon - HSC & Admission Preparation Logo" className="h-10 md:h-12 w-auto object-contain logo-dark-mode" />
+           <img src="./letterlogo.svg" alt="Porikkhangon Typography" className="h-6 md:h-7 w-auto object-contain logo-dark-mode" />
         </div>
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-6 md:mb-8 text-sm text-gray-500">
             <a href="#" className="hover:text-primary transition-colors">আমাদের সম্পর্কে</a>
@@ -524,7 +612,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         </div>
         <p className="text-gray-400 text-xs md:text-sm">© 2024 Porikkhangon. Made with ❤️ for Students in Bangladesh.</p>
       </footer>
-    </div>
+    </main>
   );
 };
 

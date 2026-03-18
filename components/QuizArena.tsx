@@ -8,12 +8,12 @@ import { SYLLABUS_DB, SyllabusItem, TopicNode } from '../services/syllabusData';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
 import { 
-  Loader2, CheckCircle, XCircle, Trophy, 
-  Clock, Play, Settings, BookOpen, ChevronRight, Check,
-  ArrowRight, ArrowLeft, Atom, Calculator, Globe, Book, Beaker, Dna, 
-  Library, ChevronDown, ChevronUp, CheckSquare,
-  AlertTriangle, LayoutList, AlignJustify, GraduationCap, Flame, Database,
-  PieChart as PieChartIcon, Zap, BrainCircuit, Cpu, Languages, PlusCircle, ListChecks, LayoutGrid, ChevronLeft, Archive
+  Loader2, 
+  Play, Settings, Check,
+  ArrowRight, Atom, Calculator, Globe, Book, Beaker, Dna, 
+  ChevronDown, ChevronUp,
+  LayoutList, AlignJustify, Flame, Database,
+  Zap, BrainCircuit, Cpu, Languages, ListChecks, ChevronLeft, Archive
 } from 'lucide-react';
 
 // --- SUBJECT GROUPING FOR UI (Question Bank Style) ---
@@ -115,7 +115,7 @@ const QuizArena: React.FC = () => {
   const [topicSelection, setTopicSelection] = useState<Record<string, string[]>>({});
   
   // Config State (Custom)
-  const [examStandard, setExamStandard] = useState<ExamStandard>(ExamStandard.HSC);
+  const [examStandard] = useState<ExamStandard>(ExamStandard.HSC);
   const [questionCount, setQuestionCount] = useState(10);
   const [timeLimit, setTimeLimit] = useState<number>(0);
   const [negativeMarking, setNegativeMarking] = useState<number>(0);

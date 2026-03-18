@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileCheck, ShoppingBag, ArrowRight, Loader2, CheckCircle2, ChevronLeft, Timer, CheckCircle } from 'lucide-react';
+import { FileCheck, ShoppingBag, ArrowRight, CheckCircle2, ChevronLeft, Timer, CheckCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ExamPack } from '../types';

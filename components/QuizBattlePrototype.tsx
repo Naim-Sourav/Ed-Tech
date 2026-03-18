@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
-  Swords, Zap, Trophy, UserPlus, Loader2, Play, Copy, Clock, Users, XCircle, 
-  Crown, Eye, CheckCircle, X, ChevronDown, Check, Settings, ArrowRight, 
-  Timer, Share2, LogOut, Grid, User, BarChart2, Smile, Flame, Target, 
-  Shield, Lightbulb, FastForward, Heart, MessageCircle, AlertTriangle, MoveRight,
-  History, Percent, Atom, Beaker, Calculator, Dna, Brain, Layers, Globe, BookOpen, Book, Hash, Meh
+  Swords, Zap, Trophy, UserPlus, Loader2, Copy, Clock, XCircle, 
+  Crown, Eye, CheckCircle, X, Check, Settings, 
+  Flame, MoveRight,
+  History, Percent, Atom, Beaker, Calculator, Dna, Brain, Layers, Globe, BookOpen, Book, Hash
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { SYLLABUS_DB } from '../services/syllabusData';
@@ -26,8 +25,7 @@ import {
   BattlePlayer,
   sendReactionRTDB
 } from '../services/battleService';
-import { generateQuizFromDB, updateQuestProgressAPI, saveExamResultAPI, sendNotificationAPI, fetchUserStatsAPI } from '../services/api'; 
-import { QuizQuestion } from '../types';
+import { generateQuizFromDB, sendNotificationAPI, fetchUserStatsAPI } from '../services/api'; 
 import { ref, update } from "firebase/database";
 import { rtdb } from "../services/firebase";
 
@@ -72,7 +70,6 @@ const BATTLE_SUBJECTS = [
 const QuizBattlePrototype: React.FC = () => {
   const { currentUser, userAvatar } = useAuth();
   const { showToast } = useToast();
-  const navigate = useNavigate();
   const location = useLocation();
   const opponentInfo = location.state?.opponent; 
   
@@ -97,17 +94,11 @@ const QuizBattlePrototype: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [startCountdown, setStartCountdown] = useState<number | null>(null);
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
   const [floatingPoints, setFloatingPoints] = useState<{id: number, pts: number} | null>(null);
   const [streak, setStreak] = useState(0);
   const [activeReactions, setActiveReactions] = useState<{id: number, emoji: string, sender: string}[]>([]);
 
-  // Power Ups
-  const [powerUps, setPowerUps] = useState({
-      fiftyFifty: 1,
-      extraTime: 1
-  });
   const [disabledOptions, setDisabledOptions] = useState<number[]>([]);
 
   // Config
@@ -153,8 +144,8 @@ const QuizBattlePrototype: React.FC = () => {
                       totalPoints: stats.points || 0,
                       winRate: stats.totalExams > 0 ? Math.round(((stats.totalExams/5) / (stats.totalExams/3)) * 100) : 0
                   });
-              } catch (e) {
-                  console.error("Failed to load stats", e);
+              } catch (_e) {
+                  console.error("Failed to load stats", _e);
               }
           };
           loadStats();
@@ -222,9 +213,9 @@ const QuizBattlePrototype: React.FC = () => {
           const startTime = battleState.startTime;
           
           if (now < startTime) {
-              setStartCountdown(Math.ceil((startTime - now) / 1000));
+              // setStartCountdown(Math.ceil((startTime - now) / 1000));
           } else {
-              setStartCountdown(null);
+              // setStartCountdown(null);
               const elapsed = (now - startTime) / 1000;
               const durationPerQ = battleState.config.timePerQuestion;
               const calcIdx = Math.floor(elapsed / durationPerQ);
@@ -290,17 +281,6 @@ const QuizBattlePrototype: React.FC = () => {
     });
   };
 
-  const useFiftyFifty = () => {
-      if (powerUps.fiftyFifty <= 0 || hasAnswered) return;
-      const q = battleState!.questions[currentQIndex];
-      const correctIdx = Number(q.correctAnswerIndex);
-      const wrongIndices = [0, 1, 2, 3].filter(i => i !== correctIdx);
-      const toDisable = wrongIndices.sort(() => 0.5 - Math.random()).slice(0, 2);
-      setDisabledOptions(toDisable);
-      setPowerUps(prev => ({ ...prev, fiftyFifty: 0 }));
-      showToast("50-50 Used!", "info");
-  };
-
   const sendReaction = (emoji: string) => {
       if (!roomId || !currentUser) return;
       sendReactionRTDB(roomId, emoji, currentUser.displayName || 'Learner');
@@ -311,7 +291,6 @@ const QuizBattlePrototype: React.FC = () => {
       setRoomId('');
       setBattleState(null);
       setStreak(0);
-      setPowerUps({ fiftyFifty: 1, extraTime: 1 });
   };
 
   const handleLeave = async () => {
@@ -325,8 +304,8 @@ const QuizBattlePrototype: React.FC = () => {
           } else {
               await leaveRTDBRoom(roomId, currentUser.uid);
           }
-      } catch (e) {
-          console.error(e);
+      } catch (_e) {
+          console.error(_e);
       } finally {
           resetToMenu();
       }
@@ -368,7 +347,7 @@ const QuizBattlePrototype: React.FC = () => {
               metadata: { roomId: newRoomId }
           });
       }
-    } catch (e: any) { showToast(e.message, "error"); }
+    } catch (_e: any) { showToast(_e.message, "error"); }
     finally { setLoading(false); }
   };
 
@@ -378,7 +357,7 @@ const QuizBattlePrototype: React.FC = () => {
     try {
       await joinRTDBRoom(inputRoomId, { uid: currentUser!.uid, name: currentUser!.displayName || 'Guest', avatar: userAvatar });
       setRoomId(inputRoomId);
-    } catch (e: any) { showToast("Room not found", "error"); }
+    } catch (_e: any) { showToast("Room not found", "error"); }
     finally { setLoading(false); }
   };
 
@@ -447,24 +426,6 @@ const QuizBattlePrototype: React.FC = () => {
             </div>
         </div>
     );
-  };
-
-  const renderTimer = () => {
-      const circumference = 2 * Math.PI * 18;
-      const progress = (timeLeft / battleState!.config.timePerQuestion) * circumference;
-      const colorClass = timeLeft > 10 ? 'text-emerald-500' : timeLeft > 5 ? 'text-yellow-500' : 'text-red-500';
-      
-      return (
-          <div className="relative w-12 h-12 flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="24" cy="24" r="18" stroke="currentColor" strokeWidth="3" fill="transparent" className="text-gray-200 dark:text-gray-700" />
-                  <circle cx="24" cy="24" r="18" stroke="currentColor" strokeWidth="3" fill="transparent" 
-                    strokeDasharray={circumference} strokeDashoffset={circumference - progress}
-                    className={`${colorClass} transition-all duration-1000 ease-linear`} strokeLinecap="round" />
-              </svg>
-              <span className={`absolute text-xs font-black font-mono ${colorClass} ${timeLeft <= 5 ? 'animate-pulse' : ''}`}>{timeLeft}</span>
-          </div>
-      );
   };
 
   const renderCreate = () => {

@@ -19,7 +19,7 @@ const AdmissionSearch: React.FC = () => {
     try {
       const data = await searchAdmissionInfo(query);
       setResult(data);
-    } catch (err) {
+    } catch (_err) {
       setResult({ 
         text: "দুঃখিত, তথ্য খুঁজে পেতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।", 
         sources: [] 

@@ -1,15 +1,14 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
-import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI, reportQuestionAPI, generateQuizFromDB, fetchQuestionPapersAPI, syncUserToMongoDB, fetchSavedQuestionsAPI } from '../services/api';
+import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI, generateQuizFromDB, fetchQuestionPapersAPI, syncUserToMongoDB, fetchSavedQuestionsAPI } from '../services/api';
 import { fetchPublicExamLeaderboard, getUserRank, submitGuestExamResult, fetchPublicExam } from '../services/publicExamService';
 import { 
   Clock, ChevronRight, CheckCircle, XCircle, 
   BookOpen, Bookmark, LayoutGrid, HelpCircle, 
-  Trophy, RefreshCw, Home, LayoutList, X, Flame, ArrowRight, Calendar, Check, Flag, AlertTriangle, Loader2,
+  Trophy, RefreshCw, Home, LayoutList, X, Flame, ArrowRight, Check, AlertTriangle, Loader2,
   User, Mail, Lock
 } from 'lucide-react';
 import { QuizQuestion } from '../types';
@@ -36,7 +35,6 @@ const ExamPage: React.FC = () => {
   const navigate = useNavigate();
   const { examId } = useParams<{ examId: string }>();
   const { currentUser } = useAuth();
-  const { t } = useLanguage();
   const { showToast } = useToast();
   const { clearCache } = useCache(); 
 
@@ -55,7 +53,6 @@ const ExamPage: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0); 
   const [examDuration, setExamDuration] = useState(0);
   const [savedQuestionIndices, setSavedQuestionIndices] = useState<Set<number>>(new Set());
-  const [flaggedQuestionIndices, setFlaggedQuestionIndices] = useState<Set<number>>(new Set());
   const [expiryTimestamp, setExpiryTimestamp] = useState<number | null>(null);
   
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -536,7 +533,7 @@ const ExamPage: React.FC = () => {
         updateQuestProgressAPI(currentUser.uid, 'SAVE_QUESTION', 1);
         showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
       }
-    } catch (e) {
+    } catch (_e) {
       // Revert on error
       setSavedQuestionIndices(prev => {
           const newSet = new Set(prev);
@@ -548,38 +545,6 @@ const ExamPage: React.FC = () => {
           return newSet;
       });
       showToast("বুকমার্ক আপডেট করা যায়নি", "error");
-    }
-  };
-
-  const toggleFlagQuestion = (index: number) => {
-    setFlaggedQuestionIndices(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(index)) {
-            newSet.delete(index);
-            showToast("ফ্ল্যাগ রিমুভ করা হয়েছে", "info");
-        } else {
-            newSet.add(index);
-            showToast("প্রশ্নটি ফ্ল্যাগ করা হয়েছে", "warning");
-        }
-        return newSet;
-    });
-  };
-
-  const handleReportQuestion = async (index: number) => {
-    if (!currentUser) { showToast("লগইন প্রয়োজন", "warning"); return; }
-    const q = questions[index];
-    // @ts-ignore
-    if (!q._id) { showToast("এই প্রশ্নটি রিপোর্ট করা সম্ভব নয়", "error"); return; }
-    
-    const reason = prompt("রিপোর্টের কারণ লিখুন (যেমন: ভুল উত্তর, ভুল প্রশ্ন):");
-    if (!reason) return;
-
-    try {
-        // @ts-ignore
-        await reportQuestionAPI(q._id, currentUser.uid, reason);
-        showToast("রিপোর্ট এডমিন প্যানেলে পাঠানো হয়েছে", "success");
-    } catch (e) {
-        showToast("রিপোর্ট পাঠানো যায়নি", "error");
     }
   };
 
@@ -660,8 +625,8 @@ const ExamPage: React.FC = () => {
                 }
             }
         }
-    } catch (e) {
-        console.error(e);
+    } catch (_e) {
+        console.error(_e);
         showToast("সাবমিট করতে সমস্যা হয়েছে", "error");
     } finally {
         localStorage.removeItem(SESSION_KEY);
@@ -719,11 +684,6 @@ const ExamPage: React.FC = () => {
     const totalSeconds = config.timeLimit * 60;
     const percentage = (timeLeft / totalSeconds) * 100;
     
-    // Timer Color Logic
-    let bgColor = 'bg-emerald-500';
-    if (percentage <= 20) bgColor = 'bg-red-500';
-    else if (percentage <= 50) bgColor = 'bg-yellow-500';
-
     return (
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700/50 rounded-full px-3 py-1 border border-gray-200 dark:border-gray-600">
             <div className="relative w-4 h-4">

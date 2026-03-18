@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Clock, ArrowRight, Settings, Archive, Swords, PieChart, 
+  Clock, ArrowRight, Settings, Archive, Swords, 
   Atom, Beaker, Calculator, Dna, Brain, ChevronRight, Flame 
 } from 'lucide-react';
 

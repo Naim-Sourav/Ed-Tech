@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Trophy, CheckCircle, Zap, Target, BookOpen, Bookmark, Swords, Bot, Clock, FileCheck } from 'lucide-react';
+import { Trophy, CheckCircle, Zap, Target, Bookmark, Swords, Bot, Clock, FileCheck } from 'lucide-react';
 import { Quest } from '../types';
 import { claimQuestAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -41,7 +41,7 @@ const QuestWidget: React.FC<QuestWidgetProps> = ({ quests, onQuestUpdate }) => {
               showToast(`অভিনন্দন! ${res.points - (currentUser as any).points || 0} পয়েন্ট অর্জিত হয়েছে!`, "success");
               onQuestUpdate();
           }
-      } catch (e) {
+      } catch (_e) {
           showToast("ক্লেইম করতে সমস্যা হয়েছে", "error");
       } finally {
           setClaiming(null);

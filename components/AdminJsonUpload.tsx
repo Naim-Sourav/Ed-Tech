@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { saveQuestionsToBankAPI } from '../services/api';
 import { QuizQuestion, QuestionPaperMetadata } from '../types';
 import { useToast } from './Toast';
-import { Loader2, Save, FileText, CheckCircle, Trash2, Info, Upload, Calendar, Tag, Eye, ListChecks, Hash, AlertCircle } from 'lucide-react';
+import { Loader2, Save, FileText, CheckCircle, Trash2, Info, Upload, Calendar, Tag, Eye, ListChecks, Hash } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -84,7 +84,7 @@ const AdminJsonUpload: React.FC = () => {
                 return;
             }
         }
-    } catch (jsonError) {
+    } catch (_jsonError) {
         console.log("JSON parse failed, falling back to regex parser...");
     }
 
@@ -134,8 +134,8 @@ const AdminJsonUpload: React.FC = () => {
 
         setProcessedQuestions(extracted);
         showToast(`${extracted.length} টি প্রশ্ন প্রসেস করা হয়েছে (Regex Mode)`, "info");
-    } catch (e: any) {
-        showToast("Error: " + e.message, "error");
+    } catch (_e: any) {
+        showToast("Error: " + _e.message, "error");
     }
   };
 
@@ -157,7 +157,7 @@ const AdminJsonUpload: React.FC = () => {
       showToast("সফলভাবে প্রশ্নব্যাংক সেভ করা হয়েছে!", "success");
       setProcessedQuestions([]);
       setRawInput('');
-    } catch (e) {
+    } catch (_e) {
       showToast("সেভ করতে সমস্যা হয়েছে", "error");
     } finally {
       setIsSaving(false);

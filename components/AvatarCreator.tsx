@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { createAvatar } from '@dicebear/core';
 import { adventurer } from '@dicebear/collection';
 import { Shuffle, Save, User, Smile, Palette, Glasses } from 'lucide-react';
@@ -93,7 +93,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ initialSeed, onSave, onCa
                 >
                     Auto
                 </button>
-                {assets.map((asset, idx) => (
+                {assets.map((asset) => (
                     <button
                         key={asset}
                         onClick={() => updateOption(key, [asset])}

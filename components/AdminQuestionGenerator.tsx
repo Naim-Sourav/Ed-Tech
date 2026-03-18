@@ -4,7 +4,7 @@ import { generateQuiz } from '../services/geminiService';
 import { saveQuestionsToBankAPI } from '../services/api';
 import { ExamStandard, QuizQuestion } from '../types';
 import { SYLLABUS_DB, TopicNode } from '../services/syllabusData';
-import { Sparkles, Save, Trash2, Brain, CheckCircle, Loader2, RefreshCw, Layers, BookOpen, Hash, CheckSquare, Square, Upload, Download, XCircle, PieChart, Atom, Beaker, Calculator, Dna, Activity, Globe, ChevronDown, Book, ListFilter, Check } from 'lucide-react';
+import { Sparkles, Save, Trash2, Brain, CheckCircle, Loader2, Layers, Upload, PieChart, Atom, Beaker, Calculator, Dna, Activity, Globe, ChevronDown, Book, ListFilter, Check } from 'lucide-react';
 import { useToast } from './Toast';
 
 // --- BLOOM'S TAXONOMY & QUESTION STRATEGIES ---
@@ -181,7 +181,7 @@ const AdminQuestionGenerator: React.FC = () => {
                     difficulty: item.difficulty || "Manual Upload"
                 })).filter(q => q.question && q.options.length > 0);
             }
-        } catch (jsonError) {
+        } catch (_jsonError) {
             // Fallback to Regex (similar to AdminJsonUpload)
              const regex = /{[^{}]*}/g; 
              const matches = manualInput.match(regex);
@@ -220,8 +220,8 @@ const AdminQuestionGenerator: React.FC = () => {
             showToast("কোনো বৈধ প্রশ্ন পাওয়া যায়নি। ফরম্যাট চেক করুন।", "error");
         }
 
-    } catch (e: any) {
-        showToast("Error: " + e.message, "error");
+    } catch (_e: any) {
+        showToast("Error: " + _e.message, "error");
     }
   };
 
@@ -327,7 +327,7 @@ const AdminQuestionGenerator: React.FC = () => {
                 setGeneratedQuestions(prev => [...prev, ...parsed]);
                 showToast("Imported successfully", "success");
             }
-        } catch (e) { showToast("Invalid JSON", "error"); }
+        } catch (_e) { showToast("Invalid JSON", "error"); }
     };
     reader.readAsText(file);
     e.target.value = '';

@@ -82,7 +82,7 @@ const ConceptTutor: React.FC = () => {
       };
       
       setMessages(prev => [...prev, botMsg]);
-    } catch (error) {
+    } catch (_error) {
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'model',
@@ -133,10 +133,10 @@ const ConceptTutor: React.FC = () => {
             }`}>
                <ReactMarkdown 
                  components={{
-                   ul: ({node, ...props}) => <ul className="list-disc pl-4 my-2" {...props} />,
-                   ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-2" {...props} />,
-                   strong: ({node, ...props}) => <span className="font-bold text-inherit" {...props} />,
-                   p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />
+                   ul: ({...props}) => <ul className="list-disc pl-4 my-2" {...props} />,
+                   ol: ({...props}) => <ol className="list-decimal pl-4 my-2" {...props} />,
+                   strong: ({...props}) => <span className="font-bold text-inherit" {...props} />,
+                   p: ({...props}) => <p className="mb-2 last:mb-0" {...props} />
                  }}
                >
                  {msg.text}

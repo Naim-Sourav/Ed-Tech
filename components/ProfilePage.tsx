@@ -1,12 +1,11 @@
 
 import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useAuth, EnrolledCourse } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
-import getCroppedImg from '../utils/canvasUtils';
-import { Camera, Edit2, LogOut, MapPin, Save, User, X, BookOpen, Clock, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, TrendingUp, BarChart3, AlertCircle, Zap, Filter, GraduationCap, Briefcase, Target, PieChart, Layers, RefreshCw, AlertTriangle, Play, AlignJustify, LayoutList, FolderPlus, Folder, MoveRight, Upload, Loader2, ZoomIn, ZoomOut, Lock, Swords, CheckCircle, ChevronDown, ChevronUp, CircleDot, HelpCircle, FileQuestion, ChevronLeft, Sparkles, Check } from 'lucide-react';
+import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 
@@ -66,7 +65,6 @@ const ProfilePage: React.FC = () => {
   
   // Image Upload State
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Saved Questions State
   const [savedQuestions, setSavedQuestions] = useState<any[]>(cachedData.savedQuestions || []);
@@ -116,7 +114,7 @@ const ProfilePage: React.FC = () => {
   // Exam Config Modal
   const [showExamConfig, setShowExamConfig] = useState(false);
   const [examTimeLimit, setExamTimeLimit] = useState(0);
-  const [examViewMode, setExamViewMode] = useState<'SINGLE_PAGE' | 'ALL_AT_ONCE'>('SINGLE_PAGE');
+  const [examViewMode, _setExamViewMode] = useState<'SINGLE' | 'LIST'>('SINGLE');
 
   // Scroll Restoration
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -293,7 +291,7 @@ const ProfilePage: React.FC = () => {
         const url = await uploadImageToCloudinary(file);
         setSelectedAvatar(url);
         setShowAvatarSelector(false);
-    } catch (e) { showToast("Upload Failed", "error"); } finally { setIsUploading(false); }
+    } catch (_e) { showToast("Upload Failed", "error"); } finally { setIsUploading(false); }
   };
 
   const handleDeleteSaved = async (id: string) => {
@@ -310,7 +308,7 @@ const ProfilePage: React.FC = () => {
           setSavedQuestions(prev => prev.map(sq => sq._id === savedId ? { ...sq, folder } : sq));
           setMovingQuestionId(null);
           showToast(`${folder} ফোল্ডারে সরানো হয়েছে`, "success");
-      } catch (e) {
+      } catch (_e) {
           showToast("মুভ করা যায়নি", "error");
       }
   };
@@ -789,20 +787,20 @@ const ProfilePage: React.FC = () => {
                             // Determine Color based on accuracy
                             let statusColor = "text-red-500";
                             let statusBg = "bg-red-50 dark:bg-red-900/20";
-                            let statusLabel = "Weak";
+                            let _statusLabel = "Weak";
                             
                             if (accuracy >= 80) {
                                 statusColor = "text-green-500";
                                 statusBg = "bg-green-50 dark:bg-green-900/20";
-                                statusLabel = "Strong";
+                                _statusLabel = "Strong";
                             } else if (accuracy >= 60) {
                                 statusColor = "text-orange-500";
                                 statusBg = "bg-orange-50 dark:bg-orange-900/20";
-                                statusLabel = "Good";
+                                _statusLabel = "Good";
                             } else if (accuracy >= 40) {
                                 statusColor = "text-yellow-500";
                                 statusBg = "bg-yellow-50 dark:bg-yellow-900/20";
-                                statusLabel = "Average";
+                                _statusLabel = "Average";
                             }
 
                             return (

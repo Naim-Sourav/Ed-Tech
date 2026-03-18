@@ -6,7 +6,7 @@ import AdminQuestionGenerator from './AdminQuestionGenerator';
 import AdminJsonUpload from './AdminJsonUpload';
 import AdminPdfUpload from './AdminPdfUpload';
 import AdminPublicExam from './AdminPublicExam';
-import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI } from '../services/api';
+import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
 import { useNavigate } from 'react-router-dom';
@@ -97,6 +97,22 @@ const AdminPage: React.FC = () => {
       }
   };
 
+  const generateSlugs = async () => {
+      try {
+          showToast("Generating slugs... This may take a while.", "info");
+          const data = await generateSlugsAPI();
+          if (data.success) {
+              showToast(data.message, "success");
+              loadQuestions();
+          } else {
+              showToast(data.error || "Failed to generate slugs", "error");
+          }
+      } catch (error) {
+          console.error(error);
+          showToast("Error generating slugs", "error");
+      }
+  };
+
   const loadNotifications = async () => {
       setLoadingNotifs(true);
       try {
@@ -121,7 +137,7 @@ const AdminPage: React.FC = () => {
           await deleteNotificationAPI(id);
           setNotifications(prev => prev.filter(n => (n.id || n._id) !== id));
           showToast("Notification deleted", "success");
-      } catch (e) {
+      } catch (_e) {
           showToast("Failed to delete", "error");
       }
   };
@@ -135,7 +151,7 @@ const AdminPage: React.FC = () => {
           setNotifTitle('');
           setNotifMsg('');
           loadNotifications();
-      } catch (e) {
+      } catch (_e) {
           showToast("পাঠাতে সমস্যা হয়েছে", "error");
       } finally {
           setSendingNotif(false);
@@ -148,7 +164,7 @@ const AdminPage: React.FC = () => {
           await deleteQuestionFromBankAPI(id);
           setQuestions(prev => prev.filter(q => q._id !== id));
           showToast("Question deleted", "success");
-      } catch (e) {
+      } catch (_e) {
           showToast("Failed to delete", "error");
       }
   };
@@ -166,7 +182,7 @@ const AdminPage: React.FC = () => {
           setQuestions(prev => prev.map(q => q._id === editingQuestion._id ? updatedData : q));
           setEditingQuestion(null);
           showToast("প্রশ্ন সফলভাবে আপডেট হয়েছে!", "success");
-      } catch (e) {
+      } catch (_e) {
           showToast("আপডেট করতে সমস্যা হয়েছে", "error");
       }
   };
@@ -211,7 +227,7 @@ const AdminPage: React.FC = () => {
               await deletePaymentRequest(confirmAction.id);
               showToast("এন্ট্রি ডিলিট করা হয়েছে", "info");
           }
-      } catch (e) {
+      } catch (_e) {
           showToast("অ্যাকশন সম্পন্ন হয়নি", "error");
       } finally {
           setActionLoading(false);
@@ -779,8 +795,16 @@ const AdminPage: React.FC = () => {
                             className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
                         />
                     </div>
-                    <div className="text-sm font-bold text-gray-500 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm whitespace-nowrap">
-                        Total: {totalQuestions}
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={generateSlugs}
+                            className="text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap transition-colors"
+                        >
+                            Generate Slugs (SEO)
+                        </button>
+                        <div className="text-sm font-bold text-gray-500 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm whitespace-nowrap">
+                            Total: {totalQuestions}
+                        </div>
                     </div>
                 </div>
 
@@ -891,7 +915,7 @@ const AdminPage: React.FC = () => {
                 </div>
                 
                 {/* Modal Render */}
-                {QuestionEditModal()}
+                <QuestionEditModal />
             </div>
         )}
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchLeaderboardAPI } from '../services/api';
 import { LeaderboardUser } from '../types';
-import { Trophy, Crown, Shield, Star, Award, Zap, Flame, Hexagon, ChevronRight, User, ArrowRight } from 'lucide-react';
+import { Trophy, Crown, Shield, Star, Award, Zap, Flame, Hexagon, ChevronRight, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCache } from '../contexts/CacheContext';
 
