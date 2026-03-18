@@ -25,7 +25,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [language] = useState<Language>('bn');
 
   // Dummy setLanguage function that does nothing, effectively disabling switching
-  const setLanguage = (lang: Language) => {
+  const setLanguage = (_lang: Language) => {
     console.log("Language fixed to Bengali");
   };
 
