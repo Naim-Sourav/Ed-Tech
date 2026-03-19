@@ -6,6 +6,7 @@ import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket
 // Import Lottie animations directly
 import heroAnimation from '../assets/lottie/hero-animation.json';
 import aiAnimation from '../assets/lottie/learning.json';
+import calendarAnimation from '../assets/lottie/CALENDER.json';
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -373,6 +374,64 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               <div className="flex justify-center md:justify-start">
                 <button onClick={onLoginClick} className="bg-primary hover:bg-orange-600 text-white px-8 md:px-10 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-lg transition-all shadow-xl shadow-orange-900/20 hover:scale-105 active:scale-95 flex items-center gap-3">
                     AI টিউটর ব্যবহার করো <ArrowRight size={20} />
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Study Planner Section - NEW */}
+      <section className="py-10 md:py-32 px-4 md:px-6 bg-white dark:bg-gray-900 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row-reverse items-center gap-8 lg:gap-24">
+            
+            {/* Animation Side */}
+            <div className="w-full md:w-1/2 flex justify-center animate-in fade-in slide-in-from-right-8 duration-1000">
+              <div className="w-56 h-56 md:w-80 md:h-80 lg:w-[500px] lg:h-[500px] drop-shadow-2xl relative">
+                <div className="absolute inset-0 bg-orange-500/5 rounded-full blur-[60px] animate-pulse"></div>
+                <Lottie animationData={calendarAnimation} loop={true} />
+              </div>
+            </div>
+
+            {/* Content Side */}
+            <div className="w-full md:w-1/2 space-y-6 md:space-y-8 text-center md:text-left animate-in fade-in slide-in-from-left-8 duration-1000 delay-200">
+              <div className="space-y-2 md:space-y-4">
+                <h2 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                  স্মার্ট <span className="text-primary">স্টাডি প্ল্যানার</span>
+                </h2>
+                <div className="h-1.5 w-32 bg-gradient-to-r from-primary to-orange-400 rounded-full mx-auto md:mx-0"></div>
+              </div>
+              
+              <hr className="border-gray-200 dark:border-gray-700 w-full hidden md:block" />
+              
+              <div className="space-y-6">
+                <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                  আমাদের স্মার্ট স্টাডি প্ল্যানার তোমার সময় এবং টার্গেট অনুযায়ী অটোমেটিক রুটিন তৈরি করে দেবে। প্রতিদিনের পড়া ট্র্যাক করো এবং সময়মতো শেষ করে নিজেকে এগিয়ে রাখো। এটি তোমার প্রস্তুতির প্রতিটি ধাপকে আরও সুশৃঙ্খল এবং কার্যকর করবে।
+                </p>
+                
+                <div className="hidden md:block">
+                    <ul className="space-y-4">
+                    {[
+                        "অটোমেটিক রুটিন জেনারেশন",
+                        "প্রতিদিনের প্রোগ্রেস ট্র্যাকিং",
+                        "টার্গেট ভিত্তিক পড়াশোনা"
+                    ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium">
+                        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
+                            <Clock size={14} />
+                        </div>
+                        {item}
+                        </li>
+                    ))}
+                    </ul>
+                </div>
+              </div>
+
+              <div className="flex justify-center md:justify-start">
+                <button onClick={onLoginClick} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 md:px-10 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-lg transition-all shadow-xl shadow-gray-500/20 hover:scale-105 active:scale-95 flex items-center gap-3">
+                    প্ল্যানার তৈরি করো <ArrowRight size={20} />
                 </button>
               </div>
             </div>
