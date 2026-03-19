@@ -175,7 +175,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             {/* Left Column: Text & Buttons */}
             <div className="text-center lg:text-left space-y-6 md:space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-                পরীক্ষা প্রস্তুতির বিশেষ <span className="text-primary dark:text-orange-400">অঙ্গন</span>
+                পরীক্ষা প্রস্তুতির বিস্তৃত <span className="text-primary dark:text-orange-400">অঙ্গন</span>
               </h1>
               
               <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
