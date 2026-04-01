@@ -12,13 +12,14 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0",
     "@dicebear/collection": "^9.3.2",
     "@dicebear/core": "^9.3.2",
     "@google/genai": "*",
     "@types/canvas-confetti": "^1.9.0",
     "canvas-confetti": "^1.9.4",
     "firebase": "^10.8.0",
-    "framer-motion": "^12.37.0",
     "lottie-react": "^2.4.0",
     "lucide-react": "^0.344.0",
     "pdfjs-dist": "^5.4.624",
