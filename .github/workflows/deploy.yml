@@ -1,12 +1,19 @@
-name: Deploy to GitHub Pages
+name: Deploy Web and Build Android APK
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build:
+  # ১. ওয়েবসাইটের জন্য বিল্ড এবং ডিপ্লয়
+  build-and-deploy-web:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
     - name: Checkout
@@ -16,31 +23,89 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        # cache: 'npm' - Removed to fix missing lockfile error
 
     - name: Install dependencies
       run: npm install
 
-    - name: Build
+    - name: Build Web
       run: npm run build
       env:
         VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
 
-    - name: Upload artifact
+    - name: Upload artifact for Pages
       uses: actions/upload-pages-artifact@v3
       with:
         path: ./dist
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+
+  # ২. অ্যান্ড্রয়েড অ্যাপ (APK) বিল্ড
+  build-android-apk:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Install Dependencies
+        run: npm install --force
+
+      - name: Build Web Project for App
+        run: npm run build
+        env:
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }} # API Key এখানেও যুক্ত করা হয়েছে
+
+      - name: Setup Capacitor Config
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          
+          # আপনার অ্যাপের আসল নাম এবং আইডি দেওয়া হলো
+          cat <<EOF > capacitor.config.json
+          {
+            "appId": "com.porikkhangon.app",
+            "appName": "Porikkhangon",
+            "webDir": "dist",
+            "server": {
+              "androidScheme": "https",
+              "hostname": "localhost",
+              "cleartext": true
+            }
+          }
+          EOF
+          
+          npx cap add android || true
+          npx cap sync android
+
+      - name: Build Android APK
+        run: |
+          cd android
+          
+          echo "configurations.all {
+              resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                  if (details.requested.group == 'org.jetbrains.kotlin') {
+                      details.useVersion '1.8.22'
+                  }
+              }
+          }" >> app/build.gradle
+          
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Porikkhangon-App-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
