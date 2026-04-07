@@ -61,10 +61,6 @@
     -webkit-user-select: none;
     overscroll-behavior-y: none;
     touch-action: pan-y;
-    
-    /* SAFE AREA SPACING ADDED HERE */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
   }
   
   /* Allow text selection in specific readable areas */
@@ -168,6 +164,7 @@ mjx-container {
     animation: shadow-pulse 1.5s infinite;
 }
 
+
 /* 1. Page Transitions (Slide Up & Fade) */
 .animate-page-enter {
   animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -219,6 +216,11 @@ mjx-container {
 /* 4. Button/Card Click Scale (Active State) */
 .active-scale {
   @apply transition-transform duration-100 active:scale-[0.97];
+}
+
+/* Logo Dark Mode Fix: Inverts black to white but keeps orange hue */
+.logo-dark-mode {
+  @apply dark:[filter:invert(1)_hue-rotate(180deg)];
 }
 
 /* 5. Hover Lift */
