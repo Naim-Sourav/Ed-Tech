@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
+import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
@@ -483,9 +484,9 @@ const ProfilePage: React.FC = () => {
 
   const getLevel = (points: number) => {
     if (points < 100) return { name: 'Novice', color: 'bg-gray-400' };
-    if (points < 500) return { name: 'Apprentice', color: 'bg-green-500' };
-    if (points < 1000) return { name: 'Scholar', color: 'bg-orange-500' };
-    if (points < 2000) return { name: 'Master', color: 'bg-orange-600' };
+    if (points < 500) return { name: 'Apprentice', color: 'bg-orange-500' };
+    if (points < 1000) return { name: 'Scholar', color: 'bg-orange-600' };
+    if (points < 2000) return { name: 'Master', color: 'bg-orange-700' };
     return { name: 'Grandmaster', color: 'bg-orange-500' };
   };
 
@@ -518,23 +519,23 @@ const ProfilePage: React.FC = () => {
   const ProfileSkeleton = () => (
     <div className="space-y-6 animate-pulse">
         {/* Header Skeleton */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-200 dark:border-gray-700 h-64 relative">
-            <div className="absolute top-0 left-0 w-full h-24 bg-gray-200 dark:bg-gray-700 rounded-t-3xl"></div>
-            <div className="relative flex flex-col md:flex-row items-center gap-6 mt-10">
-                <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-gray-800"></div>
-                <div className="space-y-3 flex-1 w-full text-center md:text-left">
-                    <div className="h-6 w-1/2 bg-gray-300 dark:bg-gray-600 rounded mx-auto md:mx-0"></div>
-                    <div className="flex gap-2 justify-center md:justify-start">
-                        <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-gray-200 dark:border-gray-700 h-72 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-32 bg-gray-200/50 dark:bg-gray-700/50"></div>
+            <div className="relative flex flex-col md:flex-row items-center gap-8 mt-12">
+                <div className="w-32 h-32 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-gray-800 shadow-xl"></div>
+                <div className="space-y-4 flex-1 w-full text-center md:text-left">
+                    <div className="h-8 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-2xl mx-auto md:mx-0"></div>
+                    <div className="flex gap-3 justify-center md:justify-start">
+                        <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                        <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
                     </div>
                 </div>
             </div>
         </div>
         {/* Stats Skeleton */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"></div>
+                <div key={i} className="h-24 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-gray-700"></div>
             ))}
         </div>
     </div>
@@ -546,12 +547,12 @@ const ProfilePage: React.FC = () => {
 
   // Helper component for Filters
   const FilterSection = () => (
-      <div className="flex flex-wrap items-center gap-2 mb-4 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm animate-in fade-in slide-in-from-top-1">
-          <div className="flex items-center justify-center text-gray-500 px-1"><Filter size={16}/></div>
+      <div className="flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-gray-900/50 p-2 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-inner animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center justify-center text-gray-400 px-2"><Filter size={16}/></div>
           <select 
               value={currentFilterSubject} 
               onChange={(e) => { setCurrentFilterSubject(e.target.value); setCurrentFilterChapter('ALL'); }}
-              className="flex-1 min-w-[90px] px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 border-none text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary truncate"
+              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
           >
               <option value="ALL">সকল বিষয়</option>
               {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -559,14 +560,14 @@ const ProfilePage: React.FC = () => {
           <select 
               value={currentFilterChapter} 
               onChange={(e) => setCurrentFilterChapter(e.target.value)}
-              className="flex-1 min-w-[90px] px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 border-none text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary truncate"
+              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
           >
               <option value="ALL">সকল অধ্যায়</option>
               {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <button 
             onClick={resetCurrentFilters}
-            className="text-[10px] text-red-500 hover:text-red-600 font-bold px-2 whitespace-nowrap"
+            className="text-[10px] text-red-500 hover:text-red-600 font-bold px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors whitespace-nowrap"
           >
             রিসেট
           </button>
@@ -577,23 +578,23 @@ const ProfilePage: React.FC = () => {
   const PaginationControls = () => {
       if (totalPages <= 1) return null;
       return (
-          <div className="flex justify-center items-center gap-4 mt-6">
+          <div className="flex justify-center items-center gap-4 mt-8">
               <button 
                   onClick={() => setCurrentPage((prev: number) => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                  className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
               >
-                  <ChevronLeft size={18} />
+                  <ChevronLeft size={20} />
               </button>
-              <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                  Page {currentPage} of {totalPages}
+              <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
+                  Page <span className="text-primary">{currentPage}</span> of {totalPages}
               </span>
               <button 
                   onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                  className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
               >
-                  <ChevronRight size={18} />
+                  <ChevronRight size={20} />
               </button>
           </div>
       );
@@ -602,116 +603,147 @@ const ProfilePage: React.FC = () => {
   return (
     <div 
         ref={scrollContainerRef}
-        className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-3 md:p-8 transition-colors"
+        className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors no-scrollbar"
     >
-      <div className="max-w-5xl mx-auto space-y-4 md:space-y-8 pb-20">
+      <div className="max-w-5xl mx-auto space-y-6 md:space-y-10 pb-24">
         
-        {/* Header Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2rem] p-4 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-20 md:h-32 bg-gradient-to-r from-primary to-orange-600 opacity-10"></div>
+        {/* Header Section - Native App Style */}
+        <div className="bg-white dark:bg-gray-800/50 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 border border-gray-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
+          {/* Enhanced Background Pattern */}
+          <div className="absolute top-0 left-0 w-full h-full opacity-40 dark:opacity-20 pointer-events-none">
+            <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-br from-primary/30 via-orange-500/20 to-transparent"></div>
+            <div className="absolute top-10 right-10 w-64 h-64 bg-primary/20 rounded-full blur-[100px]"></div>
+            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px]"></div>
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+          </div>
           
-          <div className="relative flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 mt-2 md:mt-4">
+          {/* Top Corner Edit Button - Native Style */}
+          <div className="absolute top-6 right-6 z-30">
+             {isOwnProfile && !isEditing && (
+               <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setIsEditing(true)}
+                  className="p-3.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl text-primary hover:shadow-primary/20 transition-all flex items-center justify-center"
+               >
+                  <Edit2 size={18} strokeWidth={2.5} />
+               </motion.button>
+             )}
+          </div>
+
+          <div className="relative flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10 mt-4 md:mt-8">
             {/* Avatar & User Info */}
-            <div className="relative group">
-               <div className="w-20 h-20 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+            <div className="relative">
+               <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="w-28 h-28 md:w-40 md:h-40 rounded-[2.5rem] border-4 border-white dark:border-gray-800 shadow-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 flex items-center justify-center relative z-10"
+               >
                   {renderProfileAvatar()}
-               </div>
+               </motion.div>
                {isEditing && isOwnProfile && (
-                 <button 
+                 <motion.button 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-                    className="absolute bottom-0 right-0 p-2 bg-gray-900 text-white rounded-full hover:bg-black transition-colors shadow-lg"
+                    className="absolute -bottom-2 -right-2 p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl hover:scale-110 transition-transform shadow-xl z-20 border-2 border-white dark:border-gray-800"
                  >
-                    <Camera size={14} className="md:w-5 md:h-5" />
-                 </button>
+                    <Camera size={18} />
+                 </motion.button>
                )}
                {showAvatarSelector && (
-                   <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 w-64 animate-in fade-in slide-in-from-top-2">
-                       <p className="text-xs font-bold text-gray-500 mb-3">প্রোফাইল ছবি পরিবর্তন করুন</p>
+                   <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute top-full left-0 mt-4 bg-white dark:bg-gray-800 p-5 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 z-50 w-72 backdrop-blur-xl"
+                   >
+                       <p className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4">প্রোফাইল ছবি</p>
 
-                       <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
-                           <Upload size={14}/> ছবি আপলোড করুন
+                       <label className="flex items-center justify-center gap-3 w-full py-4 bg-gray-50 dark:bg-zinc-900/50 rounded-2xl text-sm font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors border border-dashed border-gray-200 dark:border-white/10">
+                           <Upload size={18} className="text-primary"/> ছবি আপলোড করুন
                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                        </label>
-                   </div>
+                   </motion.div>
                )}
             </div>
 
-            <div className="flex-1 text-center md:text-left space-y-2 w-full">
+            <div className="flex-1 text-center md:text-left space-y-3 w-full">
                {isEditing && isOwnProfile ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full">
-                    <div>
-                      <label className="block text-[10px] md:text-xs font-bold text-gray-500 mb-1">{t('auth_name')}</label>
-                      <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white text-sm"/>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full bg-gray-50/50 dark:bg-zinc-900/30 p-5 rounded-3xl border border-gray-100 dark:border-white/5">
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{t('auth_name')}</label>
+                      <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
                     </div>
-                    <div>
-                      <label className="block text-[10px] md:text-xs font-bold text-gray-500 mb-1">College</label>
-                      <input type="text" value={editCollege} onChange={(e) => setEditCollege(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white text-sm"/>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">College</label>
+                      <input type="text" value={editCollege} onChange={(e) => setEditCollege(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
                     </div>
-                    <div>
-                      <label className="block text-[10px] md:text-xs font-bold text-gray-500 mb-1">Batch</label>
-                      <input type="text" value={editHscBatch} onChange={(e) => setEditHscBatch(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white text-sm"/>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Batch</label>
+                      <input type="text" value={editHscBatch} onChange={(e) => setEditHscBatch(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
                     </div>
-                    <div>
-                      <label className="block text-[10px] md:text-xs font-bold text-gray-500 mb-1">Department</label>
-                      <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white text-sm"><option>Science</option><option>Arts</option><option>Commerce</option></select>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Department</label>
+                      <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none"><option>Science</option><option>Arts</option><option>Commerce</option></select>
                     </div>
-                    <div>
-                      <label className="block text-[10px] md:text-xs font-bold text-gray-500 mb-1">Target</label>
-                      <select value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white text-sm"><option>Medical</option><option>Engineering</option><option>University</option><option>Guccho</option></select>
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Target</label>
+                      <select value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none"><option>Medical</option><option>Engineering</option><option>University</option><option>Guccho</option></select>
                     </div>
                  </div>
                ) : (
-                 <>
-                    <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 justify-center md:justify-start">
-                        <h1 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white">{profileData.displayName}</h1>
+                 <div className="space-y-4">
+                    <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 justify-center md:justify-start">
+                        <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">{profileData.displayName}</h1>
                         {profileData.stats && (
-                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-bold text-white ${currentLevel.color}`}>
+                            <motion.span 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className={`px-4 py-1 rounded-full text-[10px] md:text-xs font-black text-white uppercase tracking-widest shadow-lg ${currentLevel.color.replace('bg-', 'bg-')}`}
+                            >
                                 {currentLevel.name}
-                            </span>
+                            </motion.span>
                         )}
                     </div>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-2 text-[10px] md:text-sm text-gray-600 dark:text-gray-300 mt-1">
-                       {profileData.college && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><GraduationCap size={12}/> {profileData.college}</div>}
-                       {profileData.hscBatch && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><Calendar size={12}/> Batch: {profileData.hscBatch}</div>}
-                       {profileData.department && <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded"><Briefcase size={12}/> {profileData.department}</div>}
-                       {profileData.target && <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded font-bold"><Target size={12}/> {profileData.target} Aspirant</div>}
+                    <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-3 text-[11px] md:text-sm text-gray-600 dark:text-gray-300 mt-2">
+                       {profileData.college && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><GraduationCap size={16} className="text-primary"/> {profileData.college}</div>}
+                       {profileData.hscBatch && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><Calendar size={16} className="text-orange-500"/> Batch: {profileData.hscBatch}</div>}
+                       {profileData.department && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><Briefcase size={16} className="text-orange-500"/> {profileData.department}</div>}
+                       {profileData.target && <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-xl font-black border border-primary/20"><Target size={16}/> {profileData.target} Aspirant</div>}
                     </div>
-                 </>
+                 </div>
                )}
             </div>
 
-            <div className="w-full md:w-auto">
+            <div className="w-full md:w-auto self-center md:self-end">
                {isOwnProfile ? (
-                   isEditing ? (
-                     <div className="flex gap-2 flex-col md:flex-row w-full text-xs md:text-sm">
-                        <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-bold flex items-center justify-center gap-2"><X size={16}/> Cancel</button>
-                        <button onClick={handleSaveProfile} className="px-4 py-2 bg-primary text-white rounded-lg font-bold flex items-center justify-center gap-2"><Check size={16}/> Save</button>
+                   isEditing && (
+                     <div className="flex gap-3 flex-col md:flex-row w-full">
+                        <button onClick={() => setIsEditing(false)} className="px-6 py-3 bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all"><X size={18}/> Cancel</button>
+                        <button onClick={handleSaveProfile} className="px-8 py-3 bg-primary text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"><Check size={18}/> Save Changes</button>
                      </div>
-                   ) : (
-                     <button onClick={() => setIsEditing(true)} className="px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg font-bold flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 transition-colors w-full md:w-auto text-xs md:text-sm"><Edit2 size={14}/> Edit Profile</button>
                    )
                ) : (
-                   <button onClick={handleChallenge} className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none transition-all active:scale-95 w-full md:w-auto text-xs md:text-sm"><Swords size={16}/> Challenge</button>
+                   <button onClick={handleChallenge} className="px-8 py-4 bg-gradient-to-r from-primary to-orange-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95 w-full md:w-auto text-base"><Swords size={20}/> Challenge Now</button>
                )}
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex p-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 w-full md:w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar">
-           <button onClick={() => setActiveTab('INFO')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'INFO' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><LayoutGrid size={14}/> Analysis</button>
+        {/* Navigation Tabs - Segmented Control Style */}
+        <div className="flex p-1.5 bg-white/80 dark:bg-gray-800/50 backdrop-blur-xl rounded-[1.5rem] border border-gray-200 dark:border-white/5 w-full md:w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar shadow-sm">
+           <button onClick={() => setActiveTab('INFO')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'INFO' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><LayoutGrid size={16}/> Analysis</button>
            {isOwnProfile ? (
                <>
-                   <button onClick={() => setActiveTab('COURSES')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'COURSES' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><BookOpen size={14}/> Courses</button>
-                   <button onClick={() => setActiveTab('SAVED')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'SAVED' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-                       <Bookmark size={14}/> {t('profile_saved')} ({savedQuestions.length})
+                   <button onClick={() => setActiveTab('COURSES')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'COURSES' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><BookOpen size={16}/> Courses</button>
+                   <button onClick={() => setActiveTab('SAVED')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'SAVED' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
+                       <Bookmark size={16}/> {t('profile_saved')}
                    </button>
-                   <button onClick={() => setActiveTab('MISTAKES')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] md:text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'MISTAKES' ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50' : 'text-gray-500 hover:text-red-600 dark:hover:text-red-400'}`}>
-                       <AlertTriangle size={14}/> {t('profile_mistakes')} ({mistakes.length})
+                   <button onClick={() => setActiveTab('MISTAKES')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'MISTAKES' ? 'bg-red-600 text-white shadow-xl shadow-red-500/20' : 'text-gray-500 hover:text-red-600 dark:hover:text-red-400'}`}>
+                       <AlertTriangle size={16}/> {t('profile_mistakes')}
                    </button>
                </>
            ) : (
-               <div className="flex items-center gap-2 px-4 text-xs text-gray-400 italic"><Lock size={12}/> Private Data Hidden</div>
+               <div className="flex items-center gap-2 px-6 text-xs text-gray-400 italic font-bold"><Lock size={14}/> Private Data Hidden</div>
            )}
         </div>
 
@@ -720,61 +752,43 @@ const ProfilePage: React.FC = () => {
         {/* INFO TAB */}
         {activeTab === 'INFO' && profileData.stats && (
             <div className="space-y-4 md:space-y-6 animate-in fade-in">
-                {/* Stats Grid - Redesigned */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-primary/50 transition-all">
-                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="p-2.5 rounded-full bg-primary/10 text-primary">
-                            <Award size={20} />
-                        </div>
-                        <div className="text-center relative z-10">
-                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.points}</p>
-                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Total Points</p>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-orange-500/50 transition-all">
-                        <div className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="p-2.5 rounded-full bg-orange-500/10 text-orange-600">
-                            <FileQuestion size={20} />
-                        </div>
-                        <div className="text-center relative z-10">
-                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.totalExams}</p>
-                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Exams Taken</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-green-500/50 transition-all">
-                        <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="p-2.5 rounded-full bg-green-500/10 text-green-600">
-                            <CheckCircle size={20} />
-                        </div>
-                        <div className="text-center relative z-10">
-                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.totalCorrect}</p>
-                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Correct Ans</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center justify-center gap-2 relative overflow-hidden group hover:border-red-500/50 transition-all">
-                        <div className="absolute inset-0 bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="p-2.5 rounded-full bg-red-500/10 text-red-600">
-                            <X size={20} />
-                        </div>
-                        <div className="text-center relative z-10">
-                            <p className="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">{profileData.stats.totalWrong}</p>
-                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Wrong Ans</p>
-                        </div>
-                    </div>
+                {/* Stats Grid - Redesigned for Native Feel */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    {[
+                        { label: 'Total Points', value: profileData.stats.points, icon: Award, color: 'primary', bg: 'bg-primary/10', text: 'text-primary' },
+                        { label: 'Exams Taken', value: profileData.stats.totalExams, icon: FileQuestion, color: 'orange', bg: 'bg-orange-500/10', text: 'text-orange-600' },
+                        { label: 'Correct Ans', value: profileData.stats.totalCorrect, icon: CheckCircle, color: 'orange', bg: 'bg-orange-500/10', text: 'text-orange-600' },
+                        { label: 'Wrong Ans', value: profileData.stats.totalWrong, icon: X, color: 'red', bg: 'bg-red-500/10', text: 'text-red-600' }
+                    ].map((stat, i) => (
+                        <motion.div 
+                            key={i}
+                            whileHover={{ y: -8, scale: 1.02 }}
+                            className="bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl shadow-gray-200/40 dark:shadow-none flex flex-col items-center justify-center gap-4 relative overflow-hidden group"
+                        >
+                            <div className={`absolute -right-6 -bottom-6 w-28 h-28 ${stat.bg.replace('/10', '/5')} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
+                            <div className={`p-4.5 rounded-[1.5rem] ${stat.bg} ${stat.text} shadow-inner relative z-10`}>
+                                <stat.icon size={28} strokeWidth={2.5} />
+                            </div>
+                            <div className="text-center relative z-10">
+                                <p className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">{stat.value}</p>
+                                <p className="text-[10px] md:text-[11px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-[0.15em] mt-2">{stat.label}</p>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
 
-                {/* Subject Performance Detailed */}
-                {/* Subject Performance Detailed - Redesigned */}
-                <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                    <h3 className="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2 text-base md:text-lg">
-                        <PieChart size={20} className="text-primary"/> বিষয় ও অধ্যায়ভিত্তিক এনালাইসিস
-                    </h3>
+                {/* Subject Performance Detailed - Native App Style */}
+                <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-[2.5rem] border border-gray-200 dark:border-white/5 shadow-2xl shadow-gray-200/50 dark:shadow-none overflow-hidden">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="font-black text-gray-900 dark:text-white flex items-center gap-3 text-lg md:text-2xl tracking-tight">
+                            <PieChart size={28} className="text-primary"/> এনালাইসিস
+                        </h3>
+                        <div className="px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full text-[10px] font-black text-gray-500 dark:text-zinc-500 uppercase tracking-widest">
+                            Detailed View
+                        </div>
+                    </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {profileData.stats.subjectBreakdown?.map((sub: any, idx: number) => {
                             const isExpanded = expandedSubjectStats.has(sub.subject);
                             
@@ -787,124 +801,160 @@ const ProfilePage: React.FC = () => {
                             // Determine Color based on accuracy
                             let statusColor = "text-red-500";
                             let statusBg = "bg-red-50 dark:bg-red-900/20";
-                            let _statusLabel = "Weak";
+                            let statusGlow = "shadow-red-500/20";
                             
                             if (accuracy >= 80) {
-                                statusColor = "text-green-500";
-                                statusBg = "bg-green-50 dark:bg-green-900/20";
-                                _statusLabel = "Strong";
+                                statusColor = "text-emerald-500";
+                                statusBg = "bg-emerald-50 dark:bg-emerald-900/20";
+                                statusGlow = "shadow-emerald-500/20";
                             } else if (accuracy >= 60) {
                                 statusColor = "text-orange-500";
                                 statusBg = "bg-orange-50 dark:bg-orange-900/20";
-                                _statusLabel = "Good";
+                                statusGlow = "shadow-orange-500/20";
                             } else if (accuracy >= 40) {
                                 statusColor = "text-yellow-500";
                                 statusBg = "bg-yellow-50 dark:bg-yellow-900/20";
-                                _statusLabel = "Average";
+                                statusGlow = "shadow-yellow-500/20";
                             }
 
                             return (
-                                <div key={idx} className="border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden transition-all hover:shadow-md bg-gray-50/50 dark:bg-gray-800/50">
+                                <motion.div 
+                                    key={idx} 
+                                    layout
+                                    className="border border-gray-100 dark:border-white/5 rounded-[2rem] overflow-hidden transition-all bg-gray-50/50 dark:bg-zinc-900/30"
+                                >
                                     {/* Subject Header Card */}
                                     <div 
-                                        className="p-4 cursor-pointer bg-white dark:bg-gray-800 flex flex-col md:flex-row gap-4 md:items-center justify-between"
+                                        className="p-5 cursor-pointer bg-white dark:bg-gray-800 flex flex-col md:flex-row gap-5 md:items-center justify-between group"
                                         onClick={() => toggleSubjectStats(sub.subject)}
                                     >
                                         {/* Left: Info */}
-                                        <div className="flex items-center gap-3 md:w-1/4">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusBg} ${statusColor}`}>
-                                                <BookOpen size={18} />
+                                        <div className="flex items-center gap-4 md:w-1/3">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${statusBg} ${statusColor} shadow-lg ${statusGlow} transition-transform group-hover:scale-110`}>
+                                                <BookOpen size={24} />
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm md:text-base">{sub.subject}</h4>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">{total} Questions</p>
+                                                <h4 className="font-black text-gray-900 dark:text-white text-base md:text-xl tracking-tight">{sub.subject}</h4>
+                                                <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">{total} Questions</p>
                                             </div>
                                         </div>
 
                                         {/* Middle: Progress Bar */}
-                                        <div className="flex-1 md:px-4">
-                                            <div className="flex justify-between text-xs font-bold mb-1.5">
-                                                <span className="text-green-600">Correct: {correct}</span>
+                                        <div className="flex-1 md:px-6">
+                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                                                <span className="text-emerald-600">Correct: {correct}</span>
                                                 <span className="text-red-500">Wrong: {wrong}</span>
                                                 <span className="text-gray-400">Skip: {skipped}</span>
                                             </div>
-                                            <div className="h-2.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
-                                                <div style={{ width: `${(correct/total)*100}%` }} className="bg-green-500 h-full" />
-                                                <div style={{ width: `${(wrong/total)*100}%` }} className="bg-red-500 h-full" />
-                                                <div style={{ width: `${(skipped/total)*100}%` }} className="bg-gray-300 dark:bg-gray-600 h-full" />
+                                            <div className="h-3 w-full bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden flex shadow-inner">
+                                                <motion.div initial={{ width: 0 }} animate={{ width: `${(correct/total)*100}%` }} className="bg-emerald-500 h-full rounded-full" />
+                                                <motion.div initial={{ width: 0 }} animate={{ width: `${(wrong/total)*100}%` }} className="bg-red-500 h-full" />
+                                                <motion.div initial={{ width: 0 }} animate={{ width: `${(skipped/total)*100}%` }} className="bg-gray-300 dark:bg-gray-600 h-full" />
                                             </div>
                                         </div>
 
                                         {/* Right: Accuracy & Toggle */}
-                                        <div className="flex items-center justify-between md:justify-end gap-4 md:w-1/4 mt-2 md:mt-0">
-                                            <div className="text-right">
-                                                <span className={`text-lg font-black ${statusColor}`}>{accuracy}%</span>
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase">Accuracy</p>
+                                        <div className="flex items-center justify-between md:justify-end gap-6 md:w-1/4 mt-2 md:mt-0">
+                                            <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+                                                <svg className="w-full h-full -rotate-90">
+                                                    <circle
+                                                        cx="50%" cy="50%" r="40%"
+                                                        className="stroke-gray-100 dark:stroke-zinc-700 fill-none"
+                                                        strokeWidth="6"
+                                                    />
+                                                    <motion.circle
+                                                        cx="50%" cy="50%" r="40%"
+                                                        className={`fill-none ${statusColor.replace('text-', 'stroke-')}`}
+                                                        strokeWidth="6"
+                                                        strokeLinecap="round"
+                                                        initial={{ strokeDasharray: "0 100" }}
+                                                        animate={{ strokeDasharray: `${accuracy} 100` }}
+                                                        pathLength="100"
+                                                    />
+                                                </svg>
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                    <span className={`text-sm md:text-base font-black ${statusColor} tracking-tighter`}>{accuracy}%</span>
+                                                </div>
                                             </div>
-                                            <div className={`p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-                                                <ChevronDown size={16} />
+                                            <div className={`p-2.5 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-500 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10 text-primary' : ''}`}>
+                                                <ChevronDown size={20} />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Expanded Chapters */}
-                                    {isExpanded && (
-                                        <div className="p-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700">
-                                            <h5 className="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
-                                                <List size={12}/> অধ্যায়ভিত্তিক বিশ্লেষণ
-                                            </h5>
-                                            
-                                            {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                    {Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
-                                                        const cTotal = chapData.total || 0;
-                                                        const cCorrect = chapData.correct || 0;
-                                                        const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
-                                                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                                        const cSkipped = chapData.skipped !== undefined ? chapData.skipped : 0;
-                                                        const cAccuracy = cTotal > 0 ? Math.round((cCorrect / cTotal) * 100) : 0;
-                                                        
-                                                        let cColor = "bg-red-500";
-                                                        if (cAccuracy >= 80) cColor = "bg-green-500";
-                                                        else if (cAccuracy >= 60) cColor = "bg-orange-500";
-                                                        else if (cAccuracy >= 40) cColor = "bg-yellow-500";
+                                    <AnimatePresence>
+                                        {isExpanded && (
+                                            <motion.div 
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="p-6 bg-gray-50/50 dark:bg-zinc-900/50 border-t border-gray-100 dark:border-white/5">
+                                                    <h5 className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
+                                                        <List size={14}/> অধ্যায়ভিত্তিক বিশ্লেষণ
+                                                    </h5>
+                                                    
+                                                    {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
+                                                                const cTotal = chapData.total || 0;
+                                                                const cCorrect = chapData.correct || 0;
+                                                                const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
+                                                                const cAccuracy = cTotal > 0 ? Math.round((cCorrect / cTotal) * 100) : 0;
+                                                                
+                                                                let cColor = "bg-red-500";
+                                                                if (cAccuracy >= 80) cColor = "bg-emerald-500";
+                                                                else if (cAccuracy >= 60) cColor = "bg-orange-500";
+                                                                else if (cAccuracy >= 40) cColor = "bg-yellow-500";
 
-                                                        return (
-                                                            <div key={cIdx} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-sm">
-                                                                <div className="flex-1 min-w-0 pr-3">
-                                                                    <h6 className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate mb-1" title={chapName}>{chapName}</h6>
-                                                                    <div className="flex items-center gap-2 text-[10px] text-gray-500">
-                                                                        <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">{cTotal} Q</span>
-                                                                        <span className="text-green-600">{cCorrect} ✓</span>
-                                                                        <span className="text-red-500">{cWrong} ✕</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex flex-col items-end gap-1">
-                                                                    <span className="text-xs font-black text-gray-700 dark:text-gray-300">{cAccuracy}%</span>
-                                                                    <div className="w-12 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                                        <div style={{ width: `${cAccuracy}%` }} className={`h-full ${cColor}`} />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    })}
+                                                                return (
+                                                                    <motion.div 
+                                                                        key={cIdx} 
+                                                                        initial={{ opacity: 0, x: -10 }}
+                                                                        animate={{ opacity: 1, x: 0 }}
+                                                                        transition={{ delay: cIdx * 0.05 }}
+                                                                        className="bg-white dark:bg-gray-800 p-5 rounded-[1.5rem] border border-gray-100 dark:border-white/5 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow group"
+                                                                    >
+                                                                        <div className="flex items-center justify-between gap-4">
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <h6 className="text-sm md:text-base font-black text-gray-900 dark:text-white truncate" title={chapName}>{chapName}</h6>
+                                                                                <div className="flex items-center gap-3 mt-1.5 text-[10px] font-black uppercase tracking-wider">
+                                                                                    <span className="bg-gray-100 dark:bg-zinc-700 px-2.5 py-1 rounded-lg text-gray-500">{cTotal} Questions</span>
+                                                                                    <span className="text-emerald-600">{cCorrect} Correct</span>
+                                                                                    <span className="text-red-500">{cWrong} Wrong</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="text-right">
+                                                                                <span className={`text-lg font-black ${cColor.replace('bg-', 'text-')} tracking-tighter`}>{cAccuracy}%</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="h-2.5 w-full bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden shadow-inner">
+                                                                            <motion.div initial={{ width: 0 }} animate={{ width: `${cAccuracy}%` }} className={`h-full ${cColor} rounded-full`} />
+                                                                        </div>
+                                                                    </motion.div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center py-8 text-xs text-gray-400 dark:text-zinc-500 italic font-bold">
+                                                            কোনো অধ্যায়ভিত্তিক ডাটা পাওয়া যায়নি
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <div className="text-center py-4 text-xs text-gray-400 italic">
-                                                    কোনো অধ্যায়ভিত্তিক ডাটা পাওয়া যায়নি
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
                             )
                         })}
                         
                         {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) && (
-                             <div className="text-center py-10 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                                 <BarChart3 size={40} className="mx-auto text-gray-300 mb-3"/>
-                                 <p className="text-gray-500 font-medium text-sm">কোনো এনালাইসিস ডাটা নেই</p>
-                                 <p className="text-xs text-gray-400 mt-1">কুইজ বা এক্সাম দিলে এখানে বিস্তারিত দেখা যাবে</p>
+                             <div className="text-center py-16 bg-gray-50/50 dark:bg-zinc-900/30 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-white/5">
+                                 <BarChart3 size={48} className="mx-auto text-gray-300 dark:text-zinc-700 mb-4"/>
+                                 <p className="text-gray-500 dark:text-zinc-500 font-black text-sm uppercase tracking-widest">কোনো এনালাইসিস ডাটা নেই</p>
+                                 <p className="text-xs text-gray-400 dark:text-zinc-600 mt-2">কুইজ বা এক্সাম দিলে এখানে বিস্তারিত দেখা যাবে</p>
                              </div>
                         )}
                     </div>
@@ -914,274 +964,457 @@ const ProfilePage: React.FC = () => {
 
         {/* COURSES TAB */}
         {activeTab === 'COURSES' && isOwnProfile && (
-            <div className="animate-in fade-in">
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+            >
                 {enrolledCourses.length === 0 ? (
-                    <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                        <BookOpen size={40} className="mx-auto text-gray-300 mb-3"/>
-                        <p className="text-gray-500 font-medium text-sm">কোনো কোর্স এনরোল করা নেই</p>
-                        <button onClick={() => navigate('/courses')} className="mt-4 px-5 py-2 bg-primary text-white rounded-lg text-xs font-bold">কোর্স দেখুন</button>
+                    <div className="text-center py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-xl">
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                            <BookOpen size={40} className="text-gray-400"/>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-300 font-bold text-lg mb-2">কোনো কোর্স এনরোল করা নেই</p>
+                        <p className="text-gray-400 text-sm mb-8 max-w-xs mx-auto">আমাদের চমৎকার কোর্সগুলো দেখে নিন এবং আপনার প্রস্তুতি শুরু করুন।</p>
+                        <button 
+                            onClick={() => navigate('/courses')} 
+                            className="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl text-sm font-bold shadow-lg hover:scale-105 transition-transform active:scale-95"
+                        >
+                            কোর্স দেখুন
+                        </button>
                     </div>
                 ) : (
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-2 gap-6">
                         {enrolledCourses.map(course => (
-                            <div key={course.id} className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
-                                <h3 className="font-bold text-sm md:text-lg text-gray-900 dark:text-white mb-2">{course.title}</h3>
-                                <div className="flex justify-between items-end">
+                            <motion.div 
+                                key={course.id} 
+                                whileHover={{ y: -5 }}
+                                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all group"
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-primary transition-colors leading-tight">{course.title}</h3>
+                                    <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                                        <BookOpen size={18} />
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-4">
                                     <div>
-                                        <p className="text-[10px] md:text-xs text-gray-500 mb-1">Progress</p>
-                                        <div className="h-1.5 w-24 md:w-32 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                            <div className="h-full bg-primary" style={{width: `${course.progress}%`}}></div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Progress</p>
+                                            <span className="text-xs font-bold text-primary">{course.progress}%</span>
+                                        </div>
+                                        <div className="h-3 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${course.progress}%` }}
+                                                transition={{ duration: 1, ease: "easeOut" }}
+                                                className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full"
+                                            ></motion.div>
                                         </div>
                                     </div>
+                                    
                                     <button 
                                         onClick={() => {
                                             if (course.id === 'gst-super-focus' || course.id === 'med-final-24') {
                                                 navigate(`/exam-batch/${course.id}`);
                                             } else {
-                                                navigate(`/courses`); // Fallback for now, or specific player page
+                                                navigate(`/courses`);
                                             }
                                         }}
-                                        className="px-3 py-1.5 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary rounded-lg text-[10px] md:text-xs font-bold transition-all"
+                                        className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-white text-gray-900 dark:text-white hover:text-white dark:hover:text-gray-900 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2"
                                     >
-                                        চালিয়ে যান
+                                        চালিয়ে যান <MoveRight size={16} />
                                     </button>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 )}
-            </div>
+            </motion.div>
         )}
 
         {/* SAVED QUESTIONS TAB */}
         {activeTab === 'SAVED' && isOwnProfile && (
-            <div className="animate-in fade-in space-y-4">
-                
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+            >
                 {/* Folder & Filter Management */}
-                <div className="flex flex-col md:flex-row gap-3 md:gap-4 justify-between items-start md:items-center">
-                    <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
+                <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
                         {availableFolders.map(f => (
                             <button 
                                 key={f} 
                                 onClick={() => setActiveFolder(f)}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 ${activeFolder === f ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700'}`}
+                                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 shadow-sm ${
+                                    activeFolder === f 
+                                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' 
+                                    : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 border border-gray-100 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                }`}
                             >
-                                <Folder size={12}/> {f}
+                                <Folder size={14} className={activeFolder === f ? 'text-primary' : 'text-gray-400'}/> {f}
                             </button>
                         ))}
+                        
                         {isCreatingFolder ? (
-                            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex items-center gap-2 bg-white dark:bg-gray-700 p-1 rounded-2xl border border-primary/30"
+                            >
                                 <input 
                                     type="text" 
                                     value={newFolderName}
                                     onChange={(e) => setNewFolderName(e.target.value)}
                                     placeholder="Folder Name"
-                                    className="px-2 py-1.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-primary w-24"
+                                    className="px-3 py-1.5 text-xs rounded-xl bg-transparent dark:text-white focus:outline-none w-32"
                                     autoFocus
                                 />
-                                <button onClick={handleCreateFolder} className="p-1.5 bg-green-500 text-white rounded hover:bg-green-600"><Check size={10}/></button>
-                                <button onClick={() => setIsCreatingFolder(false)} className="p-1.5 bg-gray-300 dark:bg-gray-600 text-black dark:text-white rounded hover:bg-gray-400"><X size={10}/></button>
-                            </div>
+                                <button onClick={handleCreateFolder} className="p-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors shadow-sm"><Check size={14}/></button>
+                                <button onClick={() => setIsCreatingFolder(false)} className="p-2 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-white rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors shadow-sm"><X size={14}/></button>
+                            </motion.div>
                         ) : (
-                            <button onClick={() => setIsCreatingFolder(true)} className="px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center gap-1 whitespace-nowrap">
-                                <FolderPlus size={12}/> New Folder
+                            <button 
+                                onClick={() => setIsCreatingFolder(true)} 
+                                className="px-5 py-2.5 rounded-2xl text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all flex items-center gap-2 whitespace-nowrap border border-primary/20"
+                            >
+                                <FolderPlus size={14}/> New Folder
                             </button>
                         )}
                     </div>
                 </div>
 
                 {/* Filter Section */}
-                {savedQuestions.length > 0 && <FilterSection />}
+                {savedQuestions.length > 0 && (
+                    <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <FilterSection />
+                    </div>
+                )}
 
                 {loadingSaved ? (
-                    <div className="space-y-3 animate-pulse">
+                    <div className="space-y-4 animate-pulse">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-24 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"></div>
+                            <div key={i} className="h-40 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-gray-700"></div>
                         ))}
                     </div>
                 ) : filteredItems.length === 0 ? (
-                    <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                        <Bookmark size={40} className="mx-auto text-gray-300 mb-2"/>
-                        <p className="text-gray-500 font-medium text-xs">কোনো সেভ করা প্রশ্ন পাওয়া যায়নি</p>
+                    <div className="text-center py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-xl">
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                            <Bookmark size={40} className="text-gray-400"/>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-300 font-bold text-lg mb-2">কোনো সেভ করা প্রশ্ন পাওয়া যায়নি</p>
+                        <p className="text-gray-400 text-sm">আপনার প্রিয় প্রশ্নগুলো সেভ করে এখানে জমা রাখুন।</p>
                     </div>
                 ) : (
-                    <div id="saved-questions-container" className="space-y-3">
+                    <div id="saved-questions-container" className="space-y-4">
                         {displayedItems.map((item) => {
                             const q = item.questionId;
                             if (!q) return null;
                             return (
-                                <div key={item._id} className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm group">
-                                    <div className="flex justify-between items-start mb-2">
+                                <motion.div 
+                                    key={item._id} 
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all group"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
                                         <div className="flex flex-wrap gap-2 items-center">
-                                            <span className="px-2 py-0.5 bg-orange-50 text-orange-600 text-[9px] font-bold rounded">{q.subject}</span>
-                                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[9px] font-bold rounded flex items-center gap-1">
-                                                <Folder size={10}/> {item.folder || 'General'}
+                                            <span className="px-3 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[10px] font-bold rounded-xl border border-orange-100 dark:border-orange-800/50">{q.subject}</span>
+                                            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-xl flex items-center gap-2 border border-gray-200 dark:border-gray-600">
+                                                <Folder size={12} className="text-primary"/> {item.folder || 'General'}
                                             </span>
                                             
                                             {/* Move To Dropdown Trigger */}
                                             <div className="relative">
                                                 <button 
                                                     onClick={() => setMovingQuestionId(movingQuestionId === item._id ? null : item._id)}
-                                                    className="text-[9px] flex items-center gap-1 text-gray-400 hover:text-primary transition-colors font-bold px-1"
+                                                    className="text-[10px] flex items-center gap-2 text-gray-400 hover:text-primary transition-colors font-bold px-2 py-1 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700"
                                                 >
-                                                    <MoveRight size={10}/> Move
+                                                    <MoveRight size={12}/> Move
                                                 </button>
                                                 
-                                                {movingQuestionId === item._id && (
-                                                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20 w-32 py-1 animate-in fade-in zoom-in-95">
-                                                        {availableFolders.filter(f => f !== (item.folder || 'General')).map(f => (
-                                                            <button 
-                                                                key={f}
-                                                                onClick={() => handleMoveToFolder(item._id, f)}
-                                                                className="block w-full text-left px-3 py-1.5 text-[10px] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-                                                            >
-                                                                {f}
-                                                            </button>
-                                                        ))}
-                                                        <button onClick={() => setMovingQuestionId(null)} className="block w-full text-left px-3 py-1.5 text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border-t border-gray-100 dark:border-gray-800 mt-1">Cancel</button>
-                                                    </div>
-                                                )}
+                                                <AnimatePresence>
+                                                    {movingQuestionId === item._id && (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                            className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-20 w-40 py-2 overflow-hidden"
+                                                        >
+                                                            <div className="px-3 py-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 mb-1">Move to folder</div>
+                                                            {availableFolders.filter(f => f !== (item.folder || 'General')).map(f => (
+                                                                <button 
+                                                                    key={f}
+                                                                    onClick={() => handleMoveToFolder(item._id, f)}
+                                                                    className="block w-full text-left px-4 py-2 text-xs hover:bg-primary/10 hover:text-primary text-gray-700 dark:text-gray-300 transition-colors"
+                                                                >
+                                                                    {f}
+                                                                </button>
+                                                            ))}
+                                                            <button onClick={() => setMovingQuestionId(null)} className="block w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border-t border-gray-100 dark:border-gray-800 mt-1 font-bold">Cancel</button>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleDeleteSaved(item._id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 size={14}/></button>
+                                        <button 
+                                            onClick={() => handleDeleteSaved(item._id)} 
+                                            className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-xl transition-all active:scale-90"
+                                        >
+                                            <Trash2 size={18}/>
+                                        </button>
                                     </div>
-                                    <h4 className="font-bold text-gray-800 dark:text-white text-xs md:text-sm mb-2">{q.question}</h4>
-                                    <div className="grid grid-cols-2 gap-2 text-[10px] md:text-xs text-gray-600 dark:text-gray-400">
+                                    
+                                    <h4 className="font-bold text-gray-800 dark:text-white text-sm md:text-base mb-4 leading-relaxed">{q.question}</h4>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                                         {q.options.map((opt: string, i: number) => (
-                                            <div key={i} className={`p-1.5 rounded border ${i === q.correctAnswerIndex ? 'bg-green-50 border-green-200 text-green-700 font-bold' : 'border-gray-100 dark:border-gray-700'}`}>{opt}</div>
+                                            <div 
+                                                key={i} 
+                                                className={`p-3 rounded-2xl border text-xs transition-all ${
+                                                    i === q.correctAnswerIndex 
+                                                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 font-bold shadow-sm' 
+                                                    : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                                                }`}
+                                            >
+                                                <span className="inline-block w-6 h-6 rounded-lg bg-white/50 dark:bg-gray-800/50 text-center leading-6 mr-2 font-bold shadow-inner">
+                                                    {String.fromCharCode(65 + i)}
+                                                </span>
+                                                {opt}
+                                            </div>
                                         ))}
                                     </div>
-                                    <div className="mt-2 text-[10px] text-gray-500 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-100 dark:border-gray-700">
-                                        <span className="font-bold text-primary block mb-0.5">Explanation:</span>
-                                        <span className="font-tiro">{q.explanation || 'No explanation available.'}</span>
+                                    
+                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-primary/40"></div>
+                                        <span className="font-bold text-primary text-[10px] uppercase tracking-widest block mb-2">Explanation</span>
+                                        <p className="font-tiro text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                            {q.explanation || 'No explanation available.'}
+                                        </p>
                                     </div>
-                                </div>
+                                </motion.div>
                             );
                         })}
                         
                         <PaginationControls />
                     </div>
                 )}
-            </div>
+            </motion.div>
         )}
 
         {/* MISTAKES TAB */}
         {activeTab === 'MISTAKES' && isOwnProfile && (
-            <div className="space-y-4 md:space-y-6 animate-in fade-in">
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                   <div className="flex items-center gap-3">
-                       <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                          <AlertTriangle size={18} className="text-red-500" /> {t('profile_mistakes')} ({filteredItems.length})
-                       </h2>
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+            >
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                   <div className="flex items-center gap-4">
+                       <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-2xl text-red-500">
+                           <AlertTriangle size={24} />
+                       </div>
+                       <div>
+                           <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                              {t('profile_mistakes')}
+                           </h2>
+                           <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Total {filteredItems.length} questions to review</p>
+                       </div>
                        <button 
                            onClick={() => loadMistakes(false)} 
-                           className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors"
+                           className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-all active:rotate-180 duration-500"
                            title="Refresh"
                        >
-                           <RefreshCw size={14} className={loadingMistakes ? "animate-spin" : ""} />
+                           <RefreshCw size={18} className={loadingMistakes ? "animate-spin" : ""} />
                        </button>
                    </div>
+                   
                    {filteredItems.length > 0 && (
                        <button 
                          onClick={() => setShowExamConfig(true)}
-                         className="w-full md:w-auto px-5 py-2 bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-700 shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-95 text-xs md:text-sm"
+                         className="w-full md:w-auto px-8 py-3 bg-red-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-red-700 shadow-xl shadow-red-200 dark:shadow-none transition-all active:scale-95 group"
                        >
-                          <RefreshCw size={14} /> {t('quiz_retry')} ({filteredItems.length})
+                          <RefreshCw size={18} className="group-hover:rotate-180 transition-transform duration-500" /> 
+                          {t('quiz_retry')} ({filteredItems.length})
                        </button>
                    )}
                </div>
 
                {/* Filter Section */}
-               {mistakes.length > 0 && <FilterSection />}
+               {mistakes.length > 0 && (
+                   <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                       <FilterSection />
+                   </div>
+               )}
                
                {loadingMistakes ? (
-                   <div className="space-y-3 animate-pulse">
+                   <div className="space-y-4 animate-pulse">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-24 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"></div>
+                            <div key={i} className="h-40 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-gray-700"></div>
                         ))}
                    </div>
                ) : filteredItems.length === 0 ? (
-                   <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-                       <CheckCircle size={40} className="mx-auto text-green-300 mb-2"/>
-                       <p className="text-gray-500 font-medium text-xs">কোনো ভুল পাওয়া যায়নি (ফিল্টার অনুযায়ী)।</p>
+                   <div className="text-center py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-xl">
+                       <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                           <CheckCircle size={40} className="text-green-500"/>
+                       </div>
+                       <p className="text-gray-600 dark:text-gray-300 font-bold text-lg mb-2">কোনো ভুল পাওয়া যায়নি</p>
+                       <p className="text-gray-400 text-sm">চমৎকার! আপনার কোনো ভুল প্রশ্ন নেই।</p>
                    </div>
                ) : (
-                   <div id="mistakes-container" className="space-y-3">
+                   <div id="mistakes-container" className="space-y-4">
                      {displayedItems.map((m) => {
                         const q = m.questionId;
                         if (!q) return null;
                         
                         return (
-                        <div key={m._id} className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl border border-red-100 dark:border-red-900/30 shadow-sm relative group">
-                            <div className="flex justify-between items-start mb-2">
-                                <div className="flex gap-2 mb-1">
-                                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-[9px] font-bold rounded text-gray-500">{q.subject}</span>
-                                    {q.chapter && <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-[9px] font-bold rounded text-gray-500">{q.chapter}</span>}
+                        <motion.div 
+                            key={m._id} 
+                            layout
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-[2rem] border border-red-100 dark:border-red-900/30 shadow-lg hover:shadow-xl transition-all group relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                            
+                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold rounded-xl text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{q.subject}</span>
+                                    {q.chapter && <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold rounded-xl text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{q.chapter}</span>}
                                     {m.wrongCount > 1 && (
-                                        <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 text-[9px] font-bold rounded flex items-center gap-1">
-                                            <X size={8}/> Missed {m.wrongCount} times
+                                        <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-bold rounded-xl flex items-center gap-2 border border-red-200 dark:border-red-800/50 shadow-sm">
+                                            <X size={12} className="stroke-[3px]"/> Missed {m.wrongCount} times
                                         </span>
                                     )}
                                 </div>
-                                <button onClick={() => handleDeleteMistake(m._id)} className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                                <button 
+                                    onClick={() => handleDeleteMistake(m._id)} 
+                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all active:scale-90"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
                             </div>
                             
-                            <h3 className="font-bold text-gray-800 dark:text-white mb-3 text-xs md:text-sm pr-4">{q.question}</h3>
-                            <div className="grid grid-cols-2 gap-2 text-[10px] md:text-xs mb-2">
+                            <h3 className="font-bold text-gray-800 dark:text-white mb-4 text-sm md:text-base leading-relaxed relative z-10 pr-6">{q.question}</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 relative z-10">
                                 {q.options.map((opt: string, i: number) => (
-                                    <div key={i} className={`p-1.5 rounded border ${i === q.correctAnswerIndex ? 'bg-green-50 border-green-200 text-green-700 font-bold' : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-500'}`}>{opt}</div>
+                                    <div 
+                                        key={i} 
+                                        className={`p-3 rounded-2xl border text-xs transition-all ${
+                                            i === q.correctAnswerIndex 
+                                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 font-bold shadow-sm' 
+                                            : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400'
+                                        }`}
+                                    >
+                                        <span className="inline-block w-6 h-6 rounded-lg bg-white/50 dark:bg-gray-800/50 text-center leading-6 mr-2 font-bold shadow-inner">
+                                            {String.fromCharCode(65 + i)}
+                                        </span>
+                                        {opt}
+                                    </div>
                                 ))}
                             </div>
-                            <div className="text-[10px] text-gray-500 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-100 dark:border-gray-700">
-                                <span className="font-bold text-red-500 block mb-0.5">Explanation:</span>
-                                {q.explanation || 'No explanation available.'}
+                            
+                            <div className="bg-red-50/50 dark:bg-red-900/10 p-4 rounded-[1.5rem] border border-red-100/50 dark:border-red-900/30 relative overflow-hidden z-10">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-red-500/40"></div>
+                                <span className="font-bold text-red-500 text-[10px] uppercase tracking-widest block mb-2">Explanation</span>
+                                <p className="font-tiro text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                    {q.explanation || 'No explanation available.'}
+                                </p>
                             </div>
-                        </div>
+                        </motion.div>
                      )})}
                      
                      <PaginationControls />
                    </div>
                )}
-            </div>
+            </motion.div>
         )}
 
       </div>
 
       {/* Exam Config Modal */}
-      {showExamConfig && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-              <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 border border-gray-200 dark:border-gray-700">
-                  <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2"><AlertTriangle size={20} className="text-red-500"/> Retake Configuration</h3>
-                      <button onClick={() => setShowExamConfig(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><X size={18} className="text-gray-500"/></button>
-                  </div>
-                  <div className="space-y-5">
-                      {/* Mistake Clearance Tip (Moved here) */}
-                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800 flex gap-3">
-                           <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-full h-fit text-emerald-600 dark:text-emerald-400">
-                              <Sparkles size={16} />
-                           </div>
-                           <div>
-                              <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-xs md:text-sm">ভুল শুধরানোর সুযোগ!</h4>
-                              <p className="text-[10px] md:text-xs text-emerald-700 dark:text-emerald-400 mt-1 leading-relaxed">
-                                 এই এক্সামে যেসব প্রশ্নের সঠিক উত্তর দিবেন, সেগুলো অটোমেটিকলি আপনার 'ভুল' তালিকা থেকে মুছে যাবে।
-                              </p>
-                           </div>
-                      </div>
+      <AnimatePresence>
+        {showExamConfig && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowExamConfig(false)}
+                    className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                />
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    className="bg-white dark:bg-gray-800 w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 border border-gray-200 dark:border-gray-700 relative z-10 overflow-hidden"
+                >
+                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-orange-500"></div>
+                    
+                    <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-2xl text-red-500">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight">Retake Config</h3>
+                        </div>
+                        <button 
+                            onClick={() => setShowExamConfig(false)} 
+                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors text-gray-400"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
 
-                      <div>
-                          <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quiz_time_limit')}</label>
-                          <div className="grid grid-cols-4 gap-2">
-                              {[0, 10, 20, 30].map(t => (
-                                  <button key={t} onClick={() => setExamTimeLimit(t)} className={`py-2 rounded-lg text-xs font-bold border transition-all ${examTimeLimit === t ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'}`}>{t === 0 ? 'No Limit' : `${t} Min`}</button>
-                              ))}
-                          </div>
-                      </div>
-                      <button onClick={launchExam} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-95 text-sm"><Play size={16} fill="currentColor"/> {t('hero_btn')}</button>
-                  </div>
-              </div>
-          </div>
-      )}
+                    <div className="space-y-8">
+                        {/* Mistake Clearance Tip */}
+                        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-[2rem] border border-emerald-100 dark:border-emerald-800/50 flex gap-4 relative overflow-hidden group">
+                             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-emerald-500/10 transition-colors"></div>
+                             <div className="p-3 bg-emerald-100 dark:bg-emerald-800 rounded-2xl h-fit text-emerald-600 dark:text-emerald-400 shadow-sm">
+                                <Sparkles size={20} />
+                             </div>
+                             <div className="relative z-10">
+                                <h4 className="font-black text-emerald-800 dark:text-emerald-300 text-sm md:text-base mb-1">ভুল শুধরানোর সুযোগ!</h4>
+                                <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80 leading-relaxed font-medium">
+                                   সঠিক উত্তর দিলে সেগুলো অটোমেটিকলি আপনার 'ভুল' তালিকা থেকে মুছে যাবে।
+                                </p>
+                             </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="block text-xs md:text-sm font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest ml-1">{t('quiz_time_limit')}</label>
+                            <div className="grid grid-cols-4 gap-3">
+                                {[0, 10, 20, 30].map(t => (
+                                    <button 
+                                        key={t} 
+                                        onClick={() => setExamTimeLimit(t)} 
+                                        className={`py-3 rounded-2xl text-xs font-black transition-all border-2 ${
+                                            examTimeLimit === t 
+                                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-xl' 
+                                            : 'bg-white dark:bg-gray-700 border-gray-100 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-200 dark:hover:border-gray-500'
+                                        }`}
+                                    >
+                                        {t === 0 ? 'No Limit' : `${t} Min`}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={launchExam} 
+                            className="w-full py-5 bg-red-600 hover:bg-red-700 text-white rounded-[1.5rem] font-black flex items-center justify-center gap-3 shadow-2xl shadow-red-500/30 transition-all hover:scale-[1.02] active:scale-95 text-base md:text-lg"
+                        >
+                            <Play size={20} fill="currentColor"/> Start Retake Exam
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

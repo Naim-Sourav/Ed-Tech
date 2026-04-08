@@ -122,7 +122,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
       if (quest.type === 'ASK_AI') navigate('/bot');
       else if (quest.type === 'EXAM_COMPLETE') navigate('/quiz');
       else if (quest.type === 'PLAY_BATTLE') navigate('/battle');
-      else if (quest.type === 'STUDY_TIME') navigate('/tracker');
+      else if (quest.type === 'STUDY_TIME') navigate('/planner');
       else navigate('/quiz');
   };
 

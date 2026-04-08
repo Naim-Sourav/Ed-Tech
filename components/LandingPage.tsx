@@ -72,19 +72,19 @@ const QuestionPaperCard = ({ title, sub, icon, color }: any) => (
 
 const QuestionPaperMarquee = () => {
   const row1 = [
-    { title: "মেডিকেল ভর্তি পরীক্ষা", sub: "২০২৩-২৪ | সেট ক", icon: <Activity size={18}/>, color: "from-green-500 to-emerald-500" },
+    { title: "মেডিকেল ভর্তি পরীক্ষা", sub: "২০২৩-২৪ | সেট ক", icon: <Activity size={18}/>, color: "from-red-500 to-orange-500" },
     { title: "ঢাকা বিশ্ববিদ্যালয় (ক)", sub: "২০২২-২৩ | পদার্থবিজ্ঞান", icon: <GraduationCap size={18}/>, color: "from-orange-500 to-red-500" },
-    { title: "বুয়েট প্রিলিমিনারি", sub: "২০২১-২২ | শিফট ১", icon: <Zap size={18}/>, color: "from-blue-500 to-indigo-500" },
-    { title: "রাজশাহী বিশ্ববিদ্যালয়", sub: "২০২৩-২৪ | ইউনিট সি", icon: <BookOpen size={18}/>, color: "from-purple-500 to-pink-500" },
-    { title: "জাহাঙ্গীরনগর ঢ ইউনিট", sub: "২০২২-২৩ | জীববিজ্ঞান", icon: <Dna size={18}/>, color: "from-green-600 to-teal-500" },
+    { title: "বুয়েট প্রিলিমিনারি", sub: "২০২১-২২ | শিফট ১", icon: <Zap size={18}/>, color: "from-orange-600 to-amber-500" },
+    { title: "রাজশাহী বিশ্ববিদ্যালয়", sub: "২০২৩-২৪ | ইউনিট সি", icon: <BookOpen size={18}/>, color: "from-amber-500 to-orange-500" },
+    { title: "জাহাঙ্গীরনগর ঢ ইউনিট", sub: "২০২২-২৩ | জীববিজ্ঞান", icon: <Dna size={18}/>, color: "from-orange-600 to-red-500" },
   ];
 
   const row2 = [
-    { title: "গুচ্ছ (GST) ক ইউনিট", sub: "২০২৩-২৪ | রসায়ন", icon: <Beaker size={18}/>, color: "from-cyan-500 to-blue-500" },
+    { title: "গুচ্ছ (GST) ক ইউনিট", sub: "২০২৩-২৪ | রসায়ন", icon: <Beaker size={18}/>, color: "from-amber-500 to-orange-600" },
     { title: "আর্মড ফোর্সেস মেডিকেল", sub: "২০২২-২৩ | সাধারণ জ্ঞান", icon: <ShieldCheck size={18}/>, color: "from-red-500 to-rose-500" },
-    { title: "কৃষি গুচ্ছ ভর্তি পরীক্ষা", sub: "২০২৩ | উদ্ভিদবিজ্ঞান", icon: <Leaf size={18}/>, color: "from-lime-500 to-green-600" },
-    { title: "চুয়েট কুয়েট রুয়েট", sub: "২০২১-২২ | গণিত", icon: <Calculator size={18}/>, color: "from-violet-500 to-purple-600" },
-    { title: "ডেন্টাল ভর্তি পরীক্ষা", sub: "২০২৩-২৪ | ইংরেজি", icon: <Activity size={18}/>, color: "from-sky-500 to-blue-600" },
+    { title: "কৃষি গুচ্ছ ভর্তি পরীক্ষা", sub: "২০২৩ | উদ্ভিদবিজ্ঞান", icon: <Leaf size={18}/>, color: "from-orange-500 to-red-600" },
+    { title: "চুয়েট কুয়েট রুয়েট", sub: "২০২১-২২ | গণিত", icon: <Calculator size={18}/>, color: "from-orange-500 to-amber-600" },
+    { title: "ডেন্টাল ভর্তি পরীক্ষা", sub: "২০২৩-২৪ | ইংরেজি", icon: <Activity size={18}/>, color: "from-orange-500 to-red-500" },
   ];
 
   return (
@@ -170,63 +170,70 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         <div className="absolute bottom-20 right-10 w-64 h-64 md:w-96 md:h-96 bg-orange-500/10 rounded-full blur-[100px] md:blur-[120px] animate-pulse delay-1000"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-20">
             
             {/* Left Column: Text & Buttons */}
-            <div className="text-center lg:text-left space-y-6 md:space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-                পরীক্ষা প্রস্তুতির বিস্তৃত <span className="text-primary dark:text-orange-400">অঙ্গন</span>
+            <div className="text-center lg:text-left space-y-6 md:space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.1] tracking-tight text-gray-900 dark:text-white">
+                পরীক্ষা প্রস্তুতির বিশেষ <span className="text-primary dark:text-orange-400">অঙ্গন</span>
               </h1>
               
-              <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed lg:text-2xl">
                 এইচএসসি একাডেমিক কিংবা এডমিশন —সবকিছুর পূর্ণাঙ্গ প্রস্তুতি এখন এক জায়গায়। আনলিমিটেড এক্সাম, মডেল টেস্ট, প্রশ্নব্যাংক সলভ, AI টিউটর, কুইজ ব্যাটল এবং স্মার্ট ট্র্যাকিং ছাড়াও দারুণ সব ফিচারের মাধ্যমে নিজেকে গড়ে তোলো সেরাদের সেরা হিসেবে।
               </p>
               
-              <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-start justify-center lg:justify-start gap-4 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row lg:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 w-full sm:w-auto">
                 <button 
                   onClick={onLoginClick}
-                  className="w-full sm:w-72 lg:w-80 px-6 py-3.5 md:px-8 md:py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl md:rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg shadow-xl shadow-gray-500/20"
+                  className="w-full sm:w-auto px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl md:rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-3 text-lg shadow-xl shadow-gray-500/20"
                 >
-                  <Zap size={20} className="fill-yellow-400 text-yellow-400 md:w-[22px] md:h-[22px]" /> পরীক্ষা শুরু করো
+                  <Zap size={22} className="fill-yellow-400 text-yellow-400" /> পরীক্ষা শুরু করো
                 </button>
                 <button 
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full sm:w-72 lg:w-80 px-6 py-3.5 md:px-8 md:py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group"
+                  className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group text-lg"
                 >
-                  <Play size={18} className="group-hover:text-primary transition-colors md:w-5 md:h-5" /> ডেমো দেখুন
+                  <Play size={20} className="group-hover:text-primary transition-colors" /> ডেমো দেখুন
                 </button>
               </div>
             </div>
 
-            {/* Right Column: Lottie Animation */}
-            <div className="flex justify-center lg:justify-end animate-in fade-in zoom-in duration-1000 delay-200">
-              <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] drop-shadow-2xl">
+            {/* Right Column: Lottie Animation (Desktop Only) */}
+            <div className="hidden lg:flex justify-center lg:justify-end animate-in fade-in zoom-in duration-1000 delay-200">
+              <div className="lg:w-[550px] lg:h-[550px] xl:w-[650px] xl:h-[650px] drop-shadow-2xl">
                 <Lottie animationData={heroAnimation} loop={true} />
               </div>
             </div>
 
           </div>
 
-          {/* Animated Stats - REPLACED WITH CAPABILITIES */}
-          <div className="mt-16 md:mt-24 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          {/* Animated Stats */}
+          <div className="mt-16 md:mt-24 p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   <div className="text-center">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
+                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
+                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
                   </div>
                   <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={10} suffix="+" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
+                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={10} suffix="+" /></p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
-                      <p className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
-                      <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
+                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
                   </div>
               </div>
+          </div>
+
+          {/* Hero Animation (Mobile Only - Placed after Stats) */}
+          <div className="flex lg:hidden justify-center mt-12 animate-in fade-in zoom-in duration-1000">
+            <div className="w-72 h-72 md:w-96 md:h-96 drop-shadow-2xl">
+              <Lottie animationData={heroAnimation} loop={true} />
+            </div>
           </div>
         </div>
       </section>
@@ -361,7 +368,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                         "২৪ ঘণ্টা এভেইলঅ্যাবল সাপোর্ট"
                     ].map((item, i) => (
                         <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium">
-                        <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
                             <Zap size={14} fill="currentColor" />
                         </div>
                         {item}
@@ -573,12 +580,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
-              { icon: <Clock className="text-blue-500" />, title: "স্মার্ট স্টাডি প্ল্যানার", desc: "তোমার সময় অনুযায়ী অটোমেটিক রুটিন তৈরি করে দেবে আমাদের সিস্টেম।" },
+              { icon: <Clock className="text-orange-500" />, title: "স্মার্ট স্টাডি প্ল্যানার", desc: "তোমার সময় অনুযায়ী অটোমেটিক রুটিন তৈরি করে দেবে আমাদের সিস্টেম।" },
               { icon: <Archive className="text-red-500" />, title: "ভুল সেভ রাখা", desc: "পরীক্ষায় করা ভুলগুলো আলাদাভাবে সেভ থাকবে যাতে পরে রিভিশন দিতে পারো।" },
-              { icon: <RotateCcw className="text-green-500" />, title: "আনলিমিটেড রিটেক", desc: "যেকোনো পরীক্ষা যতবার খুশি ততবার দিয়ে নিজেকে শুধরে নেওয়ার সুযোগ।" },
-              { icon: <Bookmark className="text-purple-500" />, title: "কোশ্চেন সেভ ব্যবস্থা", desc: "গুরুত্বপূর্ণ প্রশ্নগুলো বুকমার্ক করে রাখো এবং যেকোনো সময় প্র্যাকটিস করো।" },
+              { icon: <RotateCcw className="text-orange-600" />, title: "আনলিমিটেড রিটেক", desc: "যেকোনো পরীক্ষা যতবার খুশি ততবার দিয়ে নিজেকে শুধরে নেওয়ার সুযোগ।" },
+              { icon: <Bookmark className="text-amber-500" />, title: "কোশ্চেন সেভ ব্যবস্থা", desc: "গুরুত্বপূর্ণ প্রশ্নগুলো বুকমার্ক করে রাখো এবং যেকোনো সময় প্র্যাকটিস করো।" },
               { icon: <Swords className="text-orange-500" />, title: "লাইভ কুইজ ব্যাটল", desc: "বন্ধুদের সাথে রিয়েল-টাইম লড়াইয়ে মেতে ওঠো এবং নিজের মেধা যাচাই করো।" },
-              { icon: <Activity className="text-cyan-500" />, title: "স্মার্ট প্রোগ্রেস ট্র্যাকিং", desc: "গ্রাফ এবং চার্টের মাধ্যমে তোমার উন্নতির গ্রাফ দেখো প্রতিদিন।" }
+              { icon: <Activity className="text-red-400" />, title: "স্মার্ট প্রোগ্রেস ট্র্যাকিং", desc: "গ্রাফ এবং চার্টের মাধ্যমে তোমার উন্নতির গ্রাফ দেখো প্রতিদিন।" }
             ].map((feature, i) => (
               <div key={i} className="p-6 md:p-8 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all group">
                 <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">

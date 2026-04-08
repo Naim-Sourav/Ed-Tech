@@ -45,21 +45,21 @@ const SUBJECT_GROUPS = [
     name: 'জীববিজ্ঞান (Biology)',
     key: 'Biology', 
     icon: Dna,
-    color: 'text-green-600 bg-green-100',
+    color: 'text-orange-600 bg-orange-100',
     papers: ['Biology 1st Paper', 'Biology 2nd Paper']
   },
   {
     name: 'রসায়ন (Chemistry)',
     key: 'Chemistry',
     icon: Beaker,
-    color: 'text-orange-600 bg-orange-100',
+    color: 'text-amber-600 bg-amber-100',
     papers: ['Chemistry 1st Paper', 'Chemistry 2nd Paper']
   },
   {
     name: 'পদার্থবিজ্ঞান (Physics)',
     key: 'Physics',
     icon: Atom,
-    color: 'text-purple-600 bg-purple-100',
+    color: 'text-orange-600 bg-orange-100',
     papers: ['Physics 1st Paper', 'Physics 2nd Paper']
   },
   {
@@ -73,47 +73,47 @@ const SUBJECT_GROUPS = [
     name: 'ইংরেজি (English)',
     key: 'English',
     icon: Languages,
-    color: 'text-blue-600 bg-blue-100',
+    color: 'text-orange-600 bg-orange-100',
     papers: ['English']
   },
   {
     name: 'বাংলা (Bangla)',
     key: 'Bangla',
     icon: Book,
-    color: 'text-pink-600 bg-pink-100',
+    color: 'text-red-600 bg-red-100',
     papers: ['Bangla 1st Paper', 'Bangla 2nd Paper']
   },
   {
     name: 'সাধারণ জ্ঞান (GK)',
     key: 'General Knowledge',
     icon: Globe,
-    color: 'text-cyan-600 bg-cyan-100',
+    color: 'text-orange-600 bg-orange-100',
     papers: ['General Knowledge']
   },
   {
     name: 'আইসিটি (ICT)',
     key: 'ICT',
     icon: Cpu,
-    color: 'text-indigo-600 bg-indigo-100',
+    color: 'text-amber-600 bg-amber-100',
     papers: ['ICT']
   },
   {
     name: 'মানসিক দক্ষতা (IQ)',
     key: 'Mental Ability',
     icon: BrainCircuit,
-    color: 'text-gray-600 bg-gray-100',
+    color: 'text-orange-600 bg-orange-100',
     papers: ['Mental Ability']
   }
 ];
 
 const SOURCE_CONFIG: Record<string, { icon: any, color: string, bg: string, title: string }> = {
     'Medical': { icon: Stethoscope, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20', title: 'মেডিকেল প্রশ্নব্যাংক' },
-    'Dental': { icon: Activity, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20', title: 'ডেন্টাল প্রশ্নব্যাংক' },
-    'BUET': { icon: Cpu, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20', title: 'বুয়েট প্রশ্নব্যাংক' },
+    'Dental': { icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', title: 'ডেন্টাল প্রশ্নব্যাংক' },
+    'BUET': { icon: Cpu, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', title: 'বুয়েট প্রশ্নব্যাংক' },
     'Dhaka_University_A': { icon: BookOpen, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', title: 'ঢাবি (ক) প্রশ্নব্যাংক' },
-    'Guccho_A': { icon: LayoutGrid, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', title: 'গুচ্ছ (GST) প্রশ্নব্যাংক' },
-    'BUTEX_Affiliated': { icon: Cpu, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20', title: 'বুটেক্স অধিভুক্ত কলেজ' },
-    'DEFAULT': { icon: Archive, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', title: 'অন্যান্য প্রশ্নব্যাংক' }
+    'Guccho_A': { icon: LayoutGrid, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', title: 'গুচ্ছ (GST) প্রশ্নব্যাংক' },
+    'BUTEX_Affiliated': { icon: Cpu, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', title: 'বুটেক্স অধিভুক্ত কলেজ' },
+    'DEFAULT': { icon: Archive, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', title: 'অন্যান্য প্রশ্নব্যাংক' }
 };
 
 // Helper to normalize subject names for display
@@ -175,7 +175,7 @@ const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers,
                 <span className="font-bold text-gray-300 font-mono text-base md:text-lg">{String(idx+1).padStart(2,'0')}</span>
                 <div className="flex-1 pr-6">
                     <div className="flex items-center gap-2 mb-1.5">
-                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded text-[9px] md:text-[10px] font-bold border border-blue-100 dark:border-blue-800">{q.subject}</span>
+                        <span className="px-2 py-0.5 bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 rounded text-[9px] md:text-[10px] font-bold border border-orange-100 dark:border-orange-800">{q.subject}</span>
                         {q.chapter && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded text-[9px] md:text-[10px] font-bold">{q.chapter}</span>}
                     </div>
                     <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-xl leading-relaxed ${getFont(q.question)}`}>{q.question}</h3>
@@ -223,8 +223,8 @@ const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers,
             </div>
 
             {/* Explanation Block - Rendered but hidden with CSS to preserve MathJax layout calculations */}
-            <div className={`mt-3 bg-gray-50 dark:bg-gray-900/50 p-3 md:p-4 rounded-xl text-xs md:text-sm text-gray-700 dark:text-gray-300 border-l-4 border-blue-400 dark:border-blue-600 overflow-hidden break-words max-w-full ${isRevealed ? 'block animate-in fade-in slide-in-from-top-2' : 'hidden'}`}>
-                <p className="font-bold mb-1 flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400"><BookOpen size={12}/> ব্যাখ্যা</p>
+            <div className={`mt-3 bg-gray-50 dark:bg-gray-900/50 p-3 md:p-4 rounded-xl text-xs md:text-sm text-gray-700 dark:text-gray-300 border-l-4 border-orange-400 dark:border-orange-600 overflow-hidden break-words max-w-full ${isRevealed ? 'block animate-in fade-in slide-in-from-top-2' : 'hidden'}`}>
+                <p className="font-bold mb-1 flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-wider text-orange-600 dark:text-orange-400"><BookOpen size={12}/> ব্যাখ্যা</p>
                 <p className={`whitespace-pre-wrap leading-relaxed ${getFont(q.explanation)}`}>{q.explanation || "কোনো ব্যাখ্যা নেই।"}</p>
                 {q.explanationImage && (
                     <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-32 rounded object-contain border border-gray-200 dark:border-gray-700" />
@@ -596,7 +596,7 @@ const QuestionBank: React.FC = () => {
                 <ChevronLeft size={20} />
               </button>
             ) : (
-              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-primary dark:text-blue-400">
+              <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-primary dark:text-orange-400">
                 <Archive size={20} />
               </div>
             )}
@@ -663,7 +663,7 @@ const QuestionBank: React.FC = () => {
                   <p className="text-[10px] md:text-sm text-gray-500 dark:text-gray-400 mb-3">
                     {cat.papers.length} টি প্রশ্নপত্র উপলব্ধ
                   </p>
-                  <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-primary dark:text-blue-400">
+                  <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-primary dark:text-orange-400">
                     ব্রাউজ করুন <ChevronRight size={12} className="ml-1" />
                   </div>
                 </button>
@@ -707,7 +707,7 @@ const QuestionBank: React.FC = () => {
                           </button>
                           <button 
                             onClick={() => handleStartExam(paper.title, 'YEAR', { timeLimit: paper.time, examRef: paper.id })}
-                            className="px-3 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg font-bold text-[10px] md:text-sm shadow-lg shadow-blue-500/20 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                            className="px-3 py-2 bg-primary hover:bg-orange-700 text-white rounded-lg font-bold text-[10px] md:text-sm shadow-lg shadow-orange-500/20 flex items-center justify-center gap-1.5 transition-all active:scale-95"
                           >
                             <Play size={14} fill="currentColor" /> পরীক্ষা দিন
                           </button>
@@ -781,7 +781,7 @@ const QuestionBank: React.FC = () => {
                                                     source: selectedCategory.id,
                                                     type: 'CHAPTER_WISE'
                                                 })}
-                                                className="p-1 bg-primary text-white rounded hover:bg-blue-700"
+                                                className="p-1 bg-primary text-white rounded hover:bg-orange-700"
                                                 title="Exam"
                                             >
                                                 <Play size={12} fill="currentColor"/>

@@ -6,7 +6,7 @@ import { useToast } from './Toast';
 import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI, generateQuizFromDB, fetchQuestionPapersAPI, syncUserToMongoDB, fetchSavedQuestionsAPI } from '../services/api';
 import { fetchPublicExamLeaderboard, getUserRank, submitGuestExamResult, fetchPublicExam } from '../services/publicExamService';
 import { 
-  Clock, ChevronRight, CheckCircle, XCircle, 
+  Clock, ChevronRight, CheckCircle, XCircle,
   BookOpen, Bookmark, LayoutGrid, HelpCircle, 
   Trophy, RefreshCw, Home, LayoutList, X, Flame, ArrowRight, Check, AlertTriangle, Loader2,
   User, Mail, Lock
@@ -297,7 +297,6 @@ const ExamPage: React.FC = () => {
   useEffect(() => {
       if (currentUser && questions.length > 0) {
           fetchSavedQuestionsAPI(currentUser.uid).then((savedQs: any[]) => {
-              console.log("DEBUG: Fetched Saved Questions:", savedQs);
               const savedIds = new Set(savedQs.map((sq: any) => {
                   // Handle populated questionId object
                   if (sq.questionId && typeof sq.questionId === 'object') {
@@ -306,17 +305,14 @@ const ExamPage: React.FC = () => {
                   // Handle string ID or direct object
                   return sq.questionId || sq.id || sq._id;
               }));
-              console.log("DEBUG: Saved IDs Set:", Array.from(savedIds));
               
               const indices = new Set<number>();
               questions.forEach((q, index) => {
                   const qId = q._id || q.id;
-                  // console.log(`DEBUG: Checking Q[${index}] ID: ${qId} -> ${savedIds.has(qId)}`);
                   if (qId && savedIds.has(qId)) {
                       indices.add(index);
                   }
               });
-              console.log("DEBUG: Matched Indices:", Array.from(indices));
               setSavedQuestionIndices(indices);
           }).catch((err: any) => console.error("Failed to sync saved questions", err));
       }
@@ -689,7 +685,7 @@ const ExamPage: React.FC = () => {
             <div className="relative w-4 h-4">
                  <svg className="w-full h-full transform -rotate-90">
                     <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-gray-300 dark:text-gray-600" />
-                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2" fill="transparent" strokeDasharray={44} strokeDashoffset={44 - (percentage / 100) * 44} className={`${percentage <= 20 ? 'text-red-500' : percentage <= 50 ? 'text-yellow-500' : 'text-emerald-500'} transition-all duration-1000 ease-linear`} strokeLinecap="round" />
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2" fill="transparent" strokeDasharray={44} strokeDashoffset={44 - (percentage / 100) * 44} className={`${percentage <= 20 ? 'text-red-500' : percentage <= 50 ? 'text-orange-500' : 'text-orange-600'} transition-all duration-1000 ease-linear`} strokeLinecap="round" />
                 </svg>
             </div>
             <span className={`font-mono font-bold text-xs ${percentage <= 20 ? 'text-red-500 animate-pulse' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -1179,10 +1175,19 @@ const ExamPage: React.FC = () => {
                                               isActive 
                                               ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/30 scale-110' 
                                               : isToday 
-                                                  ? 'border-orange-200 dark:border-orange-900/50 bg-white dark:bg-gray-800 text-orange-200' 
+                                                  ? 'border-dashed border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-900/10 text-orange-200' 
                                                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-300'
                                           }`}>
-                                              {isActive ? <Check size={14} strokeWidth={4} /> : ''}
+                                              {isActive ? (
+                                                  <Check size={18} strokeWidth={4} className="text-white"/>
+                                              ) : isToday ? (
+                                                  <div className="relative flex items-center justify-center">
+                                                      <CheckCircle size={22} className="text-orange-500/30" strokeWidth={2} />
+                                                      <Check size={12} className="absolute text-orange-500/20" strokeWidth={4} />
+                                                  </div>
+                                              ) : (
+                                                  ''
+                                              )}
                                           </div>
                                       </div>
                                   )

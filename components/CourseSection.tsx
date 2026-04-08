@@ -117,25 +117,25 @@ const CourseSection: React.FC = () => {
   const getThemeStyles = (theme: string) => {
     switch (theme) {
       case 'blue': return {
-        bg: 'bg-blue-50 dark:bg-blue-900/10',
-        text: 'text-blue-600 dark:text-blue-400',
-        border: 'border-blue-100 dark:border-blue-800',
-        button: 'bg-blue-600 hover:bg-blue-700',
-        badge: 'bg-blue-100 text-blue-700'
+        bg: 'bg-orange-50 dark:bg-orange-900/10',
+        text: 'text-orange-600 dark:text-orange-400',
+        border: 'border-orange-100 dark:border-orange-800',
+        button: 'bg-orange-600 hover:bg-orange-700',
+        badge: 'bg-orange-100 text-orange-700'
       };
       case 'purple': return {
-        bg: 'bg-purple-50 dark:bg-purple-900/10',
-        text: 'text-purple-600 dark:text-purple-400',
-        border: 'border-purple-100 dark:border-purple-800',
-        button: 'bg-purple-600 hover:bg-purple-700',
-        badge: 'bg-purple-100 text-purple-700'
+        bg: 'bg-amber-50 dark:bg-amber-900/10',
+        text: 'text-amber-600 dark:text-amber-400',
+        border: 'border-amber-100 dark:border-amber-800',
+        button: 'bg-amber-600 hover:bg-amber-700',
+        badge: 'bg-amber-100 text-amber-700'
       };
       case 'emerald': return {
-        bg: 'bg-emerald-50 dark:bg-emerald-900/10',
-        text: 'text-emerald-600 dark:text-emerald-400',
-        border: 'border-emerald-100 dark:border-emerald-800',
-        button: 'bg-emerald-600 hover:bg-emerald-700',
-        badge: 'bg-emerald-100 text-emerald-700'
+        bg: 'bg-red-50 dark:bg-red-900/10',
+        text: 'text-red-600 dark:text-red-400',
+        border: 'border-red-100 dark:border-red-800',
+        button: 'bg-red-600 hover:bg-red-700',
+        badge: 'bg-red-100 text-red-700'
       };
       case 'orange': return {
         bg: 'bg-orange-50 dark:bg-orange-900/10',
@@ -157,7 +157,7 @@ const CourseSection: React.FC = () => {
   const renderCourseCard = (course: Course, isOwned: boolean) => {
       const themeStyles = getThemeStyles(course.theme);
       return (
-        <div key={course.id} className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/40 dark:border-white/10 shadow-xl shadow-indigo-500/5 overflow-hidden flex flex-col hover:shadow-2xl hover:shadow-indigo-500/10 transition-all group active-scale">
+        <div key={course.id} className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/40 dark:border-white/10 shadow-xl shadow-orange-500/5 overflow-hidden flex flex-col hover:shadow-2xl hover:shadow-orange-500/10 transition-all group active-scale">
             <div className={`p-5 md:p-6 border-b border-white/20 dark:border-white/5 ${themeStyles.bg} relative overflow-hidden`}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                 <div className="flex justify-between items-start mb-3 md:mb-4 relative z-10">
@@ -281,7 +281,7 @@ const CourseSection: React.FC = () => {
                                 <button
                                     key={item.id}
                                     onClick={() => !item.isLocked && setActiveContentId(item.id)}
-                                    className={`w-full text-left p-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${activeContentId === item.id ? 'bg-blue-50 dark:bg-blue-900/20 text-primary dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}
+                                    className={`w-full text-left p-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${activeContentId === item.id ? 'bg-orange-50 dark:bg-orange-900/20 text-primary dark:text-orange-400' : 'text-gray-600 dark:text-gray-400'}`}
                                 >
                                     <div className="mt-0.5">
                                         {item.isLocked ? <Lock size={14} className="text-gray-400"/> : 
@@ -308,8 +308,8 @@ const CourseSection: React.FC = () => {
     <div className="flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors min-h-full relative overflow-hidden">
         {/* Ambient Background Glows */}
         <div className="fixed inset-0 pointer-events-none z-0">
-            <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]"></div>
+            <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-amber-500/10 rounded-full blur-[120px]"></div>
         </div>
 
         <div className="flex-1 p-3 md:p-8 pb-4 relative z-10">
@@ -335,7 +335,7 @@ const CourseSection: React.FC = () => {
                         </p>
                         <button 
                             onClick={() => document.getElementById('available-courses')?.scrollIntoView({ behavior: 'smooth'})} 
-                            className="px-5 py-2 md:px-6 md:py-2.5 bg-primary text-white rounded-xl font-bold text-xs md:text-sm shadow-lg hover:bg-blue-700 transition-colors"
+                            className="px-5 py-2 md:px-6 md:py-2.5 bg-primary text-white rounded-xl font-bold text-xs md:text-sm shadow-lg hover:bg-orange-700 transition-colors"
                         >
                             কোর্স দেখুন
                         </button>

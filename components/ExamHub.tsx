@@ -10,8 +10,8 @@ const SUBJECTS = [
     { name: 'Physics', group: 'Physics', icon: Atom, color: 'bg-orange-100 text-primary dark:bg-orange-900/30 dark:text-orange-400' },
     { name: 'Chemistry', group: 'Chemistry', icon: Beaker, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
     { name: 'Math', group: 'Higher Math', icon: Calculator, color: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
-    { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
-    { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
+    { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
+    { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' },
 ];
 
 import questions from '../data/gst_a_23_24_questions.json';
@@ -108,7 +108,7 @@ const ExamHub: React.FC = () => {
                     <p className="text-xs md:text-sm text-gray-400 font-medium">মডেল টেস্ট - ০৫ | পূর্ণমান: ১০০ | সময়: ১ ঘণ্টা</p>
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-xs md:text-sm font-bold text-white/90 group-hover:gap-3 transition-all">
-                    পরীক্ষা শুরু করুন <ArrowRight size={16} className="text-purple-400"/>
+                    পরীক্ষা শুরু করুন <ArrowRight size={16} className="text-orange-400"/>
                 </div>
             </div>
         </div>
@@ -137,7 +137,7 @@ const ExamHub: React.FC = () => {
                     onClick={() => navigate('/quiz')}
                     className="bg-white/60 dark:bg-gray-800/40 backdrop-blur-xl p-5 md:p-6 rounded-[1.8rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
                 >
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
                         <Settings size={20} className="md:w-6 md:h-6" />
                     </div>
                     <h4 className="font-bold text-gray-800 dark:text-white text-sm md:text-lg">কাস্টম কুইজ</h4>
@@ -237,18 +237,18 @@ const ExamHub: React.FC = () => {
                         localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
                         navigate(`/exam/${examId}`);
                     }}
-                    className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-5 rounded-[2rem] border border-white/40 dark:border-white/5 shadow-sm hover:border-blue-500/50 transition-all cursor-pointer flex items-center justify-between group"
+                    className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-5 rounded-[2rem] border border-white/40 dark:border-white/5 shadow-sm hover:border-orange-500/50 transition-all cursor-pointer flex items-center justify-between group"
                 >
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
+                        <div className="w-12 h-12 bg-orange-50 dark:bg-orange-500/20 rounded-2xl flex items-center justify-center text-orange-600 dark:text-orange-400 shadow-sm">
                             <Archive size={24} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">GST ক ইউনিট</h4>
+                            <h4 className="font-bold text-gray-800 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">GST ক ইউনিট</h4>
                             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৩-২৪ সেশন | ১০০ প্রশ্ন</p>
                         </div>
                     </div>
-                    <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full group-hover:bg-blue-500 group-hover:text-white transition-all">
+                    <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full group-hover:bg-orange-500 group-hover:text-white transition-all">
                         <ChevronRight size={20} />
                     </div>
                 </div>
@@ -290,7 +290,7 @@ const ExamHub: React.FC = () => {
         <div>
             <div className="flex justify-between items-center mb-4 px-1">
                 <h3 className="text-sm md:text-base font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">বিষয়ভিত্তিক অনুশীলন</h3>
-                <button onClick={() => navigate('/quiz')} className="text-xs font-bold text-primary dark:text-blue-400 flex items-center gap-1 hover:underline">সব দেখুন <ChevronRight size={12}/></button>
+                <button onClick={() => navigate('/quiz')} className="text-xs font-bold text-primary dark:text-orange-400 flex items-center gap-1 hover:underline">সব দেখুন <ChevronRight size={12}/></button>
             </div>
             
             <div className="flex md:grid md:grid-cols-5 gap-3 md:gap-4 overflow-x-auto md:overflow-visible pb-4 md:pb-0 no-scrollbar">

@@ -5,10 +5,10 @@ import { Loader2, Calendar, CheckCircle, ChevronRight, GraduationCap, Sparkles, 
 import { useToast } from './Toast';
 
 const TARGETS = [
-  { id: 'Medical', label: 'মেডিকেল', sub: 'MBBS/BDS', icon: '🩺', color: 'bg-green-50 border-green-200 text-green-700' },
+  { id: 'Medical', label: 'মেডিকেল', sub: 'MBBS/BDS', icon: '🩺', color: 'bg-red-50 border-red-200 text-red-700' },
   { id: 'Engineering', label: 'ইঞ্জিনিয়ারিং', sub: 'BUET/CKRUET', icon: '⚙️', color: 'bg-orange-50 border-orange-200 text-orange-700' },
   { id: 'University', label: 'ভার্সিটি (ক)', sub: 'DU/JU/RU', icon: '🎓', color: 'bg-orange-50 border-orange-200 text-orange-700' },
-  { id: 'Guccho', label: 'গুচ্ছ (GST)', sub: 'Science Unit', icon: '📚', color: 'bg-purple-50 border-purple-200 text-purple-700' }
+  { id: 'Guccho', label: 'গুচ্ছ (GST)', sub: 'Science Unit', icon: '📚', color: 'bg-amber-50 border-amber-200 text-amber-700' }
 ];
 
 const GROUPS = [
