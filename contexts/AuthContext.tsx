@@ -72,19 +72,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentUser(user);
       
       if (user) {
-        setProfileLoading(true); // Start profile loading
+        // Auth state is determined, allow rendering to start
+        setLoading(false);
+        setProfileLoading(true); 
+        
         if (user.photoURL) {
           setUserAvatar(user.photoURL);
         } else {
-          setUserAvatar(''); // Ensure empty string if null
+          setUserAvatar(''); 
         }
 
         try {
-           // CRITICAL FIX: Ensure user exists in Backend BEFORE fetching stats
-           // This prevents 404 errors on first login
+           // Sync user to MongoDB
            await syncUserToMongoDB(user);
 
-           // Now fetch data in parallel
+           // Fetch data in parallel
            const [courses, stats] = await Promise.all([
                fetchUserEnrollments(user.uid),
                fetchUserStatsAPI(user.uid)
@@ -106,8 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (err) {
            console.error("Error loading user data", err);
         } finally {
-           setProfileLoading(false); // Data fetch done (success or fail)
-           setLoading(false); // Auth check done
+           setProfileLoading(false); 
         }
 
       } else {
