@@ -138,6 +138,31 @@ export const finishRTDBBattle = async (roomId: string) => {
   await update(roomRef, { status: 'FINISHED' });
 };
 
+export const rematchRTDBRoom = async (roomId: string, questions: QuizQuestion[]) => {
+  const roomRef = ref(rtdb, `battles/${roomId}`);
+  const snapshot = await get(roomRef);
+  if (!snapshot.exists()) return;
+  
+  const data = snapshot.val() as BattleRoom;
+  const resetPlayers: Record<string, BattlePlayer> = {};
+  
+  Object.keys(data.players).forEach(uid => {
+    resetPlayers[uid] = {
+      ...data.players[uid],
+      score: 0,
+      answers: {},
+      status: 'READY'
+    };
+  });
+
+  await update(roomRef, {
+    status: 'WAITING',
+    startTime: 0,
+    questions,
+    players: resetPlayers
+  });
+};
+
 export const deleteRTDBRoom = async (roomId: string) => {
   const roomRef = ref(rtdb, `battles/${roomId}`);
   await remove(roomRef);
