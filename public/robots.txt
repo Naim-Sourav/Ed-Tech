@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://your-username.github.io/your-repo-name/sitemap.xml
+Sitemap: https://naim-sourav.github.io/Ed-Tech/#/sitemap.xml
