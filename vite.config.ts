@@ -11,7 +11,9 @@ export default defineConfig(({ mode: _mode }) => {
     base: './', 
     resolve: {
       alias: {
-        '@': path.resolve('.'), 
+        '@': path.resolve('.'),
+        'react': path.resolve('./node_modules/react'),
+        'react-dom': path.resolve('./node_modules/react-dom'),
       },
     },
     // এই অংশটি প্রিভিউ সমস্যা সমাধান করবে

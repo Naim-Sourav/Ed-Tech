@@ -27,7 +27,7 @@
   }
  
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
@@ -105,10 +105,16 @@ mjx-container {
 
 /* Safe Area Utilities */
 .pb-safe-area {
-  padding-bottom: env(safe-area-inset-bottom, 20px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .pt-safe-area {
-  padding-top: env(safe-area-inset-top, 20px);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.mb-safe-area {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+.mt-safe-area {
+  margin-top: env(safe-area-inset-top, 0px);
 }
 
 /* Hide scrollbar for horizontal scrolling elements */
