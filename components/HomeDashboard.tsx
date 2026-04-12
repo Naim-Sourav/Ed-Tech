@@ -8,7 +8,7 @@ import {
   Settings, Atom, Beaker, Calculator, Dna,
   BookOpen, Brain, Crown, X, 
   Target, 
-  TrendingUp, Calendar, MoreHorizontal, Bot
+  TrendingUp, Calendar, MoreHorizontal, Bot, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
