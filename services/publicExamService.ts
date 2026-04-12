@@ -79,6 +79,7 @@ export interface PublicExam {
 export interface GuestUser {
   name: string;
   email: string;
+  college?: string;
   phone?: string;
 }
 

@@ -109,6 +109,13 @@ const MOCK_LEADERBOARD: LeaderboardUser[] = [
 ];
 
 // --- HELPER ---
+export const normalizeText = (text: string) => {
+  if (!text) return '';
+  return text
+    .normalize('NFC')
+    .replace(/[\u200B-\u200D\uFEFF]/g, ''); // Remove zero-width characters (ZWJ, ZWNJ, etc.)
+};
+
 const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fallback: any = null) => {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
@@ -359,7 +366,10 @@ export const fetchQuestionsFromBankAPI = async (page: number, limit: number, sub
   if (chapter && chapter !== 'ALL') url += `&chapter=${encodeURIComponent(chapter)}`;
   if (topic && topic !== 'ALL') url += `&topic=${encodeURIComponent(topic)}`;
   if (examRef && examRef !== 'ALL') url += `&examRef=${encodeURIComponent(examRef)}`;
-  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (search) {
+    const normalizedSearch = normalizeText(search);
+    url += `&search=${encodeURIComponent(normalizedSearch)}`;
+  }
   return fetchWithFallback(url, {}, { questions: [], total: 0 });
 };
 
