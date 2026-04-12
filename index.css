@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 19 100% 50%;
-    --radius: 1rem;
+    --radius: 0.85rem;
   }
  
   .dark {
@@ -50,11 +50,23 @@
 }
 
 @layer base {
+  html {
+    font-size: 14px;
+    scroll-behavior: smooth;
+  }
+  
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
   * {
     @apply border-gray-200 dark:border-gray-800;
   }
   body {
     @apply bg-background text-foreground;
+    font-size: 1rem;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
@@ -229,7 +241,22 @@ mjx-container {
   @apply dark:[filter:invert(1)_hue-rotate(180deg)];
 }
 
-/* 5. Hover Lift */
-.hover-lift {
-  @apply transition-transform duration-300 hover:-translate-y-1;
+/* Global Utility Overrides for Mobile Density */
+@layer utilities {
+  @media (max-width: 767px) {
+    .p-4 { padding: 0.85rem !important; }
+    .p-6 { padding: 1.25rem !important; }
+    .px-4 { padding-left: 0.85rem !important; padding-right: 0.85rem !important; }
+    .px-6 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+    .py-4 { padding-top: 0.85rem !important; padding-bottom: 0.85rem !important; }
+    .py-6 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+    .gap-4 { gap: 0.85rem !important; }
+    .gap-6 { gap: 1.25rem !important; }
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.85rem !important; }
+    .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem !important; }
+    .mb-6 { margin-bottom: 1.25rem !important; }
+    .mt-6 { margin-top: 1.25rem !important; }
+    .rounded-2xl { border-radius: 1rem !important; }
+    .rounded-3xl { border-radius: 1.5rem !important; }
+  }
 }

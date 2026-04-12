@@ -15,6 +15,8 @@
     "@dicebear/collection": "^9.3.2",
     "@dicebear/core": "^9.3.2",
     "@google/genai": "*",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@types/canvas-confetti": "^1.9.0",
     "@types/d3": "^7.4.3",
     "canvas-confetti": "^1.9.4",
@@ -30,12 +32,14 @@
     "react-markdown": "^9.0.1",
     "react-nice-avatar": "^1.5.0",
     "react-router-dom": "^6.22.3",
-    "recharts": "^3.8.0"
+    "recharts": "^3.8.0",
+    "three": "^0.183.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
+    "@types/three": "^0.183.1",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "@vitejs/plugin-react": "^4.2.1",

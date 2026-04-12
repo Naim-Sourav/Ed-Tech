@@ -26,6 +26,8 @@ const QuizBattlePrototype = React.lazy(() => import('./components/QuizBattleProt
 const CourseSection = React.lazy(() => import('./components/CourseSection'));
 const QuestionBank = React.lazy(() => import('./components/QuestionBank'));
 const ProfilePage = React.lazy(() => import('./components/ProfilePage'));
+const SavedQuestions = React.lazy(() => import('./components/SavedQuestions'));
+const WrongQuestions = React.lazy(() => import('./components/WrongQuestions'));
 const AdminPage = React.lazy(() => import('./components/AdminPage'));
 const LeaderboardPage = React.lazy(() => import('./components/LeaderboardPage'));
 const DailyChallengePage = React.lazy(() => import('./components/DailyChallengePage'));
@@ -33,6 +35,8 @@ const ExamHub = React.lazy(() => import('./components/ExamHub'));
 const GSTCoursePage = React.lazy(() => import('./components/GSTCoursePage'));
 const ExamBatchPage = React.lazy(() => import('./components/ExamBatchPage'));
 const PaymentPage = React.lazy(() => import('./components/PaymentPage'));
+const GSTAnswerKey = React.lazy(() => import('./components/GSTAnswerKey'));
+const GSTGuestExam = React.lazy(() => import('./components/GSTGuestExam'));
 
 const PageLoader = () => (
     <div className="w-full min-h-[75vh] flex flex-col items-center justify-center bg-transparent text-gray-400">
@@ -312,7 +316,7 @@ const MainLayout: React.FC<{
 
         <main 
             ref={mainContentRef}
-            className={`flex-1 overflow-y-auto overflow-x-hidden transition-colors relative scroll-smooth ${hideNav ? 'p-0' : `${isLeaderboard ? 'pt-safe-area' : 'pt-16'} pb-[calc(100px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6`}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden transition-colors relative scroll-smooth ${hideNav ? 'p-0' : `${isLeaderboard ? 'pt-safe-area' : 'pt-16'} pb-[calc(80px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6`}`}
         >
           {/* Key on location.pathname forces a re-render/animation on route change */}
           <AnimatePresence mode="wait">
@@ -435,6 +439,8 @@ const AppRoutes: React.FC<{
             
             {/* Public Exam Route - Accessible to guests */}
             <Route path="/exam/:examId" element={<ExamPage />} />
+            <Route path="/gst-a-unit-2025" element={<GSTAnswerKey />} />
+            <Route path="/gst-exam-live" element={<GSTGuestExam />} />
 
             <Route path="/*" element={
               currentUser ? (
@@ -452,6 +458,8 @@ const AppRoutes: React.FC<{
                       <Route path="/admission" element={<AdmissionSearch />} />
                       <Route path="/profile" element={<ProfilePage />} />
                       <Route path="/profile/:userId" element={<ProfilePage />} />
+                      <Route path="/saved-questions" element={<SavedQuestions />} />
+                      <Route path="/wrong-questions" element={<WrongQuestions />} />
                       <Route path="/settings" element={<ProfilePage />} />
                       <Route path="/admin" element={<AdminPage />} />
                       <Route path="/challenges" element={<DailyChallengePage openBot={() => {}} />} />
