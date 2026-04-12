@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { generateQuiz } from '../services/geminiService';
-import { saveQuestionsToBankAPI } from '../services/api';
+import { saveQuestionsToBankAPI, normalizeText } from '../services/api';
 import { ExamStandard, QuizQuestion } from '../types';
 import { SYLLABUS_DB, TopicNode } from '../services/syllabusData';
 import { Sparkles, Save, Trash2, Brain, CheckCircle, Loader2, Layers, Upload, PieChart, Atom, Beaker, Calculator, Dna, Activity, Globe, ChevronDown, Book, ListFilter, Check } from 'lucide-react';
@@ -299,8 +299,13 @@ const AdminQuestionGenerator: React.FC = () => {
     try {
       const sanitized = generatedQuestions.map(q => ({
         ...q,
-        correctAnswerIndex: Number(q.correctAnswerIndex),
-        options: q.options || []
+        question: normalizeText(q.question),
+        options: (q.options || []).map(o => normalizeText(o)),
+        explanation: normalizeText(q.explanation || ''),
+        subject: normalizeText(q.subject || ''),
+        chapter: normalizeText(q.chapter || ''),
+        topic: normalizeText(q.topic || ''),
+        correctAnswerIndex: Number(q.correctAnswerIndex)
       }));
       await saveQuestionsToBankAPI(sanitized);
       showToast(`সফলভাবে ${generatedQuestions.length} টি প্রশ্ন সেভ হয়েছে!`, "success");

@@ -152,9 +152,9 @@ const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers,
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative group">
+        <div className="bg-white dark:bg-gray-800 p-3.5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative group">
             {/* Action Buttons */}
-            <div className="absolute top-3 right-3 md:top-4 md:right-4 flex gap-2 z-10">
+            <div className="absolute top-2.5 right-2.5 md:top-4 md:right-4 flex gap-1.5 md:gap-2 z-10">
                 <button 
                     onClick={() => onShare(q)}
                     className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors"
@@ -171,14 +171,14 @@ const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers,
                 </button>
             </div>
 
-            <div className="flex gap-3 md:gap-4 mb-3 md:mb-4">
-                <span className="font-bold text-gray-300 font-mono text-base md:text-lg">{String(idx+1).padStart(2,'0')}</span>
+            <div className="flex gap-2.5 md:gap-4 mb-3 md:mb-4">
+                <span className="font-bold text-gray-300 font-mono text-sm md:text-lg">{String(idx+1).padStart(2,'0')}</span>
                 <div className="flex-1 pr-6">
                     <div className="flex items-center gap-2 mb-1.5">
                         <span className="px-2 py-0.5 bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 rounded text-[9px] md:text-[10px] font-bold border border-orange-100 dark:border-orange-800">{q.subject}</span>
                         {q.chapter && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded text-[9px] md:text-[10px] font-bold">{q.chapter}</span>}
                     </div>
-                    <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-xl leading-relaxed ${getFont(q.question)}`}>{q.question}</h3>
+                    <h3 className={`font-extrabold text-gray-900 dark:text-white text-[15px] md:text-xl leading-relaxed ${getFont(q.question)}`}>{q.question}</h3>
                     {q.questionImage && (
                         <img src={q.questionImage} alt="Question" className="mt-2 max-h-32 md:max-h-40 rounded-lg object-contain border border-gray-100 dark:border-gray-700" />
                     )}
@@ -204,9 +204,9 @@ const RevisionQuestionCard = React.memo(({ q, idx, userSelected, showAllAnswers,
                             key={oIdx}
                             onClick={() => onOptionClick(idx, oIdx)}
                             disabled={showAllAnswers} // If globally revealed, disable interaction to prevent state thrashing
-                            className={`w-full text-left p-2.5 md:p-3 rounded-xl border text-xs md:text-sm transition-all flex items-start gap-3 ${btnClass}`}
+                            className={`w-full text-left p-2 md:p-3 rounded-xl border text-[11px] md:text-sm transition-all flex items-start gap-2.5 md:gap-3 ${btnClass}`}
                         >
-                            <div className="w-4 h-4 md:w-5 md:h-5 rounded-full border border-current flex items-center justify-center text-[9px] md:text-[10px] opacity-70 shrink-0 mt-0.5 font-sans font-bold">
+                            <div className="w-4 h-4 md:w-5 md:h-5 rounded-full border border-current flex items-center justify-center text-[8px] md:text-[10px] opacity-70 shrink-0 mt-0.5 font-sans font-bold">
                                 {['A','B','C','D'][oIdx]}
                             </div>
                             <div className="flex-1">

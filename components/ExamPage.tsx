@@ -906,7 +906,7 @@ const ExamPage: React.FC = () => {
                                 </div>
 
                                 <div className="relative z-10">
-                                    <h2 className={`text-base md:text-xl font-bold text-gray-800 dark:text-white leading-snug mb-2 ${getFont(questions[currentQIndex].question)}`}>
+                                    <h2 className={`text-[15px] md:text-xl font-bold text-gray-800 dark:text-white leading-snug mb-2 ${getFont(questions[currentQIndex].question)}`}>
                                         {questions[currentQIndex].question}
                                     </h2>
                                     {questions[currentQIndex].questionImage && (
@@ -951,7 +951,7 @@ const ExamPage: React.FC = () => {
                                                     {['A','B','C','D'][idx]}
                                                 </div>
                                                 <div className="flex-1">
-                                                    {opt && <span className={`text-sm font-medium ${getFont(opt)}`}>{opt}</span>}
+                                                    {opt && <span className={`text-xs md:text-sm font-medium ${getFont(opt)}`}>{opt}</span>}
                                                     {optImage && <img src={optImage} alt={`Option ${idx}`} className="mt-1 max-h-16 rounded object-contain border border-white/20" />}
                                                 </div>
                                             </div>
@@ -999,7 +999,7 @@ const ExamPage: React.FC = () => {
                                                 <div className="flex gap-3">
                                                     <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
                                                     <div className="flex-1">
-                                                        <h3 className={`font-extrabold text-gray-900 dark:text-white text-lg md:text-xl ${getFont(q.question)}`}>{q.question}</h3>
+                                                        <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-xl ${getFont(q.question)}`}>{q.question}</h3>
                                                         {q.questionImage && <img src={q.questionImage} alt="Question" className="mt-2 max-h-40 rounded object-contain border border-gray-100 dark:border-gray-700" />}
                                                     </div>
                                                 </div>
@@ -1230,7 +1230,7 @@ const ExamPage: React.FC = () => {
                             <div className="w-32 h-32 mb-6">
                                 <Flame size={80} className="text-orange-500 fill-orange-500 animate-pulse mx-auto" />
                             </div>
-                            <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-2">
+                            <h1 className="text-2xl md:text-5xl font-black text-gray-900 dark:text-white mb-2">
                                 অভিনন্দন! 🔥
                             </h1>
                             <p className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base max-w-md mx-auto mb-8">
@@ -1319,8 +1319,8 @@ const ExamPage: React.FC = () => {
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">
                                 <Trophy size={14}/> Exam Result
                             </div>
-                            <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white">
-                                {finalScore.toFixed(2)} <span className="text-xl md:text-3xl text-gray-400 font-bold">/ {resultQuestions.length}</span>
+                            <h1 className="text-3xl md:text-6xl font-black text-gray-900 dark:text-white">
+                                {finalScore.toFixed(2)} <span className="text-lg md:text-3xl text-gray-400 font-bold">/ {resultQuestions.length}</span>
                             </h1>
                             <p className="text-gray-500 dark:text-gray-400 font-medium">
                                 {percentage >= 80 ? "অসাধারণ পারফরম্যান্স! 🎉" : percentage >= 50 ? "ভালো হয়েছে, আরও প্র্যাকটিস প্রয়োজন। 👍" : "হতাশ হবেন না, আবার চেষ্টা করুন। 💪"}
@@ -1354,8 +1354,8 @@ const ExamPage: React.FC = () => {
                                 }}
                             ></div>
                             <div className="absolute inset-4 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-sm">
-                                <span className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white">{percentage}%</span>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Accuracy</span>
+                                <span className="text-2xl md:text-5xl font-black text-gray-900 dark:text-white">{percentage}%</span>
+                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Accuracy</span>
                             </div>
                         </div>
                     </div>

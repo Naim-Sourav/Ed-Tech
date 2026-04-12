@@ -138,6 +138,11 @@ const QuizArena: React.FC = () => {
         setIsRapidFire(false);
     }
 
+    // Mode Logic (Wrong Questions)
+    if (location.state?.mode === 'WRONG_QUESTIONS' && currentStep !== 'LOADING') {
+        startWrongQuestionsQuiz();
+    }
+
     // Auto-Navigation Logic from location state (One-time push to URL)
     if (location.state?.subject && !activeSubjectGroup) {
         const targetSubject = location.state.subject;
@@ -151,7 +156,7 @@ const QuizArena: React.FC = () => {
             }, { replace: true });
         }
     }
-  }, [location.state, activeSubjectGroup, setSearchParams]);
+  }, [location.state, activeSubjectGroup, setSearchParams, currentStep]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -365,6 +370,48 @@ const QuizArena: React.FC = () => {
       return count;
   };
 
+  const startWrongQuestionsQuiz = async () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.uid) {
+        showToast("অনুগ্রহ করে লগইন করুন", 'error');
+        return;
+    }
+
+    setSearchParams(prev => {
+        const newP = new URLSearchParams(prev);
+        newP.set('step', 'LOADING');
+        return newP;
+    });
+
+    try {
+        const { fetchUserMistakesAPI } = await import('../services/api');
+        const mistakes = await fetchUserMistakesAPI(user.uid);
+        
+        if (!mistakes || mistakes.length === 0) {
+            showToast("আপনার কোনো ভুল প্রশ্নের রেকর্ড নেই", 'info');
+            setSearchParams({ step: 'SELECTION' });
+            return;
+        }
+
+        // Map mistakes to QuizQuestion structure if needed
+        // Assuming mistakes are already QuizQuestion or contain them
+        const qs: QuizQuestion[] = mistakes.map((m: any) => m.question || m);
+
+        initiateQuizGeneration([], ExamStandard.HSC, qs.length, undefined, false, {
+            questions: qs,
+            title: 'ভুল প্রশ্ন প্র্যাকটিস',
+            mode: 'SINGLE_PAGE',
+            timeLimit: 0,
+            negativeMarking: 0,
+            isPracticeMode: true
+        });
+    } catch (err) {
+        console.error("Failed to load mistakes", err);
+        showToast("ভুল প্রশ্ন লোড করা যায়নি", 'error');
+        setSearchParams({ step: 'SELECTION' });
+    }
+  };
+
   const startCustomQuiz = async () => {
     const configs: QuizConfig[] = [];
     const allSubjects = Object.keys(SYLLABUS_DB);
@@ -406,8 +453,10 @@ const QuizArena: React.FC = () => {
       let isAiGenerated = false;
 
       // Logic to fetch questions (Mixed DB + AI)
-      if (!isPreset) {
-         // Ask for 'count' questions from EACH config chunk.
+      if (presetConfigOverride?.questions) {
+          qs = presetConfigOverride.questions;
+      } else if (!isPreset) {
+          // Ask for 'count' questions from EACH config chunk.
          const allPromises = configs.map(cfg => 
             generateQuizFromDB({
                 subject: cfg.subject,
@@ -550,7 +599,7 @@ const QuizArena: React.FC = () => {
         {/* Background Ambient Glow */}
         <div className="fixed inset-0 pointer-events-none">
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/5 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-orange-500/5 rounded-full blur-[120px]"></div>
         </div>
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden md:flex md:flex-col relative z-10">
@@ -559,7 +608,7 @@ const QuizArena: React.FC = () => {
                 
                     <div className="h-full flex flex-col">
                         {selectionView === 'SUBJECT_GRID' ? (
-                            <div className="overflow-y-auto p-4 md:p-6 pb-32 md:pb-32 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+                            <div className="overflow-y-auto p-3 md:p-6 pb-32 md:pb-32 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-6">
                                 {SUBJECT_GROUPS.map((subject, idx) => {
                                     const selectedCount = getSelectedTopicCountForGroup(subject.papers);
                                     const availableCount = getStatsFor(subject.name);
@@ -568,27 +617,27 @@ const QuizArena: React.FC = () => {
                                         <button
                                             key={idx}
                                             onClick={() => handleSubjectClick(subject.name, subject.papers[0])}
-                                            className={`relative bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl rounded-[2rem] border p-5 md:p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-xl transition-all duration-300 group active:scale-[0.98] ${isRapidFire ? 'hover:border-red-500/50 hover:shadow-red-500/20' : 'hover:border-primary/50 hover:shadow-primary/20'} ${selectedCount > 0 ? 'border-primary dark:border-orange-500 ring-1 ring-primary/20' : 'border-gray-200 dark:border-white/5'}`}
+                                            className={`relative bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl rounded-[1.8rem] md:rounded-[2rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-3 shadow-sm hover:shadow-xl transition-all duration-300 group active:scale-[0.98] ${isRapidFire ? 'hover:border-red-500/50 hover:shadow-red-500/20' : 'hover:border-primary/50 hover:shadow-primary/20'} ${selectedCount > 0 ? 'border-primary dark:border-orange-500 ring-1 ring-primary/20' : 'border-gray-200 dark:border-white/5'}`}
                                         >
                                             {!isRapidFire && selectedCount > 0 && (
-                                                <div className="absolute top-3 right-3 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg shadow-primary/30 animate-in zoom-in">
-                                                    <Check size={10} strokeWidth={3} /> {selectedCount}
+                                                <div className="absolute top-2.5 right-2.5 bg-primary text-white text-[9px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg shadow-primary/30 animate-in zoom-in">
+                                                    <Check size={9} strokeWidth={3} className="md:w-2.5 md:h-2.5" /> {selectedCount}
                                                 </div>
                                             )}
                                             
-                                            <div className={`p-4 rounded-2xl ${subject.color.split(' ')[1]} group-hover:scale-110 transition-transform duration-300 shadow-inner`}>
-                                                <subject.icon size={28} className={`${subject.color.split(' ')[0]} dark:text-white md:w-8 md:h-8`} strokeWidth={2.5} />
+                                            <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl ${subject.color.split(' ')[1]} group-hover:scale-110 transition-transform duration-300 shadow-inner`}>
+                                                <subject.icon size={24} className={`${subject.color.split(' ')[0]} dark:text-white md:w-8 md:h-8`} strokeWidth={2.5} />
                                             </div>
                                             <div className="text-center">
-                                                <h3 className="font-black text-gray-900 dark:text-white text-sm md:text-lg tracking-tight">
+                                                <h3 className="font-black text-gray-900 dark:text-white text-xs md:text-lg tracking-tight">
                                                     {subject.display}
                                                 </h3>
                                                 {availableCount > 0 && (
-                                                    <p className={`text-[10px] md:text-xs font-bold mt-1 ${isRapidFire ? 'text-red-500' : 'text-primary dark:text-orange-400'}`}>
+                                                    <p className={`text-[9px] md:text-[10px] font-bold mt-0.5 md:mt-1 ${isRapidFire ? 'text-red-500' : 'text-primary dark:text-orange-400'}`}>
                                                         {availableCount.toLocaleString()} টি প্রশ্ন
                                                     </p>
                                                 )}
-                                                <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 mt-1 hidden md:block font-medium uppercase tracking-wider">
+                                                <p className="text-[8px] md:text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 hidden md:block font-medium uppercase tracking-wider">
                                                     {subject.subDisplay}
                                                 </p>
                                             </div>

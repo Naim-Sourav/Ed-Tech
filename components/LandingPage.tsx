@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Lottie from 'lottie-react';
-import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket, Play, Activity, BookOpen, Clock, Archive, ShieldCheck, RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
+import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket, Play, Activity, BookOpen, Clock, Archive, ShieldCheck, RotateCcw, Bookmark, ChevronDown, Flame } from 'lucide-react';
+import { motion } from 'motion/react';
 
 // Import Lottie animations directly
 import heroAnimation from '../assets/lottie/hero-animation.json';
@@ -174,26 +175,26 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             
             {/* Left Column: Text & Buttons */}
             <div className="text-center lg:text-left space-y-6 md:space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
-              <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.1] tracking-tight text-gray-900 dark:text-white">
+              <h1 className="text-3xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.1] tracking-tight text-gray-900 dark:text-white">
                 পরীক্ষা প্রস্তুতির বিশেষ <span className="text-primary dark:text-orange-400">অঙ্গন</span>
               </h1>
               
-              <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed lg:text-2xl">
+              <p className="text-sm md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed lg:text-2xl">
                 এইচএসসি একাডেমিক কিংবা এডমিশন —সবকিছুর পূর্ণাঙ্গ প্রস্তুতি এখন এক জায়গায়। আনলিমিটেড এক্সাম, মডেল টেস্ট, প্রশ্নব্যাংক সলভ, AI টিউটর, কুইজ ব্যাটল এবং স্মার্ট ট্র্যাকিং ছাড়াও দারুণ সব ফিচারের মাধ্যমে নিজেকে গড়ে তোলো সেরাদের সেরা হিসেবে।
               </p>
               
-              <div className="flex flex-col sm:flex-row lg:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row lg:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 md:gap-4 w-full sm:w-auto">
                 <button 
                   onClick={onLoginClick}
-                  className="w-full sm:w-auto px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl md:rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-3 text-lg shadow-xl shadow-gray-500/20"
+                  className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl md:rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg shadow-xl shadow-gray-500/20"
                 >
-                  <Zap size={22} className="fill-yellow-400 text-yellow-400" /> পরীক্ষা শুরু করো
+                  <Zap size={20} className="fill-yellow-400 text-yellow-400 md:w-[22px] md:h-[22px]" /> পরীক্ষা শুরু করো
                 </button>
                 <button 
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group text-lg"
+                  className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group text-base md:text-lg"
                 >
-                  <Play size={20} className="group-hover:text-primary transition-colors" /> ডেমো দেখুন
+                  <Play size={18} className="group-hover:text-primary transition-colors md:w-5 md:h-5" /> ডেমো দেখুন
                 </button>
               </div>
             </div>
@@ -208,23 +209,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           </div>
 
           {/* Animated Stats */}
-          <div className="mt-16 md:mt-24 p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="mt-12 md:mt-24 p-5 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                   <div className="text-center">
-                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
-                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
+                      <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
+                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700">
-                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
-                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
+                      <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
+                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
                   </div>
-                  <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
-                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={10} suffix="+" /></p>
-                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
+                  <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-gray-700 pt-3 md:pt-0 border-t md:border-t-0">
+                      <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={10} suffix="+" /></p>
+                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
                   </div>
-                  <div className="text-center border-l border-gray-200 dark:border-gray-700 pt-4 md:pt-0 border-t md:border-t-0">
-                      <p className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
-                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
+                  <div className="text-center border-l border-gray-200 dark:border-gray-700 pt-3 md:pt-0 border-t md:border-t-0">
+                      <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
+                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
                   </div>
               </div>
           </div>
@@ -241,12 +242,51 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       {/* Infinite Scroll Marquee */}
       <UniversityMarquee />
 
-      {/* Bento Grid Features */}
-      <section id="features" className="py-16 md:py-24 px-4 md:px-6 relative">
+      {/* GST Answer Key Marketing Banner - NEW */}
+      <section className="px-4 md:px-6 py-8">
         <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4">
-                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white">কেন <span className="text-primary dark:text-orange-400">পরীক্ষাঙ্গন</span>?</h2>
-                <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            onClick={() => window.location.hash = '#/gst-a-unit-2025'}
+            className="relative bg-gradient-to-r from-orange-600 to-red-600 rounded-[2rem] p-6 md:p-10 text-white overflow-hidden shadow-2xl shadow-orange-500/20 cursor-pointer group"
+          >
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700"></div>
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center shrink-0">
+                  <BookOpen size={32} className="md:w-10 md:h-10 text-white" />
+                </div>
+                <div className="text-center md:text-left">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-2">
+                    <Flame size={12} className="text-yellow-300" /> Hot Update
+                  </div>
+                  <h3 className="text-2xl md:text-4xl font-black leading-tight">
+                    GST A ইউনিট ভর্তি পরীক্ষা <br className="hidden md:block" />
+                    ২০২৫-২৬ এর প্রশ্ন ও সমাধান!
+                  </h3>
+                  <p className="text-orange-100 text-sm md:text-lg mt-2 font-medium">
+                    সবার আগে নির্ভুল উত্তরপত্র মিলিয়ে নাও এবং নিজের স্কোর যাচাই করো।
+                  </p>
+                </div>
+              </div>
+              <button className="px-8 py-4 bg-white text-orange-600 rounded-2xl font-black flex items-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap">
+                সমাধান দেখুন <ArrowRight size={20} />
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Bento Grid Features */}
+      <section id="features" className="py-12 md:py-24 px-4 md:px-6 relative">
+        <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-8 md:mb-16 space-y-2 md:space-y-4">
+                <h2 className="text-2xl md:text-5xl font-bold text-gray-900 dark:text-white">কেন <span className="text-primary dark:text-orange-400">পরীক্ষাঙ্গন</span>?</h2>
+                <p className="text-sm md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
                     ভর্তি যুদ্ধের এই কঠিন সময়ে প্রয়োজন একজন নির্ভরযোগ্য গাইড। পরীক্ষাঙ্গন তোমাকে দিচ্ছে পার্সোনালাইজড কেয়ার, কম্পিটিটিভ এনভায়রনমেন্ট এবং লেটেস্ট টেকনোলজি—যা তোমাকে অন্যদের চেয়ে এক ধাপ এগিয়ে রাখবে।
                 </p>
             </div>
@@ -254,24 +294,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 md:gap-6 md:grid-rows-2 h-auto md:h-[600px]">
                 
                 {/* Feature 1: Live Exam (Big Card - Focus) - UPDATED TO MATCH HOME PAGE */}
-                <div className="md:col-span-4 md:row-span-2 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group min-h-[400px] cursor-pointer" onClick={onLoginClick}>
+                <div className="md:col-span-4 md:row-span-2 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white rounded-[1.8rem] md:rounded-[2.5rem] p-5 md:p-10 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group min-h-[350px] md:min-h-[400px] cursor-pointer" onClick={onLoginClick}>
                     {/* Abstract Background Elements from HomeDashboard */}
                     <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-primary/30 transition-all duration-700"></div>
                     <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-cyan-500/10 rounded-full blur-[80px] -ml-10 -mb-10"></div>
 
-                    <div className="relative z-10 h-full flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="space-y-4 max-w-lg flex-1">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-orange-300 backdrop-blur-md">
-                                <Sparkles size={12} /> ডেইলি চ্যালেঞ্জ
+                    <div className="relative z-10 h-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+                        <div className="space-y-3 md:space-y-4 max-w-lg flex-1">
+                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] md:text-xs font-bold text-orange-300 backdrop-blur-md">
+                                <Sparkles size={10} className="md:w-3 md:h-3" /> ডেইলি চ্যালেঞ্জ
                             </div>
-                            <h3 className="text-3xl md:text-5xl font-bold leading-tight">
+                            <h3 className="text-2xl md:text-5xl font-bold leading-tight">
                                 নিজেকে যাচাই করো <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">লাইভ কুইজ</span> দিয়ে
                             </h3>
-                            <p className="text-gray-400 text-sm md:text-base leading-relaxed">
+                            <p className="text-gray-400 text-xs md:text-base leading-relaxed">
                                 প্রতিদিন নতুন নতুন টপিকের উপর মডেল টেস্ট দাও এবং তোমার অবস্থান যাচাই করো। ভুলগুলো থেকে শেখো।
                             </p>
-                            <button className="mt-4 bg-primary hover:bg-orange-700 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-orange-900/20 group-hover:scale-105 active:scale-95 w-fit">
-                                পরীক্ষা শুরু করুন <ArrowRight size={18} />
+                            <button className="mt-2 md:mt-4 bg-primary hover:bg-orange-700 text-white px-6 py-3 md:px-8 md:py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-orange-900/20 group-hover:scale-105 active:scale-95 w-fit text-sm md:text-base">
+                                পরীক্ষা শুরু করুন <ArrowRight size={16} className="md:w-[18px] md:h-[18px]" />
                             </button>
                         </div>
 

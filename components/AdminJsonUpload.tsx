@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { saveQuestionsToBankAPI } from '../services/api';
+import { saveQuestionsToBankAPI, normalizeText } from '../services/api';
 import { QuizQuestion, QuestionPaperMetadata } from '../types';
 import { useToast } from './Toast';
 import { Loader2, Save, FileText, CheckCircle, Trash2, Info, Upload, Calendar, Tag, Eye, ListChecks, Hash } from 'lucide-react';
@@ -12,6 +12,7 @@ declare global {
 }
 
 const EXAM_SOURCES = [
+    { id: 'GST_A_Unit', label: 'GST A Unit (২০২৫-২৬)' },
     { id: 'Medical', label: 'মেডিকেল ভর্তি পরীক্ষা (Medical)' },
     { id: 'Dental', label: 'ডেন্টাল ভর্তি পরীক্ষা (Dental)' },
     { id: 'Dhaka_University_A', label: 'ঢাকা বিশ্ববিদ্যালয় (ক ইউনিট)' },
@@ -31,7 +32,10 @@ const generateYears = () => {
     return years;
 };
 
-const YEARS = generateYears();
+const YEARS = [
+    '2025-26',
+    ...generateYears()
+];
 
 const AdminJsonUpload: React.FC = () => {
   const { showToast } = useToast();
@@ -153,7 +157,17 @@ const AdminJsonUpload: React.FC = () => {
           time: 60
       };
 
-      await saveQuestionsToBankAPI(processedQuestions, metadata);
+      const normalizedQuestions = processedQuestions.map(q => ({
+          ...q,
+          question: normalizeText(q.question),
+          options: q.options.map(o => normalizeText(o)),
+          explanation: normalizeText(q.explanation || ''),
+          subject: normalizeText(q.subject || ''),
+          chapter: normalizeText(q.chapter || ''),
+          topic: q.topic ? normalizeText(q.topic) : undefined
+      }));
+
+      await saveQuestionsToBankAPI(normalizedQuestions, metadata);
       showToast("সফলভাবে প্রশ্নব্যাংক সেভ করা হয়েছে!", "success");
       setProcessedQuestions([]);
       setRawInput('');

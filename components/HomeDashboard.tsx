@@ -2,14 +2,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Swords, 
-  Trophy, Zap, 
-  Star, Archive, 
+  Trophy, 
+  Archive, 
   Flame, CheckCircle, Circle,
   Settings, Atom, Beaker, Calculator, Dna,
-  BookOpen, Brain, Crown, X, LayoutGrid,
-  Target, ArrowRight, ListTodo,
-  TrendingUp, Calendar, MoreHorizontal
+  BookOpen, Brain, Crown, X, 
+  Target, 
+  TrendingUp, Calendar, MoreHorizontal, Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,10 +16,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { fetchUserStatsAPI, fetchLeaderboardAPI } from '../services/api';
 import { useCache } from '../contexts/CacheContext';
 import { LeaderboardUser } from '../types';
-import LottieAnim from './LottieAnim';
-import { fireAnimData } from '../assets/lottie/fireData';
-import { rankAnimData } from '../assets/lottie/rankData';
-import { pointsAnimData } from '../assets/lottie/pointsData';
+import { toBengaliNumber } from '../utils/numberUtils';
 
 // --- CONSTANTS & MOCK DATA ---
 
@@ -31,6 +27,24 @@ const SUBJECTS = [
     { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-500/10 dark:to-orange-500/5 text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-500/10' },
     { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/10 dark:to-amber-500/5 text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/10' },
 ];
+
+// Custom SVG Icon Component for Dashboard Stats
+const StatIcon = ({ src, className }: { src: string, className?: string }) => (
+  <div 
+    className={`w-8 h-8 md:w-10 md:h-10 transition-all duration-300 ${className}`}
+    style={{ 
+      maskImage: `url(${src})`, 
+      WebkitMaskImage: `url(${src})`,
+      maskRepeat: 'no-repeat',
+      WebkitMaskRepeat: 'no-repeat',
+      maskPosition: 'center',
+      WebkitMaskPosition: 'center',
+      maskSize: 'contain',
+      WebkitMaskSize: 'contain',
+      backgroundColor: 'currentColor'
+    }}
+  />
+);
 
 const HomeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -200,8 +214,8 @@ const HomeDashboard: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 pt-4 md:px-6 md:pt-8 space-y-6 md:space-y-8 animate-page-enter relative z-10">
         
         {/* --- HEADER SECTION --- */}
-        <div className="bg-white/80 dark:bg-gray-800/40 backdrop-blur-2xl rounded-3xl p-4 md:p-6 border border-gray-100 dark:border-white/5 relative overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between mb-6 relative z-10">
+        <div className="bg-white/80 dark:bg-gray-800/40 backdrop-blur-2xl rounded-3xl p-3 md:p-6 border border-gray-100 dark:border-white/5 relative overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between mb-4 md:mb-6 relative z-10">
                 <div className="flex items-center gap-3 md:gap-4">
                     <motion.div 
                         whileTap={{ scale: 0.9 }}
@@ -215,7 +229,7 @@ const HomeDashboard: React.FC = () => {
                     </motion.div>
                     <div className="flex-1 min-w-0">
                         <h1 className="text-lg md:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight mb-0.5 tracking-tight">
-                            {t(greetingKey)}, <span className="text-primary dark:text-orange-500">{currentUser?.displayName?.split(' ')[0] || 'Learner'}</span> 👋
+                            {t(greetingKey)}, <span className="text-primary dark:text-orange-500">{currentUser?.displayName?.split(' ')[0] || 'Learner'}</span>
                         </h1>
                         <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
                             <TrendingUp size={12} /> আপনার আজকের প্রগতি
@@ -232,7 +246,7 @@ const HomeDashboard: React.FC = () => {
             </div>
 
             {/* Segmented Control */}
-            <div className="flex p-1 bg-gray-100/50 dark:bg-gray-800/50 rounded-2xl mb-6 relative">
+            <div className="flex p-1 bg-gray-100/50 dark:bg-gray-800/50 rounded-2xl mb-4 md:mb-6 relative">
                 <motion.div 
                     layoutId="tabIndicator"
                     className="absolute inset-y-1 bg-white dark:bg-gray-700/50 rounded-xl shadow-sm z-0 border border-transparent dark:border-white/5"
@@ -268,15 +282,14 @@ const HomeDashboard: React.FC = () => {
                             onClick={() => navigate('/leaderboard')} 
                             className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-all shadow-sm hover:shadow-md"
                         >
-                            <div className="w-8 h-8 md:w-10 md:h-10">
-                                <LottieAnim 
-                                    animationData={rankAnimData} 
-                                    fallback={<Trophy size={24} className="text-amber-500 fill-amber-500" />}
-                                    className="w-full h-full" 
+                            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-amber-500">
+                                <StatIcon 
+                                    src="/icons/ranking.svg" 
+                                    className="w-full h-full drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" 
                                 />
                             </div>
-                            <p className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Rank</p>
-                            <p className="text-sm md:text-lg font-black text-gray-900 dark:text-gray-100">#{rank || '-'}</p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">র‍্যাঙ্ক</p>
+                            <p className="text-sm md:text-lg font-black text-gray-900 dark:text-gray-100">#{toBengaliNumber(rank) || '-'}</p>
                         </motion.div>
                         
                         <motion.div 
@@ -284,15 +297,14 @@ const HomeDashboard: React.FC = () => {
                             whileTap={{ scale: 0.98 }}
                             className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-all shadow-sm hover:shadow-md"
                         >
-                            <div className="w-8 h-8 md:w-10 md:h-10">
-                                <LottieAnim 
-                                    animationData={pointsAnimData} 
-                                    fallback={<Zap size={24} className="text-orange-500 fill-current" />}
-                                    className="w-full h-full" 
+                            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-orange-500">
+                                <StatIcon 
+                                    src="/icons/points.svg" 
+                                    className="w-full h-full drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" 
                                 />
                             </div>
-                            <p className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Points</p>
-                            <p className="text-sm md:text-lg font-black text-gray-900 dark:text-gray-100">{stats?.points || 0}</p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">পয়েন্টস</p>
+                            <p className="text-sm md:text-lg font-black text-gray-900 dark:text-gray-100">{toBengaliNumber(stats?.points) || '০'}</p>
                         </motion.div>
  
                         <motion.div 
@@ -301,15 +313,14 @@ const HomeDashboard: React.FC = () => {
                             onClick={() => setShowStreakModal(true)} 
                             className="bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer transition-all shadow-sm hover:shadow-md"
                         >
-                            <div className="w-8 h-8 md:w-10 md:h-10">
-                                <LottieAnim 
-                                    animationData={fireAnimData} 
-                                    fallback={<Flame size={24} className="text-orange-500 fill-orange-500" />}
-                                    className="w-full h-full" 
+                            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-red-500">
+                                <StatIcon 
+                                    src="/icons/streak.svg" 
+                                    className="w-full h-full drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]" 
                                 />
                             </div>
-                            <p className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Streak</p>
-                            <p className="text-sm md:text-lg font-black text-gray-900 dark:text-gray-100">{currentStreak} <span className="text-sm">🔥</span></p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">স্ট্রিক</p>
+                            <p className="text-sm md:text-lg font-black text-gray-900 dark:text-gray-100">{toBengaliNumber(currentStreak)}</p>
                         </motion.div>
                     </motion.div>
                 ) : (
@@ -364,7 +375,7 @@ const HomeDashboard: React.FC = () => {
         {/* 1. Featured Banner (GST) - Cyberpunk Style */}
         <div 
             onClick={() => navigate('/gst-special')}
-            className="w-full relative bg-gray-900 dark:bg-gray-900 rounded-3xl md:rounded-[2.5rem] p-5 md:p-8 text-white overflow-hidden shadow-2xl shadow-red-900/20 cursor-pointer group border border-gray-800 dark:border-white/[0.08] active-scale transition-all duration-300 hover:shadow-red-500/10"
+            className="w-full relative bg-gray-900 dark:bg-gray-900 rounded-3xl md:rounded-[2.5rem] p-4 md:p-8 text-white overflow-hidden shadow-2xl shadow-red-900/20 cursor-pointer group border border-gray-800 dark:border-white/[0.08] active-scale transition-all duration-300 hover:shadow-red-500/10"
         >
             {/* Cyberpunk Grid Background */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30"></div>
@@ -383,104 +394,113 @@ const HomeDashboard: React.FC = () => {
                     GST <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 animate-gradient-x">সুপার ফোকাস</span>
                 </h2>
                 <p className="text-xs md:text-sm text-gray-300 max-w-sm font-medium leading-relaxed border-l-2 border-red-500/50 pl-3">৪৫ দিনের ফিক্সড রুটিন। ডিসিপ্লিন, ডেডিকেশন, ডমিনেশন।</p>
-                <div className="mt-2 flex items-center gap-2 text-[10px] md:text-xs font-bold text-white group-hover:gap-3 transition-all">
-                    <span className="border-b-2 border-red-500 pb-0.5">রুটিন দেখুন</span> <ArrowRight size={14} className="text-red-400"/>
-                </div>
             </div>
         </div>
 
-        {/* 2. Main Menu Grid - Glassmorphism */}
-        <div>
-            <h3 className="text-xs md:text-sm font-bold text-gray-500 dark:text-zinc-500 mb-4 px-1 flex items-center gap-2 uppercase tracking-wider"><LayoutGrid size={16}/> কুইক অ্যাক্সেস</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                {/* Rapid Fire */}
-                <div 
-                    onClick={() => navigate('/quiz', { state: { mode: 'RAPID_FIRE' } })}
-                    className="bg-white/80 dark:bg-zinc-900/20 backdrop-blur-2xl p-4 md:p-6 lg:p-8 rounded-[2rem] border border-gray-100 dark:border-white/5 hover:border-red-300 dark:hover:border-red-500/30 transition-all cursor-pointer group relative overflow-hidden h-36 md:h-48 lg:h-52 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-red-500/10 active-scale"
-                >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500"><Flame size={100} /></div>
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-red-100 dark:bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 shadow-inner group-hover:scale-110 transition-transform duration-300 ring-1 ring-red-500/20">
-                        <Flame size={24} fill="currentColor" />
-                    </div>
-                    <div>
-                        <h4 className="font-black text-gray-900 dark:text-gray-100 text-lg md:text-xl tracking-tight group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">র‍্যাপিড ফায়ার</h4>
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-zinc-500 font-medium mt-1">দ্রুত কুইজ প্র্যাকটিস</p>
-                    </div>
-                </div>
-
-                {/* Custom Quiz (Model Test) */}
-                <div 
-                    onClick={() => navigate('/quiz')}
-                    className="bg-white/80 dark:bg-zinc-900/20 backdrop-blur-2xl p-4 md:p-6 lg:p-8 rounded-[2rem] border border-gray-100 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 transition-all cursor-pointer group relative overflow-hidden h-36 md:h-48 lg:h-52 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-orange-500/10 active-scale"
-                >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500"><Settings size={100} /></div>
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-orange-100 dark:bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-600 shadow-inner group-hover:scale-110 transition-transform duration-300 ring-1 ring-orange-500/20">
-                        <Settings size={24} />
-                    </div>
-                    <div>
-                        <h4 className="font-black text-gray-900 dark:text-gray-100 text-lg md:text-xl tracking-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">কাস্টম কুইজ</h4>
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-zinc-500 font-medium mt-1">নিজের মতো এক্সাম সাজান</p>
-                    </div>
-                </div>
-
+        {/* 2. Main Menu Grid - Chorcha Style UI (Unified Sizes) */}
+        <div className="bg-white dark:bg-gray-800/40 backdrop-blur-xl rounded-[2rem] p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+            <div className="flex flex-wrap justify-center gap-y-10 gap-x-4 md:gap-x-12">
                 {/* Question Bank */}
                 <div 
                     onClick={() => navigate('/qbank')}
-                    className="bg-white/80 dark:bg-zinc-900/20 backdrop-blur-2xl p-4 md:p-6 lg:p-8 rounded-[2rem] border border-gray-100 dark:border-white/5 hover:border-amber-300 dark:hover:border-amber-500/30 transition-all cursor-pointer group relative overflow-hidden h-36 md:h-48 lg:h-52 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-amber-500/10 active-scale"
+                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500"><Archive size={100} /></div>
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-100 dark:bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 shadow-inner group-hover:scale-110 transition-transform duration-300 ring-1 ring-amber-500/20">
-                        <Archive size={24} />
+                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                        <img src="/icons/qbank_bn.png" alt="QBank" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <div>
-                        <h4 className="font-black text-gray-900 dark:text-gray-100 text-lg md:text-xl tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">প্রশ্ন ব্যাংক</h4>
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-zinc-500 font-medium mt-1">বিগত বছরের প্রশ্ন</p>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">প্রশ্ন ব্যাংক</span>
+                </div>
+
+                {/* Rapid Fire */}
+                <div 
+                    onClick={() => navigate('/quiz', { state: { mode: 'RAPID_FIRE' } })}
+                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
+                >
+                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                        <img src="/icons/flash.png" alt="Rapid Fire" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">র‍্যাপিড ফায়ার</span>
+                </div>
+
+                {/* Model Test (Custom Quiz) */}
+                <div 
+                    onClick={() => navigate('/quiz')}
+                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
+                >
+                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                        <div 
+                            className="w-full h-full bg-gradient-to-br from-orange-400 to-primary" 
+                            style={{ 
+                                maskImage: 'url(/icons/customize.svg)', 
+                                WebkitMaskImage: 'url(/icons/customize.svg)', 
+                                maskSize: 'contain', 
+                                WebkitMaskSize: 'contain', 
+                                maskRepeat: 'no-repeat', 
+                                WebkitMaskRepeat: 'no-repeat', 
+                                maskPosition: 'center', 
+                                WebkitMaskPosition: 'center' 
+                            }} 
+                        />
+                    </div>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">মডেল টেস্ট</span>
+                </div>
+
+                {/* AI Tutor */}
+                <div 
+                    onClick={() => navigate('/bot')}
+                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
+                >
+                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                            <Bot size={28} className="text-white" />
+                        </div>
+                    </div>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">এআই টিউটর</span>
                 </div>
 
                 {/* Battle */}
                 <div 
                     onClick={() => navigate('/battle')}
-                    className="bg-white/80 dark:bg-zinc-900/20 backdrop-blur-2xl p-4 md:p-6 lg:p-8 rounded-[2rem] border border-gray-100 dark:border-white/5 hover:border-amber-300 dark:hover:border-amber-500/30 transition-all cursor-pointer group relative overflow-hidden h-36 md:h-48 lg:h-52 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-amber-500/10 active-scale"
+                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500"><Swords size={100} /></div>
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-100 dark:bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 shadow-inner group-hover:scale-110 transition-transform duration-300 ring-1 ring-amber-500/20">
-                        <Swords size={24} />
+                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                        <img src="/icons/battle.png" alt="Battle" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <div>
-                        <h4 className="font-black text-gray-900 dark:text-gray-100 text-lg md:text-xl tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">কুইজ ব্যাটল</h4>
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-zinc-500 font-medium mt-1">বন্ধুদের সাথে লড়াই</p>
-                    </div>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">ব্যাটল</span>
                 </div>
 
-                {/* Saved Questions */}
+                {/* Saved */}
                 <div 
-                    onClick={() => navigate('/profile', { state: { activeTab: 'saved' } })}
-                    className="bg-white/80 dark:bg-zinc-900/20 backdrop-blur-2xl p-4 md:p-6 lg:p-8 rounded-[2rem] border border-gray-100 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 transition-all cursor-pointer group relative overflow-hidden h-36 md:h-48 lg:h-52 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-orange-500/10 active-scale"
+                    onClick={() => navigate('/saved-questions')}
+                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500"><Star size={100} /></div>
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-orange-100 dark:bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-600 shadow-inner group-hover:scale-110 transition-transform duration-300 ring-1 ring-orange-500/20">
-                        <Star size={24} />
+                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                        <img src="/icons/save.png" alt="Saved" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <div>
-                        <h4 className="font-black text-gray-900 dark:text-gray-100 text-lg md:text-xl tracking-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">সেভ্ড প্রশ্ন</h4>
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-zinc-500 font-medium mt-1">আপনার প্রিয় প্রশ্নগুলো</p>
-                    </div>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">সেভ্ড</span>
                 </div>
 
-                {/* Study Planner */}
+                {/* Wrong Questions */}
                 <div 
-                    onClick={() => navigate('/planner')}
-                    className="bg-white/80 dark:bg-zinc-900/20 backdrop-blur-2xl p-4 md:p-6 lg:p-8 rounded-[2rem] border border-gray-100 dark:border-white/5 hover:border-orange-300 dark:hover:border-orange-500/30 transition-all cursor-pointer group relative overflow-hidden h-36 md:h-48 lg:h-52 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-orange-500/10 active-scale"
+                    onClick={() => navigate('/wrong-questions')}
+                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500"><ListTodo size={100} /></div>
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-orange-100 dark:bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-600 shadow-inner group-hover:scale-110 transition-transform duration-300 ring-1 ring-orange-500/20">
-                        <ListTodo size={24} />
+                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                        <div 
+                            className="w-full h-full bg-gradient-to-br from-red-500 to-orange-600" 
+                            style={{ 
+                                maskImage: 'url(/icons/wrong.svg)', 
+                                WebkitMaskImage: 'url(/icons/wrong.svg)', 
+                                maskSize: 'contain', 
+                                WebkitMaskSize: 'contain', 
+                                maskRepeat: 'no-repeat', 
+                                WebkitMaskRepeat: 'no-repeat', 
+                                maskPosition: 'center', 
+                                WebkitMaskPosition: 'center' 
+                            }} 
+                        />
                     </div>
-                    <div>
-                        <h4 className="font-black text-gray-900 dark:text-gray-100 text-lg md:text-xl tracking-tight group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">স্টাডি প্ল্যানার</h4>
-                        <p className="text-[10px] md:text-xs text-gray-500 dark:text-zinc-500 font-medium mt-1">আপনার পড়ার রুটিন</p>
-                    </div>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">ভুল প্রশ্ন</span>
                 </div>
             </div>
         </div>
@@ -521,11 +541,11 @@ const HomeDashboard: React.FC = () => {
                             <Trophy size={24} className="text-yellow-400 fill-yellow-400 animate-bounce-slow" />
                             <h3 className="text-xl md:text-3xl font-black text-white tracking-tight uppercase drop-shadow-md">লিডারবোর্ড</h3>
                         </div>
-                        <p className="text-[10px] md:text-xs text-orange-200 font-bold uppercase tracking-[0.2em] opacity-80">Top 5 Performers</p>
+                        <p className="text-[10px] md:text-xs text-orange-200 font-bold uppercase tracking-[0.2em] opacity-80">সেরা ৫ পারফর্মার</p>
                     </div>
                     <div className="text-right">
-                        <div className="text-3xl md:text-4xl font-black text-white drop-shadow-lg">#{rank || '-'}</div>
-                        <div className="text-[10px] text-orange-200 font-bold uppercase tracking-widest opacity-80">Your Rank</div>
+                        <div className="text-3xl md:text-4xl font-black text-white drop-shadow-lg">#{toBengaliNumber(rank) || '-'}</div>
+                        <div className="text-[10px] text-orange-200 font-bold uppercase tracking-widest opacity-80">আপনার র‍্যাঙ্ক</div>
                     </div>
                 </div>
             </div>
@@ -546,7 +566,7 @@ const HomeDashboard: React.FC = () => {
                             <div key={idx} className={`flex items-center justify-between p-4 rounded-2xl transition-all border ${isMe ? 'bg-orange-50/80 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-white/5 border-transparent hover:border-gray-100 dark:hover:border-white/5'}`}>
                                 <div className="flex items-center gap-4 md:gap-5">
                                     <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center text-xs md:text-sm font-black border ${rankBadge}`}>
-                                        {idx + 1}
+                                        {toBengaliNumber(idx + 1)}
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="relative">
@@ -566,8 +586,8 @@ const HomeDashboard: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-base md:text-lg font-black text-gray-900 dark:text-gray-100 block tabular-nums tracking-tight">{u.points}</span>
-                                    <span className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Pts</span>
+                                    <span className="text-base md:text-lg font-black text-gray-900 dark:text-gray-100 block tabular-nums tracking-tight">{toBengaliNumber(u.points)}</span>
+                                    <span className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">পয়েন্ট</span>
                                 </div>
                             </div>
                         )
@@ -599,17 +619,15 @@ const HomeDashboard: React.FC = () => {
                     
                     <div className="text-center mt-4 mb-10 relative z-10">
                         <motion.div 
-                            initial={{ scale: 0.4, y: 20 }}
-                            animate={{ 
-                                scale: isCheckedIn ? 1.5 : 0.4,
-                                y: isCheckedIn ? 0 : 20
-                            }}
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: "spring", damping: 15, stiffness: 100, delay: 0.2 }}
-                            className="w-48 h-48 mx-auto mb-2 flex items-center justify-center"
+                            className="w-40 h-40 mx-auto mb-6 flex items-center justify-center text-orange-500 relative"
                         >
-                            <LottieAnim 
-                                animationData={fireAnimData} 
-                                className="w-full h-full drop-shadow-[0_0_30px_rgba(249,115,22,0.6)]" 
+                            <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
+                            <StatIcon 
+                                src="/icons/streak.svg" 
+                                className="w-full h-full drop-shadow-[0_0_30px_rgba(249,115,22,0.8)] relative z-10" 
                             />
                         </motion.div>
 
@@ -620,20 +638,25 @@ const HomeDashboard: React.FC = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-1"
+                                    className="space-y-2"
                                 >
-                                    <h2 className="text-2xl font-bold text-orange-100 leading-tight">Keep the fire alive</h2>
-                                    <p className="text-xl font-bold text-orange-100">প্র্যাকটিস করে স্ট্রিক ধরে রাখো!</p>
+                                    <h2 className="text-3xl font-black text-white leading-tight tracking-tight">Keep the fire alive!</h2>
+                                    <p className="text-lg font-bold text-orange-200/80">আজকের প্র্যাকটিস সম্পন্ন করে স্ট্রিক ধরে রাখুন</p>
                                 </motion.div>
                             ) : (
                                 <motion.div
                                     key="checked-text"
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="space-y-0"
+                                    className="space-y-1"
                                 >
-                                    <h2 className="text-7xl font-black text-orange-500 tracking-tighter drop-shadow-lg">{stats?.currentStreak || 0}</h2>
-                                    <p className="text-2xl font-bold text-orange-200">day streak</p>
+                                    <h2 className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-orange-400 to-red-600 tracking-tighter drop-shadow-2xl">{toBengaliNumber(stats?.currentStreak)}</h2>
+                                    <p className="text-2xl font-black text-orange-100 uppercase tracking-widest">দিনের স্ট্রিক</p>
+                                    <div className="flex items-center justify-center gap-2 mt-2">
+                                        <Sparkles size={16} className="text-yellow-400" />
+                                        <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">You're on fire!</span>
+                                        <Sparkles size={16} className="text-yellow-400" />
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>

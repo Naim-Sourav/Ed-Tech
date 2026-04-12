@@ -6,7 +6,7 @@ import AdminQuestionGenerator from './AdminQuestionGenerator';
 import AdminJsonUpload from './AdminJsonUpload';
 import AdminPdfUpload from './AdminPdfUpload';
 import AdminPublicExam from './AdminPublicExam';
-import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI } from '../services/api';
+import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,238 @@ declare global {
     MathJax: any;
   }
 }
+
+// --- Sub-Components moved outside to prevent re-mounting on every render ---
+
+const QuestionCardSkeleton = () => (
+  <div className="space-y-4 animate-pulse">
+      {[...Array(3)].map((_, i) => (
+          <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 h-48"></div>
+      ))}
+  </div>
+);
+
+interface ConfirmationModalProps {
+  confirmAction: { type: 'APPROVE' | 'REJECT' | 'DELETE', id: string } | null;
+  setConfirmAction: (action: any) => void;
+  actionLoading: boolean;
+  executeConfirmAction: () => void;
+}
+
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ confirmAction, setConfirmAction, actionLoading, executeConfirmAction }) => {
+    if (!confirmAction) return null;
+    
+    const isApprove = confirmAction.type === 'APPROVE';
+    const isReject = confirmAction.type === 'REJECT';
+    const isDelete = confirmAction.type === 'DELETE';
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden animate-in zoom-in-95">
+                <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isApprove ? 'bg-green-100 text-green-600' : isReject ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
+                    {isApprove && <Check size={32} strokeWidth={3}/>}
+                    {isReject && <X size={32} strokeWidth={3}/>}
+                    {isDelete && <Trash2 size={32} strokeWidth={3}/>}
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    {isApprove ? 'পেমেন্ট অ্যাপ্রুভ করবেন?' : isReject ? 'পেমেন্ট রিজেক্ট করবেন?' : 'ডিলিট করতে চান?'}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+                    {isApprove ? 'ব্যবহারকারী কোর্সে এক্সেস পেয়ে যাবেন।' : isReject ? 'ব্যবহারকারী অ্যাক্সেস পাবেন না।' : 'এই তথ্যটি আর ফিরিয়ে আনা যাবে না।'}
+                </p>
+
+                <div className="flex gap-3">
+                    <button 
+                        disabled={actionLoading}
+                        onClick={() => setConfirmAction(null)} 
+                        className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        বাতিল
+                    </button>
+                    <button 
+                        disabled={actionLoading}
+                        onClick={executeConfirmAction}
+                        className={`flex-1 py-3 rounded-xl text-white font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${isApprove ? 'bg-green-600 hover:bg-green-700 shadow-green-200 dark:shadow-none' : 'bg-red-600 hover:bg-red-700 shadow-red-200 dark:shadow-none'}`}
+                    >
+                        {actionLoading ? <Loader2 className="animate-spin" size={18}/> : 'নিশ্চিত করুন'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface QuestionEditModalProps {
+  editingQuestion: any;
+  setEditingQuestion: (q: any) => void;
+  handleUpdateQuestion: (e: React.FormEvent) => void;
+}
+
+const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, setEditingQuestion, handleUpdateQuestion }) => {
+    if (!editingQuestion) return null;
+
+    const handleOptionChange = (idx: number, val: string) => {
+        const newOptions = [...editingQuestion.options];
+        newOptions[idx] = val;
+        setEditingQuestion({ ...editingQuestion, options: newOptions });
+    };
+
+    const handleOptionImageChange = (idx: number, val: string) => {
+        const newImages = [...(editingQuestion.optionsImages || [null, null, null, null])];
+        newImages[idx] = val;
+        setEditingQuestion({ ...editingQuestion, optionsImages: newImages });
+    };
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 w-full max-w-4xl rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] animate-in zoom-in-95">
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Edit2 size={20} className="text-primary"/> প্রশ্ন সম্পাদনা (Edit Question)
+                    </h2>
+                    <button onClick={() => setEditingQuestion(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"><X size={20}/></button>
+                </div>
+                
+                <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 space-y-6">
+                    {/* Meta Data */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1">Subject</label>
+                            <select 
+                                value={editingQuestion.subject || ''} 
+                                onChange={e => setEditingQuestion({...editingQuestion, subject: e.target.value})}
+                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                            >
+                                <option value="">Select Subject</option>
+                                {Object.keys(SYLLABUS_DB).map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1">Chapter</label>
+                            <input 
+                                type="text" 
+                                value={editingQuestion.chapter || ''}
+                                onChange={e => setEditingQuestion({...editingQuestion, chapter: e.target.value})}
+                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1">Topic</label>
+                            <input 
+                                type="text" 
+                                value={editingQuestion.topic || ''}
+                                onChange={e => setEditingQuestion({...editingQuestion, topic: e.target.value})}
+                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                                list="topic-suggestions"
+                            />
+                            <datalist id="topic-suggestions">
+                                {editingQuestion.subject && editingQuestion.chapter && (SYLLABUS_DB[editingQuestion.subject]?.[editingQuestion.chapter] || []).map((t: any) => {
+                                    const topicName = typeof t === 'string' ? t : t.title;
+                                    return <option key={topicName} value={topicName} />
+                                })}
+                            </datalist>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1">Exam Ref (Question Bank)</label>
+                            <input 
+                                type="text" 
+                                value={editingQuestion.examRef || ''}
+                                onChange={e => setEditingQuestion({...editingQuestion, examRef: e.target.value})}
+                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm placeholder-gray-400"
+                                placeholder="e.g. medical_23_24"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Question Body */}
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Question Text</label>
+                        <textarea 
+                            rows={3}
+                            value={editingQuestion.question || ''}
+                            onChange={e => setEditingQuestion({...editingQuestion, question: e.target.value})}
+                            className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
+                        />
+                        <div className="mt-2">
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Question Image URL (Optional)</label>
+                            <input 
+                                type="text" 
+                                value={editingQuestion.questionImage || ''}
+                                onChange={e => setEditingQuestion({...editingQuestion, questionImage: e.target.value})}
+                                className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                placeholder="https://example.com/image.png"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Options */}
+                    <div className="space-y-3">
+                        <label className="block text-xs font-bold text-gray-500">Options</label>
+                        {[0, 1, 2, 3].map(idx => (
+                            <div key={idx} className="flex gap-2 items-start">
+                                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 shrink-0 font-bold text-xs mt-1">
+                                    {String.fromCharCode(65 + idx)}
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <input 
+                                        type="text" 
+                                        value={editingQuestion.options[idx] || ''}
+                                        onChange={e => handleOptionChange(idx, e.target.value)}
+                                        className={`w-full p-2.5 rounded-xl border text-sm font-tiro ${Number(editingQuestion.correctAnswerIndex) === idx ? 'border-green-500 ring-1 ring-green-500 bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-gray-700 dark:border-gray-600'}`}
+                                        placeholder={`Option ${idx + 1}`}
+                                    />
+                                    <input 
+                                        type="text" 
+                                        value={editingQuestion.optionsImages?.[idx] || ''}
+                                        onChange={e => handleOptionImageChange(idx, e.target.value)}
+                                        className="w-full p-2 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px]"
+                                        placeholder="Option Image URL (Optional)"
+                                    />
+                                </div>
+                                <input 
+                                    type="radio" 
+                                    name="correctAnswer"
+                                    checked={Number(editingQuestion.correctAnswerIndex) === idx}
+                                    onChange={() => setEditingQuestion({...editingQuestion, correctAnswerIndex: idx})}
+                                    className="mt-3 w-4 h-4 accent-green-500 cursor-pointer"
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Explanation */}
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Explanation</label>
+                        <textarea 
+                            rows={3}
+                            value={editingQuestion.explanation || ''}
+                            onChange={e => setEditingQuestion({...editingQuestion, explanation: e.target.value})}
+                            className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
+                        />
+                        <div className="mt-2">
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Explanation Image URL (Optional)</label>
+                            <input 
+                                type="text" 
+                                value={editingQuestion.explanationImage || ''}
+                                onChange={e => setEditingQuestion({...editingQuestion, explanationImage: e.target.value})}
+                                className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                placeholder="https://example.com/expl-image.png"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 mt-4">
+                    <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Cancel</button>
+                    <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-lg flex items-center gap-2">
+                        <Save size={18}/> Update Question
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
@@ -176,6 +408,11 @@ const AdminPage: React.FC = () => {
           // Clean data before sending
           const updatedData = {
               ...editingQuestion,
+              question: normalizeText(editingQuestion.question),
+              options: editingQuestion.options.map((o: string) => normalizeText(o)),
+              explanation: normalizeText(editingQuestion.explanation || ''),
+              subject: normalizeText(editingQuestion.subject || ''),
+              chapter: normalizeText(editingQuestion.chapter || ''),
               correctAnswerIndex: Number(editingQuestion.correctAnswerIndex)
           };
           await updateQuestionInBankAPI(editingQuestion._id, updatedData);
@@ -190,10 +427,10 @@ const AdminPage: React.FC = () => {
   const filteredRequests = paymentRequests.filter(req => {
     const matchesFilter = filter === 'ALL' || req.status === filter;
     
-    const userName = req.userName || '';
-    const trxId = req.trxId || '';
-    const senderNumber = req.senderNumber || '';
-    const searchLower = searchTerm.toLowerCase();
+    const userName = normalizeText(req.userName || '').toLowerCase();
+    const trxId = normalizeText(req.trxId || '').toLowerCase();
+    const senderNumber = normalizeText(req.senderNumber || '').toLowerCase();
+    const searchLower = normalizeText(searchTerm).toLowerCase();
 
     const matchesSearch = 
       userName.toLowerCase().includes(searchLower) ||
@@ -234,226 +471,6 @@ const AdminPage: React.FC = () => {
           setConfirmAction(null);
       }
   };
-
-  // --- Sub-Component: Question Edit Modal ---
-  const QuestionEditModal = () => {
-      if (!editingQuestion) return null;
-
-      const handleOptionChange = (idx: number, val: string) => {
-          const newOptions = [...editingQuestion.options];
-          newOptions[idx] = val;
-          setEditingQuestion({ ...editingQuestion, options: newOptions });
-      };
-
-      const handleOptionImageChange = (idx: number, val: string) => {
-          const newImages = [...(editingQuestion.optionsImages || [null, null, null, null])];
-          newImages[idx] = val;
-          setEditingQuestion({ ...editingQuestion, optionsImages: newImages });
-      };
-
-      return (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-              <div className="bg-white dark:bg-gray-800 w-full max-w-4xl rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] animate-in zoom-in-95">
-                  <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                          <Edit2 size={20} className="text-primary"/> প্রশ্ন সম্পাদনা (Edit Question)
-                      </h2>
-                      <button onClick={() => setEditingQuestion(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"><X size={20}/></button>
-                  </div>
-                  
-                  <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 space-y-6">
-                      {/* Meta Data */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                              <label className="block text-xs font-bold text-gray-500 mb-1">Subject</label>
-                              <select 
-                                  value={editingQuestion.subject || ''} 
-                                  onChange={e => setEditingQuestion({...editingQuestion, subject: e.target.value})}
-                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
-                              >
-                                  <option value="">Select Subject</option>
-                                  {Object.keys(SYLLABUS_DB).map(s => <option key={s} value={s}>{s}</option>)}
-                              </select>
-                          </div>
-                          <div>
-                              <label className="block text-xs font-bold text-gray-500 mb-1">Chapter</label>
-                              <input 
-                                  type="text" 
-                                  value={editingQuestion.chapter || ''}
-                                  onChange={e => setEditingQuestion({...editingQuestion, chapter: e.target.value})}
-                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
-                              />
-                          </div>
-                          <div>
-                              <label className="block text-xs font-bold text-gray-500 mb-1">Topic</label>
-                              <input 
-                                  type="text" 
-                                  value={editingQuestion.topic || ''}
-                                  onChange={e => setEditingQuestion({...editingQuestion, topic: e.target.value})}
-                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
-                                  list="topic-suggestions"
-                              />
-                              <datalist id="topic-suggestions">
-                                  {editingQuestion.subject && editingQuestion.chapter && (SYLLABUS_DB[editingQuestion.subject]?.[editingQuestion.chapter] || []).map((t: any) => {
-                                      const topicName = typeof t === 'string' ? t : t.title;
-                                      return <option key={topicName} value={topicName} />
-                                  })}
-                              </datalist>
-                          </div>
-                          <div>
-                              <label className="block text-xs font-bold text-gray-500 mb-1">Exam Ref (Question Bank)</label>
-                              <input 
-                                  type="text" 
-                                  value={editingQuestion.examRef || ''}
-                                  onChange={e => setEditingQuestion({...editingQuestion, examRef: e.target.value})}
-                                  className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm placeholder-gray-400"
-                                  placeholder="e.g. medical_23_24"
-                              />
-                          </div>
-                      </div>
-
-                      {/* Question Body */}
-                      <div>
-                          <label className="block text-xs font-bold text-gray-500 mb-1">Question Text</label>
-                          <textarea 
-                              rows={3}
-                              value={editingQuestion.question || ''}
-                              onChange={e => setEditingQuestion({...editingQuestion, question: e.target.value})}
-                              className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
-                          />
-                          <div className="mt-2">
-                              <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Question Image URL (Optional)</label>
-                              <input 
-                                  type="text" 
-                                  value={editingQuestion.questionImage || ''}
-                                  onChange={e => setEditingQuestion({...editingQuestion, questionImage: e.target.value})}
-                                  className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
-                                  placeholder="https://example.com/image.png"
-                              />
-                          </div>
-                      </div>
-
-                      {/* Options */}
-                      <div className="space-y-3">
-                          <label className="block text-xs font-bold text-gray-500">Options</label>
-                          {[0, 1, 2, 3].map(idx => (
-                              <div key={idx} className="flex gap-2 items-start">
-                                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 shrink-0 font-bold text-xs mt-1">
-                                      {String.fromCharCode(65 + idx)}
-                                  </div>
-                                  <div className="flex-1 space-y-2">
-                                      <input 
-                                          type="text" 
-                                          value={editingQuestion.options[idx] || ''}
-                                          onChange={e => handleOptionChange(idx, e.target.value)}
-                                          className={`w-full p-2.5 rounded-xl border text-sm font-tiro ${Number(editingQuestion.correctAnswerIndex) === idx ? 'border-green-500 ring-1 ring-green-500 bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-gray-700 dark:border-gray-600'}`}
-                                          placeholder={`Option ${idx + 1}`}
-                                      />
-                                      <input 
-                                          type="text" 
-                                          value={editingQuestion.optionsImages?.[idx] || ''}
-                                          onChange={e => handleOptionImageChange(idx, e.target.value)}
-                                          className="w-full p-2 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px]"
-                                          placeholder="Option Image URL (Optional)"
-                                      />
-                                  </div>
-                                  <input 
-                                      type="radio" 
-                                      name="correctAnswer"
-                                      checked={Number(editingQuestion.correctAnswerIndex) === idx}
-                                      onChange={() => setEditingQuestion({...editingQuestion, correctAnswerIndex: idx})}
-                                      className="mt-3 w-4 h-4 accent-green-500 cursor-pointer"
-                                  />
-                              </div>
-                          ))}
-                      </div>
-
-                      {/* Explanation */}
-                      <div>
-                          <label className="block text-xs font-bold text-gray-500 mb-1">Explanation</label>
-                          <textarea 
-                              rows={3}
-                              value={editingQuestion.explanation || ''}
-                              onChange={e => setEditingQuestion({...editingQuestion, explanation: e.target.value})}
-                              className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
-                          />
-                          <div className="mt-2">
-                              <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Explanation Image URL (Optional)</label>
-                              <input 
-                                  type="text" 
-                                  value={editingQuestion.explanationImage || ''}
-                                  onChange={e => setEditingQuestion({...editingQuestion, explanationImage: e.target.value})}
-                                  className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
-                                  placeholder="https://example.com/expl-image.png"
-                              />
-                          </div>
-                      </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 mt-4">
-                      <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-                      <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-lg flex items-center gap-2">
-                          <Save size={18}/> Update Question
-                      </button>
-                  </div>
-              </div>
-          </div>
-      );
-  };
-
-  // Card Skeleton for questions
-  const QuestionCardSkeleton = () => (
-    <div className="space-y-4 animate-pulse">
-        {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 h-48"></div>
-        ))}
-    </div>
-  );
-
-  // --- CONFIRMATION MODAL ---
-  const ConfirmationModal = () => {
-      if (!confirmAction) return null;
-      
-      const isApprove = confirmAction.type === 'APPROVE';
-      const isReject = confirmAction.type === 'REJECT';
-      const isDelete = confirmAction.type === 'DELETE';
-
-      return (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden animate-in zoom-in-95">
-                  <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isApprove ? 'bg-green-100 text-green-600' : isReject ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
-                      {isApprove && <Check size={32} strokeWidth={3}/>}
-                      {isReject && <X size={32} strokeWidth={3}/>}
-                      {isDelete && <Trash2 size={32} strokeWidth={3}/>}
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {isApprove ? 'পেমেন্ট অ্যাপ্রুভ করবেন?' : isReject ? 'পেমেন্ট রিজেক্ট করবেন?' : 'ডিলিট করতে চান?'}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-                      {isApprove ? 'ব্যবহারকারী কোর্সে এক্সেস পেয়ে যাবেন।' : isReject ? 'ব্যবহারকারী অ্যাক্সেস পাবেন না।' : 'এই তথ্যটি আর ফিরিয়ে আনা যাবে না।'}
-                  </p>
-
-                  <div className="flex gap-3">
-                      <button 
-                          disabled={actionLoading}
-                          onClick={() => setConfirmAction(null)} 
-                          className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                      >
-                          বাতিল
-                      </button>
-                      <button 
-                          disabled={actionLoading}
-                          onClick={executeConfirmAction}
-                          className={`flex-1 py-3 rounded-xl text-white font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${isApprove ? 'bg-green-600 hover:bg-green-700 shadow-green-200 dark:shadow-none' : 'bg-red-600 hover:bg-red-700 shadow-red-200 dark:shadow-none'}`}
-                      >
-                          {actionLoading ? <Loader2 className="animate-spin" size={18}/> : 'নিশ্চিত করুন'}
-                      </button>
-                  </div>
-              </div>
-          </div>
-      );
-  }
 
   // --- ACCESS DENIED VIEW ---
   if (!isAdmin) {
@@ -915,7 +932,11 @@ const AdminPage: React.FC = () => {
                 </div>
                 
                 {/* Modal Render */}
-                <QuestionEditModal />
+                <QuestionEditModal 
+                  editingQuestion={editingQuestion} 
+                  setEditingQuestion={setEditingQuestion} 
+                  handleUpdateQuestion={handleUpdateQuestion} 
+                />
             </div>
         )}
 
@@ -1021,7 +1042,12 @@ const AdminPage: React.FC = () => {
       </div>
       
       {/* Confirmation Modal Render */}
-      <ConfirmationModal />
+      <ConfirmationModal 
+        confirmAction={confirmAction} 
+        setConfirmAction={setConfirmAction} 
+        actionLoading={actionLoading} 
+        executeConfirmAction={executeConfirmAction} 
+      />
     </div>
   );
 };

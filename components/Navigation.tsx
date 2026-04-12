@@ -4,9 +4,9 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   GraduationCap, Home, PieChart, Moon, Sun, Swords, 
-  Library, LogOut, User, ShieldCheck, Bell, Trophy, Archive, 
+  Library, LogOut, ShieldCheck, Bell, Trophy, Archive, 
   Monitor, Zap, Info, AlertTriangle, CheckCircle, Check,
-  LayoutGrid, Bot, BookOpen, ChevronRight, X, Download, Share
+  LayoutGrid, Bot, ChevronRight, X, Download, Share
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -24,6 +24,23 @@ interface NavigationProps {
   isNotificationOpen: boolean;
   setIsNotificationOpen: (open: boolean) => void;
 }
+
+// Custom SVG Icon Component for Bottom Nav
+const CustomIcon = ({ src, active, className }: { src: string, active: boolean, className?: string }) => (
+  <div 
+    className={`w-6 h-6 transition-all duration-300 ${active ? 'bg-primary dark:bg-orange-400' : 'bg-gray-400 dark:bg-zinc-500'} ${className}`}
+    style={{ 
+      maskImage: `url(${src})`, 
+      WebkitMaskImage: `url(${src})`,
+      maskRepeat: 'no-repeat',
+      WebkitMaskRepeat: 'no-repeat',
+      maskPosition: 'center',
+      WebkitMaskPosition: 'center',
+      maskSize: 'contain',
+      WebkitMaskSize: 'contain'
+    }}
+  />
+);
 
 const Navigation: React.FC<NavigationProps> = ({ 
   isMobileMenuOpen, 
@@ -128,13 +145,13 @@ const Navigation: React.FC<NavigationProps> = ({
     { path: '/admission', label: t('nav_admission'), icon: <GraduationCap size={18} /> },
   ];
 
-  // Mobile Bottom Nav Items - Optimized for touch
+  // Mobile Bottom Nav Items - Custom SVG Icons
   const mobileNavItems = [
-    { path: '/dashboard', label: 'Home', icon: <Home size={24} /> },
-    { path: '/courses', label: 'Courses', icon: <BookOpen size={24} /> },
-    { path: '/exams', label: 'Exams', icon: <LayoutGrid size={24} /> },
-    { path: '/bot', label: 'AI Bot', icon: <Bot size={24} /> },
-    { path: '/profile', label: 'Profile', icon: <User size={24} /> },
+    { path: '/dashboard', label: 'হোম', icon: '/icons/home.svg' },
+    { path: '/qbank', label: 'প্রশ্নব্যাংক', icon: '/icons/qbank.svg' },
+    { path: '/exams', label: 'এক্সাম', icon: '/icons/exam.svg' },
+    { path: '/planner', label: 'প্ল্যানার', icon: '/icons/planner.svg' },
+    { path: '/profile', label: 'প্রোফাইল', icon: '/icons/user.svg' },
   ];
 
   const handleLogout = async () => {
@@ -584,18 +601,19 @@ const Navigation: React.FC<NavigationProps> = ({
         </div>
       </div>
 
-      {/* App-like Bottom Navigation (Fixed & Glassmorphic) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] pb-safe-area bg-white/80 dark:bg-black/80 backdrop-blur-3xl border-t border-gray-200/50 dark:border-white/[0.05] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center justify-around h-16 px-2 relative">
-          {/* Sliding Background Pill */}
-          <div className="absolute inset-0 flex items-center justify-around px-2 pointer-events-none">
+      {/* Native-like Fixed Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-100 dark:border-white/[0.05] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-safe-area">
+        <div className="flex items-center justify-around h-16 px-1 relative">
+          
+          {/* Active Background Indicator (Sliding) */}
+          <div className="absolute inset-0 flex items-center justify-around px-1 pointer-events-none">
             {mobileNavItems.map((item, idx) => (
               <div key={idx} className="flex-1 h-full flex items-center justify-center relative">
                 {isActive(item.path!) && (
                   <motion.div 
-                    layoutId="bottomNavPill"
-                    className="absolute w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-2xl"
-                    transition={{ type: 'spring', damping: 25, stiffness: 400 }}
+                    layoutId="navActivePill"
+                    className="absolute w-12 h-12 bg-primary/5 dark:bg-primary/10 rounded-2xl"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                   />
                 )}
               </div>
@@ -610,35 +628,34 @@ const Navigation: React.FC<NavigationProps> = ({
                 key={idx} 
                 to={item.path!} 
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(8);
+                  if (navigator.vibrate) navigator.vibrate(10);
                 }}
                 className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-300 relative z-10 ${active ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
               >
                 <motion.div 
                   animate={{ 
-                    scale: active ? 1.1 : 1,
-                    y: active ? -2 : 0
+                    y: active ? -2 : 0,
+                    scale: active ? 1.05 : 1
                   }}
-                  className="relative"
+                  className="flex flex-col items-center gap-1"
                 >
-                    {React.cloneElement(item.icon as React.ReactElement<any>, { 
-                        strokeWidth: active ? 2.5 : 2,
-                        size: 22,
-                        className: `transition-all duration-300 ${active ? 'drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]' : ''}`
-                    })}
-                    
-                    {/* Tiny dot indicator for active tab */}
-                    {active && (
-                      <motion.div 
-                        layoutId="activeDot"
-                        className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
-                      />
-                    )}
-                </motion.div>
-                
-                <span className={`text-[9px] mt-1 font-bold transition-all duration-300 tracking-tight ${active ? 'opacity-100 translate-y-0' : 'opacity-60 translate-y-0.5'}`}>
+                  <CustomIcon 
+                    src={item.icon} 
+                    active={active} 
+                    className={active ? 'drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]' : ''}
+                  />
+                  <span className={`text-[10px] font-black transition-all duration-300 tracking-tight ${active ? 'opacity-100' : 'opacity-60'}`}>
                     {item.label}
-                </span>
+                  </span>
+                  
+                  {/* Bottom Dot Indicator */}
+                  {active && (
+                    <motion.div 
+                      layoutId="activeDot"
+                      className="absolute -bottom-1 w-1 h-1 bg-primary rounded-full"
+                    />
+                  )}
+                </motion.div>
               </Link>
             )
           })}

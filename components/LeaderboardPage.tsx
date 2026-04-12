@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchLeaderboardAPI } from '../services/api';
+import { fetchLeaderboardAPI, normalizeText } from '../services/api';
 import { LeaderboardUser } from '../types';
+import { toBengaliNumber } from '../utils/numberUtils';
 import { Crown, Zap, ChevronRight, ArrowRight, Medal, Search, RefreshCw, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCache } from '../contexts/CacheContext';
@@ -93,9 +94,10 @@ const LeaderboardPage: React.FC = () => {
   // Filter users based on search
   const filteredUsers = useMemo(() => {
       if (!searchQuery.trim()) return users;
+      const sQuery = normalizeText(searchQuery).toLowerCase();
       return users.filter(u => 
-        u.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.college?.toLowerCase().includes(searchQuery.toLowerCase())
+        normalizeText(u.displayName || '').toLowerCase().includes(sQuery) ||
+        normalizeText(u.college || '').toLowerCase().includes(sQuery)
       );
   }, [users, searchQuery]);
 
@@ -156,7 +158,7 @@ const LeaderboardPage: React.FC = () => {
         <div className="flex justify-between items-center mb-4 md:mb-8">
            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-zinc-900/50 backdrop-blur-xl shadow-sm border border-gray-100 dark:border-white/5">
               <Users size={14} className="text-primary" />
-              <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400">{users.length} Participants</span>
+              <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400">{toBengaliNumber(users.length)} জন অংশগ্রহণকারী</span>
            </div>
            <motion.button 
              whileTap={{ scale: 0.9 }}
@@ -174,8 +176,8 @@ const LeaderboardPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-2 md:mb-6"
         >
-           <h1 className="text-xl md:text-4xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">Leaderboard</h1>
-           <p className="hidden md:block text-gray-500 dark:text-gray-400 text-xs font-medium">Top performers of Porikkhangon</p>
+           <h1 className="text-xl md:text-4xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">লিডারবোর্ড</h1>
+           <p className="hidden md:block text-gray-500 dark:text-gray-400 text-xs font-medium">পরীক্ষাঙ্গনের সেরা পারফর্মার</p>
         </motion.div>
 
         {/* Sticky Search Bar Container */}
@@ -190,7 +192,7 @@ const LeaderboardPage: React.FC = () => {
             </div>
             <input 
               type="text"
-              placeholder="Search..."
+              placeholder="খুঁজুন..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 md:py-4 bg-white dark:bg-zinc-900/20 backdrop-blur-2xl border border-gray-200 dark:border-white/5 rounded-xl md:rounded-2xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-xs md:text-sm font-medium"
@@ -209,13 +211,13 @@ const LeaderboardPage: React.FC = () => {
               <div className="w-20 h-20 bg-gray-100 dark:bg-zinc-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search size={32} className="text-gray-300 dark:text-zinc-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">No users found</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-xs mx-auto">We couldn't find any user matching "{searchQuery}". Try a different name or college.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">কোনো ব্যবহারকারী পাওয়া যায়নি</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-xs mx-auto">আপনার সার্চের সাথে মিল আছে এমন কাউকে পাওয়া যায়নি।</p>
               <button 
                 onClick={() => setSearchQuery('')}
                 className="mt-6 text-primary font-bold text-sm hover:underline"
               >
-                Clear search
+                সার্চ মুছুন
               </button>
            </motion.div>
         ) : (
@@ -334,7 +336,7 @@ const LeaderboardPage: React.FC = () => {
                              {rank === 1 ? <Crown size={16} className="text-yellow-500" fill="currentColor" /> :
                               rank === 2 ? <Medal size={16} className="text-slate-400" fill="currentColor" /> :
                               rank === 3 ? <Medal size={16} className="text-amber-600" fill="currentColor" /> :
-                              <span className="font-mono font-black text-gray-400 dark:text-zinc-600 text-xs md:text-sm">{rank}</span>}
+                              <span className="font-mono font-black text-gray-400 dark:text-zinc-600 text-xs md:text-sm">{toBengaliNumber(rank)}</span>}
                           </div>
 
                           <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl overflow-hidden mr-3 md:mr-4 shadow-sm border border-gray-100 dark:border-white/5">
@@ -351,9 +353,9 @@ const LeaderboardPage: React.FC = () => {
                           <div className="flex items-center gap-2 md:gap-4 ml-1 md:ml-2">
                               <div className="text-right">
                                  <span className={`font-black text-xs md:text-base block ${isMe ? 'text-primary' : 'text-gray-700 dark:text-gray-300'}`}>
-                                     {u.points}
+                                     {toBengaliNumber(u.points)}
                                  </span>
-                                 <span className="text-[6px] md:text-[8px] font-bold text-gray-400 uppercase tracking-tighter">POINTS</span>
+                                 <span className="text-[6px] md:text-[8px] font-bold text-gray-400 uppercase tracking-tighter">পয়েন্ট</span>
                               </div>
                               <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-500 transition-colors"/>
                           </div>
@@ -388,17 +390,17 @@ const LeaderboardPage: React.FC = () => {
               >
                   <div className="relative">
                       {renderAvatar(myData, "w-9 h-9 rounded-xl object-cover border-2 border-primary shadow-sm")}
-                      <div className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded-md shadow-lg border border-white/20">#{myRank}</div>
+                      <div className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded-md shadow-lg border border-white/20">#{toBengaliNumber(myRank)}</div>
                   </div>
                   <div className="flex-1 min-w-0">
-                      <p className="text-[8px] font-bold text-gray-400 uppercase tracking-wider">Your Rank</p>
+                      <p className="text-[8px] font-bold text-gray-400 uppercase tracking-wider">আপনার র‍্যাঙ্ক</p>
                       <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{myData.displayName}</p>
                   </div>
                   <div className="text-right">
                       <p className="text-sm font-black text-primary flex items-center justify-end gap-1">
-                          <Zap size={12} className="fill-current"/> {myData.points}
+                          <Zap size={12} className="fill-current"/> {toBengaliNumber(myData.points)}
                       </p>
-                      <div className="text-[8px] font-bold text-gray-400 group-hover:text-primary transition-colors uppercase flex items-center gap-1 justify-end">Profile <ArrowRight size={8}/></div>
+                      <div className="text-[8px] font-bold text-gray-400 group-hover:text-primary transition-colors uppercase flex items-center gap-1 justify-end">প্রোফাইল <ArrowRight size={8}/></div>
                   </div>
               </motion.div>
           </motion.div>
