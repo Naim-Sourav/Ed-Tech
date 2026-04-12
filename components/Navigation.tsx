@@ -147,11 +147,11 @@ const Navigation: React.FC<NavigationProps> = ({
 
   // Mobile Bottom Nav Items - Custom SVG Icons
   const mobileNavItems = [
-    { path: '/dashboard', label: 'হোম', icon: '/icons/home.svg' },
-    { path: '/qbank', label: 'প্রশ্নব্যাংক', icon: '/icons/qbank.svg' },
-    { path: '/exams', label: 'এক্সাম', icon: '/icons/exam.svg' },
-    { path: '/planner', label: 'প্ল্যানার', icon: '/icons/planner.svg' },
-    { path: '/profile', label: 'প্রোফাইল', icon: '/icons/user.svg' },
+    { path: '/dashboard', label: 'হোম', icon: 'icons/home.svg' },
+    { path: '/qbank', label: 'প্রশ্নব্যাংক', icon: 'icons/qbank.svg' },
+    { path: '/exams', label: 'এক্সাম', icon: 'icons/exam.svg' },
+    { path: '/planner', label: 'প্ল্যানার', icon: 'icons/planner.svg' },
+    { path: '/profile', label: 'প্রোফাইল', icon: 'icons/user.svg' },
   ];
 
   const handleLogout = async () => {
