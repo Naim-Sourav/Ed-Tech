@@ -8,7 +8,7 @@ import {
   Settings, Atom, Beaker, Calculator, Dna,
   BookOpen, Brain, Crown, X, 
   Target, 
-  TrendingUp, Calendar, MoreHorizontal, Bot, Sparkles
+  TrendingUp, Calendar, MoreHorizontal, Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -284,7 +284,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-amber-500">
                                 <StatIcon 
-                                    src="/icons/ranking.svg" 
+                                    src="icons/ranking.svg" 
                                     className="w-full h-full drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" 
                                 />
                             </div>
@@ -299,7 +299,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-orange-500">
                                 <StatIcon 
-                                    src="/icons/points.svg" 
+                                    src="icons/points.svg" 
                                     className="w-full h-full drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" 
                                 />
                             </div>
@@ -315,7 +315,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-red-500">
                                 <StatIcon 
-                                    src="/icons/streak.svg" 
+                                    src="icons/streak.svg" 
                                     className="w-full h-full drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]" 
                                 />
                             </div>
@@ -406,7 +406,7 @@ const HomeDashboard: React.FC = () => {
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="/icons/qbank_bn.png" alt="QBank" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="icons/qbank_bn.png" alt="QBank" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">প্রশ্ন ব্যাংক</span>
                 </div>
@@ -417,7 +417,7 @@ const HomeDashboard: React.FC = () => {
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="/icons/flash.png" alt="Rapid Fire" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="icons/flash.png" alt="Rapid Fire" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">র‍্যাপিড ফায়ার</span>
                 </div>
@@ -431,8 +431,8 @@ const HomeDashboard: React.FC = () => {
                         <div 
                             className="w-full h-full bg-gradient-to-br from-orange-400 to-primary" 
                             style={{ 
-                                maskImage: 'url(/icons/customize.svg)', 
-                                WebkitMaskImage: 'url(/icons/customize.svg)', 
+                                maskImage: 'url(icons/customize.svg)', 
+                                WebkitMaskImage: 'url(icons/customize.svg)', 
                                 maskSize: 'contain', 
                                 WebkitMaskSize: 'contain', 
                                 maskRepeat: 'no-repeat', 
@@ -464,7 +464,7 @@ const HomeDashboard: React.FC = () => {
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="/icons/battle.png" alt="Battle" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="icons/battle.png" alt="Battle" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">ব্যাটল</span>
                 </div>
@@ -475,7 +475,7 @@ const HomeDashboard: React.FC = () => {
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="/icons/save.png" alt="Saved" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="icons/save.png" alt="Saved" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">সেভ্ড</span>
                 </div>
@@ -489,8 +489,8 @@ const HomeDashboard: React.FC = () => {
                         <div 
                             className="w-full h-full bg-gradient-to-br from-red-500 to-orange-600" 
                             style={{ 
-                                maskImage: 'url(/icons/wrong.svg)', 
-                                WebkitMaskImage: 'url(/icons/wrong.svg)', 
+                                maskImage: 'url(icons/wrong.svg)', 
+                                WebkitMaskImage: 'url(icons/wrong.svg)', 
                                 maskSize: 'contain', 
                                 WebkitMaskSize: 'contain', 
                                 maskRepeat: 'no-repeat', 
@@ -626,7 +626,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
                             <StatIcon 
-                                src="/icons/streak.svg" 
+                                src="icons/streak.svg" 
                                 className="w-full h-full drop-shadow-[0_0_30px_rgba(249,115,22,0.8)] relative z-10" 
                             />
                         </motion.div>
