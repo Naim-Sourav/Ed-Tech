@@ -4,7 +4,7 @@ import { getToken, onMessage } from 'firebase/messaging';
 import { syncUserToMongoDB } from './api';
 import { User } from 'firebase/auth';
 
-export const VAPID_PUBLIC_KEY = 'BA_eO1nS1GlGu41-4Aw2IOwv1K3k1O62NUSjpf153YgK1nbWZnK_K4MOsPzK6jAVPOR07mVymegydu_Nfv5Us4A';
+export const VAPID_PUBLIC_KEY = 'BDCyoL9qnbTFyt01O1yKke5iR918d5tBjxMRHM5ks57HmrGnfinm4WnUsDi71B9lRWEqMOn5HVdOqqFDtMu61lM';
 
 /**
  * Requests notification permission and subscribes the user to push notifications
