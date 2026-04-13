@@ -9,7 +9,7 @@ export const VAPID_PUBLIC_KEY = 'BA_eO1nS1GlGu41-4Aw2IOwv1K3k1O62NUSjpf153YgK1nb
 /**
  * Requests notification permission and subscribes the user to push notifications
  */
-export async function subscribeToPushNotifications(user: User | null) {
+export async function subscribeToPushNotifications(user: User | null): Promise<{ token: string } | { error: string }> {
   if (typeof window === 'undefined' || !('Notification' in window)) {
     return { error: 'এই ব্রাউজারে নোটিফিকেশন সাপোর্ট করে না' };
   }

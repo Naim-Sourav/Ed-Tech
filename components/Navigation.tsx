@@ -73,10 +73,10 @@ const Navigation: React.FC<NavigationProps> = ({
         setFcmToken(savedToken);
       } else if (subscribed && currentUser) {
         // If permission is already granted but no token, try to get it
-        const token = await subscribeToPushNotifications(currentUser);
-        if (token) {
-          setFcmToken(token);
-          localStorage.setItem('fcm_token', token);
+        const result = await subscribeToPushNotifications(currentUser);
+        if ('token' in result) {
+          setFcmToken(result.token);
+          localStorage.setItem('fcm_token', result.token);
         }
       }
     };
