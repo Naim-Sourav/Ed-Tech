@@ -84,14 +84,16 @@ const Navigation: React.FC<NavigationProps> = ({
   }, [currentUser]);
 
   const handleEnablePush = async () => {
-    const token = await subscribeToPushNotifications(currentUser);
-    if (token) {
+    const result = await subscribeToPushNotifications(currentUser);
+    if (result && 'token' in result) {
       setIsPushSubscribed(true);
-      setFcmToken(token);
-      localStorage.setItem('fcm_token', token);
+      setFcmToken(result.token);
+      localStorage.setItem('fcm_token', result.token);
       showToast("পুশ নোটিফিকেশন চালু হয়েছে!", "success");
+    } else if (result && 'error' in result) {
+      showToast(result.error, "error");
     } else {
-      showToast("পুশ নোটিফিকেশন চালু করা যায়নি। ব্রাউজার সেটিংস চেক করুন।", "error");
+      showToast("পুশ নোটিফিকেশন চালু করা যায়নি। আবার চেষ্টা করুন।", "error");
     }
   };
   
