@@ -22,12 +22,12 @@ const ExamHub: React.FC = () => {
   const startLiveExam = () => {
       const examId = `live_exam_${Date.now()}`;
       const liveExamConfig = {
-          title: "মেডিকেল ভর্তি পরীক্ষা ২০২৪-২৫",
+          title: "মেডিকেল ভর্তি পরীক্ষা ২০২৫-২৬",
           timeLimit: 60,
           negativeMarking: 0.25,
           mode: 'ALL_AT_ONCE',
           type: 'PAST_PAPER',
-          examRef: 'medical_24_25',
+          examRef: 'medical_25_26',
           isPracticeMode: false
       };
       
@@ -271,7 +271,7 @@ const ExamHub: React.FC = () => {
                             <Archive size={20} className="md:w-6 md:h-6" />
                         </div>
                         <div>
-                            <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">GST ক ইউনিট</h4>
+                            <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">GST ক ইউনিট</h4>
                             <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৩-২৪ সেশন | ১০০ প্রশ্ন</p>
                         </div>
                     </div>
@@ -282,14 +282,14 @@ const ExamHub: React.FC = () => {
 
                 <div 
                     onClick={() => {
-                        const examId = `medical_24_25_${Date.now()}`;
+                        const examId = `medical_25_26_${Date.now()}`;
                         const config = {
-                            title: "মেডিকেল ভর্তি পরীক্ষা ২০২৪-২৫",
+                            title: "মেডিকেল ভর্তি পরীক্ষা ২০২৫-২৬",
                             timeLimit: 60,
                             negativeMarking: 0.25,
                             mode: 'ALL_AT_ONCE',
                             type: 'PAST_PAPER',
-                            examRef: 'medical_24_25',
+                            examRef: 'medical_25_26',
                             isPracticeMode: true
                         };
                         localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
@@ -302,8 +302,8 @@ const ExamHub: React.FC = () => {
                             <Archive size={20} className="md:w-6 md:h-6" />
                         </div>
                         <div>
-                            <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">মেডিকেল ভর্তি পরীক্ষা</h4>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৪-২৫ সেশন | ১০০ প্রশ্ন</p>
+                            <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">মেডিকেল ভর্তি পরীক্ষা</h4>
+                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৫-২৬ সেশন | ১০০ প্রশ্ন</p>
                         </div>
                     </div>
                     <div className="p-1.5 md:p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full group-hover:bg-red-500 group-hover:text-white transition-all">

@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Notification } from '../types';
 import { useToast } from './Toast';
+import { subscribeToPushNotifications, checkSubscription } from '../services/notificationService';
 
 interface NavigationProps {
   isMobileMenuOpen: boolean;
@@ -60,6 +61,25 @@ const Navigation: React.FC<NavigationProps> = ({
   const { showToast } = useToast();
   
   const [filter, setFilter] = useState<'ALL' | 'UNREAD'>('ALL');
+  const [isPushSubscribed, setIsPushSubscribed] = useState(false);
+
+  useEffect(() => {
+    const checkPush = async () => {
+      const subscribed = await checkSubscription();
+      setIsPushSubscribed(subscribed);
+    };
+    checkPush();
+  }, []);
+
+  const handleEnablePush = async () => {
+    const token = await subscribeToPushNotifications(currentUser);
+    if (token) {
+      setIsPushSubscribed(true);
+      showToast("পুশ নোটিফিকেশন চালু হয়েছে!", "success");
+    } else {
+      showToast("পুশ নোটিফিকেশন চালু করা যায়নি। ব্রাউজার সেটিংস চেক করুন।", "error");
+    }
+  };
   
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -147,11 +167,11 @@ const Navigation: React.FC<NavigationProps> = ({
 
   // Mobile Bottom Nav Items - Custom SVG Icons
   const mobileNavItems = [
-    { path: '/dashboard', label: 'হোম', icon: 'icons/home.svg' },
-    { path: '/qbank', label: 'প্রশ্নব্যাংক', icon: 'icons/qbank.svg' },
-    { path: '/exams', label: 'এক্সাম', icon: 'icons/exam.svg' },
-    { path: '/planner', label: 'প্ল্যানার', icon: 'icons/planner.svg' },
-    { path: '/profile', label: 'প্রোফাইল', icon: 'icons/user.svg' },
+    { path: '/dashboard', label: 'হোম', icon: '/icons/home.svg' },
+    { path: '/qbank', label: 'প্রশ্নব্যাংক', icon: '/icons/qbank.svg' },
+    { path: '/exams', label: 'এক্সাম', icon: '/icons/exam.svg' },
+    { path: '/planner', label: 'প্ল্যানার', icon: '/icons/planner.svg' },
+    { path: '/profile', label: 'প্রোফাইল', icon: '/icons/user.svg' },
   ];
 
   const handleLogout = async () => {
@@ -423,6 +443,28 @@ const Navigation: React.FC<NavigationProps> = ({
                        </button>
                    </div>
                </div>
+
+                {!isPushSubscribed && (
+                    <div className="px-4 py-3 bg-orange-50 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-900/20">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
+                                    <Bell size={16} />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-bold text-gray-800 dark:text-zinc-200">পুশ নোটিফিকেশন অফ আছে</p>
+                                    <p className="text-[9px] text-gray-500 dark:text-zinc-500">নতুন আপডেট পেতে এটি চালু করুন</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={handleEnablePush}
+                                className="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg shadow-sm active:scale-95 transition-all"
+                            >
+                                চালু করুন
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                <div className="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30 dark:bg-black/20">
                   {displayedNotifications.length === 0 ? (

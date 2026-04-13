@@ -305,7 +305,10 @@ const QuestionBank: React.FC = () => {
   const categories = useMemo(() => {
       const groups: Record<string, QuestionPaperMetadata[]> = {};
       papers.forEach(p => {
-          const key = p.source;
+          let key = p.source;
+          // Merge GST A Unit into Guccho_A
+          if (key === 'GST_A_Unit') key = 'Guccho_A';
+          
           if (!groups[key]) groups[key] = [];
           groups[key].push(p);
       });

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { generateQuizFromDB, fetchSyllabusStatsAPI, saveQuestionsToBankAPI } from '../services/api';
 import { generateQuiz } from '../services/geminiService';
 import { QuizQuestion, ExamStandard, QuizConfig, DifficultyLevel } from '../types';
@@ -99,6 +100,7 @@ type SelectionView = 'SUBJECT_GRID' | 'CHAPTER_DRILLDOWN';
 const QuizArena: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentUser } = useAuth();
   const { t } = useLanguage();
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -371,8 +373,7 @@ const QuizArena: React.FC = () => {
   };
 
   const startWrongQuestionsQuiz = async () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!user.uid) {
+    if (!currentUser) {
         showToast("অনুগ্রহ করে লগইন করুন", 'error');
         return;
     }
@@ -385,7 +386,7 @@ const QuizArena: React.FC = () => {
 
     try {
         const { fetchUserMistakesAPI } = await import('../services/api');
-        const mistakes = await fetchUserMistakesAPI(user.uid);
+        const mistakes = await fetchUserMistakesAPI(currentUser.uid);
         
         if (!mistakes || mistakes.length === 0) {
             showToast("আপনার কোনো ভুল প্রশ্নের রেকর্ড নেই", 'info');
@@ -393,9 +394,9 @@ const QuizArena: React.FC = () => {
             return;
         }
 
-        // Map mistakes to QuizQuestion structure if needed
-        // Assuming mistakes are already QuizQuestion or contain them
-        const qs: QuizQuestion[] = mistakes.map((m: any) => m.question || m);
+        // Map mistakes to QuizQuestion structure
+        // The question object is stored in questionId field in the mistake record
+        const qs: QuizQuestion[] = mistakes.map((m: any) => m.questionId || m.question || m);
 
         initiateQuizGeneration([], ExamStandard.HSC, qs.length, undefined, false, {
             questions: qs,

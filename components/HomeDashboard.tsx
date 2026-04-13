@@ -8,7 +8,7 @@ import {
   Settings, Atom, Beaker, Calculator, Dna,
   BookOpen, Brain, Crown, X, 
   Target, 
-  TrendingUp, Calendar, MoreHorizontal, Bot, Sparkles
+  TrendingUp, Calendar, MoreHorizontal, Sparkles, Bell, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -207,14 +207,12 @@ const HomeDashboard: React.FC = () => {
 
   return (
     <div className="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors pb-32 md:pb-40 relative overflow-hidden">
-      {/* Subtle background glow for dark mode */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-primary/10 to-transparent dark:from-primary/5 dark:to-transparent pointer-events-none blur-[120px]" />
-      <div className="absolute top-[20%] right-0 w-64 h-64 bg-primary/5 dark:bg-orange-500/5 rounded-full blur-[100px] pointer-events-none" />
+      {/* Background glows removed for solid look */}
       
       <div className="max-w-5xl mx-auto px-4 pt-4 md:px-6 md:pt-8 space-y-6 md:space-y-8 animate-page-enter relative z-10">
         
         {/* --- HEADER SECTION --- */}
-        <div className="bg-white/80 dark:bg-gray-800/40 backdrop-blur-2xl rounded-3xl p-3 md:p-6 border border-gray-100 dark:border-white/5 relative overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-3 md:p-6 border border-gray-100 dark:border-white/5 relative overflow-hidden shadow-sm">
             <div className="flex items-center justify-between mb-4 md:mb-6 relative z-10">
                 <div className="flex items-center gap-3 md:gap-4">
                     <motion.div 
@@ -246,7 +244,7 @@ const HomeDashboard: React.FC = () => {
             </div>
 
             {/* Segmented Control */}
-            <div className="flex p-1 bg-gray-100/50 dark:bg-gray-800/50 rounded-2xl mb-4 md:mb-6 relative">
+            <div className="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-2xl mb-4 md:mb-6 relative">
                 <motion.div 
                     layoutId="tabIndicator"
                     className="absolute inset-y-1 bg-white dark:bg-gray-700/50 rounded-xl shadow-sm z-0 border border-transparent dark:border-white/5"
@@ -284,7 +282,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-amber-500">
                                 <StatIcon 
-                                    src="icons/ranking.svg" 
+                                    src="/icons/ranking.svg" 
                                     className="w-full h-full drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" 
                                 />
                             </div>
@@ -299,7 +297,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-orange-500">
                                 <StatIcon 
-                                    src="icons/points.svg" 
+                                    src="/icons/points.svg" 
                                     className="w-full h-full drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]" 
                                 />
                             </div>
@@ -315,7 +313,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-red-500">
                                 <StatIcon 
-                                    src="icons/streak.svg" 
+                                    src="/icons/streak.svg" 
                                     className="w-full h-full drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]" 
                                 />
                             </div>
@@ -329,7 +327,7 @@ const HomeDashboard: React.FC = () => {
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -10 }}
-                        className="bg-gray-50 dark:bg-zinc-900/50 rounded-2xl p-5 border border-gray-100 dark:border-white/5 flex items-center justify-between"
+                        className="bg-gray-50 dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-white/5 flex items-center justify-between"
                     >
                         <div className="flex flex-col gap-1.5">
                             <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">সাপ্তাহিক লক্ষ্য</p>
@@ -372,6 +370,27 @@ const HomeDashboard: React.FC = () => {
             </AnimatePresence>
         </div>
 
+        {/* GST Result Update Banner */}
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={() => navigate('/gst-result')}
+            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-4 md:p-6 text-white flex items-center justify-between cursor-pointer group shadow-lg shadow-emerald-900/10 active-scale transition-all"
+        >
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                    <Bell size={24} fill="white" className="animate-bounce" />
+                </div>
+                <div>
+                    <h3 className="text-lg md:text-xl font-black leading-tight font-tiro">গুচ্ছ ক ইউনিট রেজাল্ট আপডেট</h3>
+                    <p className="text-xs text-emerald-100 font-medium opacity-90 font-tiro">ফলাফল প্রকাশের সাথে সাথেই নোটিফিকেশন পেতে এখানে ক্লিক করুন</p>
+                </div>
+            </div>
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl text-xs font-black uppercase tracking-widest group-hover:bg-white/20 transition-colors">
+                Check Now <ArrowRight size={14} />
+            </div>
+        </motion.div>
+
         {/* 1. Featured Banner (GST) - Cyberpunk Style */}
         <div 
             onClick={() => navigate('/gst-special')}
@@ -398,7 +417,7 @@ const HomeDashboard: React.FC = () => {
         </div>
 
         {/* 2. Main Menu Grid - Chorcha Style UI (Unified Sizes) */}
-        <div className="bg-white dark:bg-gray-800/40 backdrop-blur-xl rounded-[2rem] p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 border border-gray-100 dark:border-white/5 shadow-sm">
             <div className="flex flex-wrap justify-center gap-y-10 gap-x-4 md:gap-x-12">
                 {/* Question Bank */}
                 <div 
@@ -406,7 +425,7 @@ const HomeDashboard: React.FC = () => {
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="icons/qbank_bn.png" alt="QBank" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="/icons/qbank_bn.png" alt="QBank" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">প্রশ্ন ব্যাংক</span>
                 </div>
@@ -417,7 +436,7 @@ const HomeDashboard: React.FC = () => {
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="icons/flash.png" alt="Rapid Fire" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="/icons/flash.png" alt="Rapid Fire" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">র‍্যাপিড ফায়ার</span>
                 </div>
@@ -429,10 +448,10 @@ const HomeDashboard: React.FC = () => {
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
                         <div 
-                            className="w-full h-full bg-gradient-to-br from-orange-400 to-primary" 
+                            className="w-full h-full bg-gradient-to-br from-amber-400 via-orange-500 to-primary" 
                             style={{ 
-                                maskImage: 'url(icons/customize.svg)', 
-                                WebkitMaskImage: 'url(icons/customize.svg)', 
+                                maskImage: 'url(/icons/customize.svg)', 
+                                WebkitMaskImage: 'url(/icons/customize.svg)', 
                                 maskSize: 'contain', 
                                 WebkitMaskSize: 'contain', 
                                 maskRepeat: 'no-repeat', 
@@ -445,26 +464,13 @@ const HomeDashboard: React.FC = () => {
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">মডেল টেস্ট</span>
                 </div>
 
-                {/* AI Tutor */}
-                <div 
-                    onClick={() => navigate('/bot')}
-                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
-                >
-                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                            <Bot size={28} className="text-white" />
-                        </div>
-                    </div>
-                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">এআই টিউটর</span>
-                </div>
-
                 {/* Battle */}
                 <div 
                     onClick={() => navigate('/battle')}
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="icons/battle.png" alt="Battle" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="/icons/battle.png" alt="Battle" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">ব্যাটল</span>
                 </div>
@@ -475,7 +481,19 @@ const HomeDashboard: React.FC = () => {
                     className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="icons/save.png" alt="Saved" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <div 
+                            className="w-full h-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600" 
+                            style={{ 
+                                maskImage: 'url(/icons/save.png)', 
+                                WebkitMaskImage: 'url(/icons/save.png)', 
+                                maskSize: 'contain', 
+                                WebkitMaskSize: 'contain', 
+                                maskRepeat: 'no-repeat', 
+                                WebkitMaskRepeat: 'no-repeat', 
+                                maskPosition: 'center', 
+                                WebkitMaskPosition: 'center' 
+                            }} 
+                        />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">সেভ্ড</span>
                 </div>
@@ -487,10 +505,10 @@ const HomeDashboard: React.FC = () => {
                 >
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
                         <div 
-                            className="w-full h-full bg-gradient-to-br from-red-500 to-orange-600" 
+                            className="w-full h-full bg-gradient-to-br from-rose-500 via-red-600 to-orange-700" 
                             style={{ 
-                                maskImage: 'url(icons/wrong.svg)', 
-                                WebkitMaskImage: 'url(icons/wrong.svg)', 
+                                maskImage: 'url(/icons/wrong.svg)', 
+                                WebkitMaskImage: 'url(/icons/wrong.svg)', 
                                 maskSize: 'contain', 
                                 WebkitMaskSize: 'contain', 
                                 maskRepeat: 'no-repeat', 
@@ -551,7 +569,7 @@ const HomeDashboard: React.FC = () => {
             </div>
 
             {/* List */}
-            <div className="bg-white/80 dark:bg-zinc-900/20 backdrop-blur-2xl p-4 md:p-6 space-y-3">
+            <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 space-y-3">
                 {topLearners.length === 0 ? (
                     <div className="text-center text-gray-400 dark:text-zinc-500 text-xs py-8 font-medium">No data available</div>
                 ) : (
@@ -626,7 +644,7 @@ const HomeDashboard: React.FC = () => {
                         >
                             <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
                             <StatIcon 
-                                src="icons/streak.svg" 
+                                src="/icons/streak.svg" 
                                 className="w-full h-full drop-shadow-[0_0_30px_rgba(249,115,22,0.8)] relative z-10" 
                             />
                         </motion.div>
