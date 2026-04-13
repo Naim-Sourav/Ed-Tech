@@ -12,8 +12,6 @@ export default defineConfig(({ mode: _mode }) => {
     resolve: {
       alias: {
         '@': path.resolve('.'),
-        'react': path.resolve('./node_modules/react'),
-        'react-dom': path.resolve('./node_modules/react-dom'),
       },
     },
     // এই অংশটি প্রিভিউ সমস্যা সমাধান করবে
@@ -33,7 +31,7 @@ export default defineConfig(({ mode: _mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            vendor: ['react', 'react-dom'],
+            vendor: ['react', 'react-dom', 'react-is'],
             utils: ['@google/genai', 'react-markdown', 'lucide-react']
           }
         }
