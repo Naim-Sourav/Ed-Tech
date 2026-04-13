@@ -13,6 +13,7 @@ import PorikkhangonAI from './components/PorikkhangonAI';
 import OnboardingModal from './components/OnboardingModal';
 import { fetchNotificationsAPI } from './services/api';
 import { Notification } from './types';
+import { subscribeToPushNotifications, onForegroundMessage, checkSubscription } from './services/notificationService';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -37,6 +38,7 @@ const ExamBatchPage = React.lazy(() => import('./components/ExamBatchPage'));
 const PaymentPage = React.lazy(() => import('./components/PaymentPage'));
 const GSTAnswerKey = React.lazy(() => import('./components/GSTAnswerKey'));
 const GSTGuestExam = React.lazy(() => import('./components/GSTGuestExam'));
+const GSTResultPage = React.lazy(() => import('./components/GSTResultPage'));
 
 const PageLoader = () => (
     <div className="w-full min-h-[75vh] flex flex-col items-center justify-center bg-transparent text-gray-400">
@@ -172,6 +174,40 @@ const MainLayout: React.FC<{
 
   useEffect(() => {
     if (!currentUser) return;
+    
+    // Check if already subscribed, if not, we can prompt later or auto-subscribe if permission exists
+    const initPush = async () => {
+      const isSubscribed = await checkSubscription();
+      if (isSubscribed) {
+        await subscribeToPushNotifications(currentUser);
+      }
+    };
+    initPush();
+
+    // Listen for foreground messages
+    const unsubscribeForeground = onForegroundMessage((payload) => {
+      // You can show a toast or update notifications state here
+      console.log('Foreground message payload:', payload);
+      if (payload.notification) {
+        // Optionally add to notifications list
+        const newNotif: Notification = {
+          id: Date.now().toString(),
+          title: payload.notification.title || 'New Notification',
+          message: payload.notification.body || '',
+          type: 'INFO',
+          date: Date.now()
+        };
+        setNotifications(prev => [newNotif, ...prev]);
+      }
+    });
+
+    return () => {
+      unsubscribeForeground();
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) return;
     const loadNotifications = async () => {
        try {
          const allNotifs = await fetchNotificationsAPI();
@@ -192,7 +228,9 @@ const MainLayout: React.FC<{
   const isTrackerPage = location.pathname === '/planner';
   const isBotPage = location.pathname === '/bot';
   const isLeaderboard = location.pathname === '/leaderboard';
-  const hideNav = isExamPage || isPaymentPage || isTrackerPage || isBotPage;
+  const isSavedQuestions = location.pathname === '/saved-questions';
+  const isWrongQuestions = location.pathname === '/wrong-questions';
+  const hideNav = isExamPage || isPaymentPage || isTrackerPage || isBotPage || isSavedQuestions || isWrongQuestions;
 
   // Main tabs where back button should NOT appear
   const mainTabs = ['/dashboard', '/courses', '/bot', '/profile', '/planner'];
@@ -441,6 +479,7 @@ const AppRoutes: React.FC<{
             <Route path="/exam/:examId" element={<ExamPage />} />
             <Route path="/gst-a-unit-2025" element={<GSTAnswerKey />} />
             <Route path="/gst-exam-live" element={<GSTGuestExam />} />
+            <Route path="/gst-result" element={<GSTResultPage />} />
 
             <Route path="/*" element={
               currentUser ? (
