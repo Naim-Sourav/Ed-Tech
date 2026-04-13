@@ -9,7 +9,7 @@ export const VAPID_PUBLIC_KEY = 'BA_eO1nS1GlGu41-4Aw2IOwv1K3k1O62NUSjpf153YgK1nb
 /**
  * Requests notification permission and subscribes the user to push notifications
  */
-export async function subscribeToPushNotifications(user: User | null): Promise<{ token: string } | { error: string }> {
+export async function subscribeToPushNotifications(user: User | null) {
   if (typeof window === 'undefined' || !('Notification' in window)) {
     return { error: 'এই ব্রাউজারে নোটিফিকেশন সাপোর্ট করে না' };
   }
@@ -25,10 +25,11 @@ export async function subscribeToPushNotifications(user: User | null): Promise<{
       return { error: 'Firebase Messaging শুরু করা যায়নি।' };
     }
 
-    // 2. Register Service Worker with relative path for GitHub Pages compatibility
-    // We use a relative path and wait for it to be ready
+    // 2. Register Service Worker with relative path
     const swPath = './firebase-messaging-sw.js';
-    const registration = await navigator.serviceWorker.register(swPath);
+    const registration = await navigator.serviceWorker.register(swPath, {
+      scope: './'
+    });
     
     // Wait for the service worker to be active
     await navigator.serviceWorker.ready;
