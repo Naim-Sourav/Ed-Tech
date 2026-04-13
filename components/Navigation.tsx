@@ -74,9 +74,9 @@ const Navigation: React.FC<NavigationProps> = ({
       } else if (subscribed && currentUser) {
         // If permission is already granted but no token, try to get it
         const result = await subscribeToPushNotifications(currentUser);
-        if ('token' in result) {
-          setFcmToken(result.token);
-          localStorage.setItem('fcm_token', result.token);
+        if ('token' in result && result.token) {
+          setFcmToken(result.token as string);
+          localStorage.setItem('fcm_token', result.token as string);
         }
       }
     };
@@ -85,13 +85,13 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const handleEnablePush = async () => {
     const result = await subscribeToPushNotifications(currentUser);
-    if (result && 'token' in result) {
+    if (result && 'token' in result && result.token) {
       setIsPushSubscribed(true);
-      setFcmToken(result.token);
-      localStorage.setItem('fcm_token', result.token);
+      setFcmToken(result.token as string);
+      localStorage.setItem('fcm_token', result.token as string);
       showToast("পুশ নোটিফিকেশন চালু হয়েছে!", "success");
     } else if (result && 'error' in result) {
-      showToast(result.error, "error");
+      showToast(result.error as string, "error");
     } else {
       showToast("পুশ নোটিফিকেশন চালু করা যায়নি। আবার চেষ্টা করুন।", "error");
     }
