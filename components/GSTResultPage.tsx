@@ -16,8 +16,10 @@ import {
   Users,
   Trophy,
   Share2,
-  Zap
+  Zap,
+  X
 } from 'lucide-react';
+import { AnimatePresence } from 'motion/react';
 import { useToast } from './Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { subscribeToPushNotifications, checkSubscription } from '../services/notificationService';
@@ -28,6 +30,7 @@ const GSTResultPage: React.FC = () => {
   const { showToast } = useToast();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [showTelegramModal, setShowTelegramModal] = useState(false);
 
   // Check subscription status on mount
   React.useEffect(() => {
@@ -43,8 +46,8 @@ const GSTResultPage: React.FC = () => {
 
   // Breaking News Items
   const breakingNews = [
-    "গুচ্ছ ক ইউনিটের ভর্তি পরীক্ষার ফলাফল আগামীকাল প্রকাশিত হতে পারে।",
-    "এ বছর ক ইউনিটে পাশের হার গত বছরের তুলনায় বাড়তে পারে বলে ধারণা করা হচ্ছে।",
+    "গুচ্ছ ক ইউনিটের ভর্তি পরীক্ষার ফলাফল আজ প্রকাশিত হতে পারে।",
+    "এ বছর ক ইউনিটে কাট মার্ক গত বছরের তুলনায় কিছুটা কমতে পারে বলে ধারণা করা হচ্ছে।",
     "ফলাফল প্রকাশের সাথে সাথেই আমাদের টেলিগ্রাম চ্যানেলে সরাসরি লিঙ্ক দেওয়া হবে।",
     "গুচ্ছভুক্ত ২৪টি বিশ্ববিদ্যালয়ের আসন বিন্যাস ও ভর্তি প্রক্রিয়া নিয়ে বিস্তারিত আপডেট আসছে।",
     "ফলাফল দেখার জন্য আপনার রোল ও রেজিস্ট্রেশন নম্বর প্রস্তুত রাখুন।"
@@ -61,6 +64,7 @@ const GSTResultPage: React.FC = () => {
     
     if (result && 'token' in result) {
       setIsSubscribed(true);
+      setShowTelegramModal(true);
       showToast("আপনাকে ধন্যবাদ! ফলাফল প্রকাশ হওয়া মাত্রই আমরা আপনাকে জানিয়ে দেব।", "success");
       if (navigator.vibrate) navigator.vibrate(10);
     } else if (result && 'error' in result) {
@@ -132,21 +136,13 @@ const GSTResultPage: React.FC = () => {
           </button>
 
           <div className="flex flex-col items-center text-center space-y-6">
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/20 backdrop-blur-xl rounded-full text-primary text-[10px] md:text-xs font-black uppercase tracking-[0.2em] border border-primary/30"
-            >
-              <Sparkles size={14} className="animate-spin-slow" /> GST Admission Updates
-            </motion.div>
-
             <h1 className="text-4xl md:text-7xl font-black text-white leading-[1.1] tracking-tight font-tiro">
               গুচ্ছ ক ইউনিট <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">ফলাফল ২০২৫-২৬</span>
             </h1>
 
             <p className="text-gray-400 font-medium max-w-2xl text-sm md:text-lg leading-relaxed font-tiro">
-              গুচ্ছ ক ইউনিটের রেজাল্ট আগামীকাল প্রকাশিত হতে পারে। ফলাফল প্রকাশের সাথে সাথেই আমরা আপনাকে নোটিফিকেশনের মাধ্যমে জানিয়ে দেব। বারবার ওয়েবসাইট চেক করার ঝামেলা থেকে মুক্তি পেতে আমাদের সাথেই থাকুন।
+              গুচ্ছ ক ইউনিটের রেজাল্ট আজ প্রকাশিত হতে পারে। ফলাফল প্রকাশের সাথে সাথেই আমরা আপনাকে নোটিফিকেশনের মাধ্যমে জানিয়ে দেব। বারবার ওয়েবসাইট চেক করার ঝামেলা থেকে মুক্তি পেতে আমাদের সাথেই থাকুন।
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -200,7 +196,7 @@ const GSTResultPage: React.FC = () => {
             <div className="text-center md:text-left space-y-2">
               <h3 className="text-2xl font-black text-gray-900 dark:text-white font-tiro">রেজাল্ট স্ট্যাটাস: <span className="text-primary">অপেক্ষমান</span></h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm font-medium font-tiro leading-relaxed">
-                গুচ্ছ কর্তৃপক্ষ আগামীকাল ফলাফল প্রকাশের চূড়ান্ত প্রস্তুতি নিচ্ছে। রেজাল্ট সার্ভারে আপলোড হওয়া মাত্রই এখানে চেক করার লিঙ্ক দেওয়া হবে।
+                গুচ্ছ কর্তৃপক্ষ আজ ফলাফল প্রকাশের চূড়ান্ত প্রস্তুতি নিচ্ছে। রেজাল্ট সার্ভারে আপলোড হওয়া মাত্রই এখানে চেক করার লিঙ্ক দেওয়া হবে।
               </p>
               <div className="flex items-center justify-center md:justify-start gap-2 text-emerald-500 text-xs font-black uppercase tracking-wider pt-2">
                 <Zap size={14} fill="currentColor" /> Live Monitoring Active
@@ -229,36 +225,53 @@ const GSTResultPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Notification Success Message & Social Suggestion */}
-      {isSubscribed && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto px-4 mt-8"
-        >
-          <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 rounded-[2rem] p-6 md:p-8">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-16 h-16 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
-                <Bell size={32} />
-              </div>
-              <div className="text-center md:text-left space-y-2">
-                <h3 className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-tiro">নোটিফিকেশন সাবস্ক্রাইব সফল হয়েছে!</h3>
-                <p className="text-emerald-600/80 dark:text-emerald-400/60 text-sm font-bold font-tiro leading-relaxed">
-                  তবে মনে রাখবেন, রেজাল্ট প্রকাশের সময় অতিরিক্ত ট্রাফিকের কারণে ব্রাউজার নোটিফিকেশন পৌঁছাতে কিছুটা দেরি হতে পারে। তাই দ্রুততম আপডেট পেতে আমাদের টেলিগ্রাম চ্যানেল বা ফেসবুক গ্রুপে যুক্ত থাকার পরামর্শ দিচ্ছি।
-                </p>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-                  <a href="https://t.me/porikkhangon" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#0088cc] text-white rounded-xl text-xs font-black flex items-center gap-2 hover:scale-105 transition-transform">
-                    <Send size={14} fill="white" /> Telegram
-                  </a>
-                  <a href="https://fb.com/groups/your_group" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#1877F2] text-white rounded-xl text-xs font-black flex items-center gap-2 hover:scale-105 transition-transform">
-                    <Facebook size={14} fill="white" /> Facebook Group
-                  </a>
+      {/* Telegram Suggestion Modal */}
+      <AnimatePresence>
+        {showTelegramModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowTelegramModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden"
+            >
+              <button 
+                onClick={() => setShowTelegramModal(false)}
+                className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 rounded-3xl flex items-center justify-center shadow-inner">
+                  <CheckCircle2 size={40} />
                 </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900 dark:text-white font-tiro">সাবস্ক্রাইব সফল হয়েছে!</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm font-bold font-tiro leading-relaxed">
+                    রেজাল্ট প্রকাশের সময় অতিরিক্ত ট্রাফিকের কারণে ব্রাউজার নোটিফিকেশন পৌঁছাতে কিছুটা দেরি হতে পারে। তাই দ্রুততম আপডেট ও নোটিফিকেশন পেতে আমাদের টেলিগ্রাম চ্যানেলে যুক্ত থাকার পরামর্শ দিচ্ছি।
+                  </p>
+                </div>
+
+                <button 
+                  onClick={() => setShowTelegramModal(false)}
+                  className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  ঠিক আছে
+                </button>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* 4. Stats & Info */}
       <div className="max-w-4xl mx-auto px-4 mt-12 space-y-12">
@@ -266,10 +279,10 @@ const GSTResultPage: React.FC = () => {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'মোট পরীক্ষার্থী', value: '১,৭০,০০০+', icon: Users, color: 'text-blue-500 bg-blue-50' },
-            { label: 'মোট আসন', value: '১২,০০০+', icon: Trophy, color: 'text-orange-500 bg-orange-50' },
-            { label: 'পাশের হার (সম্ভাব্য)', value: '৪৫-৫০%', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50' },
-            { label: 'বিশ্বвиде্যালয় সংখ্যা', value: '২৪টি', icon: Zap, color: 'text-purple-500 bg-purple-50' },
+            { label: 'মোট পরীক্ষার্থী', value: '১,৬৬,১৬২ জন', icon: Users, color: 'text-blue-500 bg-blue-50' },
+            { label: 'মোট আসন', value: '৮৫০০টি', icon: Trophy, color: 'text-orange-500 bg-orange-50' },
+            { label: 'আসন প্রতি লড়ছে', value: '২০জন', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50' },
+            { label: 'বিশ্ববিদ্যালয় সংখ্যা', value: '২০টি', icon: Zap, color: 'text-purple-500 bg-purple-50' },
           ].map((stat, i) => (
             <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-white/5 text-center space-y-2 shadow-sm">
               <div className={`w-10 h-10 ${stat.color} dark:bg-opacity-10 rounded-xl flex items-center justify-center mx-auto mb-2`}>
@@ -289,7 +302,7 @@ const GSTResultPage: React.FC = () => {
             </h2>
             <div className="space-y-4">
               {[
-                "ফলাফল দেখার জন্য আপনার এডমিট কার্ডের রোল নম্বর ও পিন নম্বর প্রয়োজন হবে।",
+                "ফলাফল দেখার জন্য আপনার Applicant Id ও পাসওয়ার্ড প্রয়োজন হবে।",
                 "অফিসিয়াল ওয়েবসাইট (gstadmission.ac.bd) থেকে রেজাল্ট দেখা যাবে।",
                 "সার্ভার জ্যাম থাকলে আমাদের টেলিগ্রাম চ্যানেলের অল্টারনেটিভ লিঙ্ক ব্যবহার করুন।",
                 "রেজাল্ট পরবর্তী ভর্তি প্রক্রিয়া ও চয়েস লিস্ট নিয়ে আমাদের বিশেষ গাইডলাইন আসবে।"
@@ -308,7 +321,7 @@ const GSTResultPage: React.FC = () => {
             </h2>
             <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 border border-gray-100 dark:border-white/5 shadow-sm space-y-6">
               <p className="text-gray-500 dark:text-gray-400 text-sm font-medium font-tiro leading-relaxed">
-                ভর্তি পরীক্ষার সব আপডেট, সাজেশন এবং গাইডলাইন সবার আগে পেতে আমাদের ফেসবুক পেজ ও গ্রুপে যুক্ত থাকুন। লক্ষাধিক শিক্ষার্থীর এই কমিউনিটি আপনাকে সঠিক সিদ্ধান্ত নিতে সাহায্য করবে।
+                ভর্তি পরীক্ষার সব আপডেট, সাজেশন এবং গাইডলাইন সবার আগে পেতে আমাদের ফেসবুক পেজ ও গ্রুপে যুক্ত থাকুন। এই কমিউনিটি আপনাকে সঠিক সিদ্ধান্ত নিতে সাহায্য করবে।
               </p>
               <div className="space-y-3">
                 <a 
