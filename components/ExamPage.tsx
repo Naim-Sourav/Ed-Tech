@@ -122,7 +122,7 @@ const ExamPage: React.FC = () => {
                 </div>
             )}
             {q.contextText && (
-                <div className={`text-sm md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-2 ${getFont(q.contextText)}`}>
+                <div className={`text-sm md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-2 tex2jax_process ${getFont(q.contextText)}`}>
                     {q.contextText}
                 </div>
             )}
@@ -976,7 +976,7 @@ const ExamPage: React.FC = () => {
                                             </p>
                                         )}
                                         {currentQ.contextText && (
-                                            <div className={`text-sm md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 ${getFont(currentQ.contextText)}`} dangerouslySetInnerHTML={{ __html: currentQ.contextText }} />
+                                            <div className={`text-sm md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 tex2jax_process ${getFont(currentQ.contextText)}`} dangerouslySetInnerHTML={{ __html: currentQ.contextText }} />
                                         )}
                                         {currentQ.contextImage && (
                                             <div className="mb-4 rounded-xl overflow-hidden border border-sky-100 dark:border-sky-800 bg-white dark:bg-black/20 p-1 md:p-2 shadow-inner">
@@ -1001,7 +1001,7 @@ const ExamPage: React.FC = () => {
                                     </div>
 
                                     <div className="relative z-10">
-                                        <h2 className={`text-[16px] md:text-xl font-bold text-gray-800 dark:text-white leading-snug mb-2 ${getFont(currentQ.question)}`}>
+                                        <h2 className={`text-[16px] md:text-xl font-bold text-gray-800 dark:text-white leading-snug mb-2 tex2jax_process ${getFont(currentQ.question)}`}>
                                             <div dangerouslySetInnerHTML={{ __html: currentQ.question }} />
                                         </h2>
                                         {currentQ.questionImage && (
@@ -1047,7 +1047,7 @@ const ExamPage: React.FC = () => {
                                                     {['A','B','C','D'][idx]}
                                                 </div>
                                                 <div className="flex-1">
-                                                    {opt && <span className={`text-xs md:text-sm font-medium ${getFont(opt)}`}>{opt}</span>}
+                                                    {opt && <span className={`text-xs md:text-sm font-medium tex2jax_process ${getFont(opt)}`}>{opt}</span>}
                                                     {optImage && <img src={optImage} alt={`Option ${idx}`} className="mt-1 max-h-16 rounded object-contain border border-white/20" />}
                                                 </div>
                                             </div>
@@ -1065,7 +1065,7 @@ const ExamPage: React.FC = () => {
                                     <div className="flex items-center gap-2 mb-2 font-bold text-orange-700 dark:text-orange-300 text-sm">
                                         <BookOpen size={16}/> ব্যাখ্যা
                                     </div>
-                                    <p className={`text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap ${getFont(questions[currentQIndex].explanation)}`}>
+                                    <p className={`text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap tex2jax_process ${getFont(questions[currentQIndex].explanation)}`}>
                                         {questions[currentQIndex].explanation || "No explanation available."}
                                     </p>
                                     {questions[currentQIndex].explanationImage && (
@@ -1097,7 +1097,7 @@ const ExamPage: React.FC = () => {
                                                     <div className="flex gap-3">
                                                         <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
                                                         <div className="flex-1">
-                                                            <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-xl ${getFont(q.question)}`}>{q.question}</h3>
+                                                            <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-xl tex2jax_process ${getFont(q.question)}`}>{q.question}</h3>
                                                             {q.questionImage && (
                                                                 <div className="mt-2 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-2 max-w-sm">
                                                                     <img src={q.questionImage} alt="Question" className="max-h-56 w-auto rounded object-contain mx-auto" />
@@ -1120,7 +1120,7 @@ const ExamPage: React.FC = () => {
                                                         >
                                                             <span className="font-mono text-gray-400 mt-0.5">({['A','B','C','D'][oIdx]})</span>
                                                             <div className="flex-1">
-                                                                {opt && <span className={getFont(opt)}>{opt}</span>}
+                                                                {opt && <span className={`tex2jax_process ${getFont(opt)}`}>{opt}</span>}
                                                                 {q.optionsImages?.[oIdx] && <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-1 max-h-24 rounded object-contain border border-gray-200 dark:border-gray-700" />}
                                                             </div>
                                                         </button>
@@ -1358,10 +1358,10 @@ const ExamPage: React.FC = () => {
                                 <div className="flex gap-4">
                                     <span className="font-bold text-gray-300 font-mono">{String(idx+1).padStart(2,'0')}</span>
                                     <div className="flex-1">
-                                        <h3 className={`font-bold text-gray-800 dark:text-gray-200 text-sm mb-2 ${getFont(q.question)}`}>{q.question}</h3>
+                                        <h3 className={`font-bold text-gray-800 dark:text-gray-200 text-sm mb-2 tex2jax_process ${getFont(q.question)}`}>{q.question}</h3>
                                         {q.questionImage && <img src={q.questionImage} alt="Question" className="max-h-24 rounded object-contain mb-2 border border-gray-100 dark:border-gray-700" />}
                                         <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50 rounded-lg">
-                                            <p className={`text-xs text-green-700 dark:text-green-400 font-bold flex items-center gap-2 ${getFont(q.options[q.correctAnswerIndex])}`}>
+                                            <p className={`text-xs text-green-700 dark:text-green-400 font-bold flex items-center gap-2 tex2jax_process ${getFont(q.options[q.correctAnswerIndex])}`}>
                                                 <CheckCircle size={14}/> {q.options[q.correctAnswerIndex]}
                                             </p>
                                             {q.optionsImages?.[q.correctAnswerIndex] && <img src={q.optionsImages[q.correctAnswerIndex]} alt="Answer" className="mt-1 max-h-16 rounded object-contain" />}
@@ -1640,7 +1640,7 @@ const ExamPage: React.FC = () => {
                                         <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start mb-2">
-                                                <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-lg pr-4 ${getFont(q.question)}`}>{q.question}</h3>
+                                                <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-lg pr-4 tex2jax_process ${getFont(q.question)}`}>{q.question}</h3>
                                                 <button 
                                                     onClick={() => toggleSaveQuestion(idx)} 
                                                     className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors shrink-0"
@@ -1665,7 +1665,7 @@ const ExamPage: React.FC = () => {
                                             <div key={oIdx} className={`p-3 rounded-lg border text-sm flex items-start gap-3 ${style}`}>
                                                 <div className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-[10px] opacity-70 shrink-0 mt-0.5">{['A','B','C','D'][oIdx]}</div>
                                                 <div className="flex-1">
-                                                    <span className={getFont(opt)}>{opt}</span>
+                                                    <span className={`tex2jax_process ${getFont(opt)}`}>{opt}</span>
                                                     {q.optionsImages?.[oIdx] && <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded object-contain" />}
                                                 </div>
                                                 {oIdx === q.correctAnswerIndex && <CheckCircle size={16} className="ml-auto mt-0.5"/>}
@@ -1678,7 +1678,7 @@ const ExamPage: React.FC = () => {
                                 {q.explanation && (
                                     <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl text-sm text-gray-700 dark:text-gray-300 border-l-4 border-gray-300 dark:border-gray-600 overflow-hidden break-words max-w-full">
                                         <p className="font-bold mb-1 flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500"><BookOpen size={12}/> ব্যাখ্যা</p>
-                                        <p className={`whitespace-pre-wrap ${getFont(q.explanation)}`}>{q.explanation}</p>
+                                        <p className={`whitespace-pre-wrap tex2jax_process ${getFont(q.explanation)}`}>{q.explanation}</p>
                                         {q.explanationImage && <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-40 rounded object-contain border border-gray-200 dark:border-gray-700" />}
                                     </div>
                                 )}
