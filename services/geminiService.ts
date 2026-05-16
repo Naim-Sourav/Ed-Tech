@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { QuizQuestion, Subject, AdmissionResult, SearchSource, ExamStandard, QuizConfig, DifficultyLevel } from "../types";
 
@@ -179,7 +178,7 @@ export const explainConcept = async (
     নির্দেশনা:
     ১. ভাষা অবশ্যই সহজবোধ্য বাংলা হতে হবে।
     ২. উদাহরণ দিয়ে বোঝানোর চেষ্টা করবে।
-    ৩. উত্তর খুব বেশি বড় করবে না, তবে মূল পয়েন্টগুলো যেন থাকে।
+    ৩. উত্তর খুব বেশি বড় করবেোম, তবে মূল পয়েন্টগুলো যেন থাকে।
     ৪. শুধুমাত্র প্লেইন টেক্সট এবং ল্যাটেক্স ব্যবহার করবে। কোনো বোল্ড বা ইটালিক মার্কডাউন ব্যবহার করবে না।`;
 
     const response = await ai.models.generateContent({
@@ -367,7 +366,8 @@ export const searchAdmissionInfo = async (query: string): Promise<AdmissionResul
 export const enrichQuestionList = async (
   rawQuestions: any[],
   examName: string,
-  year: string
+  year: string,
+  syllabusContext: string
 ): Promise<QuizQuestion[]> => {
   const ai = getClient();
   const chunks = [];
@@ -405,10 +405,12 @@ export const enrichQuestionList = async (
 
       Requirements:
       ${LATEX_INSTRUCTION}
-      1. **Subject & Chapter Detection**: Accurately detect the Subject (Physics 1st/2nd Paper, Chemistry 1st/2nd Paper, Biology 1st/2nd Paper, English, General Knowledge) and the specific Chapter Name in Bengali strictly following the NCTB HSC Syllabus.
-      2. **Explanation**: Provide a detailed, high-quality explanation for the correct answer. Cite logic from standard textbooks (e.g., Gazi Ajmal, Hazari Nag, Tapan/Ishaq) where applicable. The explanation must be in Bengali.
-      3. **Topic**: Identify a short specific topic (e.g. 'Vector', 'Organic Chemistry', 'Grammar').
-      4. **Validation**: Correct any typos in the raw question or options. Ensure options are a list of 4 strings.
+      1. **Subject, Chapter & Topic Detection**: Accurately detect the Subject, Chapter, and Topic in Bengali STRICTLY matching the provided Syllabus context below. DO NOT invent any new chapter or topic names.
+      2. **Explanation**: Provide a detailed, high-quality explanation for the correct answer. The explanation must be in Bengali.
+      3. **Validation**: Correct any typos in the raw question or options. Ensure options are a list of 4 strings.
+      
+      *** ALLOWED SYLLABUS STRUCTURE (STRICTLY USE THESE BENGALI NAMES) ***
+      ${syllabusContext}
       
       Output strictly as a JSON array matching the schema.
     `;
@@ -420,7 +422,7 @@ export const enrichQuestionList = async (
         config: {
           responseMimeType: 'application/json',
           responseSchema: responseSchema,
-          temperature: 0.2
+          temperature: 0.1
         }
       });
 
