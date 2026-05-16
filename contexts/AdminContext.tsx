@@ -10,6 +10,8 @@ import {
   fetchAdminStatsAPI 
 } from '../services/api';
 import { useAuth } from './AuthContext';
+import { db } from '../services/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface AdminStats {
   totalRevenue: number;
@@ -27,7 +29,7 @@ interface AdminContextType {
   approvePayment: (id: string) => Promise<void>;
   rejectPayment: (id: string) => Promise<void>;
   deletePaymentRequest: (id: string) => Promise<void>;
-  sendNotification: (title: string, message: string, type: 'INFO' | 'WARNING' | 'SUCCESS') => Promise<void>;
+  sendNotification: (title: string, message: string, type: 'INFO' | 'WARNING' | 'SUCCESS', sendPush?: boolean) => Promise<void>;
   isAdmin: boolean;
   refreshRequests: () => Promise<void>;
 }
@@ -133,10 +135,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const sendNotification = async (title: string, message: string, type: 'INFO' | 'WARNING' | 'SUCCESS') => {
+  const sendNotification = async (title: string, message: string, type: 'INFO' | 'WARNING' | 'SUCCESS', sendPush?: boolean) => {
     if (!isAdmin) return;
     try {
-      await sendNotificationAPI({ title, message, type });
+      // 1. Send to MongoDB (In-app notification)
+      await sendNotificationAPI({ title, message, type, sendPush });
+      
+      // 2. If sendPush is true, also write to Firestore 'push_notifications'
+      // This can be used by a Cloud Function to actually send the FCM message
+      if (sendPush) {
+        await addDoc(collection(db, 'push_notifications'), {
+          title,
+          body: message,
+          type,
+          status: 'PENDING',
+          createdAt: serverTimestamp(),
+          sentBy: currentUser?.uid
+        });
+      }
     } catch (e) {
       console.error("Error sending notification:", e);
       throw e;
