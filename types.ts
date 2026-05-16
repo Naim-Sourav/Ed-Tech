@@ -27,6 +27,7 @@ export interface QuizQuestion {
   _id?: string; // MongoDB ID
   id?: string; // Alternative ID
   slug?: string; // SEO Slug
+  orderIndex?: number; // Serial order index
   question: string;
   options: string[];
   correctAnswerIndex: number; // 0-3
@@ -34,11 +35,18 @@ export interface QuizQuestion {
   subject?: string;
   chapter?: string;
   topic?: string;
-  difficulty?: string;
   examRef?: string;
+  level?: 'ACADEMIC' | 'ADMISSION' | 'GENERAL';
+  board?: string;
+  college?: string;
+  target?: string;
+  unit?: string;
+  session?: string;
   questionImage?: string;
   explanationImage?: string;
   optionsImages?: string[];
+  contextText?: string;
+  contextImage?: string;
 }
 
 export interface QuestionPaperMetadata {

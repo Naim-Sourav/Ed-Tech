@@ -17,28 +17,48 @@ import { subscribeToPushNotifications, onForegroundMessage, checkSubscription } 
 
 import ErrorBoundary from './components/ErrorBoundary';
 
+// --- Lazy Load Helper with Retry Logic ---
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+  React.lazy(async () => {
+    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+      window.localStorage.getItem('page-has-been-force-refreshed') || 'false'
+    );
+
+    try {
+      const component = await componentImport();
+      window.localStorage.setItem('page-has-been-force-refreshed', 'false');
+      return component;
+    } catch (error) {
+      if (!pageHasAlreadyBeenForceRefreshed) {
+        // A stub to prevent infinite loops
+        window.localStorage.setItem('page-has-been-force-refreshed', 'true');
+        window.location.reload();
+        return { default: () => null }; // Return a dummy component while reloading
+      }
+
+      // The error is real and the page has already been refreshed
+      throw error;
+    }
+  });
+
 // --- Lazy Load Components ---
-const HomeDashboard = React.lazy(() => import('./components/HomeDashboard'));
-const QuizArena = React.lazy(() => import('./components/QuizArena'));
-const ExamPage = React.lazy(() => import('./components/ExamPage'));
-const AdmissionSearch = React.lazy(() => import('./components/AdmissionSearch'));
-const StudyPlanner = React.lazy(() => import('./components/StudyPlanner'));
-const QuizBattlePrototype = React.lazy(() => import('./components/QuizBattlePrototype'));
-const CourseSection = React.lazy(() => import('./components/CourseSection'));
-const QuestionBank = React.lazy(() => import('./components/QuestionBank'));
-const ProfilePage = React.lazy(() => import('./components/ProfilePage'));
-const SavedQuestions = React.lazy(() => import('./components/SavedQuestions'));
-const WrongQuestions = React.lazy(() => import('./components/WrongQuestions'));
-const AdminPage = React.lazy(() => import('./components/AdminPage'));
-const LeaderboardPage = React.lazy(() => import('./components/LeaderboardPage'));
-const DailyChallengePage = React.lazy(() => import('./components/DailyChallengePage'));
-const ExamHub = React.lazy(() => import('./components/ExamHub'));
-const GSTCoursePage = React.lazy(() => import('./components/GSTCoursePage'));
-const ExamBatchPage = React.lazy(() => import('./components/ExamBatchPage'));
-const PaymentPage = React.lazy(() => import('./components/PaymentPage'));
-const GSTAnswerKey = React.lazy(() => import('./components/GSTAnswerKey'));
-const GSTGuestExam = React.lazy(() => import('./components/GSTGuestExam'));
-const GSTResultPage = React.lazy(() => import('./components/GSTResultPage'));
+const HomeDashboard = lazyWithRetry(() => import('./components/HomeDashboard'));
+const QuizArena = lazyWithRetry(() => import('./components/QuizArena'));
+const ExamPage = lazyWithRetry(() => import('./components/ExamPage'));
+const AdmissionSearch = lazyWithRetry(() => import('./components/AdmissionSearch'));
+const StudyPlanner = lazyWithRetry(() => import('./components/StudyPlanner'));
+const QuizBattlePrototype = lazyWithRetry(() => import('./components/QuizBattlePrototype'));
+const CourseSection = lazyWithRetry(() => import('./components/CourseSection'));
+const QuestionBank = lazyWithRetry(() => import('./components/QuestionBank'));
+const ProfilePage = lazyWithRetry(() => import('./components/ProfilePage'));
+const SavedQuestions = lazyWithRetry(() => import('./components/SavedQuestions'));
+const WrongQuestions = lazyWithRetry(() => import('./components/WrongQuestions'));
+const AdminPage = lazyWithRetry(() => import('./components/AdminPage'));
+const LeaderboardPage = lazyWithRetry(() => import('./components/LeaderboardPage'));
+const DailyChallengePage = lazyWithRetry(() => import('./components/DailyChallengePage'));
+const ExamHub = lazyWithRetry(() => import('./components/ExamHub'));
+const ExamBatchPage = lazyWithRetry(() => import('./components/ExamBatchPage'));
+const PaymentPage = lazyWithRetry(() => import('./components/PaymentPage'));
 
 const PageLoader = () => (
     <div className="w-full min-h-[75vh] flex flex-col items-center justify-center bg-transparent text-gray-400">
@@ -477,9 +497,6 @@ const AppRoutes: React.FC<{
             
             {/* Public Exam Route - Accessible to guests */}
             <Route path="/exam/:examId" element={<ExamPage />} />
-            <Route path="/gst-a-unit-2025" element={<GSTAnswerKey />} />
-            <Route path="/gst-exam-live" element={<GSTGuestExam />} />
-            <Route path="/gst-result" element={<GSTResultPage />} />
 
             <Route path="/*" element={
               currentUser ? (
@@ -503,7 +520,6 @@ const AppRoutes: React.FC<{
                       <Route path="/admin" element={<AdminPage />} />
                       <Route path="/challenges" element={<DailyChallengePage openBot={() => {}} />} />
                       <Route path="/bot" element={<PorikkhangonAI />} />
-                      <Route path="/gst-special" element={<GSTCoursePage />} /> 
                       <Route path="/exam-batch/:courseId" element={<ExamBatchPage />} />
                       <Route path="/payment" element={<PaymentPage />} />
                       <Route path="*" element={<Navigate to="/dashboard" />} />

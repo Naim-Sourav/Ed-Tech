@@ -142,6 +142,13 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Push notifications collection for admin triggers
+    match /push_notifications/{notifId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
     // Allow reading questions from local files (if stored in Firestore)
     match /questions/{document=**} {
       allow read: if request.auth != null;
@@ -158,6 +165,7 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && 
              (request.auth.token.admin == true ||
+              request.auth.token.email == "tasnimahmedutsha600@gmail.com" ||
               exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
     }
   }

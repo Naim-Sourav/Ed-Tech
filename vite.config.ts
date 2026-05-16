@@ -15,6 +15,7 @@ export default defineConfig(({ mode: _mode }) => {
     resolve: {
       alias: {
         '@': path.resolve('.'),
+        'react-is': path.resolve('./node_modules/react-is'),
       },
     },
     // এই অংশটি প্রিভিউ সমস্যা সমাধান করবে

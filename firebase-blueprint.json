@@ -1,0 +1,40 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["email"]
+    },
+    "PushNotification": {
+      "title": "Push Notification",
+      "description": "Notification to be sent via push",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "SENT", "FAILED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "sentBy": { "type": "string" }
+      },
+      "required": ["title", "body", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/push_notifications/{notifId}": {
+      "schema": "PushNotification",
+      "description": "Queue for push notifications"
+    }
+  }
+}
