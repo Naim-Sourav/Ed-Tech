@@ -114,7 +114,15 @@ export const fetchPublicExam = async (examId: string) => {
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as PublicExam;
+    let data = docSnap.data();
+    try {
+      let text = JSON.stringify(data);
+      text = text.replace(/\$([^$]*_{2,}[^$]*)\$/g, '$1');
+      data = JSON.parse(text);
+    } catch (e) {
+      // Ignore if stringify/parse fails for some reason
+    }
+    return { id: docSnap.id, ...data } as PublicExam;
   } else {
     throw new Error("Exam not found");
   }

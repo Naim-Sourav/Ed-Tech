@@ -1,6 +1,7 @@
 
 // ... (imports from types.ts)
 import { PaymentRequest, Notification, LeaderboardUser, ExamPack, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
+import { normalizeBangla } from "../utils/normalization";
 
 export const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
 
@@ -133,7 +134,8 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
     }
 
     // 2. Handle Success (200)
-    const text = await response.text();
+    let text = await response.text();
+    text = text.replace(/\$([^$]*_{2,}[^$]*)\$/g, '$1');
     try {
         return JSON.parse(text);
     } catch (_e) {
@@ -360,17 +362,54 @@ export const generateSlugsAPI = async () => {
     }
 };
 
-export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string, topic?: string, examRef?: string, search?: string) => {
+export const refineQuestionsAPI = async () => {
+    try {
+        const response = await fetch(`${API_BASE}/admin/questions/refine`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to refine questions');
+        return await response.json();
+    } catch (error) {
+        console.error("Error refining questions:", error);
+        throw error;
+    }
+};
+
+export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai') => {
+    try {
+        const response = await fetch(`${API_BASE}/admin/questions/cleanup?type=${type}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to cleanup questions');
+        return await response.json();
+    } catch (error) {
+        console.error("Error cleaning up questions:", error);
+        throw error;
+    }
+};
+
+export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string, topic?: string, examRef?: string, search?: string, level?: string) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
-  if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(subject)}`;
-  if (chapter && chapter !== 'ALL') url += `&chapter=${encodeURIComponent(chapter)}`;
-  if (topic && topic !== 'ALL') url += `&topic=${encodeURIComponent(topic)}`;
+  if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(normalizeBangla(subject))}`;
+  if (chapter && chapter !== 'ALL') url += `&chapter=${encodeURIComponent(normalizeBangla(chapter))}`;
+  if (topic && topic !== 'ALL') url += `&topic=${encodeURIComponent(normalizeBangla(topic))}`;
   if (examRef && examRef !== 'ALL') url += `&examRef=${encodeURIComponent(examRef)}`;
+  if (level && level !== 'ALL') url += `&level=${encodeURIComponent(level)}`;
+  
   if (search) {
-    const normalizedSearch = normalizeText(search);
-    url += `&search=${encodeURIComponent(normalizedSearch)}`;
+    url += `&search=${encodeURIComponent(normalizeBangla(search))}`;
   }
   return fetchWithFallback(url, {}, { questions: [], total: 0 });
+};
+
+export const createQuestionInBankAPI = async (questionData: any) => {
+  return fetchWithFallback(`/admin/questions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(questionData)
+  }, { success: true });
 };
 
 export const updateQuestionInBankAPI = async (id: string, questionData: any) => {
@@ -398,7 +437,9 @@ export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
   if (examRef === 'gst_a_23_24') {
      try {
        const response = await fetch('/data/gst_a_23_24_questions.json');
-       return await response.json();
+       let text = await response.text();
+       text = text.replace(/\$([^$]*_{2,}[^$]*)\$/g, '$1');
+       return JSON.parse(text);
      } catch (_e) {
        return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
      }
@@ -413,15 +454,55 @@ export const deleteQuestionFromBankAPI = async (id: string) => {
 };
 
 export const generateQuizFromDB = async (config: { subject: string, chapter: string, topics: string[], count: number }) => {
-  return fetchWithFallback('/quiz/generate-from-db', {
+  // Normalize parameters to handle Unicode mismatch globally
+  const normalizedConfig = {
+    ...config,
+    subject: normalizeBangla(config.subject),
+    chapter: normalizeBangla(config.chapter),
+    topics: config.topics.map(t => normalizeBangla(t))
+  };
+
+  let questions = await fetchWithFallback('/quiz/generate-from-db', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(config)
+    body: JSON.stringify(normalizedConfig)
   }, []);
+
+  // Fallback: If not enough questions found, try the NFD variant of the chapter
+  const nfdChapter = normalizedConfig.chapter.normalize('NFD');
+  if (questions.length < config.count && nfdChapter !== normalizedConfig.chapter) {
+    const nfdConfig = { ...normalizedConfig, chapter: nfdChapter };
+    const nfdQuestions = await fetchWithFallback('/quiz/generate-from-db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nfdConfig)
+    }, []);
+
+    if (nfdQuestions.length > 0) {
+        const seen = new Set(questions.map((q: any) => q._id || q.id));
+        const uniqueNfd = nfdQuestions.filter((q: any) => !seen.has(q._id || q.id));
+        questions = [...questions, ...uniqueNfd];
+    }
+  }
+
+  return questions;
 };
 
-export const fetchSyllabusStatsAPI = async () => {
-  return fetchWithFallback('/quiz/syllabus-stats', {}, {});
+export const fetchSyllabusStatsAPI = async (level?: string) => {
+  let url = '/quiz/syllabus-stats';
+  const params = new URLSearchParams();
+  if (level && level !== 'ALL') params.set('level', level);
+  
+  const queryString = params.toString();
+  if (queryString) url += `?${queryString}`;
+  
+  return fetchWithFallback(url, {}, {});
+};
+
+export const fetchQuestionBankExamRefsAPI = async (level?: string) => {
+  let url = '/question-bank/exam-refs';
+  if (level && level !== 'ALL') url += `?level=${level}`;
+  return fetchWithFallback(url, {}, []);
 };
 
 export const sendNotificationAPI = async (data: any) => {
