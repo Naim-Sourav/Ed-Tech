@@ -1,10 +1,10 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { saveQuestionsToBankAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB, TopicNode } from '../services/syllabusData';
 import { QuizQuestion, QuestionPaperMetadata } from '../types';
 import { useToast } from './Toast';
 import { Loader2, CheckCircle, Trash2, Info, Eye, Bookmark, Image as ImageIcon, Link as LinkIcon, Copy, Terminal, Sparkles } from 'lucide-react';
+import { enrichQuestionList } from '../services/geminiService';
 
 declare global {
   interface Window {
@@ -84,6 +84,7 @@ const AdminJsonUpload: React.FC = () => {
   const [rawInput, setRawInput] = useState('');
   const [processedQuestions, setProcessedQuestions] = useState<QuizQuestion[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
   
   // Basic Categorization
   const [selectedLevel, setSelectedLevel] = useState<'ACADEMIC' | 'ADMISSION' | 'GENERAL'>('ACADEMIC');
@@ -180,7 +181,6 @@ const AdminJsonUpload: React.FC = () => {
           structure.chapter = "অধ্যায়ের নাম";
       }
 
-      // Add a comment to help user understand the structure. JSON doesn't support comments but we can write a pseudo comment string.
       structure["_Comment"] = "correctAnswerIndex হলো options array এর সঠিক উত্তরের index (0 থেকে শুরু)";
       structure["_LatexNote"] = "যেকোনো Math বা LaTeX ইকুয়েশন অবশ্যই $...$ অথবা $$...$$ এর ভেতর লিখতে হবে। যেমন: $\\sin \\theta$";
 
@@ -207,20 +207,16 @@ const AdminJsonUpload: React.FC = () => {
   const handleParseText = () => {
     if (!rawInput.trim()) return showToast("অনুগ্রহ করে টেক্সট পেস্ট করুন", "warning");
     const cleanInput = rawInput.replace(/```json|```/g, '').trim();
-    // Fix invalid single backslashes in JSON string (from latex)
     const escapedInput = cleanInput.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
 
     const ensureLatexWrapped = (text: string) => {
         if (!text || typeof text !== 'string') return text;
         if (text.includes('$') || text.includes('\\(') || text.includes('\\[')) return text;
         
-        // ফিক্স: যদি শূন্যস্থান পূরণের জন্য ২ বা ততোধিক আন্ডারস্কোর (____) থাকে,
-        // তবে এটিকে সাধারণ টেক্সট হিসেবেই রিটার্ন করবে, Math বানাবে না।
         if (/_{2,}/.test(text)) {
             return text;
         }
 
-        // Check if string contains common latex commands but no $
         if (/\\(frac|sqrt|sin|cos|tan|log|ln|theta|alpha|beta|gamma|pi|pm|therefore|implies|text\{|sec|cosec|cot)|[\^_]/.test(text)) {
             return `$${text}$`;
         }
@@ -256,6 +252,46 @@ const AdminJsonUpload: React.FC = () => {
         }
     } catch (_jsonError) {
         showToast("JSON পার্স এরর। ফরম্যাট চেক করুন।", "error");
+    }
+  };
+
+  const handleAutoEnrich = async () => {
+    if (!rawInput.trim()) return showToast("অনুগ্রহ করে আগে Raw JSON বা টেক্সট পেস্ট করুন", "warning");
+    
+    let parsed: any[] = [];
+    try {
+        const cleanInput = rawInput.replace(/```json|```/g, '').trim();
+        const escapedInput = cleanInput.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+        parsed = JSON.parse(escapedInput);
+        if (!Array.isArray(parsed)) throw new Error("Not an array");
+    } catch (_jsonError) {
+        return showToast("সঠিক JSON Array দিন।", "error");
+    }
+
+    setIsEnriching(true);
+    try {
+        const examName = selectedLevel === 'ACADEMIC' ? `${selectedBoard || ''} ${selectedCollege || ''}`.trim() || 'Board Exam' : selectedTarget;
+        const year = selectedLevel === 'ACADEMIC' ? selectedAcademicYear : selectedSession;
+        
+        // AI কে ডাটা এবং সিলেবাস পাঠানো হচ্ছে
+        const enriched = await enrichQuestionList(parsed, examName, year, condensedSyllabus);
+        
+        if (enriched && enriched.length > 0) {
+            const finalQuestions = enriched.map((item: any, index: number) => ({
+                ...item,
+                examRef: item.examRef || autoExamRef,
+                level: item.level || selectedLevel,
+                orderIndex: item.orderIndex || (index + 1),
+            }));
+            setProcessedQuestions(finalQuestions);
+            showToast(`${finalQuestions.length} টি প্রশ্ন এআই দ্বারা ট্যাগ ও এনরিচ করা হয়েছে!`, "success");
+            setRenderMode('RENDERED'); // সরাসরি প্রিভিউ মোডে চলে যাবে
+        }
+    } catch (error) {
+        console.error(error);
+        showToast("এআই প্রসেসিং এ সমস্যা হয়েছে।", "error");
+    } finally {
+        setIsEnriching(false);
     }
   };
 
@@ -321,7 +357,6 @@ const AdminJsonUpload: React.FC = () => {
               contextText: q.contextText ? normalizeText(q.contextText) : undefined,
               examRef: q.examRef || autoExamRef,
               level: q.level || selectedLevel,
-              // Map state fields to question object
               board: selectedLevel === 'ACADEMIC' ? selectedBoard : undefined,
               college: selectedLevel === 'ACADEMIC' ? selectedCollege : undefined,
               target: selectedLevel === 'ADMISSION' ? selectedTarget : undefined,
@@ -372,7 +407,6 @@ const AdminJsonUpload: React.FC = () => {
             </div>
             
             <div className="flex flex-wrap gap-3 items-center w-full lg:w-auto">
-                {/* Level Priority Selector */}
                 <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-xl flex gap-1">
                     {(['ACADEMIC', 'ADMISSION', 'GENERAL'] as const).map(lvl => (
                         <button
@@ -385,7 +419,6 @@ const AdminJsonUpload: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Conditional Selectors based on Level */}
                 <div className="flex flex-wrap gap-2">
                     {selectedLevel === 'ACADEMIC' && (
                         <>
@@ -436,7 +469,6 @@ const AdminJsonUpload: React.FC = () => {
                         </>
                     )}
 
-                    {/* Subject and Chapter selections */}
                     <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
                         <select value={selectedSubject} onChange={(e) => { setSelectedSubject(e.target.value); setSelectedChapter(''); }} className="p-2 rounded-lg border-0 text-xs font-bold bg-white dark:bg-gray-800 dark:text-white outline-none shadow-sm min-w-[140px]">
                             <option value="">Select Subject</option>
@@ -451,7 +483,6 @@ const AdminJsonUpload: React.FC = () => {
             </div>
         </div>
 
-        {/* Gemini Helper */}
         <div className="bg-indigo-50 dark:bg-indigo-950/20 p-6 rounded-[2rem] border border-indigo-100 flex flex-col gap-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
@@ -476,9 +507,26 @@ const AdminJsonUpload: React.FC = () => {
                     value={rawInput}
                     onChange={(e) => setRawInput(e.target.value)}
                     className="w-full h-[500px] p-5 rounded-3xl border bg-gray-50 dark:bg-gray-900 font-mono text-[11px] outline-none"
-                    placeholder="জেমিনির JSON এখানে পেস্ট করুন..."
+                    placeholder="জেমিনির JSON বা কাঁচা (Raw) ডাটা এখানে পেস্ট করুন..."
                 />
-                <button onClick={handleParseText} className="w-full py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg">Validate & Preview</button>
+                <div className="grid grid-cols-2 gap-3">
+                    <button 
+                        onClick={handleParseText} 
+                        disabled={isEnriching}
+                        className="w-full py-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-2xl font-black shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all disabled:opacity-50"
+                    >
+                        Manual Validate
+                    </button>
+                    
+                    <button 
+                        onClick={handleAutoEnrich} 
+                        disabled={isEnriching} 
+                        className="w-full py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-wait"
+                    >
+                        {isEnriching ? <Loader2 size={18} className="animate-spin"/> : <Sparkles size={18} />}
+                        {isEnriching ? 'AI Processing...' : 'Auto Enrich (AI)'}
+                    </button>
+                </div>
             </div>
 
             <div className="lg:col-span-7 flex flex-col h-[610px] bg-gray-50/50 dark:bg-gray-900/50 rounded-[2.5rem] border overflow-hidden">
@@ -529,7 +577,6 @@ const AdminJsonUpload: React.FC = () => {
                             const forceAll = showAllFieldsIndex === idx;
                             const isRepeatStimulus = idx > 0 && q.contextText && q.contextText === processedQuestions[idx - 1].contextText && q.contextImage === processedQuestions[idx - 1].contextImage;
 
-                            // Find group range for a new stimulus
                             let stimulusRange = null;
                             if (!isRepeatStimulus && (q.contextText || q.contextImage)) {
                                 let endIndex = idx;
@@ -549,7 +596,6 @@ const AdminJsonUpload: React.FC = () => {
                                 <div key={idx} className={`bg-white dark:bg-gray-800 p-6 rounded-3xl border shadow-sm relative transition-all ${isMissing ? 'border-red-300 ring-4 ring-red-500/5' : 'border-gray-200'} ${isRepeatStimulus ? 'border-dashed border-t-0 rounded-t-none -mt-6' : ''}`}>
                                     <button onClick={() => handleDelete(idx)} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 p-1"><Trash2 size={16}/></button>
                                     
-                                    {/* Stimulus Instruction Header */}
                                     {stimulusRange && (
                                         <div className="mb-4 text-center border-y border-gray-100 dark:border-gray-700 py-1 bg-gray-50/50 dark:bg-gray-900/30">
                                             <p className="text-[10px] font-bold text-gray-400 font-tiro italic">
@@ -662,7 +708,6 @@ const AdminJsonUpload: React.FC = () => {
                                         })}
                                     </div>
 
-                                    {/* Explanation Editor */}
                                     <div className="mt-6 p-4 bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                                         <label className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
                                             <Info size={12}/> Explanation / ব্যাখ্যা
