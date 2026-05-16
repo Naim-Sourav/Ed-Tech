@@ -1309,9 +1309,23 @@ const QuizBattlePrototype: React.FC = () => {
                     className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-700 mb-8 relative overflow-hidden"
                 >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-red-500 opacity-50"></div>
+                    
+                    {question.contextText && (
+                        <div className={`mb-6 p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl border border-orange-100/50 dark:border-orange-800/30 text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 ${getFont(question.contextText)}`}>
+                            <div dangerouslySetInnerHTML={{ __html: question.contextText }} />
+                            {question.contextImage && (
+                                <img src={question.contextImage} alt="Context" className="mt-4 rounded-xl max-h-48 object-contain mx-auto border bg-white" referrerPolicy="no-referrer" />
+                            )}
+                        </div>
+                    )}
+                    
                     <h2 className={`text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-relaxed text-center ${getFont(question.question)}`}>
-                        {question.question}
+                        <div dangerouslySetInnerHTML={{ __html: question.question }} />
                     </h2>
+                    
+                    {question.questionImage && (
+                        <img src={question.questionImage} alt="Question" className="mt-6 rounded-xl max-h-48 object-contain mx-auto border bg-white" referrerPolicy="no-referrer" />
+                    )}
                 </motion.div>
 
                 <div className="grid gap-4">
@@ -1356,7 +1370,12 @@ const QuizBattlePrototype: React.FC = () => {
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black border-2 ${isSelected ? 'bg-white/20 border-white' : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
                                             {String.fromCharCode(65 + idx)}
                                         </div>
-                                        <span className={getFont(opt)}>{opt}</span>
+                                        <div className={`flex flex-col gap-2`}>
+                                            <span className={getFont(opt)}><div dangerouslySetInnerHTML={{ __html: opt }} /></span>
+                                            {question.optionsImages?.[idx] && (
+                                                <img src={question.optionsImages[idx]} alt={`Option ${idx}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
+                                            )}
+                                        </div>
                                     </div>
                                     {hasAnswered && isSelected && (
                                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -1613,9 +1632,22 @@ const QuizBattlePrototype: React.FC = () => {
                                 >
                                     <div className="flex gap-3 mb-4">
                                         <span className="font-black text-white/20 text-xl font-mono">{String(idx+1).padStart(2,'0')}</span>
-                                        <h3 className={`font-bold text-white text-base leading-relaxed ${getFont(q.question)}`}>
-                                            {q.question}
-                                        </h3>
+                                        <div className="flex-1">
+                                            {q.contextText && (
+                                                <div className={`mb-3 p-3 bg-white/5 rounded-xl border border-white/10 text-sm opacity-80 ${getFont(q.contextText)}`}>
+                                                    <div dangerouslySetInnerHTML={{ __html: q.contextText }} />
+                                                    {q.contextImage && (
+                                                        <img src={q.contextImage} alt="Context" className="mt-3 rounded-lg max-h-32 object-contain border bg-white" referrerPolicy="no-referrer" />
+                                                    )}
+                                                </div>
+                                            )}
+                                            <h3 className={`font-bold text-white text-base leading-relaxed ${getFont(q.question)}`}>
+                                                <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                                            </h3>
+                                            {q.questionImage && (
+                                                <img src={q.questionImage} alt="Question" className="mt-3 rounded-lg max-h-40 object-contain border bg-white" referrerPolicy="no-referrer" />
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2">
@@ -1642,7 +1674,14 @@ const QuizBattlePrototype: React.FC = () => {
                                                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${isCorrect ? 'border-green-500 text-green-400' : 'border-white/20 text-white/40'}`}>
                                                             {['A','B','C','D'][oIdx]}
                                                         </div>
-                                                        <span className={`text-sm ${isCorrect ? 'text-green-400 font-bold' : 'text-gray-300'} ${getFont(opt)}`}>{opt}</span>
+                                                        <div className={`flex flex-col gap-2 w-full pr-4`}>
+                                                            <span className={`text-sm ${isCorrect ? 'text-green-400 font-bold' : 'text-gray-300'} ${getFont(opt)}`}>
+                                                                <div dangerouslySetInnerHTML={{ __html: opt }} />
+                                                            </span>
+                                                            {q.optionsImages?.[oIdx] && (
+                                                                <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="h-12 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     
                                                     {/* Avatars of players who picked this */}

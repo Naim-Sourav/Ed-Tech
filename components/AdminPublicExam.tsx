@@ -137,7 +137,24 @@ const AdminPublicExam = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
-          const json = JSON.parse(event.target?.result as string);
+          const raw = event.target?.result as string;
+          const escapedInput = raw.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+          
+          const ensureLatexWrapped = (text: string) => {
+              if (!text || typeof text !== 'string') return text;
+              if (text.includes('$') || text.includes('\\(') || text.includes('\\[')) return text;
+              
+              if (/_{2,}/.test(text)) {
+                  return text;
+              }
+
+              if (/\\(frac|sqrt|sin|cos|tan|log|ln|theta|alpha|beta|gamma|pi|pm|therefore|implies|text\{|sec|cosec|cot)|[\^_]/.test(text)) {
+                  return `$${text}$`;
+              }
+              return text;
+          };
+
+          const json = JSON.parse(escapedInput);
           if (Array.isArray(json)) {
             // Validate format roughly
             const valid = json.every(q => q.question && Array.isArray(q.options) && (typeof q.correctAnswerIndex === 'number' || typeof q.correctAnswer === 'number'));
@@ -145,6 +162,10 @@ const AdminPublicExam = () => {
               // Normalize
               const normalized = json.map((q: any) => ({
                   ...q,
+                  question: ensureLatexWrapped(q.question),
+                  options: (q.options || []).map((opt: any) => ensureLatexWrapped(String(opt))),
+                  explanation: ensureLatexWrapped(q.explanation || ""),
+                  contextText: ensureLatexWrapped(q.contextText || ""),
                   correctAnswerIndex: q.correctAnswerIndex ?? q.correctAnswer,
                   subject: q.subject || aiSubject || 'Imported',
                   chapter: q.chapter || aiChapter || 'Imported',

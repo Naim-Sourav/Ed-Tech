@@ -33,43 +33,7 @@ interface Course {
 
 // --- MOCK DATA ---
 
-const GST_SYLLABUS: Module[] = [
-  {
-    title: 'Phase 1: Chapter Wise Mission (30 Days)',
-    items: [
-      { id: 'gst-routine', title: 'Complete 45 Days Routine', duration: 'PDF', type: 'NOTE', isLocked: false },
-      { id: 'gst-d1', title: 'Day 01: Physics Vector & Bio Cell', duration: 'Task', type: 'NOTE', isLocked: false },
-      { id: 'gst-e1', title: 'Daily Exam 01', duration: '25 Marks', type: 'EXAM', isLocked: false },
-    ]
-  },
-  {
-    title: 'Phase 2: Paper Final (08 Days)',
-    items: [
-      { id: 'gst-e31', title: 'Physics 1st Paper Final', duration: '50 Marks', type: 'EXAM', isLocked: true },
-    ]
-  }
-];
-
-const COURSES: Course[] = [
-  {
-    id: 'gst-super-focus',
-    title: 'GST সুপার ফোকাস চ্যালেঞ্জ',
-    subtitle: '৪৫ দিনের চ্যালেঞ্জ। ডিসিপ্লিন, ডেডিকেশন, ডমিনেশন।',
-    price: 0, // FREE
-    originalPrice: 1500,
-    students: 1540,
-    theme: 'orange',
-    badge: 'Special Batch',
-    features: [
-      '৪৫ দিনের ফিক্সড রুটিন',
-      'প্রতিদিন টার্গেট ও এক্সাম',
-      'সলভ শিট ও মেরিট লিস্ট',
-      'ফেজ-ভিত্তিক পূর্ণাঙ্গ প্রস্তুতি',
-      'নেগেটিভ মার্কিং প্র্যাকটিস'
-    ],
-    syllabus: GST_SYLLABUS
-  }
-];
+const COURSES: Course[] = [];
 
 const CourseSection: React.FC = () => {
   const { t } = useLanguage();

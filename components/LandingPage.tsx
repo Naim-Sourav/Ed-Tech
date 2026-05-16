@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Lottie from 'lottie-react';
-import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket, Play, Activity, BookOpen, Clock, Archive, ShieldCheck, RotateCcw, Bookmark, ChevronDown, Flame } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket, Play, Activity, BookOpen, Clock, Archive, ShieldCheck, RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
 
 // Import Lottie animations directly
 import heroAnimation from '../assets/lottie/hero-animation.json';
@@ -81,7 +80,6 @@ const QuestionPaperMarquee = () => {
   ];
 
   const row2 = [
-    { title: "গুচ্ছ (GST) ক ইউনিট", sub: "২০২৩-২৪ | রসায়ন", icon: <Beaker size={18}/>, color: "from-amber-500 to-orange-600" },
     { title: "আর্মড ফোর্সেস মেডিকেল", sub: "২০২২-২৩ | সাধারণ জ্ঞান", icon: <ShieldCheck size={18}/>, color: "from-red-500 to-rose-500" },
     { title: "কৃষি গুচ্ছ ভর্তি পরীক্ষা", sub: "২০২৩ | উদ্ভিদবিজ্ঞান", icon: <Leaf size={18}/>, color: "from-orange-500 to-red-600" },
     { title: "চুয়েট কুয়েট রুয়েট", sub: "২০২১-২২ | গণিত", icon: <Calculator size={18}/>, color: "from-orange-500 to-amber-600" },
@@ -119,7 +117,6 @@ const QuestionPaperMarquee = () => {
 };
 
 // --- ICONS ---
-const Beaker = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 3h15"/><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M6 14h12"/></svg>;
 const Calculator = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
 const Dna = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="M17 6l-2.5-2.5"/><path d="M14 8l-1-1"/><path d="M7 18l2.5 2.5"/><path d="M3.5 14.5l1-1"/><path d="M20 9l2.5 2.5"/><path d="M14.5 16.5l1-1"/><path d="M10 2l-2.5 2.5"/><path d="M3 8l1-1"/><path d="M9 20l1-1"/><path d="M17 18l-2.5 2.5"/><path d="M7.5 10.5l-1-1"/></svg>;
 const Leaf = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 13-11 19Z"/><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 13-11 19Z"/></svg>;
@@ -241,45 +238,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
 
       {/* Infinite Scroll Marquee */}
       <UniversityMarquee />
-
-      {/* GST Answer Key Marketing Banner - NEW */}
-      <section className="px-4 md:px-6 py-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            onClick={() => window.location.hash = '#/gst-a-unit-2025'}
-            className="relative bg-gradient-to-r from-orange-600 to-red-600 rounded-[2rem] p-6 md:p-10 text-white overflow-hidden shadow-2xl shadow-orange-500/20 cursor-pointer group"
-          >
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700"></div>
-            
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-6">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center shrink-0">
-                  <BookOpen size={32} className="md:w-10 md:h-10 text-white" />
-                </div>
-                <div className="text-center md:text-left">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-2">
-                    <Flame size={12} className="text-yellow-300" /> Hot Update
-                  </div>
-                  <h3 className="text-2xl md:text-4xl font-black leading-tight">
-                    GST A ইউনিট ভর্তি পরীক্ষা <br className="hidden md:block" />
-                    ২০২৫-২৬ এর প্রশ্ন ও সমাধান!
-                  </h3>
-                  <p className="text-orange-100 text-sm md:text-lg mt-2 font-medium">
-                    সবার আগে নির্ভুল উত্তরপত্র মিলিয়ে নাও এবং নিজের স্কোর যাচাই করো।
-                  </p>
-                </div>
-              </div>
-              <button className="px-8 py-4 bg-white text-orange-600 rounded-2xl font-black flex items-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap">
-                সমাধান দেখুন <ArrowRight size={20} />
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Bento Grid Features */}
       <section id="features" className="py-12 md:py-24 px-4 md:px-6 relative">

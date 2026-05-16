@@ -138,13 +138,14 @@ const AdminPdfUpload: React.FC = () => {
                 2.  **Identify Options:** Look for options labeled with:
                     - English: (a), (b), (c), (d) OR A, B, C, D
                     - Bengali: (ক), (খ), (গ), (ঘ) OR ক, খ, গ, ঘ
-                3.  **Fix OCR Errors:** 
+                3.  **Math/LaTeX Rule:** Any mathematical expressions, equations, symbols MUST be wrapped inside $...$ or $$...$$ (e.g., $\sin \theta$, $\frac{1}{2}$). 
+                4.  **Fix OCR Errors:** 
                     - Correct broken Bengali words.
                     - Fix spacing issues (e.g., "ques tion" -> "question").
-                4.  **Determine Correct Answer:** 
+                5.  **Determine Correct Answer:** 
                     - If the answer is explicitly marked (bold, checkmark, or answer key at bottom), use it.
                     - If NO answer is marked, YOU MUST SOLVE THE QUESTION and provide the correct answer index (0-3).
-                5.  **Output Format:** Return a STRICT JSON array.
+                6.  **Output Format:** Return a STRICT JSON array.
                 
                 Output JSON Structure:
                 [
@@ -175,14 +176,15 @@ const AdminPdfUpload: React.FC = () => {
             if (!textResponse) return [];
 
             // Extract JSON from response
-            const jsonMatch = textResponse.match(/\[[\s\S]*\]/);
+            let escapedResponse = textResponse.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+            const jsonMatch = escapedResponse.match(/\[[\s\S]*\]/);
             if (jsonMatch) {
                 const parsed = JSON.parse(jsonMatch[0]);
                 return parsed;
             }
             
             try {
-                const parsed = JSON.parse(textResponse);
+                const parsed = JSON.parse(escapedResponse);
                 if (Array.isArray(parsed)) return parsed;
             } catch (_e) {
                 // Ignore

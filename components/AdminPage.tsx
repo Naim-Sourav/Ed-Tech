@@ -2,11 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../contexts/AdminContext';
 import { Check, X, Search, Trash2, User, Phone, CreditCard, ShieldCheck, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, Activity, FileText, FileJson, Edit2, Save, Image as ImageIcon, Loader2, Lock, Bookmark, Link as LinkIcon } from 'lucide-react';
-import AdminQuestionGenerator from './AdminQuestionGenerator';
 import AdminJsonUpload from './AdminJsonUpload';
-import AdminPdfUpload from './AdminPdfUpload';
 import AdminPublicExam from './AdminPublicExam';
-import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, normalizeText } from '../services/api';
+import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, createQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, refineQuestionsAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
 import { useNavigate } from 'react-router-dom';
@@ -82,166 +80,337 @@ interface QuestionEditModalProps {
   editingQuestion: any;
   setEditingQuestion: (q: any) => void;
   handleUpdateQuestion: (e: React.FormEvent) => void;
+  isEdit?: boolean;
 }
 
-const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, setEditingQuestion, handleUpdateQuestion }) => {
-    if (!editingQuestion) return null;
+const BOARDS = [
+    "ঢাকা বোর্ড", "চট্টগ্রাম বোর্ড", "রাজশাহী বোর্ড", "কুমিল্লা বোর্ড", 
+    "যশোর বোর্ড", "বরিশাল বোর্ড", "সিলেট বোর্ড", "দিনাজপুর বোর্ড", 
+    "ময়মনসিংহ বোর্ড", "মাদ্রাসা বোর্ড"
+];
 
+const toBengaliNumber = (num: string | number) => {
+    const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return num.toString().split('').map(digit => bengaliDigits[parseInt(digit)] || digit).join('');
+};
+
+const YEARS = Array.from({length: 15}, (_, i) => {
+    const year = (new Date().getFullYear() - i).toString();
+    const shortYear = year.substring(2);
+    return { english: year, bengaliSuffix: toBengaliNumber(shortYear) };
+});
+
+const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = ({ data, onChange }) => {
     const handleOptionChange = (idx: number, val: string) => {
-        const newOptions = [...editingQuestion.options];
+        const newOptions = [...(data.options || ['', '', '', ''])];
         newOptions[idx] = val;
-        setEditingQuestion({ ...editingQuestion, options: newOptions });
+        onChange({ ...data, options: newOptions });
     };
 
     const handleOptionImageChange = (idx: number, val: string) => {
-        const newImages = [...(editingQuestion.optionsImages || [null, null, null, null])];
+        const newImages = [...(data.optionsImages || ['', '', '', ''])];
         newImages[idx] = val;
-        setEditingQuestion({ ...editingQuestion, optionsImages: newImages });
+        onChange({ ...data, optionsImages: newImages });
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-white dark:bg-gray-800 w-full max-w-4xl rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] animate-in zoom-in-95">
-                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <Edit2 size={20} className="text-primary"/> প্রশ্ন সম্পাদনা (Edit Question)
-                    </h2>
-                    <button onClick={() => setEditingQuestion(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"><X size={20}/></button>
+        <div className="space-y-6">
+            {/* Meta Data */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Subject</label>
+                    <select 
+                        value={data.subject || ''} 
+                        onChange={e => onChange({...data, subject: e.target.value})}
+                        className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                    >
+                        <option value="">Select Subject</option>
+                        {Object.keys(SYLLABUS_DB).sort().map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                 </div>
-                
-                <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 space-y-6">
-                    {/* Meta Data */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Chapter</label>
+                    <input 
+                        type="text" 
+                        value={data.chapter || ''}
+                        onChange={e => onChange({...data, chapter: e.target.value})}
+                        className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                        placeholder="e.g. ভেক্টর"
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Level</label>
+                    <select 
+                        value={data.level || 'ACADEMIC'} 
+                        onChange={e => onChange({...data, level: e.target.value})}
+                        className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                    >
+                        <option value="ACADEMIC">ACADEMIC (HSC/SSC)</option>
+                        <option value="ADMISSION">ADMISSION</option>
+                        <option value="GENERAL">GENERAL</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Quick Setup Sections */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Quick HSC Setup */}
+                <div className="p-4 bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-800/30 space-y-4">
+                    <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">HSC Board Quick Setup</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1">Subject</label>
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1">বোর্ড সিলেক্ট করুন</label>
                             <select 
-                                value={editingQuestion.subject || ''} 
-                                onChange={e => setEditingQuestion({...editingQuestion, subject: e.target.value})}
-                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                                onChange={e => {
+                                    const board = e.target.value;
+                                    const currentRef = data.examRef || '';
+                                    const parts = currentRef.split(' ');
+                                    const year = parts[parts.length - 1].length === 2 ? parts[parts.length - 1] : '';
+                                    if (board) onChange({...data, examRef: `${board} ${year}`.trim(), level: 'ACADEMIC'});
+                                }}
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs font-tiro"
                             >
-                                <option value="">Select Subject</option>
-                                {Object.keys(SYLLABUS_DB).map(s => <option key={s} value={s}>{s}</option>)}
+                                <option value="">বোর্ড সিলেক্ট করুন</option>
+                                {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1">Chapter</label>
-                            <input 
-                                type="text" 
-                                value={editingQuestion.chapter || ''}
-                                onChange={e => setEditingQuestion({...editingQuestion, chapter: e.target.value})}
-                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
-                            />
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1">সাল সিলেক্ট করুন</label>
+                            <select 
+                                onChange={e => {
+                                    const bengaliYear = e.target.value;
+                                    const currentRef = data.examRef || '';
+                                    const board = BOARDS.find(b => currentRef.includes(b)) || 'বোর্ড';
+                                    if (bengaliYear) onChange({...data, examRef: `${board} ${bengaliYear}`, level: 'ACADEMIC'});
+                                }}
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs"
+                            >
+                                <option value="">সাল সিলেক্ট করুন</option>
+                                {YEARS.map(y => <option key={y.english} value={y.bengaliSuffix}>{y.english} ({y.bengaliSuffix})</option>)}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quick Admission Setup */}
+                <div className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 space-y-4">
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Admission Quick Setup</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1">পরীক্ষার ধরন</label>
+                            <select 
+                                onChange={e => {
+                                    const type = e.target.value;
+                                    if (type) onChange({...data, examRef: type, level: 'ADMISSION'});
+                                }}
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs"
+                            >
+                                <option value="">সিলেক্ট করুন</option>
+                                <option value="GST (গুচ্ছ)">GST (গুচ্ছ)</option>
+                                <option value="Medical Admission">Medical</option>
+                                <option value="Engineering (BUET/CKRUET)">Engineering</option>
+                                <option value="DU A Unit">DU (ঢাবি) ক-ইউনিট</option>
+                                <option value="JU A Unit">JU (জাবি) ক-ইউনিট</option>
+                                <option value="RU A Unit">RU (রাবি) ক-ইউনিট</option>
+                                <option value="CU A Unit">CU (চবি) ক-ইউনিট</option>
+                                <option value="Agricultural Combined">কৃষি গুচ্ছ</option>
+                            </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1">Topic</label>
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1">সাল (যেমন: ২৪-২৫)</label>
                             <input 
-                                type="text" 
-                                value={editingQuestion.topic || ''}
-                                onChange={e => setEditingQuestion({...editingQuestion, topic: e.target.value})}
-                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
-                                list="topic-suggestions"
-                            />
-                            <datalist id="topic-suggestions">
-                                {editingQuestion.subject && editingQuestion.chapter && (SYLLABUS_DB[editingQuestion.subject]?.[editingQuestion.chapter] || []).map((t: any) => {
-                                    const topicName = typeof t === 'string' ? t : t.title;
-                                    return <option key={topicName} value={topicName} />
-                                })}
-                            </datalist>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1">Exam Ref (Question Bank)</label>
-                            <input 
-                                type="text" 
-                                value={editingQuestion.examRef || ''}
-                                onChange={e => setEditingQuestion({...editingQuestion, examRef: e.target.value})}
-                                className="w-full p-2.5 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm placeholder-gray-400"
-                                placeholder="e.g. medical_23_24"
+                                type="text"
+                                placeholder="যেমন: ২৪-২৫"
+                                onChange={e => {
+                                    const year = e.target.value;
+                                    const currentRef = data.examRef || '';
+                                    if (year) onChange({...data, examRef: `${currentRef} ${year}`.trim(), level: 'ADMISSION'});
+                                }}
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs"
                             />
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    {/* Question Body */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <label className="block text-[10px] font-bold text-gray-400 mb-2">ফাইনাল ট্যাগ (Exam Ref)</label>
+                <input 
+                    type="text" 
+                    value={data.examRef || ''}
+                    onChange={e => onChange({...data, examRef: e.target.value})}
+                    className="w-full p-3 rounded-xl border bg-white dark:bg-gray-800 font-tiro text-sm font-bold text-primary shadow-inner"
+                    placeholder="যেমন: ঢাকা বোর্ড ২০ বা গুচ্ছ ২৪-২৫"
+                />
+            </div>
+
+                {/* Context Section (উদ্দীপক) */}
+                <div className="p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-800/30">
+                    <label className="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-2">
+                        <Bookmark size={14}/> উদ্দীপক (Context - Optional)
+                    </label>
+                    <div className="space-y-3">
+                        <textarea 
+                            rows={2}
+                            value={data.contextText || ''}
+                            onChange={e => onChange({...data, contextText: e.target.value})}
+                            className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
+                            placeholder="উদ্দীপক বা তথ্য এখানে লিখুন..."
+                        />
+                        <div className="flex items-center gap-2">
+                            <ImageIcon size={14} className="text-gray-400"/>
+                            <input 
+                                type="text"
+                                value={data.contextImage || ''}
+                                onChange={e => onChange({...data, contextImage: e.target.value})}
+                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                placeholder="উদ্দীপক ইমেজ URL (যদি থাকে)"
+                            />
+                        </div>
+                        {data.contextImage && (
+                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                <img src={data.contextImage} alt="Context" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+            {/* Question Body */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-bold text-gray-500 mb-1">Question Text</label>
                         <textarea 
                             rows={3}
-                            value={editingQuestion.question || ''}
-                            onChange={e => setEditingQuestion({...editingQuestion, question: e.target.value})}
+                            value={data.question || ''}
+                            onChange={e => onChange({...data, question: e.target.value})}
                             className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
+                            placeholder="প্রশ্নটি এখানে লিখুন..."
                         />
-                        <div className="mt-2">
-                            <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Question Image URL (Optional)</label>
+                        <div className="mt-2 flex items-center gap-2">
+                            <ImageIcon size={14} className="text-gray-400"/>
                             <input 
                                 type="text" 
-                                value={editingQuestion.questionImage || ''}
-                                onChange={e => setEditingQuestion({...editingQuestion, questionImage: e.target.value})}
-                                className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
-                                placeholder="https://example.com/image.png"
+                                value={data.questionImage || ''}
+                                onChange={e => onChange({...data, questionImage: e.target.value})}
+                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                placeholder="প্রশ্ন ইমেজ URL"
                             />
                         </div>
-                    </div>
-
-                    {/* Options */}
-                    <div className="space-y-3">
-                        <label className="block text-xs font-bold text-gray-500">Options</label>
-                        {[0, 1, 2, 3].map(idx => (
-                            <div key={idx} className="flex gap-2 items-start">
-                                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 shrink-0 font-bold text-xs mt-1">
-                                    {String.fromCharCode(65 + idx)}
-                                </div>
-                                <div className="flex-1 space-y-2">
-                                    <input 
-                                        type="text" 
-                                        value={editingQuestion.options[idx] || ''}
-                                        onChange={e => handleOptionChange(idx, e.target.value)}
-                                        className={`w-full p-2.5 rounded-xl border text-sm font-tiro ${Number(editingQuestion.correctAnswerIndex) === idx ? 'border-green-500 ring-1 ring-green-500 bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-gray-700 dark:border-gray-600'}`}
-                                        placeholder={`Option ${idx + 1}`}
-                                    />
-                                    <input 
-                                        type="text" 
-                                        value={editingQuestion.optionsImages?.[idx] || ''}
-                                        onChange={e => handleOptionImageChange(idx, e.target.value)}
-                                        className="w-full p-2 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px]"
-                                        placeholder="Option Image URL (Optional)"
-                                    />
-                                </div>
-                                <input 
-                                    type="radio" 
-                                    name="correctAnswer"
-                                    checked={Number(editingQuestion.correctAnswerIndex) === idx}
-                                    onChange={() => setEditingQuestion({...editingQuestion, correctAnswerIndex: idx})}
-                                    className="mt-3 w-4 h-4 accent-green-500 cursor-pointer"
-                                />
+                        {data.questionImage && (
+                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                <img src={data.questionImage} alt="Question" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                             </div>
-                        ))}
+                        )}
                     </div>
 
-                    {/* Explanation */}
                     <div>
                         <label className="block text-xs font-bold text-gray-500 mb-1">Explanation</label>
                         <textarea 
                             rows={3}
-                            value={editingQuestion.explanation || ''}
-                            onChange={e => setEditingQuestion({...editingQuestion, explanation: e.target.value})}
+                            value={data.explanation || ''}
+                            onChange={e => onChange({...data, explanation: e.target.value})}
                             className="w-full p-3 rounded-xl border bg-white dark:bg-gray-700 dark:border-gray-600 text-sm font-tiro"
+                            placeholder="ব্যাখ্যা এখানে লিখুন..."
                         />
-                        <div className="mt-2">
-                            <label className="block text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1"><ImageIcon size={10}/> Explanation Image URL (Optional)</label>
+                        <div className="mt-2 flex items-center gap-2">
+                            <ImageIcon size={14} className="text-gray-400"/>
                             <input 
                                 type="text" 
-                                value={editingQuestion.explanationImage || ''}
-                                onChange={e => setEditingQuestion({...editingQuestion, explanationImage: e.target.value})}
-                                className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs"
-                                placeholder="https://example.com/expl-image.png"
+                                value={data.explanationImage || ''}
+                                onChange={e => onChange({...data, explanationImage: e.target.value})}
+                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                placeholder="ব্যাখ্যা ইমেজ URL"
                             />
                         </div>
+                        {data.explanationImage && (
+                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                <img src={data.explanationImage} alt="Explanation" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">SEO Slug (Auto/Manual)</label>
+                        <input 
+                            type="text" 
+                            value={data.slug || ''}
+                            onChange={e => onChange({...data, slug: e.target.value})}
+                            className="w-full p-2.5 rounded-xl border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs font-mono"
+                            placeholder="unique-question-slug"
+                        />
                     </div>
                 </div>
 
+                {/* Options Section */}
+                <div className="space-y-4">
+                    <label className="block text-xs font-bold text-gray-500">Options & Correct Answer</label>
+                    <div className="space-y-3">
+                        {[0, 1, 2, 3].map(idx => (
+                            <div key={idx} className="flex gap-3 items-start p-3 rounded-2xl bg-gray-50/50 dark:bg-gray-900/30 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
+                                <div className="flex flex-col items-center gap-2 mt-1">
+                                    <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-[10px]">
+                                        {String.fromCharCode(65 + idx)}
+                                    </div>
+                                    <input 
+                                        type="radio" 
+                                        name="correctAnswer"
+                                        checked={Number(data.correctAnswerIndex) === idx}
+                                        onChange={() => onChange({...data, correctAnswerIndex: idx})}
+                                        className="w-4 h-4 accent-green-500 cursor-pointer"
+                                    />
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <input 
+                                        type="text" 
+                                        value={data.options?.[idx] || ''}
+                                        onChange={e => handleOptionChange(idx, e.target.value)}
+                                        className={`w-full p-2 rounded-lg border text-sm font-tiro bg-white dark:bg-gray-800 dark:border-gray-700 focus:ring-1 ring-primary outline-none`}
+                                        placeholder={`Option ${idx + 1}`}
+                                    />
+                                    <div className="flex items-center gap-2">
+                                        <ImageIcon size={12} className="text-gray-400"/>
+                                        <input 
+                                            type="text" 
+                                            value={data.optionsImages?.[idx] || ''}
+                                            onChange={e => handleOptionImageChange(idx, e.target.value)}
+                                            className="flex-1 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-[10px]"
+                                            placeholder="Option Image URL"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, setEditingQuestion, handleUpdateQuestion, isEdit = true }) => {
+    if (!editingQuestion) return null;
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 w-full max-w-5xl rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] animate-in zoom-in-95">
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Edit2 size={20} className="text-primary"/> 
+                        {isEdit ? 'প্রশ্ন সম্পাদনা (Edit Question)' : 'নতুন প্রশ্ন যোগ করুন (Add Question)'}
+                    </h2>
+                    <button onClick={() => setEditingQuestion(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"><X size={20}/></button>
+                </div>
+                
+                <div className="overflow-y-auto pr-2 custom-scrollbar flex-1">
+                    <QuestionForm data={editingQuestion} onChange={setEditingQuestion} />
+                </div>
+
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 mt-4">
-                    <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Cancel</button>
+                    <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">বাতিল</button>
                     <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-lg flex items-center gap-2">
-                        <Save size={18}/> Update Question
+                        {isEdit ? <Save size={18}/> : <Check size={18}/>} 
+                        {isEdit ? 'আপডেট করুন' : 'প্রশ্নটি যুক্ত করুন'}
                     </button>
                 </div>
             </div>
@@ -251,11 +420,24 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'Q_BANK' | 'DATABASE' | 'JSON_UPLOAD' | 'PDF_UPLOAD' | 'PUBLIC_EXAM'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM'>('DASHBOARD');
   const { showToast } = useToast();
   const navigate = useNavigate();
   
-  // Payment Filters
+  // Manual Question Entry State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newQuestion, setNewQuestion] = useState<any>({
+    subject: '',
+    chapter: '',
+    topic: '',
+    question: '',
+    options: ['', '', '', ''],
+    optionsImages: ['', '', '', ''],
+    correctAnswerIndex: 0,
+    explanation: '',
+    level: 'ACADEMIC',
+    examRef: ''
+  });
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -267,6 +449,7 @@ const AdminPage: React.FC = () => {
   const [notifTitle, setNotifTitle] = useState('');
   const [notifMsg, setNotifMsg] = useState('');
   const [notifType, setNotifType] = useState<'INFO' | 'SUCCESS' | 'WARNING'>('INFO');
+  const [sendPush, setSendPush] = useState(false);
   const [sendingNotif, setSendingNotif] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
@@ -345,6 +528,51 @@ const AdminPage: React.FC = () => {
       }
   };
 
+   const handleCreateQuestion = async (e: React.FormEvent) => {
+       e.preventDefault();
+       try {
+           if (!newQuestion.subject || !newQuestion.chapter || !newQuestion.question) {
+               showToast("Subject, Chapter and Question are required", "error");
+               return;
+           }
+           showToast("প্রশ্ন তৈরি হচ্ছে...", "info");
+           const res = await createQuestionInBankAPI(newQuestion);
+           if (res.success) {
+               showToast("নতুন প্রশ্ন সফলভাবে তৈরি হয়েছে!", "success");
+               setIsAddModalOpen(false);
+               setNewQuestion({
+                 ...newQuestion,
+                 question: '',
+                 options: ['', '', '', ''],
+                 optionsImages: ['', '', '', ''],
+                 correctAnswerIndex: 0,
+                 explanation: '',
+                 stimulusText: '',
+                 stimulusImage: '',
+                 questionImage: '',
+                 explanationImage: '',
+                 slug: ''
+               });
+               loadQuestions();
+           }
+       } catch (_err) {
+           showToast("তৈরি করতে সমস্যা হয়েছে", "error");
+       }
+   };
+
+   const refineBank = async () => {
+       try {
+           if (!confirm("Are you sure you want to refine the entire database? This will recalculate 'level' for all questions based on their 'examRef'.")) return;
+           showToast("Refining database logic...", "info");
+          const res = await refineQuestionsAPI();
+          showToast(res.message || "Question bank refined successfully!", "success");
+          loadQuestions();
+      } catch (err: any) {
+          console.error(err);
+          showToast(err.message || "Failed to refine database", "error");
+      }
+  };
+
   const loadNotifications = async () => {
       setLoadingNotifs(true);
       try {
@@ -378,10 +606,11 @@ const AdminPage: React.FC = () => {
       e.preventDefault();
       setSendingNotif(true);
       try {
-          await sendNotification(notifTitle, notifMsg, notifType);
-          showToast("নোটিফিকেশন পাঠানো হয়েছে!", "success");
+          await sendNotification(notifTitle, notifMsg, notifType, sendPush);
+          showToast(sendPush ? "পুশ নোটিফিকেশন পাঠানো হয়েছে!" : "নোটিফিকেশন পাঠানো হয়েছে!", "success");
           setNotifTitle('');
           setNotifMsg('');
+          setSendPush(false);
           loadNotifications();
       } catch (_e) {
           showToast("পাঠাতে সমস্যা হয়েছে", "error");
@@ -512,14 +741,8 @@ const AdminPage: React.FC = () => {
                    <button onClick={() => setActiveTab('JSON_UPLOAD')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'JSON_UPLOAD' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <FileJson size={16} /> Smart Upload
                    </button>
-                   <button onClick={() => setActiveTab('PDF_UPLOAD')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'PDF_UPLOAD' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                      <FileText size={16} /> PDF Upload
-                   </button>
                    <button onClick={() => setActiveTab('PUBLIC_EXAM')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'PUBLIC_EXAM' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <LinkIcon size={16} /> Public Exam
-                   </button>
-                   <button onClick={() => setActiveTab('Q_BANK')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'Q_BANK' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                      <Database size={16} /> Generator
                    </button>
                    <button onClick={() => setActiveTab('DATABASE')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'DATABASE' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Layers size={16} /> Manager
@@ -749,15 +972,6 @@ const AdminPage: React.FC = () => {
            <AdminJsonUpload />
         )}
 
-        {/* --- TAB: PDF UPLOAD --- */}
-        {activeTab === 'PDF_UPLOAD' && (
-           <AdminPdfUpload />
-        )}
-
-        {/* --- TAB: QUESTION BANK GENERATOR --- */}
-        {activeTab === 'Q_BANK' && (
-           <AdminQuestionGenerator />
-        )}
 
         {/* --- TAB: DATABASE VIEWER (UPDATED TO MANAGER) --- */}
         {activeTab === 'DATABASE' && (
@@ -814,6 +1028,18 @@ const AdminPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-3">
                         <button 
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg hover:bg-orange-700 transition-all flex items-center gap-2"
+                        >
+                            <Save size={16}/> Add Question
+                        </button>
+                        <button 
+                            onClick={refineBank}
+                            className="text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-2"
+                        >
+                            <ShieldCheck size={14}/> Refine Data
+                        </button>
+                        <button 
                             onClick={generateSlugs}
                             className="text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap transition-colors"
                         >
@@ -835,50 +1061,91 @@ const AdminPage: React.FC = () => {
                             No questions found matching criteria
                         </div>
                     ) : (
-                        questions.map(q => (
-                            <div key={q._id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-all group relative">
-                                {/* Top Badges */}
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex flex-wrap gap-2">
-                                        <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold rounded-lg border border-orange-100 dark:border-orange-800">
-                                            {q.subject?.split('(')[0]}
-                                        </span>
-                                        {q.examRef && (
-                                            <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[10px] font-bold rounded-lg border border-purple-100 dark:border-purple-800 flex items-center gap-1">
-                                                <Bookmark size={10} fill="currentColor"/> {q.examRef}
-                                            </span>
-                                        )}
-                                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-lg">
-                                            {q.chapter}
-                                        </span>
-                                    </div>
-                                    
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button 
-                                            onClick={() => setEditingQuestion(q)}
-                                            className="p-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
-                                            title="Edit"
-                                        >
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDeleteQuestion(q._id)} 
-                                            className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
-                                            title="Delete"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
+                        questions.map((q, qIndex) => {
+                            const isRepeatStimulus = qIndex > 0 && q.contextText && q.contextText === questions[qIndex - 1].contextText && q.contextImage === questions[qIndex - 1].contextImage;
+                            
+                            // Find group range for a new stimulus
+                            let stimulusRange = null;
+                            if (!isRepeatStimulus && (q.contextText || q.contextImage)) {
+                                let endIndex = qIndex;
+                                for (let i = qIndex + 1; i < questions.length; i++) {
+                                    if (questions[i].contextText === q.contextText && questions[i].contextImage === q.contextImage) {
+                                        endIndex = i;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if (endIndex > qIndex) {
+                                    stimulusRange = { start: qIndex + 1, end: endIndex + 1 };
+                                }
+                            }
 
-                                {/* Question Content */}
-                                <div className="mb-4">
+                            return (
+                                <div key={q._id} className={`bg-white dark:bg-gray-800 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all group relative ${isRepeatStimulus ? 'border-dashed border-t-0 rounded-t-none -mt-4 border-gray-200 dark:border-gray-700' : 'border-gray-200 dark:border-gray-700'}`}>
+                                    {/* Stimulus Instruction Header */}
+                                    {stimulusRange && (
+                                        <div className="mb-4 text-center border-y border-gray-100 dark:border-gray-700 py-2 bg-gray-50/50 dark:bg-gray-900/30">
+                                            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 font-tiro">
+                                                নিচের উদ্দীপকের আলোকে {toBengaliNumber(stimulusRange.start)} ও {toBengaliNumber(stimulusRange.end)} নং প্রশ্নের উত্তর দাও:
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Top Badges */}
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className="flex flex-wrap gap-2">
+                                            {!isRepeatStimulus && (
+                                                <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold rounded-lg border border-orange-100 dark:border-orange-800">
+                                                    {q.subject?.split('(')[0]}
+                                                </span>
+                                            )}
+                                            {q.examRef && !isRepeatStimulus && (
+                                                <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[10px] font-bold rounded-lg border border-purple-100 dark:border-purple-800 flex items-center gap-1">
+                                                    <Bookmark size={10} fill="currentColor"/> {q.examRef}
+                                                </span>
+                                            )}
+                                            {isRepeatStimulus && (
+                                                <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-400 text-[9px] font-bold rounded flex items-center gap-1">
+                                                    <Layers size={10}/> Same stimulus as previous
+                                                </span>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                onClick={() => setEditingQuestion(q)}
+                                                className="p-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
+                                                title="Edit"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteQuestion(q._id)} 
+                                                className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Question Content */}
+                                    <div className="mb-4">
+                                        {(q.contextText || q.contextImage) && !isRepeatStimulus && (
+                                            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl border-l-4 border-blue-200 dark:border-blue-800 text-sm font-tiro leading-relaxed">
+                                                <span className="text-[10px] font-black text-blue-500 uppercase mb-1 block">উদ্দীপক (Context)</span>
+                                                {q.contextText && <div dangerouslySetInnerHTML={{ __html: q.contextText }}></div>}
+                                                {q.contextImage && (
+                                                    <img src={q.contextImage} alt="Context" className="mt-2 max-h-32 rounded-lg object-contain border border-blue-100 dark:border-blue-800/30" referrerPolicy="no-referrer" />
+                                                )}
+                                            </div>
+                                        )}
                                     <h3 
                                         className="text-lg font-bold text-gray-900 dark:text-white font-tiro leading-relaxed mb-2"
                                         dangerouslySetInnerHTML={{ __html: q.question }}
                                     ></h3>
                                     {q.questionImage && (
-                                        <img src={q.questionImage} alt="Question" className="max-h-32 rounded-lg object-contain border border-gray-100 dark:border-gray-700"/>
+                                        <img src={q.questionImage} alt="Question" className="max-h-48 rounded-lg object-contain border border-gray-100 dark:border-gray-700" referrerPolicy="no-referrer" />
                                     )}
                                 </div>
 
@@ -887,13 +1154,18 @@ const AdminPage: React.FC = () => {
                                     {q.options.map((opt: string, idx: number) => (
                                         <div 
                                             key={idx} 
-                                            className={`p-2.5 rounded-lg border text-sm flex items-center gap-3 ${idx === Number(q.correctAnswerIndex) ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300' : 'bg-gray-50/50 dark:bg-gray-700/30 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}
+                                            className={`p-2.5 rounded-lg border text-sm flex flex-col gap-2 ${idx === Number(q.correctAnswerIndex) ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300' : 'bg-gray-50/50 dark:bg-gray-700/30 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}
                                         >
-                                            <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-gray-800' : 'border-gray-300 bg-white dark:bg-gray-800'}`}>
-                                                {String.fromCharCode(65 + idx)}
-                                            </span>
-                                            <span className="font-tiro" dangerouslySetInnerHTML={{ __html: opt }}></span>
-                                            {idx === Number(q.correctAnswerIndex) && <Check size={14} className="ml-auto text-green-600"/>}
+                                            <div className="flex items-center gap-3">
+                                                <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-gray-800' : 'border-gray-300 bg-white dark:bg-gray-800'}`}>
+                                                    {String.fromCharCode(65 + idx)}
+                                                </span>
+                                                <span className="font-tiro" dangerouslySetInnerHTML={{ __html: opt }}></span>
+                                                {idx === Number(q.correctAnswerIndex) && <Check size={14} className="ml-auto text-green-600"/>}
+                                            </div>
+                                            {q.optionsImages?.[idx] && (
+                                                <img src={q.optionsImages[idx]} alt={`Option ${idx}`} className="h-16 w-fit object-contain rounded border border-gray-100 self-center" referrerPolicy="no-referrer" />
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -902,13 +1174,17 @@ const AdminPage: React.FC = () => {
                                 {q.explanation && (
                                     <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border-l-4 border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300">
                                         <span className="font-bold text-xs uppercase tracking-wider text-gray-400 mb-1 block">Explanation</span>
-                                        <span className="font-tiro leading-relaxed" dangerouslySetInnerHTML={{ __html: q.explanation }}></span>
+                                        <div className="font-tiro leading-relaxed" dangerouslySetInnerHTML={{ __html: q.explanation }}></div>
+                                        {q.explanationImage && (
+                                            <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-32 rounded-lg object-contain border border-gray-100 dark:border-gray-700" referrerPolicy="no-referrer" />
+                                        )}
                                     </div>
                                 )}
                             </div>
-                        ))
-                    )}
-                </div>
+                        );
+                    })
+                )}
+            </div>
 
                 {/* Pagination */}
                 <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
@@ -932,11 +1208,22 @@ const AdminPage: React.FC = () => {
                 </div>
                 
                 {/* Modal Render */}
-                <QuestionEditModal 
-                  editingQuestion={editingQuestion} 
-                  setEditingQuestion={setEditingQuestion} 
-                  handleUpdateQuestion={handleUpdateQuestion} 
-                />
+                {editingQuestion && (
+                    <QuestionEditModal 
+                        editingQuestion={editingQuestion} 
+                        setEditingQuestion={setEditingQuestion} 
+                        handleUpdateQuestion={handleUpdateQuestion} 
+                        isEdit={true}
+                    />
+                )}
+                {isAddModalOpen && (
+                    <QuestionEditModal 
+                        editingQuestion={newQuestion} 
+                        setEditingQuestion={setNewQuestion} 
+                        handleUpdateQuestion={handleCreateQuestion} 
+                        isEdit={false}
+                    />
+                )}
             </div>
         )}
 
@@ -990,6 +1277,16 @@ const AdminPage: React.FC = () => {
                                   {type}
                                </button>
                             ))}
+                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800 cursor-pointer" onClick={() => setSendPush(!sendPush)}>
+                         <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${sendPush ? 'bg-primary border-primary text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'}`}>
+                            {sendPush && <Check size={16} strokeWidth={3}/>}
+                         </div>
+                         <div>
+                            <p className="text-sm font-bold text-gray-800 dark:text-white">Firebase Push Notification পাঠান</p>
+                            <p className="text-[10px] text-gray-500">এটি সকল ইউজারের ফোনে সরাসরি পুশ নোটিফিকেশন পাঠাবে।</p>
                          </div>
                       </div>
 

@@ -8,7 +8,7 @@ import {
   Settings, Atom, Beaker, Calculator, Dna,
   BookOpen, Brain, Crown, X, 
   Target, 
-  TrendingUp, Calendar, MoreHorizontal, Sparkles, Bell, ArrowRight
+  TrendingUp, MoreHorizontal, Sparkles, PieChart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -65,6 +65,12 @@ const HomeDashboard: React.FC = () => {
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'today' | 'week'>('today');
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showDevNotice, setShowDevNotice] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hide_dev_notice') !== 'true';
+    }
+    return true;
+  });
   
   const isCheckedIn = useMemo(() => {
     if (!stats?.activityLog) return false;
@@ -370,51 +376,39 @@ const HomeDashboard: React.FC = () => {
             </AnimatePresence>
         </div>
 
-        {/* GST Result Update Banner */}
-        <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            onClick={() => navigate('/gst-result')}
-            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-4 md:p-6 text-white flex items-center justify-between cursor-pointer group shadow-lg shadow-emerald-900/10 active-scale transition-all"
-        >
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <Bell size={24} fill="white" className="animate-bounce" />
-                </div>
-                <div>
-                    <h3 className="text-lg md:text-xl font-black leading-tight font-tiro">গুচ্ছ ক ইউনিট রেজাল্ট আপডেট</h3>
-                    <p className="text-xs text-emerald-100 font-medium opacity-90 font-tiro">ফলাফল প্রকাশের সাথে সাথেই নোটিফিকেশন পেতে এখানে ক্লিক করুন</p>
-                </div>
-            </div>
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl text-xs font-black uppercase tracking-widest group-hover:bg-white/20 transition-colors">
-                Check Now <ArrowRight size={14} />
-            </div>
-        </motion.div>
+        {/* Development Notice Banner */}
+        <AnimatePresence>
+          {showDevNotice && (
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
+                className="w-full bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-500/10 dark:to-blue-500/5 rounded-3xl p-5 md:p-6 border border-indigo-100 dark:border-indigo-500/20 flex items-start gap-4 relative overflow-hidden"
+            >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                
+                <button 
+                  onClick={() => {
+                    setShowDevNotice(false);
+                    localStorage.setItem('hide_dev_notice', 'true');
+                  }}
+                  className="absolute top-4 right-4 p-1.5 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors z-10"
+                >
+                  <X size={18} />
+                </button>
 
-        {/* 1. Featured Banner (GST) - Cyberpunk Style */}
-        <div 
-            onClick={() => navigate('/gst-special')}
-            className="w-full relative bg-gray-900 dark:bg-gray-900 rounded-3xl md:rounded-[2.5rem] p-4 md:p-8 text-white overflow-hidden shadow-2xl shadow-red-900/20 cursor-pointer group border border-gray-800 dark:border-white/[0.08] active-scale transition-all duration-300 hover:shadow-red-500/10"
-        >
-            {/* Cyberpunk Grid Background */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent"></div>
-            
-            {/* Neon Glows */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/20 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-red-600/30 transition-all duration-700 animate-pulse-slow"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-600/10 rounded-full blur-[80px] -ml-20 -mb-20"></div>
-            
-            <div className="relative z-10 flex flex-col gap-2 md:gap-4">
-                <div className="flex items-center gap-2">
-                    <span className="bg-red-600 text-white text-[9px] md:text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse border border-red-400/50">Live</span>
-                    <span className="text-red-300 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-1.5"><Target size={12} className="text-red-400"/> Admission</span>
+                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
+                    <Sparkles size={24} />
                 </div>
-                <h2 className="text-2xl md:text-3xl lg:text-5xl font-black leading-tight tracking-tight drop-shadow-lg">
-                    GST <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 animate-gradient-x">সুপার ফোকাস</span>
-                </h2>
-                <p className="text-xs md:text-sm text-gray-300 max-w-sm font-medium leading-relaxed border-l-2 border-red-500/50 pl-3">৪৫ দিনের ফিক্সড রুটিন। ডিসিপ্লিন, ডেডিকেশন, ডমিনেশন।</p>
-            </div>
-        </div>
+                <div className="space-y-1 pr-6">
+                    <h3 className="text-base md:text-lg font-black text-indigo-900 dark:text-indigo-100 font-tiro">আমরা এখনো গড়ে উঠছি!</h3>
+                    <p className="text-xs md:text-sm text-indigo-700/80 dark:text-indigo-300/70 font-medium leading-relaxed font-tiro">
+                        আমাদের প্ল্যাটফর্মটি বর্তমানে ডেভেলপমেন্ট (Beta) পর্যায়ে রয়েছে। সব ফিচার এখনও পরিপূর্ণ নয়, তবে আমরা দিনরাত কাজ করছি আপনার পড়াশোনাকে আরও সহজ করতে। খুব শীঘ্রই এটি আপনার জন্য একটি পূর্ণাঙ্গ ডিজিটাল টিউটর হয়ে উঠবে। আমাদের সাথে থাকার জন্য ধন্যবাদ!
+                    </p>
+                </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* 2. Main Menu Grid - Chorcha Style UI (Unified Sizes) */}
         <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 border border-gray-100 dark:border-white/5 shadow-sm">
@@ -765,7 +759,7 @@ const HomeDashboard: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 {[
                   { icon: Settings, label: 'সেটিংস', path: '/settings' },
-                  { icon: Calendar, label: 'রুটিন', path: '/gst-special' },
+                  { icon: PieChart, label: 'প্ল্যানার', path: '/planner' },
                   { icon: Target, label: 'লক্ষ্য', path: '/profile' },
                   { icon: Archive, label: 'আর্কাইভ', path: '/qbank' },
                   { icon: Trophy, label: 'অ্যাচিভমেন্ট', path: '/leaderboard' },

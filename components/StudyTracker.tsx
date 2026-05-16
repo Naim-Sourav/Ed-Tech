@@ -8,6 +8,7 @@ import {
   LayoutDashboard, ListTodo, PieChart as PieChartIcon
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCache } from '../contexts/CacheContext';
 import { useToast } from './Toast';
 import confetti from 'canvas-confetti';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from 'recharts';
@@ -83,13 +84,14 @@ const getGreeting = () => {
 const StudyTracker: React.FC = () => {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
+  const { getCache, setCache } = useCache();
   const navigate = useNavigate();
   
   // --- State ---
   const [view, setView] = useState<'DASHBOARD' | 'PLANNER' | 'ANALYTICS'>('DASHBOARD');
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [sessions, setSessions] = useState<StudySession[]>([]);
-  const [dailyGoal, setDailyGoal] = useState<DailyGoal>({ hours: 6 });
+  const [tasks, setTasks] = useState<Task[]>(getCache('tracker_tasks') || []);
+  const [sessions, setSessions] = useState<StudySession[]>(getCache('tracker_sessions') || []);
+  const [dailyGoal, setDailyGoal] = useState<DailyGoal>(getCache('tracker_goal') || { hours: 6 });
   
   // Timer State
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -114,34 +116,57 @@ const StudyTracker: React.FC = () => {
 
   // --- Effects ---
   
-  // Load Data from LocalStorage
+  // Load Data from Cache and LocalStorage
   useEffect(() => {
-    const savedTasks = localStorage.getItem('tracker_tasks');
-    const savedSessions = localStorage.getItem('tracker_sessions');
-    const savedGoal = localStorage.getItem('tracker_goal');
+    const cachedTasks = getCache('tracker_tasks');
+    const cachedSessions = getCache('tracker_sessions');
+    const cachedGoal = getCache('tracker_goal');
+
+    if (!cachedTasks) {
+      const savedTasks = localStorage.getItem('tracker_tasks');
+      if (savedTasks) {
+        const parsed = JSON.parse(savedTasks);
+        setTasks(parsed);
+        setCache('tracker_tasks', parsed);
+      }
+    }
     
-    if (savedTasks) setTasks(JSON.parse(savedTasks));
-    if (savedSessions) setSessions(JSON.parse(savedSessions));
-    if (savedGoal) setDailyGoal(JSON.parse(savedGoal));
+    if (!cachedSessions) {
+      const savedSessions = localStorage.getItem('tracker_sessions');
+      if (savedSessions) {
+        const parsed = JSON.parse(savedSessions);
+        setSessions(parsed);
+        setCache('tracker_sessions', parsed);
+      }
+    }
+
+    if (!cachedGoal) {
+      const savedGoal = localStorage.getItem('tracker_goal');
+      if (savedGoal) {
+        const parsed = JSON.parse(savedGoal);
+        setDailyGoal(parsed);
+        setCache('tracker_goal', parsed);
+      }
+    }
     
     setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+  }, [getCache, setCache]);
 
-    // Check for recurring tasks reset (simplified: if last created was not today)
-    // In a real app, we'd check date logic more robustly
-  }, []);
-
-  // Save Data to LocalStorage
+  // Save Data to Cache and LocalStorage
   useEffect(() => {
     localStorage.setItem('tracker_tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    setCache('tracker_tasks', tasks);
+  }, [tasks, setCache]);
 
   useEffect(() => {
     localStorage.setItem('tracker_sessions', JSON.stringify(sessions));
-  }, [sessions]);
+    setCache('tracker_sessions', sessions);
+  }, [sessions, setCache]);
 
   useEffect(() => {
     localStorage.setItem('tracker_goal', JSON.stringify(dailyGoal));
-  }, [dailyGoal]);
+    setCache('tracker_goal', dailyGoal);
+  }, [dailyGoal, setCache]);
 
   // Timer Logic
   useEffect(() => {

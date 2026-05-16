@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
+import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -130,8 +131,8 @@ const WrongQuestions: React.FC = () => {
     });
 
     return {
-      uniqueSubjects: Array.from(subjects),
-      uniqueChapters: Array.from(chapters),
+      uniqueSubjects: uniqueByNormalization(Array.from(subjects)),
+      uniqueChapters: uniqueByNormalization(Array.from(chapters)),
       subjectCounts: counts
     };
   }, [mistakes, filterSubject]);
@@ -141,8 +142,8 @@ const WrongQuestions: React.FC = () => {
       const q = item.questionId;
       if (!q) return false;
       
-      const matchSubject = filterSubject === 'ALL' || q.subject === filterSubject;
-      const matchChapter = filterChapter === 'ALL' || q.chapter === filterChapter;
+      const matchSubject = filterSubject === 'ALL' || normalizeBangla(q.subject) === normalizeBangla(filterSubject);
+      const matchChapter = filterChapter === 'ALL' || normalizeBangla(q.chapter) === normalizeBangla(filterChapter);
       const matchSearch = searchQuery === '' || 
         q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.explanation?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -390,9 +391,7 @@ const WrongQuestions: React.FC = () => {
 
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex flex-wrap gap-2">
-                        <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-50 text-slate-500 rounded-full border border-slate-100">
-                          {q.subject} • {q.chapter}
-                        </span>
+                        {/* Tags moved to bottom metadata footer */}
                       </div>
                       {!isSelectionMode && (
                         <button 
@@ -403,9 +402,22 @@ const WrongQuestions: React.FC = () => {
                         </button>
                       )}
                     </div>
+                    
+                    {(q.contextText || q.contextImage) && (
+                      <div className="mb-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/30">
+                        <span className="text-[9px] font-black text-blue-500/50 dark:text-blue-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
+                        {q.contextText && <div className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                        {q.contextImage && (
+                          <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
+                        )}
+                      </div>
+                    )}
 
                     <div className={`text-[15px] font-bold text-slate-800 leading-relaxed mb-3 ${getFont(q.question)}`}>
                       <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                      {q.questionImage && (
+                        <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mx-auto border bg-white" referrerPolicy="no-referrer" />
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-1.5 mb-3">
@@ -450,7 +462,12 @@ const WrongQuestions: React.FC = () => {
                             <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold border ${iconStyle}`}>
                               {String.fromCharCode(65 + i)}
                             </span>
-                            <div className={`text-sm font-medium ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                            <div className="flex flex-col gap-1 flex-1">
+                              <div className={`text-sm font-medium ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                              {q.optionsImages?.[i] && (
+                                <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -474,12 +491,36 @@ const WrongQuestions: React.FC = () => {
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div className="mt-2 text-sm text-slate-600 leading-relaxed p-3 bg-slate-50 rounded-xl" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                              <div className="mt-2 p-3 bg-slate-50 rounded-xl">
+                                <div className="text-sm text-slate-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                {q.explanationImage && (
+                                  <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-white" referrerPolicy="no-referrer" />
+                                )}
+                              </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
                       </div>
                     )}
+                    <div className="mt-4 pt-4 border-t border-slate-50 dark:border-gray-800 flex items-center justify-between">
+                      <div className="flex flex-wrap gap-2">
+                        {q.subject && (
+                          <span className="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 rounded-lg uppercase tracking-tight">
+                            {q.subject}
+                          </span>
+                        )}
+                        {q.chapter && (
+                          <span className="text-[9px] font-black px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 rounded-lg">
+                            {q.chapter}
+                          </span>
+                        )}
+                      </div>
+                      {q.examRef && (
+                        <span className="text-[9px] font-black px-2 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg border border-orange-200/50 dark:border-orange-800/50">
+                          {q.examRef}
+                        </span>
+                      )}
+                    </div>
                   </motion.div>
                 );
               })}

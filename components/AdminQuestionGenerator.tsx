@@ -1,11 +1,12 @@
 
 import React, { useState, useRef } from 'react';
 import { generateQuiz } from '../services/geminiService';
-import { saveQuestionsToBankAPI, normalizeText } from '../services/api';
+import { saveQuestionsToBankAPI } from '../services/api';
 import { ExamStandard, QuizQuestion } from '../types';
 import { SYLLABUS_DB, TopicNode } from '../services/syllabusData';
 import { Sparkles, Save, Trash2, Brain, CheckCircle, Loader2, Layers, Upload, PieChart, Atom, Beaker, Calculator, Dna, Activity, Globe, ChevronDown, Book, ListFilter, Check } from 'lucide-react';
 import { useToast } from './Toast';
+import { normalizeBangla } from '../utils/normalization';
 
 // --- BLOOM'S TAXONOMY & QUESTION STRATEGIES ---
 interface BatchStrategy {
@@ -74,6 +75,13 @@ const AdminQuestionGenerator: React.FC = () => {
   
   // New State for Smart Upload
   const [mode, setMode] = useState<'AI' | 'MANUAL'>('AI');
+  const [uploadCategory, setUploadCategory] = useState<'ACADEMIC' | 'ADMISSION' | 'GENERAL'>('GENERAL');
+  const [uploadBoard, setUploadBoard] = useState('');
+  const [uploadCollege, setUploadCollege] = useState('');
+  const [uploadTarget, setUploadTarget] = useState('GST গুচ্ছ');
+  const [uploadUnit, setUploadUnit] = useState('A Unit');
+  const [uploadSession, setUploadSession] = useState('2024-25');
+  const [uploadYear, setUploadYear] = useState('২০২২');
   const [manualInput, setManualInput] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -164,21 +172,55 @@ const AdminQuestionGenerator: React.FC = () => {
         // Try JSON Parse first
         let extracted: QuizQuestion[] = [];
         try {
-            const parsed = JSON.parse(manualInput);
+            const escapedInput = manualInput.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+            
+            const ensureLatexWrapped = (text: string) => {
+                if (!text || typeof text !== 'string') return text;
+                if (text.includes('$') || text.includes('\\(') || text.includes('\\[')) return text;
+                
+                // ফিক্স: যদি শূন্যস্থান পূরণের জন্য ২ বা ততোধিক আন্ডারস্কোর (____) থাকে,
+                // তবে এটিকে সাধারণ টেক্সট হিসেবেই রিটার্ন করবে, Math বানাবে না।
+                if (/_{2,}/.test(text)) {
+                    return text;
+                }
+
+                if (/\\(frac|sqrt|sin|cos|tan|log|ln|theta|alpha|beta|gamma|pi|pm|therefore|implies|text\{|sec|cosec|cot)|[\^_]/.test(text)) {
+                    return `$${text}$`;
+                }
+                return text;
+            };
+
+            const parsed = JSON.parse(escapedInput);
             if (Array.isArray(parsed)) {
                 extracted = parsed.map((item: any) => ({
-                    question: item.question || "",
-                    options: Array.isArray(item.options) ? item.options : [],
+                    question: ensureLatexWrapped(item.question || ""),
+                    options: Array.isArray(item.options) ? item.options.map((opt: any) => ensureLatexWrapped(String(opt))) : [],
                     correctAnswerIndex: Number(item.correctAnswerIndex) || 0,
-                    explanation: item.explanation || "",
+                    explanation: ensureLatexWrapped(item.explanation || ""),
                     subject: subject, // Force selected subject
                     chapter: chapter, // Force selected chapter
                     topic: item.topic || selectedTopics[0] || "General", // Use item topic or first selected or General
-                    examRef: item.examRef,
+                                    examRef: item.examRef || (uploadCategory === 'ADMISSION' ? (
+                                        uploadTarget === 'মেডিকেল ভর্তি পরীক্ষা' 
+                                            ? `MAT ${uploadSession.replace('20', '')}`
+                                            : uploadTarget === 'ডেন্টাল ভর্তি পরীক্ষা'
+                                                ? `DAT ${uploadSession.replace('20', '')}`
+                                                : uploadTarget === 'AFMC ও AMC'
+                                                    ? `AFMC ${uploadSession.replace('20', '')}`
+                                                    : uploadTarget === 'ঢাকা বিশ্ববিদ্যালয়'
+                                                        ? `DU ${uploadUnit} ${uploadSession}`
+                                                        : `${uploadTarget} ${uploadUnit} ${uploadSession}`
+                                    ) : undefined),
+                                    board: uploadCategory === 'ACADEMIC' ? uploadBoard : undefined,
+                                    college: uploadCategory === 'ACADEMIC' ? uploadCollege : undefined,
+                                    target: uploadCategory === 'ADMISSION' ? uploadTarget : undefined,
+                            unit: uploadCategory === 'ADMISSION' ? (uploadTarget === 'মেডিকেল ভর্তি পরীক্ষা' ? 'MBBS/BDS' : uploadTarget === 'ডেন্টাল ভর্তি পরীক্ষা' ? 'BDS' : uploadTarget === 'AFMC ও AMC' ? 'AFMC & AMC' : uploadUnit) : undefined,
+                                    session: uploadCategory === 'ADMISSION' ? uploadSession : uploadCategory === 'ACADEMIC' ? uploadYear : undefined,
                     questionImage: item.questionImage,
                     explanationImage: item.explanationImage,
                     optionsImages: item.optionsImages,
-                    difficulty: item.difficulty || "Manual Upload"
+                    level: uploadCategory,
+                    contextText: ensureLatexWrapped(item.contextText || "")
                 })).filter(q => q.question && q.options.length > 0);
             }
         } catch (_jsonError) {
@@ -205,7 +247,23 @@ const AdminQuestionGenerator: React.FC = () => {
                              subject: subject,
                              chapter: chapter,
                              topic: selectedTopics[0] || "General",
-                             difficulty: "Manual Upload"
+                             level: uploadCategory,
+                             board: uploadCategory === 'ACADEMIC' ? uploadBoard : undefined,
+                             college: uploadCategory === 'ACADEMIC' ? uploadCollege : undefined,
+                             target: uploadCategory === 'ADMISSION' ? uploadTarget : undefined,
+                             unit: uploadCategory === 'ADMISSION' ? (uploadTarget === 'মেডিকেল ভর্তি পরীক্ষা' ? 'MBBS/BDS' : uploadTarget === 'ডেন্টাল ভর্তি পরীক্ষা' ? 'BDS' : uploadTarget === 'AFMC ও AMC' ? 'AFMC & AMC' : uploadUnit) : undefined,
+                             session: uploadCategory === 'ADMISSION' ? uploadSession : uploadCategory === 'ACADEMIC' ? uploadYear : undefined,
+                             examRef: uploadCategory === 'ADMISSION' ? (
+                                  uploadTarget === 'মেডিকেল ভর্তি পরীক্ষা' 
+                                      ? `MAT ${uploadSession.replace('20', '')}`
+                                      : uploadTarget === 'ডেন্টাল ভর্তি পরীক্ষা'
+                                          ? `DAT ${uploadSession.replace('20', '')}`
+                                          : uploadTarget === 'AFMC ও AMC'
+                                              ? `AFMC ${uploadSession.replace('20', '')}`
+                                              : uploadTarget === 'ঢাকা বিশ্ববিদ্যালয়'
+                                                  ? `DU ${uploadUnit} ${uploadSession}`
+                                                  : `${uploadTarget} ${uploadUnit} ${uploadSession}`
+                             ) : undefined
                          });
                      }
                  });
@@ -268,7 +326,7 @@ const AdminQuestionGenerator: React.FC = () => {
                             const enhanced = questions.map(q => ({
                                 ...q,
                                 subject, chapter, topic: currentTopic,
-                                difficulty: strategy.label
+                                level: "GENERAL" as "GENERAL" | "ACADEMIC" | "ADMISSION"
                             }));
                             setGeneratedQuestions(prev => [...prev, ...enhanced]);
                         }
@@ -299,12 +357,9 @@ const AdminQuestionGenerator: React.FC = () => {
     try {
       const sanitized = generatedQuestions.map(q => ({
         ...q,
-        question: normalizeText(q.question),
-        options: (q.options || []).map(o => normalizeText(o)),
-        explanation: normalizeText(q.explanation || ''),
-        subject: normalizeText(q.subject || ''),
-        chapter: normalizeText(q.chapter || ''),
-        topic: normalizeText(q.topic || ''),
+        subject: normalizeBangla(q.subject || ''),
+        chapter: normalizeBangla(q.chapter || ''),
+        topic: normalizeBangla(q.topic || ''),
         correctAnswerIndex: Number(q.correctAnswerIndex)
       }));
       await saveQuestionsToBankAPI(sanitized);
@@ -327,7 +382,9 @@ const AdminQuestionGenerator: React.FC = () => {
     const reader = new FileReader();
     reader.onload = (ev) => {
         try {
-            const parsed = JSON.parse(ev.target?.result as string);
+            const raw = ev.target?.result as string;
+            const escapedInput = raw.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+            const parsed = JSON.parse(escapedInput);
             if (Array.isArray(parsed)) {
                 setGeneratedQuestions(prev => [...prev, ...parsed]);
                 showToast("Imported successfully", "success");
@@ -515,12 +572,134 @@ const AdminQuestionGenerator: React.FC = () => {
                   </div>
               ) : (
                   // MANUAL MODE
-                  <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
-                      <div className="flex justify-between items-center mb-4">
+                  <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-6">
+                      <div className="flex justify-between items-center">
                           <h3 className="font-bold flex items-center gap-2"><Upload size={18}/> Smart Upload (Paste Text/JSON)</h3>
                           <div className="text-xs text-gray-500">
                               Selected: <span className="font-bold text-gray-800 dark:text-white">{subject ? subject.split('(')[0] : 'None'}</span> / <span className="font-bold text-gray-800 dark:text-white">{chapter || 'None'}</span>
                           </div>
+                      </div>
+
+                      {/* Category Selection */}
+                      <div className="grid grid-cols-3 gap-2">
+                          {(['ACADEMIC', 'ADMISSION', 'GENERAL'] as const).map(cat => (
+                              <button
+                                  key={cat}
+                                  onClick={() => setUploadCategory(cat)}
+                                  className={`p-2 rounded-lg text-xs font-bold border transition-all ${uploadCategory === cat ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600'}`}
+                              >
+                                  {cat === 'ACADEMIC' ? 'Academic' : cat === 'ADMISSION' ? 'Admission' : 'General'}
+                              </button>
+                          ))}
+                      </div>
+
+                      {/* Conditional Fields */}
+                      <div className="grid grid-cols-2 gap-4">
+                          {uploadCategory === 'ACADEMIC' && (
+                              <>
+                                  <div className="col-span-2 flex items-center gap-2">
+                                      <div className="flex-1">
+                                          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Board</label>
+                                          <select value={uploadBoard} onChange={(e) => { setUploadBoard(e.target.value); setUploadCollege(''); }} className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700">
+                                              <option value="">কোন বোর্ড নয়</option>
+                                              <option value="Dhaka">Dhaka (ঢাকা)</option>
+                                              <option value="Rajshahi">Rajshahi (রাজশাহী)</option>
+                                              <option value="Cumilla">Cumilla (কুমিল্লা)</option>
+                                              <option value="Jashore">Jashore (যশোর)</option>
+                                              <option value="Chattogram">Chattogram (চট্টগ্রাম)</option>
+                                              <option value="Barishal">Barishal (বরিশাল)</option>
+                                              <option value="Sylhet">Sylhet (সিলেট)</option>
+                                              <option value="Dinajpur">Dinajpur (দিনাজপুর)</option>
+                                              <option value="Mymensingh">Mymensingh (ময়মনসিংহ)</option>
+                                              <option value="Madrasah">Madrasah (মাদ্রাসা)</option>
+                                          </select>
+                                      </div>
+                                      <span className="text-xs font-bold text-gray-400 mt-4">OR</span>
+                                      <div className="flex-1">
+                                          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">College</label>
+                                          <input 
+                                              type="text" 
+                                              value={uploadCollege} 
+                                              onChange={(e) => { setUploadCollege(e.target.value); setUploadBoard(''); }}
+                                              placeholder="কলেজের নাম"
+                                              className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700" 
+                                          />
+                                      </div>
+                                  </div>
+                                  <div className="col-span-2">
+                                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Year</label>
+                                      <input 
+                                          type="text" 
+                                          value={uploadYear} 
+                                          onChange={(e) => setUploadYear(e.target.value)}
+                                          placeholder="e.g. 2022"
+                                          className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700" 
+                                      />
+                                  </div>
+                              </>
+                          )}
+
+                          {uploadCategory === 'ADMISSION' && (
+                              <>
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Target</label>
+                                      <select value={uploadTarget} onChange={(e) => {
+                                          setUploadTarget(e.target.value);
+                                          if (e.target.value === 'মেডিকেল ভর্তি পরীক্ষা' || e.target.value === 'ডেন্টাল ভর্তি পরীক্ষা' || e.target.value === 'AFMC ও AMC') setUploadUnit('');
+                                      }} className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700">
+                                          <option value="GST গুচ্ছ">GST গুচ্ছ</option>
+                                          <option value="মেডিকেল ভর্তি পরীক্ষা">মেডিকেল ভর্তি পরীক্ষা</option>
+                                          <option value="ডেন্টাল ভর্তি পরীক্ষা">ডেন্টাল ভর্তি পরীক্ষা</option>
+                                          <option value="AFMC ও AMC">AFMC ও AMC</option>
+                                          <option value="ঢাকা বিশ্ববিদ্যালয়">ঢাকা বিশ্ববিদ্যালয়</option>
+                                      </select>
+                                  </div>
+                                  {uploadTarget !== 'মেডিকেল ভর্তি পরীক্ষা' && uploadTarget !== 'ডেন্টাল ভর্তি পরীক্ষা' && uploadTarget !== 'AFMC ও AMC' && (
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Unit</label>
+                                        {uploadTarget === 'GST গুচ্ছ' ? (
+                                            <select value={uploadUnit} onChange={(e) => setUploadUnit(e.target.value)} className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700">
+                                                <option value="A Unit">A Unit</option>
+                                                <option value="B Unit">B Unit</option>
+                                                <option value="C Unit">C Unit</option>
+                                            </select>
+                                        ) : uploadTarget === 'ঢাকা বিশ্ববিদ্যালয়' ? (
+                                            <select value={uploadUnit} onChange={(e) => setUploadUnit(e.target.value)} className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700">
+                                                <option value="A Unit">A Unit</option>
+                                                <option value="B Unit">B Unit</option>
+                                                <option value="C Unit">C Unit</option>
+                                                <option value="D Unit">D Unit</option>
+                                                <option value="F Unit">F Unit (চারুকলা)</option>
+                                                <option value="IBA">IBA</option>
+                                            </select>
+                                        ) : (
+                                            <input 
+                                                type="text" 
+                                                value={uploadUnit} 
+                                                onChange={(e) => setUploadUnit(e.target.value)}
+                                                placeholder="Unit (e.g. A, B, C)"
+                                                className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700" 
+                                            />
+                                        )}
+                                    </div>
+                                  )}
+                                  <div className="col-span-2">
+                                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Session</label>
+                                      <select 
+                                          value={uploadSession} 
+                                          onChange={(e) => setUploadSession(e.target.value)}
+                                          className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700" 
+                                      >
+                                          {Array.from({length: 16}, (_, i) => {
+                                              const startYear = 2025 - i;
+                                              const endYear = startYear + 1;
+                                              const val = `${startYear}-${endYear.toString().substring(2)}`;
+                                              return <option key={val} value={val}>{val}</option>;
+                                          })}
+                                      </select>
+                                  </div>
+                              </>
+                          )}
                       </div>
                       
                       <textarea 
@@ -577,7 +756,7 @@ Example:
                       <button onClick={() => handleDeleteQ(generatedQuestions.length - 1 - idx)} className="absolute top-4 right-4 text-gray-300 hover:text-red-500"><Trash2 size={18}/></button>
                       <div className="flex gap-2 mb-2">
                           <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs font-bold rounded">{q.topic}</span>
-                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded border border-orange-200">{q.difficulty}</span>
+                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded border border-orange-200">{q.level}</span>
                       </div>
                       <h4 className="font-bold mb-3">{q.question}</h4>
                       <div className="grid grid-cols-2 gap-2 mb-3">

@@ -8,6 +8,7 @@ import { QuizQuestion, ExamStandard, QuizConfig, DifficultyLevel } from '../type
 import { SYLLABUS_DB, SyllabusItem, TopicNode } from '../services/syllabusData';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
+import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
 import { 
   Loader2, 
   Play, Settings, Check,
@@ -121,7 +122,7 @@ const QuizArena: React.FC = () => {
   const [questionCount, setQuestionCount] = useState(10);
   const [timeLimit, setTimeLimit] = useState<number>(0);
   const [negativeMarking, setNegativeMarking] = useState<number>(0);
-  const [examViewMode, setExamViewMode] = useState<ExamViewMode>('SINGLE_PAGE');
+  const [examViewMode, setExamViewMode] = useState<ExamViewMode>('ALL_AT_ONCE');
   const [isPracticeMode, setIsPracticeMode] = useState(false);
   const [isReviewExpanded, setIsReviewExpanded] = useState(false);
 
@@ -172,11 +173,7 @@ const QuizArena: React.FC = () => {
     loadStats();
   }, []);
 
-  // Helper to normalize strings for comparison
-  const normalizeText = (text: string) => {
-      if (!text) return '';
-      return text.normalize('NFC').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/[\s\t\n\r]/g, '').replace(/[.,;:"'’|।]/g, '').toLowerCase();
-  };
+  // 
 
   const getTopicsForChapter = (subject: string, chapter: string): SyllabusItem[] => {
       const staticTopics = SYLLABUS_DB[subject]?.[chapter] || [];
@@ -329,33 +326,67 @@ const QuizArena: React.FC = () => {
   // --- STATS HELPER ---
   const getStatsFor = (subjectKeyOrGroup: string, chapter?: string, topic?: string) => {
       if (!syllabusStats) return 0;
-      const group = SUBJECT_GROUPS.find(g => g.name === subjectKeyOrGroup);
-      if (group && !chapter) {
-          return group.papers.reduce((sum, paper) => {
-              const paperNorm = normalizeText(paper);
-              const matchedKey = Object.keys(syllabusStats).find(k => normalizeText(k) === paperNorm);
-              return sum + (matchedKey ? (syllabusStats[matchedKey]?.total || 0) : 0);
+      
+      const normalizeText = (text: string) => {
+          if (!text) return '';
+          return normalizeBangla(text).replace(/[.,;:"'’|।]/g, '').replace(/\s+/g, '').toLowerCase();
+      };
+
+      // Case 1: Just a subject group (e.g., 'Physics')
+      const groupMatch = SUBJECT_GROUPS.find(g => g.name === subjectKeyOrGroup);
+      if (groupMatch && !chapter) {
+          const papers = groupMatch.papers;
+          return papers.reduce((sum, paperName) => {
+              const paperNorm = normalizeText(paperName);
+              // Sum up all variants for this paper
+              let paperSum = 0;
+              Object.keys(syllabusStats).forEach(k => {
+                  if (normalizeText(k) === paperNorm) {
+                      paperSum += syllabusStats[k]?.total || 0;
+                  }
+              });
+              return sum + paperSum;
           }, 0);
       }
+
+      // Case 2: Specific subject paper or chapter drilldown
       const subjectNorm = normalizeText(subjectKeyOrGroup);
-      const paperKey = Object.keys(syllabusStats).find(k => normalizeText(k) === subjectNorm);
-      if (!paperKey) return 0;
-      const paperData = syllabusStats[paperKey];
-      if (!chapter) return paperData.total || 0;
-      const chapterNorm = normalizeText(chapter);
-      const chapterKey = paperData.chapters ? Object.keys(paperData.chapters).find(k => normalizeText(k) === chapterNorm) : null;
-      if (!chapterKey) return 0;
-      const chapterData = paperData.chapters[chapterKey];
-      if (!topic) return chapterData.total || 0;
-      const topicNorm = normalizeText(topic);
+      
+      // Collect all paper data that matches this subject
+      const matchingPaperKeys = Object.keys(syllabusStats).filter(k => normalizeText(k) === subjectNorm);
+      if (matchingPaperKeys.length === 0) return 0;
+
       let totalCount = 0;
-      if (chapterData.topics) {
-          Object.keys(chapterData.topics).forEach(dbTopic => {
-              if (normalizeText(dbTopic) === topicNorm) {
-                  totalCount += chapterData.topics[dbTopic];
-              }
-          });
-      }
+
+      matchingPaperKeys.forEach(paperKey => {
+          const paperData = syllabusStats[paperKey];
+          if (!chapter) {
+              totalCount += paperData.total || 0;
+              return;
+          }
+
+          const chapterNorm = normalizeText(chapter);
+          if (paperData.chapters) {
+              Object.keys(paperData.chapters).forEach(cKey => {
+                  if (normalizeText(cKey) === chapterNorm) {
+                      const chapterData = paperData.chapters[cKey];
+                      if (!topic) {
+                          totalCount += chapterData.total || 0;
+                      } else {
+                          const topicNorm = normalizeText(topic);
+                          if (chapterData.topics) {
+                              Object.keys(chapterData.topics).forEach(tKey => {
+                                  if (normalizeText(tKey) === topicNorm) {
+                                      totalCount += chapterData.topics[tKey] || 0;
+                                  }
+                              });
+                          }
+                      }
+                  }
+              });
+          }
+      });
+
       return totalCount;
   };
 
@@ -401,7 +432,7 @@ const QuizArena: React.FC = () => {
         initiateQuizGeneration([], ExamStandard.HSC, qs.length, undefined, false, {
             questions: qs,
             title: 'ভুল প্রশ্ন প্র্যাকটিস',
-            mode: 'SINGLE_PAGE',
+            mode: 'ALL_AT_ONCE',
             timeLimit: 0,
             negativeMarking: 0,
             isPracticeMode: true
@@ -487,9 +518,68 @@ const QuizArena: React.FC = () => {
       }
       
       if (!qs || qs.length === 0) throw new Error("No questions generated");
+
+      // --- UNIQUE QUESTION FILTERING ---
+      // Filter out duplicate questions that might come from multiple topics
+      const seenQuestions = new Set<string>();
+      const uniqueQs = qs.filter(q => {
+          const key = q.id || q.question;
+          if (seenQuestions.has(key)) return false;
+          seenQuestions.add(key);
+          return true;
+      });
       
-      // Shuffle and Slice to exact requested count
-      qs = qs.sort(() => 0.5 - Math.random()).slice(0, count);
+      // --- STIMULUS-AWARE SELECTION LOGIC ---
+      // 1. Group questions by stimulus to prevent splitting them during shuffle/slice
+      const groupedQs: Record<string, QuizQuestion[]> = {};
+      const individualQs: QuizQuestion[] = [];
+
+      uniqueQs.forEach(q => {
+          const stimulusKey = q.contextText || q.contextImage || null;
+          if (stimulusKey) {
+              if (!groupedQs[stimulusKey]) groupedQs[stimulusKey] = [];
+              groupedQs[stimulusKey].push(q);
+          } else {
+              individualQs.push(q);
+          }
+      });
+
+      // 2. Shuffle groups and individuals separately
+      const groups = Object.values(groupedQs).sort(() => 0.5 - Math.random());
+      const singles = individualQs.sort(() => 0.5 - Math.random());
+
+      // 3. Reconstruct list by interspersing groups and singles, then taking EXACTLY the count
+      // This part ensures that if we take a stimulus, we take ALL questions under it.
+      const finalQs: QuizQuestion[] = [];
+      
+      // First, prioritize groups if available, then fill with singles
+      groups.forEach(group => {
+          if (finalQs.length + group.length <= count) {
+              finalQs.push(...group);
+          }
+      });
+
+      // Fill remaining slots with individual questions
+      singles.forEach(q => {
+          if (finalQs.length < count) {
+              finalQs.push(q);
+          }
+      });
+
+      // If we still have room (unlikely if DB is large), take from leftover groups but slice them (last resort)
+      if (finalQs.length < count) {
+          groups.forEach(group => {
+              if (finalQs.length < count) {
+                  const needed = count - finalQs.length;
+                  const alreadyIncluded = group.every(gq => finalQs.some(fq => fq.question === gq.question));
+                  if (!alreadyIncluded) {
+                      finalQs.push(...group.slice(0, needed));
+                  }
+              }
+          });
+      }
+
+      qs = finalQs;
       
       if (isAiGenerated) saveQuestionsToBankAPI(qs).catch(e => console.log("Auto-harvest failed", e));
 
@@ -538,7 +628,7 @@ const QuizArena: React.FC = () => {
         // Launch
         initiateQuizGeneration(config, ExamStandard.HSC, count, undefined, false, {
             title: title,
-            mode: 'SINGLE_PAGE',
+            mode: 'ALL_AT_ONCE',
             timeLimit: time,
             negativeMarking: 0.25,
             isPracticeMode: false // Model tests are exams
@@ -709,7 +799,7 @@ const QuizArena: React.FC = () => {
 
                                         return (
                                             <div key={paperName} className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-3">
-                                                {chapters.map((chapter, cIdx) => {
+                                                {uniqueByNormalization(chapters).map((chapter, cIdx) => {
                                                     const chapKey = `${paperName}-${chapter}`;
                                                     const availableTopics = getTopicsForChapter(paperName, chapter);
                                                     const selectedTopics = topicSelection[chapKey] || [];

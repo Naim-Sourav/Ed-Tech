@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
+import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -184,8 +185,8 @@ const SavedQuestions: React.FC = () => {
     });
 
     return {
-      uniqueSubjects: Array.from(subjects),
-      uniqueChapters: Array.from(chapters),
+      uniqueSubjects: uniqueByNormalization(Array.from(subjects)),
+      uniqueChapters: uniqueByNormalization(Array.from(chapters)),
       availableFolders: Array.from(folders)
     };
   }, [savedQuestions, filterSubject, customFolders]);
@@ -196,8 +197,8 @@ const SavedQuestions: React.FC = () => {
       if (!q) return false;
       
       const matchFolder = (item.folder || 'General') === activeFolder;
-      const matchSubject = filterSubject === 'ALL' || q.subject === filterSubject;
-      const matchChapter = filterChapter === 'ALL' || q.chapter === filterChapter;
+      const matchSubject = filterSubject === 'ALL' || normalizeBangla(q.subject) === normalizeBangla(filterSubject);
+      const matchChapter = filterChapter === 'ALL' || normalizeBangla(q.chapter) === normalizeBangla(filterChapter);
       const matchSearch = searchQuery === '' || 
         q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.explanation?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -443,10 +444,11 @@ const SavedQuestions: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {displayedItems.map((item) => {
+              {displayedItems.map((item, index) => {
                 const q = item.questionId;
                 if (!q) return null;
                 const isExpanded = expandedExplanations[item._id];
+                const itemIndexInTotal = (currentPage - 1) * ITEMS_PER_PAGE + index + 1;
 
                 return (
                   <motion.div 
@@ -468,9 +470,7 @@ const SavedQuestions: React.FC = () => {
 
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex flex-wrap gap-2">
-                        <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-50 text-slate-500 rounded-full border border-slate-100">
-                          {q.subject} • {q.chapter}
-                        </span>
+                        {/* Tags removed from here and moved to bottom */}
                       </div>
                       {!isSelectionMode && (
                         <div className="flex gap-1">
@@ -489,34 +489,54 @@ const SavedQuestions: React.FC = () => {
                         </div>
                       )}
                     </div>
-
-                    <div className={`text-[15px] font-bold text-slate-800 leading-relaxed mb-3 ${getFont(q.question)}`}>
-                      <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                    
+                    {(q.contextText || q.contextImage) && (
+                      <div className="mb-4 p-4 bg-sky-50/50 dark:bg-sky-900/10 rounded-2xl border border-sky-100/50 dark:border-sky-800/30">
+                        <span className="text-[9px] font-black text-sky-600/50 dark:text-sky-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
+                        {q.contextText && <div className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                        {q.contextImage && (
+                          <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-start gap-3 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary flex items-center justify-center font-black text-sm shrink-0">
+                            {String(itemIndexInTotal).padStart(2, '0')}
+                        </div>
+                        <div className="flex-1 pt-1">
+                            <div className={`text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed ${getFont(q.question)}`}>
+                              <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                              {q.questionImage && (
+                                <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
+                              )}
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-1.5 mb-3">
+                    <div className="flex flex-col gap-2 mb-3 pl-0 md:pl-11">
                       {q.options.map((opt: string, i: number) => {
                         const isCorrect = i === q.correctAnswerIndex;
                         const userAns = userAnswers[item._id];
                         const hasAnswered = userAns !== undefined;
                         
-                        let optionStyle = 'bg-slate-50 border-slate-100 text-slate-600';
-                        let iconStyle = 'bg-white border-slate-200 text-slate-400';
+                        let optionStyle = 'bg-slate-50 dark:bg-gray-800/50 border-slate-100 dark:border-gray-700 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700';
+                        let iconStyle = 'bg-white dark:bg-gray-700 border-slate-200 dark:border-gray-600 text-slate-500 dark:text-gray-400';
 
                         if (isRevisionMode) {
                           if (hasAnswered) {
                             if (isCorrect) {
-                              optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700';
-                              iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
+                              optionStyle = 'bg-green-50/50 dark:bg-green-900/10 border-green-500 text-green-800 dark:text-green-300';
+                              iconStyle = 'bg-green-500 border-green-400 text-white';
                             } else if (userAns === i) {
-                              optionStyle = 'bg-red-50 border-red-200 text-red-700';
+                              optionStyle = 'bg-red-50/50 dark:bg-red-900/10 border-red-500 text-red-800 dark:text-red-300';
                               iconStyle = 'bg-red-500 border-red-400 text-white';
                             }
                           }
                         } else {
                           if (isCorrect) {
-                            optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700';
-                            iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
+                            optionStyle = 'bg-green-50/50 dark:bg-green-900/10 border-green-500 text-green-800 dark:text-green-300';
+                            iconStyle = 'bg-green-500 border-green-400 text-white';
                           }
                         }
 
@@ -529,24 +549,29 @@ const SavedQuestions: React.FC = () => {
                                 setUserAnswers(prev => ({ ...prev, [item._id]: i }));
                               }
                             }}
-                            className={`p-2.5 rounded-xl border transition-all flex items-center gap-3 ${optionStyle} ${
+                            className={`p-2.5 rounded-xl border transition-all flex items-center gap-3 shadow-sm ${optionStyle} ${
                               isRevisionMode && !hasAnswered && !isSelectionMode ? 'cursor-pointer hover:border-slate-300' : ''
                             }`}
                           >
-                            <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold border ${iconStyle}`}>
+                            <span className={`w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${iconStyle}`}>
                               {String.fromCharCode(65 + i)}
                             </span>
-                            <div className={`text-sm font-medium ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                            <div className="flex flex-col gap-1 flex-1">
+                              <div className={`text-sm font-normal ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                              {q.optionsImages?.[i] && (
+                                <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded self-start bg-transparent mix-blend-multiply dark:mix-blend-normal" referrerPolicy="no-referrer" />
+                              )}
+                            </div>
                           </div>
                         );
                       })}
                     </div>
 
                     {q.explanation && (
-                      <div className="border-t border-slate-100 pt-3">
+                      <div className="border-t border-slate-100 dark:border-gray-800 pt-3 mt-4">
                         <button 
                           onClick={() => toggleExplanation(item._id)}
-                          className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
+                          className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all ml-0 md:ml-11"
                         >
                           <Zap size={14} className="text-orange-500" />
                           <span>ব্যাখ্যা</span>
@@ -560,7 +585,12 @@ const SavedQuestions: React.FC = () => {
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div className="mt-2 text-sm text-slate-600 leading-relaxed p-3 bg-slate-50 rounded-xl" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                              <div className="mt-3 ml-0 md:ml-11 p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm">
+                                <div className="text-sm text-slate-800 dark:text-gray-200 leading-relaxed font-tiro" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                {q.explanationImage && (
+                                  <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
+                                )}
+                              </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -596,6 +626,25 @@ const SavedQuestions: React.FC = () => {
                         </motion.div>
                       )}
                     </AnimatePresence>
+                    <div className="mt-4 pt-4 border-t border-slate-50 dark:border-gray-800 flex items-center justify-between">
+                      <div className="flex flex-wrap gap-2">
+                        {q.subject && (
+                          <span className="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 rounded-lg uppercase tracking-tight">
+                            {q.subject}
+                          </span>
+                        )}
+                        {q.chapter && (
+                          <span className="text-[9px] font-black px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 rounded-lg">
+                            {q.chapter}
+                          </span>
+                        )}
+                      </div>
+                      {q.examRef && (
+                        <span className="text-[9px] font-black px-2 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg border border-orange-200/50 dark:border-orange-800/50">
+                          {q.examRef}
+                        </span>
+                      )}
+                    </div>
                   </motion.div>
                 );
               })}

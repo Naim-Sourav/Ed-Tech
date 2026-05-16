@@ -91,6 +91,50 @@ const ExamPage: React.FC = () => {
     return isBangla ? 'font-tiro' : 'font-sans';
   };
 
+  const renderStimulusBox = (q: QuizQuestion, idx: number, allQs: QuizQuestion[]) => {
+    if (!q || (!q.contextText && !q.contextImage)) return null;
+    
+    // Check if this is the first question with this stimulus
+    const isFirst = idx === 0 || 
+        q.contextText !== allQs[idx-1]?.contextText || 
+        q.contextImage !== allQs[idx-1]?.contextImage;
+        
+    if (!isFirst) return null;
+    
+    // Calculate range
+    let endIdx = idx;
+    for (let i = idx + 1; i < allQs.length; i++) {
+        if (allQs[i].contextText === q.contextText && allQs[i].contextImage === q.contextImage) {
+            endIdx = i;
+        } else {
+            break;
+        }
+    }
+    
+    const range = endIdx > idx ? { start: idx + 1, end: endIdx + 1 } : null;
+    
+    return (
+        <div className="mb-4 bg-sky-50 dark:bg-sky-900/10 border-l-4 border-sky-400 p-4 md:p-6 rounded-r-3xl shadow-sm animate-in fade-in slide-in-from-left-2 duration-500">
+            {range && (
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-800 text-[10px] font-bold text-sky-600 dark:text-sky-300 uppercase tracking-wider mb-2">
+                    <BookOpen size={10}/>
+                    নিচের উদ্দীপকের আলোকে {range.start} নং থেকে {range.end} নং প্রশ্নের উত্তর দাও
+                </div>
+            )}
+            {q.contextText && (
+                <div className={`text-sm md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-2 ${getFont(q.contextText)}`}>
+                    {q.contextText}
+                </div>
+            )}
+            {q.contextImage && (
+                <div className="mt-3 rounded-xl overflow-hidden border border-sky-100 dark:border-sky-800 bg-white dark:bg-black/20 p-1 md:p-2 shadow-inner">
+                    <img src={q.contextImage} alt="Context" className="max-w-full h-auto max-h-[400px] mx-auto object-contain rounded-lg" />
+                </div>
+            )}
+        </div>
+    );
+  };
+
   const getWeekDays = () => {
       const today = new Date();
       const todayStr = today.toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
@@ -108,6 +152,13 @@ const ExamPage: React.FC = () => {
       }
       return days;
   };
+
+  // Sync viewMode with config
+  useEffect(() => {
+    if (config?.mode) {
+      setViewMode(config.mode as 'SINGLE_PAGE' | 'ALL_AT_ONCE');
+    }
+  }, [config?.mode]);
 
   useEffect(() => {
     if (!examId) {
@@ -848,6 +899,28 @@ const ExamPage: React.FC = () => {
             </div>
           );
       }
+
+      const currentQ = questions[currentQIndex];
+      
+      // Calculate stimulus range for single page view
+      let stimulusRange = null;
+      if (currentQ.contextText || currentQ.contextImage) {
+          let startIdx = currentQIndex;
+          while (startIdx > 0 && 
+                 questions[startIdx - 1].contextText === currentQ.contextText && 
+                 questions[startIdx - 1].contextImage === currentQ.contextImage) {
+              startIdx--;
+          }
+          let endIdx = currentQIndex;
+          while (endIdx < questions.length - 1 && 
+                 questions[endIdx + 1].contextText === currentQ.contextText && 
+                 questions[endIdx + 1].contextImage === currentQ.contextImage) {
+              endIdx++;
+          }
+          if (endIdx > startIdx) {
+              stimulusRange = { start: startIdx + 1, end: endIdx + 1 };
+          }
+      }
       
       return (
         <div id="exam-container" className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors relative">
@@ -887,33 +960,56 @@ const ExamPage: React.FC = () => {
             )}
 
             <div className="flex-1 overflow-y-auto p-3 md:p-6 scroll-smooth bg-gray-50 dark:bg-gray-900">
-                <div className={`mx-auto pb-24 h-full flex flex-col ${viewMode === 'ALL_AT_ONCE' ? 'max-w-4xl' : 'max-w-xl'}`}>
+                <div className={`mx-auto pb-24 h-full flex flex-col ${viewMode === 'ALL_AT_ONCE' ? 'max-w-4xl' : 'max-w-2xl'}`}>
                     {viewMode === 'SINGLE_PAGE' || isRapidFire ? (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col h-full">
-                            {/* Question Card */}
-                            <div className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-3 relative overflow-hidden shrink-0">
-                                <div className="flex justify-between items-start gap-3 mb-2 relative z-10">
-                                    <span className="text-3xl font-black select-none text-gray-100 dark:text-gray-700/50 font-mono tracking-tighter">
-                                        {String(currentQIndex + 1).padStart(2, '0')}
-                                    </span>
-                                    
-                                    <button 
-                                        onClick={() => toggleSaveQuestion(currentQIndex)} 
-                                        className={`p-2 rounded-full transition-all duration-300 ${savedQuestionIndices.has(currentQIndex) ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary'}`}
-                                    >
-                                        <Bookmark size={16} className={savedQuestionIndices.has(currentQIndex) ? 'fill-current' : ''} strokeWidth={2.5}/>
-                                    </button>
-                                </div>
+                            
+                            {/* Question Card including Stimulus */}
+                            <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm mb-4 relative overflow-hidden shrink-0 transition-colors">
+                                
+                                {/* Stimulus Part (inside card) */}
+                                {(currentQ.contextText || currentQ.contextImage) && (
+                                    <div className="p-5 md:p-8 pb-0 bg-sky-50/30 dark:bg-sky-900/5 border-b border-gray-100 dark:border-gray-700/50">
+                                        {stimulusRange && (
+                                            <p className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-tighter mb-3 flex items-center gap-1 opacity-70">
+                                                <BookOpen size={12}/> নিচের উদ্দীপকের আলোকে {stimulusRange.start} নং থেকে {stimulusRange.end} নং প্রশ্নের উত্তর দাও
+                                            </p>
+                                        )}
+                                        {currentQ.contextText && (
+                                            <div className={`text-sm md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 ${getFont(currentQ.contextText)}`} dangerouslySetInnerHTML={{ __html: currentQ.contextText }} />
+                                        )}
+                                        {currentQ.contextImage && (
+                                            <div className="mb-4 rounded-xl overflow-hidden border border-sky-100 dark:border-sky-800 bg-white dark:bg-black/20 p-1 md:p-2 shadow-inner">
+                                                <img src={currentQ.contextImage} alt="Context" className="max-w-full h-auto max-h-[350px] mx-auto object-contain rounded-lg" referrerPolicy="no-referrer" />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
-                                <div className="relative z-10">
-                                    <h2 className={`text-[15px] md:text-xl font-bold text-gray-800 dark:text-white leading-snug mb-2 ${getFont(questions[currentQIndex].question)}`}>
-                                        {questions[currentQIndex].question}
-                                    </h2>
-                                    {questions[currentQIndex].questionImage && (
-                                        <div className="mt-2 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-1">
-                                            <img src={questions[currentQIndex].questionImage} alt="Question" className="w-full max-h-40 object-contain rounded" />
-                                        </div>
-                                    )}
+                                <div className="p-5 md:p-8">
+                                    <div className="flex justify-between items-start gap-3 mb-2 relative z-10">
+                                        <span className="text-3xl font-black select-none text-gray-200 dark:text-gray-700/50 font-mono tracking-tighter">
+                                            {String(currentQIndex + 1).padStart(2, '0')}
+                                        </span>
+                                        
+                                        <button 
+                                            onClick={() => toggleSaveQuestion(currentQIndex)} 
+                                            className={`p-2 rounded-xl transition-all duration-300 ${savedQuestionIndices.has(currentQIndex) ? 'bg-primary text-white shadow-md shadow-primary/20 scale-110' : 'bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary'}`}
+                                        >
+                                            <Bookmark size={16} className={savedQuestionIndices.has(currentQIndex) ? 'fill-current' : ''} strokeWidth={2.5}/>
+                                        </button>
+                                    </div>
+
+                                    <div className="relative z-10">
+                                        <h2 className={`text-[16px] md:text-xl font-bold text-gray-800 dark:text-white leading-snug mb-2 ${getFont(currentQ.question)}`}>
+                                            <div dangerouslySetInnerHTML={{ __html: currentQ.question }} />
+                                        </h2>
+                                        {currentQ.questionImage && (
+                                            <div className="mt-3 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-2 shadow-inner">
+                                                <img src={currentQ.questionImage} alt="Question" className="w-full max-h-[300px] object-contain rounded-lg mx-auto" referrerPolicy="no-referrer" />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -994,37 +1090,44 @@ const ExamPage: React.FC = () => {
                             <div className="flex-1 space-y-8">
                                 <div className="space-y-6">
                                     {questions.map((q, idx) => (
-                                        <div key={idx} id={`q-${idx}`} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm scroll-mt-32">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex gap-3">
-                                                    <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
-                                                    <div className="flex-1">
-                                                        <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-xl ${getFont(q.question)}`}>{q.question}</h3>
-                                                        {q.questionImage && <img src={q.questionImage} alt="Question" className="mt-2 max-h-40 rounded object-contain border border-gray-100 dark:border-gray-700" />}
+                                        <React.Fragment key={idx}>
+                                            {renderStimulusBox(q, idx, questions)}
+                                            <div id={`q-${idx}`} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm scroll-mt-32">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex gap-3">
+                                                        <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
+                                                        <div className="flex-1">
+                                                            <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-xl ${getFont(q.question)}`}>{q.question}</h3>
+                                                            {q.questionImage && (
+                                                                <div className="mt-2 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-2 max-w-sm">
+                                                                    <img src={q.questionImage} alt="Question" className="max-h-56 w-auto rounded object-contain mx-auto" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => toggleSaveQuestion(idx)} className={`p-2 rounded-lg transition-colors ${savedQuestionIndices.has(idx) ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`} title="Bookmark">
+                                                            <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary' : ''}/>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => toggleSaveQuestion(idx)} className={`p-2 rounded-lg transition-colors ${savedQuestionIndices.has(idx) ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`} title="Bookmark">
-                                                        <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary' : ''}/>
-                                                    </button>
+                                                <div className="grid gap-2">
+                                                    {q.options.map((opt, oIdx) => (
+                                                        <button 
+                                                            key={oIdx}
+                                                            onClick={() => handleOptionSelect(idx, oIdx)}
+                                                            className={`w-full text-left p-3 rounded-xl border text-sm transition-all flex items-start gap-2 ${userAnswers[idx] === oIdx ? 'bg-primary/10 border-primary text-primary font-bold' : 'bg-gray-50 dark:bg-gray-900 border-transparent hover:border-gray-200 dark:text-gray-300'}`}
+                                                        >
+                                                            <span className="font-mono text-gray-400 mt-0.5">({['A','B','C','D'][oIdx]})</span>
+                                                            <div className="flex-1">
+                                                                {opt && <span className={getFont(opt)}>{opt}</span>}
+                                                                {q.optionsImages?.[oIdx] && <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-1 max-h-24 rounded object-contain border border-gray-200 dark:border-gray-700" />}
+                                                            </div>
+                                                        </button>
+                                                    ))}
                                                 </div>
                                             </div>
-                                            <div className="grid gap-2">
-                                                {q.options.map((opt, oIdx) => (
-                                                    <button 
-                                                        key={oIdx}
-                                                        onClick={() => handleOptionSelect(idx, oIdx)}
-                                                        className={`w-full text-left p-3 rounded-xl border text-sm transition-all flex items-start gap-2 ${userAnswers[idx] === oIdx ? 'bg-primary/10 border-primary text-primary font-bold' : 'bg-gray-50 dark:bg-gray-900 border-transparent hover:border-gray-200 dark:text-gray-300'}`}
-                                                    >
-                                                        <span className="font-mono text-gray-400 mt-0.5">({['A','B','C','D'][oIdx]})</span>
-                                                        <div className="flex-1">
-                                                            {opt && <span className={getFont(opt)}>{opt}</span>}
-                                                            {q.optionsImages?.[oIdx] && <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-1 max-h-20 rounded object-contain border border-gray-200 dark:border-gray-700" />}
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        </React.Fragment>
                                     ))}
                                 </div>
                             </div>
@@ -1530,31 +1633,27 @@ const ExamPage: React.FC = () => {
                         const isSkipped = userAnswer === null;
                         
                         return (
-                            <div key={idx} className={`bg-white dark:bg-gray-800 p-6 rounded-2xl border ${isCorrect ? 'border-green-200 dark:border-green-900/50' : isSkipped ? 'border-gray-200 dark:border-gray-700' : 'border-red-200 dark:border-red-900/50'} shadow-sm`}>
-                                <div className="flex gap-4 mb-4">
-                                    <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-lg pr-4 ${getFont(q.question)}`}>{q.question}</h3>
-                                            <button 
-                                                onClick={() => toggleSaveQuestion(idx)} 
-                                                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors shrink-0"
-                                            >
-                                                <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary text-primary' : ''}/>
-                                            </button>
-                                        </div>
-                                        {q.questionImage && <img src={q.questionImage} alt="Question" className="max-h-32 rounded object-contain mb-3 border border-gray-100 dark:border-gray-700" />}
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {isCorrect ? 
-                                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold">সঠিক উত্তর</span> :
-                                                isSkipped ? 
-                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">এড়িয়ে গেছেন</span> :
-                                                <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-[10px] font-bold">ভুল উত্তর</span>
-                                            }
-                                            <span className="bg-orange-50 text-orange-600 px-2 py-0.5 rounded text-[10px] font-bold">{q.chapter || 'General'}</span>
+                            <React.Fragment key={idx}>
+                                {renderStimulusBox(q, idx, resultQuestions)}
+                                <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl border ${isCorrect ? 'border-green-200 dark:border-green-900/50' : isSkipped ? 'border-gray-200 dark:border-gray-700' : 'border-red-200 dark:border-red-900/50'} shadow-sm`}>
+                                    <div className="flex gap-4 mb-4">
+                                        <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-lg pr-4 ${getFont(q.question)}`}>{q.question}</h3>
+                                                <button 
+                                                    onClick={() => toggleSaveQuestion(idx)} 
+                                                    className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors shrink-0"
+                                                >
+                                                    <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary text-primary' : ''}/>
+                                                </button>
+                                            </div>
+                                            {q.questionImage && <img src={q.questionImage} alt="Question" className="max-h-60 w-auto rounded-xl object-contain mb-3 border border-gray-100 dark:border-gray-700 mx-auto" />}
+                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                <span className="bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded text-[10px] font-bold">{q.chapter || 'General'}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
                                 <div className="grid gap-2 mb-4">
                                     {q.options.map((opt, oIdx) => {
@@ -1584,8 +1683,9 @@ const ExamPage: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                        )
-                    })}
+                        </React.Fragment>
+                    )
+                })}
                 </div>
             </div>
         </div>

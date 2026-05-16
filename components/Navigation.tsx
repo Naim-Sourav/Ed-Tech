@@ -6,7 +6,7 @@ import {
   GraduationCap, Home, PieChart, Moon, Sun, Swords, 
   Library, LogOut, ShieldCheck, Bell, Trophy, Archive, 
   Monitor, Zap, Info, AlertTriangle, CheckCircle, Check,
-  LayoutGrid, Bot, ChevronRight, X, Download, Share, Copy
+  LayoutGrid, Bot, ChevronRight, X, Download, Share
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';

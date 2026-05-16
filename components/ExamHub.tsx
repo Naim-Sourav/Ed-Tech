@@ -50,8 +50,49 @@ const ExamHub: React.FC = () => {
           filteredQuestions = questions;
       }
       
-      // Shuffle and slice
-      const selectedQuestions = filteredQuestions.sort(() => 0.5 - Math.random()).slice(0, questionCount);
+      // Shuffle and slice with stimulus awareness
+      const grouped: Record<string, any[]> = {};
+      const singles: any[] = [];
+      const shuffledRaw = [...filteredQuestions].sort(() => 0.5 - Math.random());
+      
+      shuffledRaw.forEach((q: any) => {
+          const key = q.contextText || q.contextImage || null;
+          if (key) {
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(q);
+          } else {
+              singles.push(q);
+          }
+      });
+
+      const selectedQuestions: any[] = [];
+      const groups = Object.values(grouped).sort(() => 0.5 - Math.random());
+      const singlesShuffled = singles.sort(() => 0.5 - Math.random());
+
+      groups.forEach(group => {
+          if (selectedQuestions.length + group.length <= questionCount) {
+              selectedQuestions.push(...group);
+          }
+      });
+
+      singlesShuffled.forEach(q => {
+          if (selectedQuestions.length < questionCount) {
+              selectedQuestions.push(q);
+          }
+      });
+
+      // Fallback if needed
+      if (selectedQuestions.length < questionCount) {
+          groups.forEach(group => {
+              if (selectedQuestions.length < questionCount) {
+                  const needed = questionCount - selectedQuestions.length;
+                  const alreadyIn = group.every(gq => selectedQuestions.some(sq => sq.question === gq.question));
+                  if (!alreadyIn) {
+                      selectedQuestions.push(...group.slice(0, needed));
+                  }
+              }
+          });
+      }
 
       const config = {
           title: title,
@@ -110,33 +151,6 @@ const ExamHub: React.FC = () => {
                 <div className="mt-1 flex items-center gap-2 text-[11px] md:text-sm font-bold text-white/90 group-hover:gap-3 transition-all">
                     পরীক্ষা শুরু করুন <ArrowRight size={14} className="text-orange-400 md:w-4 md:h-4"/>
                 </div>
-            </div>
-        </div>
-
-        {/* GST Answer Key Banner - NEW */}
-        <div 
-            onClick={() => navigate('/gst-a-unit-2025')}
-            className="w-full relative bg-gradient-to-r from-orange-600 to-red-600 rounded-[1.8rem] md:rounded-[2.5rem] p-5 md:p-8 text-white overflow-hidden shadow-xl shadow-orange-500/20 cursor-pointer group"
-        >
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700"></div>
-            
-            <div className="relative z-10 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0">
-                  <Archive size={24} className="md:w-8 md:h-8 text-white" />
-                </div>
-                <div>
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest mb-1">
-                    <Flame size={10} className="text-yellow-300" /> New
-                  </div>
-                  <h3 className="text-lg md:text-2xl font-black leading-tight">GST A ইউনিট ২০২৫-২৬ প্রশ্ন ও সমাধান</h3>
-                  <p className="text-orange-100 text-[10px] md:text-sm mt-0.5 font-medium opacity-90">নির্ভুল উত্তরপত্র মিলিয়ে নাও এবং নিজের স্কোর যাচাই করো।</p>
-                </div>
-              </div>
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-white text-orange-600 rounded-full flex items-center justify-center shadow-lg group-hover:translate-x-1 transition-transform">
-                <ArrowRight size={20} />
-              </div>
             </div>
         </div>
 
@@ -249,37 +263,6 @@ const ExamHub: React.FC = () => {
         <div>
             <h3 className="text-[11px] md:text-base font-black text-gray-500 dark:text-gray-400 mb-3 px-1 uppercase tracking-wider">জনপ্রিয় প্রশ্ন ব্যাংক</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                <div 
-                    onClick={() => {
-                        const examId = `gst_a_23_24_${Date.now()}`;
-                        const config = {
-                            title: "GST ক ইউনিট ২০২৩-২৪",
-                            timeLimit: 60,
-                            negativeMarking: 0.25,
-                            mode: 'ALL_AT_ONCE',
-                            type: 'PAST_PAPER',
-                            examRef: 'gst_a_23_24',
-                            isPracticeMode: true
-                        };
-                        localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
-                        navigate(`/exam/${examId}`);
-                    }}
-                    className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-sm hover:border-orange-500/50 transition-all cursor-pointer flex items-center justify-between group"
-                >
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-50 dark:bg-orange-500/20 rounded-2xl flex items-center justify-center text-orange-600 dark:text-orange-400 shadow-sm">
-                            <Archive size={20} className="md:w-6 md:h-6" />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">GST ক ইউনিট</h4>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৩-২৪ সেশন | ১০০ প্রশ্ন</p>
-                        </div>
-                    </div>
-                    <div className="p-1.5 md:p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full group-hover:bg-orange-500 group-hover:text-white transition-all">
-                        <ChevronRight size={16} className="md:w-5 md:h-5" />
-                    </div>
-                </div>
-
                 <div 
                     onClick={() => {
                         const examId = `medical_25_26_${Date.now()}`;

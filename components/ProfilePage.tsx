@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
+import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
 
 
 const AVATARS: string[] = [];
@@ -385,8 +386,8 @@ const ProfilePage: React.FC = () => {
     });
 
     return {
-        uniqueSubjects: Array.from(subjects),
-        uniqueChapters: Array.from(chapters),
+        uniqueSubjects: uniqueByNormalization(Array.from(subjects)),
+        uniqueChapters: uniqueByNormalization(Array.from(chapters)),
         availableFolders: Array.from(folders)
     };
   }, [activeTab, savedQuestions, mistakes, currentFilterSubject, customFolders]);
@@ -404,8 +405,8 @@ const ProfilePage: React.FC = () => {
           const q = item.questionId;
           if (!q) return false;
           
-          const matchSubject = currentFilterSubject === 'ALL' || q.subject === currentFilterSubject;
-          const matchChapter = currentFilterChapter === 'ALL' || q.chapter === currentFilterChapter;
+          const matchSubject = currentFilterSubject === 'ALL' || normalizeBangla(q.subject) === normalizeBangla(currentFilterSubject);
+          const matchChapter = currentFilterChapter === 'ALL' || normalizeBangla(q.chapter) === normalizeBangla(currentFilterChapter);
           
           return matchSubject && matchChapter;
       });
