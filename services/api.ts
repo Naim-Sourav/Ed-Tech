@@ -135,7 +135,6 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
 
     // 2. Handle Success (200)
     let text = await response.text();
-    text = text.replace(/\$([^$]*_{2,}[^$]*)\$/g, '$1');
     try {
         return JSON.parse(text);
     } catch (_e) {
@@ -503,6 +502,47 @@ export const fetchQuestionBankExamRefsAPI = async (level?: string) => {
   let url = '/question-bank/exam-refs';
   if (level && level !== 'ALL') url += `?level=${level}`;
   return fetchWithFallback(url, {}, []);
+};
+
+export const fetchIncompleteExamRefsAPI = async () => {
+  try {
+      const response = await fetch(`${API_BASE}/admin/incomplete-exam-refs`);
+      if (response.ok) {
+          const data = await response.json();
+          return data;
+      }
+  } catch (error) {
+      console.warn("Fast API failed, falling back to client-side evaluation.");
+  }
+  
+  // Fallback: manually fetch questions for all refs and find incomplete ones
+  // This ensures the feature works even before the backend is deployed.
+  try {
+      const allRefs = await fetchQuestionBankExamRefsAPI();
+      if (!Array.isArray(allRefs)) return [];
+
+      const incompleteRefs: string[] = [];
+      
+      // We process them in chunks to avoid overwhelming the server but still keep it fast
+      const chunkSize = 5;
+      for (let i = 0; i < allRefs.length; i += chunkSize) {
+          const chunk = allRefs.slice(i, i + chunkSize);
+          await Promise.all(chunk.map(async (ref) => {
+              try {
+                  const questions = await fetchQuestionsByExamRefAPI(ref);
+                  if (questions && questions.some((q: any) => !q.subject || !q.chapter || !q.topic)) {
+                      incompleteRefs.push(ref);
+                  }
+              } catch(e) {
+                  // ignore failing refs
+              }
+          }));
+      }
+      return incompleteRefs;
+  } catch (e) {
+      console.error(e);
+      return [];
+  }
 };
 
 export const sendNotificationAPI = async (data: any) => {
