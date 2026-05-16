@@ -4,6 +4,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { Check, X, Search, Trash2, User, Phone, CreditCard, ShieldCheck, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, Activity, FileText, FileJson, Edit2, Save, Image as ImageIcon, Loader2, Lock, Bookmark, Link as LinkIcon } from 'lucide-react';
 import AdminJsonUpload from './AdminJsonUpload';
 import AdminPublicExam from './AdminPublicExam';
+import AdminBulkMapper from './AdminBulkMapper';
 import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, createQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, refineQuestionsAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
@@ -420,7 +421,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM' | 'MAPPER'>('DASHBOARD');
   const { showToast } = useToast();
   const navigate = useNavigate();
   
@@ -741,6 +742,9 @@ const AdminPage: React.FC = () => {
                    <button onClick={() => setActiveTab('JSON_UPLOAD')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'JSON_UPLOAD' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <FileJson size={16} /> Smart Upload
                    </button>
+                   <button onClick={() => setActiveTab('MAPPER')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'MAPPER' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <Database size={16} /> Bulk Mapper
+                   </button>
                    <button onClick={() => setActiveTab('PUBLIC_EXAM')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'PUBLIC_EXAM' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <LinkIcon size={16} /> Public Exam
                    </button>
@@ -970,6 +974,11 @@ const AdminPage: React.FC = () => {
         {/* --- TAB: SMART JSON UPLOAD --- */}
         {activeTab === 'JSON_UPLOAD' && (
            <AdminJsonUpload />
+        )}
+
+        {/* --- TAB: BULK MAPPER --- */}
+        {activeTab === 'MAPPER' && (
+            <AdminBulkMapper />
         )}
 
 
