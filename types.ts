@@ -36,7 +36,7 @@ export interface QuizQuestion {
   chapter?: string;
   topic?: string;
   examRef?: string;
-  level?: 'ACADEMIC' | 'ADMISSION' | 'GENERAL';
+  level?: string;
   board?: string;
   college?: string;
   target?: string;
@@ -47,6 +47,7 @@ export interface QuizQuestion {
   optionsImages?: string[];
   contextText?: string;
   contextImage?: string;
+  tags?: string[];
 }
 
 export interface QuestionPaperMetadata {

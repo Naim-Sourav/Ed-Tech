@@ -46,13 +46,13 @@ const HomeDashboard = lazyWithRetry(() => import('./components/HomeDashboard'));
 const QuizArena = lazyWithRetry(() => import('./components/QuizArena'));
 const ExamPage = lazyWithRetry(() => import('./components/ExamPage'));
 const AdmissionSearch = lazyWithRetry(() => import('./components/AdmissionSearch'));
-const StudyPlanner = lazyWithRetry(() => import('./components/StudyPlanner'));
 const QuizBattlePrototype = lazyWithRetry(() => import('./components/QuizBattlePrototype'));
 const CourseSection = lazyWithRetry(() => import('./components/CourseSection'));
 const QuestionBank = lazyWithRetry(() => import('./components/QuestionBank'));
 const ProfilePage = lazyWithRetry(() => import('./components/ProfilePage'));
 const SavedQuestions = lazyWithRetry(() => import('./components/SavedQuestions'));
 const WrongQuestions = lazyWithRetry(() => import('./components/WrongQuestions'));
+const ExamHistory = lazyWithRetry(() => import('./components/ExamHistory'));
 const AdminPage = lazyWithRetry(() => import('./components/AdminPage'));
 const LeaderboardPage = lazyWithRetry(() => import('./components/LeaderboardPage'));
 const DailyChallengePage = lazyWithRetry(() => import('./components/DailyChallengePage'));
@@ -245,15 +245,17 @@ const MainLayout: React.FC<{
 
   const isExamPage = location.pathname.startsWith('/exam/');
   const isPaymentPage = location.pathname.startsWith('/payment');
-  const isTrackerPage = location.pathname === '/planner';
   const isBotPage = location.pathname === '/bot';
   const isLeaderboard = location.pathname === '/leaderboard';
   const isSavedQuestions = location.pathname === '/saved-questions';
   const isWrongQuestions = location.pathname === '/wrong-questions';
-  const hideNav = isExamPage || isPaymentPage || isTrackerPage || isBotPage || isSavedQuestions || isWrongQuestions;
+  const isQuizPage = location.pathname === '/quiz';
+  const isQbankPage = location.pathname === '/qbank';
+  const hideNav = isExamPage || isPaymentPage || isBotPage || isSavedQuestions || isWrongQuestions || isQuizPage;
+  const hideTopNav = hideNav || isQbankPage;
 
   // Main tabs where back button should NOT appear
-  const mainTabs = ['/dashboard', '/courses', '/bot', '/profile', '/planner'];
+  const mainTabs = ['/dashboard', '/courses', '/bot', '/profile', '/planner', '/history', '/qbank'];
   const showBackButton = !mainTabs.includes(location.pathname) && location.pathname !== '/';
 
   const getTitle = (pathname: string) => {
@@ -266,7 +268,8 @@ const MainLayout: React.FC<{
       case '/exams': return 'Exam Zone';
       case '/quiz': return 'Quiz Zone';
       case '/admission': return 'Admission';
-      case '/planner': return 'Planner';
+      case '/planner': return 'History';
+      case '/history': return 'History';
       case '/courses': return 'Courses';
       case '/qbank': return 'Archives';
       case '/profile': return 'Profile';
@@ -295,7 +298,7 @@ const MainLayout: React.FC<{
       )}
 
       <div className="flex-1 flex flex-col h-full relative w-full">
-        {!hideNav && (
+        {!hideTopNav && (
             <motion.div 
                 initial={{ y: 0 }}
                 animate={{ y: 0 }}
@@ -374,7 +377,7 @@ const MainLayout: React.FC<{
 
         <main 
             ref={mainContentRef}
-            className={`flex-1 overflow-y-auto overflow-x-hidden transition-colors relative scroll-smooth ${hideNav ? 'p-0' : `${isLeaderboard ? 'pt-safe-area' : 'pt-16'} pb-[calc(80px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6`}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden transition-colors relative scroll-smooth ${hideNav ? 'p-0' : `${(isLeaderboard || isQbankPage) ? 'pt-0' : 'pt-16'} pb-[calc(80px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6`}`}
         >
           {/* Key on location.pathname forces a re-render/animation on route change */}
           <AnimatePresence mode="wait">
@@ -384,7 +387,7 @@ const MainLayout: React.FC<{
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="min-h-full w-full"
+                className="min-h-full w-full animate-in fade-in slide-in-from-bottom-2 duration-300"
             >
                 <Suspense fallback={<PageLoader />}>
                     {children}
@@ -510,7 +513,8 @@ const AppRoutes: React.FC<{
                       {/* ExamPage removed from here as it is now top-level */}
                       <Route path="/battle" element={<QuizBattlePrototype />} />
                       <Route path="/leaderboard" element={<LeaderboardPage />} />
-                      <Route path="/planner" element={<StudyPlanner />} />
+                      <Route path="/planner" element={<ExamHistory />} />
+                      <Route path="/history" element={<ExamHistory />} />
                       <Route path="/admission" element={<AdmissionSearch />} />
                       <Route path="/profile" element={<ProfilePage />} />
                       <Route path="/profile/:userId" element={<ProfilePage />} />

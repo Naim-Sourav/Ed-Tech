@@ -38,11 +38,11 @@ mjx-container[jax="CHTML"] {
   }
  
   .dark {
-    --background: 0 0% 0%;
+    --background: 221 39% 11%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
+    --card: 222 47% 11%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
+    --popover: 222 47% 11%;
     --popover-foreground: 0 0% 98%;
     --primary: 19 100% 55%;
     --primary-foreground: 240 5.9% 10%;
@@ -80,16 +80,8 @@ mjx-container[jax="CHTML"] {
     font-size: 1rem;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
     overscroll-behavior-y: none;
     touch-action: pan-y;
-  }
-  
-  /* Allow text selection in specific readable areas */
-  p, h1, h2, h3, h4, h5, span, article, input, textarea {
-    user-select: text;
-    -webkit-user-select: text;
   }
 }
 
@@ -195,16 +187,36 @@ mjx-container {
 
 
 /* 1. Page Transitions (Slide Up & Fade) */
-.animate-page-enter {
-  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-page-enter,
+.animate-in {
+  animation-duration: 300ms;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes pageEnter {
-  0% {
+.fade-in {
+  animation-name: customFadeIn;
+}
+
+.slide-in-from-bottom-2 {
+  animation-name: customFadeInAndSlideUp;
+}
+
+.duration-300 {
+  animation-duration: 300ms !important;
+}
+
+@keyframes customFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes customFadeInAndSlideUp {
+  from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
@@ -270,4 +282,42 @@ mjx-container {
     .rounded-2xl { border-radius: 1rem !important; }
     .rounded-3xl { border-radius: 1.5rem !important; }
   }
+}
+
+/* 
+  -------------------------------------------------------------
+  PNG Question & Formula Images Dark Mode Visibility Fix
+  -------------------------------------------------------------
+  Many questions, options, and explanations use transparent PNGs
+  containing black/dark text and mathematical formulas. 
+  In dark mode, these are virtually invisible on dark backgrounds.
+  This rule automatically injects a solid white background, 
+  elegant padding, and a micro shadow behind all question-related 
+  images when dark mode is enabled so they are perfectly legible.
+*/
+.dark img[alt="Question"],
+.dark img[alt="Explanation"],
+.dark img[alt="Context"],
+.dark img[alt="Answer"],
+.dark img[alt^="Option"],
+.dark img[alt*="Option"] {
+  background-color: #ffffff !important;
+  color: #0d1117 !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  display: block;
+  max-width: 100% !important;
+}
+
+/* Prevent parent containers from masking/cutting off styles or enforcing dark-gray backgrounds under images */
+.dark .rounded-xl.overflow-hidden.bg-gray-50,
+.dark .rounded-xl.overflow-hidden.bg-gray-950,
+.dark .rounded-xl.overflow-hidden.bg-white\/50,
+.dark .rounded-xl.overflow-hidden.dark\:bg-gray-900\/50,
+.dark .rounded-xl.overflow-hidden.dark\:bg-gray-950,
+.dark .rounded-xl.bg-gray-50,
+.dark .rounded-xl.bg-gray-950 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }
