@@ -377,7 +377,11 @@ const MainLayout: React.FC<{
 
         <main 
             ref={mainContentRef}
-            className={`flex-1 overflow-y-auto overflow-x-hidden transition-colors relative scroll-smooth ${hideNav ? 'p-0' : `${(isLeaderboard || isQbankPage) ? 'pt-0' : 'pt-16'} pb-[calc(80px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6`}`}
+            className={`flex-1 transition-colors relative scroll-smooth ${
+              (isQuizPage || isExamPage || isBotPage || isPaymentPage) 
+                ? 'h-full overflow-hidden flex flex-col p-0' 
+                : `overflow-y-auto overflow-x-hidden ${hideNav ? 'p-0' : `${(isLeaderboard || isQbankPage) ? 'pt-0' : 'pt-16'} pb-[calc(80px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6`}`
+            }`}
         >
           {/* Key on location.pathname forces a re-render/animation on route change */}
           <AnimatePresence mode="wait">
