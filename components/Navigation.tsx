@@ -3,10 +3,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  GraduationCap, Home, PieChart, Moon, Sun, Swords, 
+  GraduationCap, Home, Moon, Sun, Swords, 
   Library, LogOut, ShieldCheck, Bell, Trophy, Archive, 
   Monitor, Zap, Info, AlertTriangle, CheckCircle, Check,
-  LayoutGrid, Bot, ChevronRight, X, Download, Share
+  LayoutGrid, Bot, ChevronRight, X, Download, Share, Clock
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -168,7 +168,7 @@ const Navigation: React.FC<NavigationProps> = ({
     { path: '/qbank', label: t('nav_qbank'), icon: <Archive size={18} /> },
     { path: '/battle', label: t('nav_battle'), icon: <Swords size={18} /> },
     { path: '/leaderboard', label: t('nav_leaderboard'), icon: <Trophy size={18} /> },
-    { path: '/planner', label: t('nav_tracker'), icon: <PieChart size={18} /> },
+    { path: '/history', label: 'ইতিহাস', icon: <Clock size={18} /> },
     { path: '/admission', label: t('nav_admission'), icon: <GraduationCap size={18} /> },
   ];
 
@@ -177,7 +177,7 @@ const Navigation: React.FC<NavigationProps> = ({
     { path: '/dashboard', label: 'হোম', icon: '/icons/home.svg' },
     { path: '/qbank', label: 'প্রশ্নব্যাংক', icon: '/icons/qbank.svg' },
     { path: '/exams', label: 'এক্সাম', icon: '/icons/exam.svg' },
-    { path: '/planner', label: 'প্ল্যানার', icon: '/icons/planner.svg' },
+    { path: '/history', label: 'ইতিহাস', icon: '/icons/history.svg' },
     { path: '/profile', label: 'প্রোফাইল', icon: '/icons/user.svg' },
   ];
 
@@ -298,7 +298,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       <p className="text-sm font-bold text-gray-800 dark:text-zinc-100 truncate group-hover:text-primary transition-colors">
                         {currentUser.displayName || 'Learner'}
                       </p>
-                      <p className="text-[10px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
+                      <p className="text-[12px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
                         {t('nav_profile_view')} <ChevronRight size={10}/>
                       </p>
                     </div>
@@ -424,7 +424,7 @@ const Navigation: React.FC<NavigationProps> = ({
                    </h4>
                    <div className="flex items-center gap-2">
                       {unreadCount > 0 && (
-                          <button onClick={markAllAsRead} className="text-[10px] font-bold text-gray-500 hover:text-primary flex items-center gap-1 transition-colors">
+                          <button onClick={markAllAsRead} className="text-[12px] font-bold text-gray-500 hover:text-primary flex items-center gap-1 transition-colors">
                               <Check size={12}/> সব পঠিত
                           </button>
                       )}
@@ -438,13 +438,13 @@ const Navigation: React.FC<NavigationProps> = ({
                    <div className="flex bg-gray-200 dark:bg-white/[0.03] p-1 rounded-xl">
                        <button 
                            onClick={() => setFilter('ALL')}
-                           className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${filter === 'ALL' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-400'}`}
+                           className={`flex-1 py-1.5 text-[12px] font-bold rounded-lg transition-all ${filter === 'ALL' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-400'}`}
                        >
                            সব
                        </button>
                        <button 
                            onClick={() => setFilter('UNREAD')}
-                           className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${filter === 'UNREAD' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-400'}`}
+                           className={`flex-1 py-1.5 text-[12px] font-bold rounded-lg transition-all ${filter === 'UNREAD' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-400'}`}
                        >
                            অপঠিত
                        </button>
@@ -465,7 +465,7 @@ const Navigation: React.FC<NavigationProps> = ({
                             </div>
                             <button 
                                 onClick={handleEnablePush}
-                                className="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg shadow-sm active:scale-95 transition-all"
+                                className="px-3 py-1.5 bg-primary text-white text-[12px] font-bold rounded-lg shadow-sm active:scale-95 transition-all"
                             >
                                 চালু করুন
                             </button>
@@ -581,7 +581,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <p className="text-sm font-bold text-gray-800 dark:text-zinc-100 truncate">
                 {currentUser.displayName || 'Learner'}
               </p>
-              <p className="text-[10px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
+              <p className="text-[12px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
                 {t('nav_profile_view')} <ChevronRight size={10}/>
               </p>
             </div>
@@ -644,7 +644,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <LogOut size={16} /> {t('nav_logout')}
             </button>
           </div>
-          <div className="text-[10px] text-center text-gray-400 dark:text-zinc-500 font-medium">
+          <div className="text-[12px] text-center text-gray-400 dark:text-zinc-500 font-medium">
             <p>© ২০২৪ পরীক্ষাঙ্গন | v1.1 PWA</p>
           </div>
         </div>
@@ -653,22 +653,6 @@ const Navigation: React.FC<NavigationProps> = ({
       {/* Native-like Fixed Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-100 dark:border-white/[0.05] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-safe-area">
         <div className="flex items-center justify-around h-16 px-1 relative">
-          
-          {/* Active Background Indicator (Sliding) */}
-          <div className="absolute inset-0 flex items-center justify-around px-1 pointer-events-none">
-            {mobileNavItems.map((item, idx) => (
-              <div key={idx} className="flex-1 h-full flex items-center justify-center relative">
-                {isActive(item.path!) && (
-                  <motion.div 
-                    layoutId="navActivePill"
-                    className="absolute w-12 h-12 bg-primary/5 dark:bg-primary/10 rounded-2xl"
-                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
           {mobileNavItems.map((item, idx) => {
             const active = item.path ? isActive(item.path) : false;
             
@@ -681,30 +665,26 @@ const Navigation: React.FC<NavigationProps> = ({
                 }}
                 className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-300 relative z-10 ${active ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
               >
-                <motion.div 
-                  animate={{ 
-                    y: active ? -2 : 0,
-                    scale: active ? 1.05 : 1
-                  }}
-                  className="flex flex-col items-center gap-1"
-                >
+                {/* 2px top-border indicator above the active icon */}
+                {active && (
+                  <motion.div 
+                    layoutId="activeNavIndicatorLine"
+                    className="absolute top-0 left-5 right-5 h-[2px] bg-primary dark:bg-orange-400 rounded-full"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  />
+                )}
+                
+                <div className={`flex flex-col items-center ${active ? 'gap-0.5' : ''}`}>
                   <CustomIcon 
                     src={item.icon} 
                     active={active} 
-                    className={active ? 'drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]' : ''}
                   />
-                  <span className={`text-[10px] font-black transition-all duration-300 tracking-tight ${active ? 'opacity-100' : 'opacity-60'}`}>
-                    {item.label}
-                  </span>
-                  
-                  {/* Bottom Dot Indicator */}
                   {active && (
-                    <motion.div 
-                      layoutId="activeDot"
-                      className="absolute -bottom-1 w-1 h-1 bg-primary rounded-full"
-                    />
+                    <span className="text-[12px] font-bold text-primary dark:text-orange-400 transition-all duration-300 tracking-tight font-sans">
+                      {item.label}
+                    </span>
                   )}
-                </motion.div>
+                </div>
               </Link>
             )
           })}

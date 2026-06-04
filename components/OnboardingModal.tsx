@@ -214,7 +214,7 @@ const OnboardingModal: React.FC = () => {
                                 >
                                     <div className="text-2xl mb-2">{t.icon}</div>
                                     <h4 className="font-bold text-sm">{t.label}</h4>
-                                    <p className="text-[10px] opacity-70 font-bold uppercase mt-1">{t.sub}</p>
+                                    <p className="text-[12px] opacity-70 font-bold uppercase mt-1">{t.sub}</p>
                                     {target === t.id && (
                                         <div className="absolute top-3 right-3 bg-white/20 p-1 rounded-full">
                                             <CheckCircle size={14} className="fill-current text-white"/>

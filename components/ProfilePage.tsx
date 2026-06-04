@@ -3,18 +3,157 @@ import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 're
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI } from '../services/api';
+import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check } from 'lucide-react';
+import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart as ReChartsPieChart, Pie, Cell } from 'recharts';
 
 
 const AVATARS: string[] = [];
 
 const ITEMS_PER_PAGE = 10; // Limits items per page to prevent full-page PDF saves
+
+// Helper to dynamically aggregate client-side and server-side stats
+const aggregateStatsFromAttempts = (attempts: any[], serverStats: any) => {
+  const stats = {
+      points: serverStats?.points || 0,
+      totalExams: serverStats?.totalExams || 0,
+      totalCorrect: serverStats?.totalCorrect || 0,
+      totalWrong: serverStats?.totalWrong || 0,
+      subjectBreakdown: [] as any[],
+      strongestTopics: serverStats?.strongestTopics || [],
+      weakestTopics: serverStats?.weakestTopics || [],
+      quests: serverStats?.quests || [],
+      weeklyQuests: serverStats?.weeklyQuests || [],
+      currentStreak: serverStats?.currentStreak || 0,
+      activityLog: serverStats?.activityLog || [],
+      user: serverStats?.user || null
+  };
+
+  const subjectsMap: Record<string, any> = {};
+
+  // First, populate from server stats
+  if (serverStats?.subjectBreakdown && Array.isArray(serverStats.subjectBreakdown)) {
+      serverStats.subjectBreakdown.forEach((sub: any) => {
+          let correct = sub.correct || 0;
+          let total = sub.total || 0;
+
+          // Back-extract from server stats.user if possible
+          if ((total === 0 || total === undefined) && serverStats.user?.stats?.subjectStats) {
+              const uStats = serverStats.user.stats.subjectStats;
+              const matching = uStats[sub.subject] || (typeof uStats.get === 'function' ? uStats.get(sub.subject) : null);
+              if (matching) {
+                  correct = matching.correct || 0;
+                  total = matching.total || 0;
+              }
+          }
+
+          subjectsMap[sub.subject] = {
+              subject: sub.subject,
+              correct: correct,
+              total: total,
+              wrong: sub.wrong !== undefined ? sub.wrong : Math.max(0, total - correct),
+              skipped: sub.skipped !== undefined ? sub.skipped : 0,
+              accuracy: sub.accuracy !== undefined ? Math.round(sub.accuracy) : (total > 0 ? Math.round((correct / total) * 100) : 0),
+              chapters: {} as Record<string, any>
+          };
+      });
+  }
+
+  // Next, enrich with local attempts details (chapter-level)
+  attempts.forEach((attempt: any) => {
+      const defaultSubject = attempt.subject || 'General';
+      if (attempt.questions && Array.isArray(attempt.questions) && attempt.userAnswers && Array.isArray(attempt.userAnswers)) {
+          attempt.questions.forEach((q: any, idx: number) => {
+              if (!q) return;
+              const qSubject = q.subject || defaultSubject || 'General';
+              const qChapter = q.chapter || 'অন্যান্য অধ্যায়';
+              
+              const answer = attempt.userAnswers[idx];
+              const isCorrect = answer === q.correctAnswerIndex;
+              const isSkipped = answer === null || answer === undefined;
+              const isWrong = !isCorrect && !isSkipped;
+
+              if (!subjectsMap[qSubject]) {
+                  subjectsMap[qSubject] = {
+                      subject: qSubject,
+                      correct: 0,
+                      total: 0,
+                      wrong: 0,
+                      skipped: 0,
+                      accuracy: 0,
+                      chapters: {}
+                  };
+              }
+
+              const sub = subjectsMap[qSubject];
+              if (!sub.localQuestionsTracked) {
+                  sub.localQuestionsTracked = new Set();
+              }
+              const qId = q._id || `${q.question}_${idx}`;
+              const attemptIdTrack = `${attempt.examId}_${qId}`;
+              
+              if (!sub.localQuestionsTracked.has(attemptIdTrack)) {
+                  sub.localQuestionsTracked.add(attemptIdTrack);
+                  
+                  sub.total++;
+                  if (isCorrect) sub.correct++;
+                  else if (isWrong) sub.wrong++;
+                  else if (isSkipped) sub.skipped++;
+
+                  if (!sub.chapters[qChapter]) {
+                      sub.chapters[qChapter] = {
+                          total: 0,
+                          correct: 0,
+                          wrong: 0,
+                          skipped: 0
+                      };
+                  }
+                  const chap = sub.chapters[qChapter];
+                  chap.total++;
+                  if (isCorrect) chap.correct++;
+                  else if (isWrong) chap.wrong++;
+                  else if (isSkipped) chap.skipped++;
+              }
+          });
+      }
+  });
+
+  // Calculate accuracies, remove tracking references, and sort
+  stats.subjectBreakdown = Object.values(subjectsMap).map((sub: any) => {
+      if (sub.localQuestionsTracked) {
+          delete sub.localQuestionsTracked;
+      }
+      sub.accuracy = sub.total > 0 ? Math.round((sub.correct / sub.total) * 100) : sub.accuracy || 0;
+      return sub;
+  }).sort((a: any, b: any) => b.accuracy - a.accuracy);
+
+  // Sync global stats numbers to match aggregated correct/wrong counts
+  if (attempts.length > 0) {
+      let calcCorrect = 0;
+      let calcWrong = 0;
+      const calcExams = serverStats?.totalExams || 0;
+
+      const uniqueAttemptsMap = new Map();
+      attempts.forEach(a => uniqueAttemptsMap.set(a.examId, a));
+      const uniqueAttempts = Array.from(uniqueAttemptsMap.values());
+      
+      uniqueAttempts.forEach(a => {
+          calcCorrect += (a.correct || 0);
+          calcWrong += (a.wrong || 0);
+      });
+
+      stats.totalCorrect = Math.max(serverStats?.totalCorrect || 0, calcCorrect);
+      stats.totalWrong = Math.max(serverStats?.totalWrong || 0, calcWrong);
+      stats.totalExams = Math.max(calcExams, uniqueAttempts.length);
+  }
+
+  return stats;
+};
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,11 +173,29 @@ const ProfilePage: React.FC = () => {
   const cachedData = getCache(cacheKey) || {};
 
   // Tab State derived from URL
-  const activeTab = (searchParams.get('tab') as 'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES') || 'INFO';
+  const activeTab = (searchParams.get('tab') as 'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES' | 'HISTORY') || 'INFO';
   
   const setActiveTab = (tab: string) => {
       setSearchParams({ tab });
   };
+
+  // Exam Attempts State
+  const [attempts, setAttempts] = useState<any[]>([]);
+  const [deletingAttemptId, setDeletingAttemptId] = useState<string | null>(null);
+
+  // Load local attempts
+  useEffect(() => {
+    if (viewingUserId) {
+      const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+      const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+      const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+      // Sort descending by timestamp
+      const sortedAttempts = localAttempts.sort((a: any, b: any) => {
+        return (b.timestamp || 0) - (a.timestamp || 0);
+      });
+      setAttempts(sortedAttempts);
+    }
+  }, [viewingUserId]);
   
   // Profile Data State
   const [profileData, setProfileData] = useState<any>(cachedData.profileData || {
@@ -54,6 +211,47 @@ const ProfilePage: React.FC = () => {
 
   // Profile Edit State
   const [isEditing, setIsEditing] = useState(false);
+  
+  const handleDeleteAttempt = async (examId: string) => {
+    if (!window.confirm(currentUser ? "আপনি কি নিশ্চিত যে এই পরীক্ষাটি আপনার ইতিহাস থেকে মুছে ফেলতে চান?" : "Are you sure you want to delete this attempt from history?")) {
+      return;
+    }
+    
+    setDeletingAttemptId(examId);
+    try {
+      if (currentUser) {
+        await deleteExamResultAPI(currentUser.uid, examId);
+      }
+      
+      const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+      const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+      const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+      const updatedAttempts = localAttempts.filter((a: any) => a.examId !== examId);
+      localStorage.setItem(localAttemptsKey, JSON.stringify(updatedAttempts));
+      
+      setAttempts(updatedAttempts.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0)));
+      
+      setProfileData((prev: any) => {
+        if (!prev || !prev.stats) return prev;
+        const calcExams = Math.max(0, prev.stats.totalExams - 1);
+        return {
+          ...prev,
+          stats: {
+            ...prev.stats,
+            totalExams: calcExams
+          }
+        };
+      });
+
+      showToast("পরীক্ষাটি সফলভাবে মুছে ফেলা হয়েছে", "success");
+    } catch (err) {
+      console.error("Failed to delete exam result", err);
+      showToast("মুছে ফেলতে ব্যর্থ হয়েছে", "error");
+    } finally {
+      setDeletingAttemptId(null);
+    }
+  };
+
   const [newName, setNewName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [editCollege, setEditCollege] = useState('');
@@ -67,6 +265,41 @@ const ProfilePage: React.FC = () => {
   
   // Image Upload State
   const [isUploading, setIsUploading] = useState(false);
+
+  // Recharts Visual Analytics data hooks
+  const pieData = useMemo(() => {
+      if (!profileData?.stats) return [];
+      const correct = profileData.stats.totalCorrect || 0;
+      const wrong = profileData.stats.totalWrong || 0;
+      
+      let skipped = 0;
+      if (profileData.stats.subjectBreakdown) {
+          profileData.stats.subjectBreakdown.forEach((sub: any) => {
+              skipped += (sub.skipped || 0);
+          });
+      }
+      
+      return [
+          { name: 'সঠিক উত্তর', value: correct, color: '#10B981' }, 
+          { name: 'ভুল উত্তর', value: wrong, color: '#EF4444' }, 
+          { name: 'উত্তরিহীন', value: skipped, color: '#9CA3AF' }
+      ].filter(item => item.value > 0);
+  }, [profileData?.stats]);
+
+  const subjectChartData = useMemo(() => {
+      if (!profileData?.stats?.subjectBreakdown) return [];
+      return profileData.stats.subjectBreakdown.map((sub: any) => {
+          const correct = sub.correct || 0;
+          const total = sub.total || 0;
+          const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+          return {
+              name: sub.subject,
+              'অ্যাকুরেসি (%)': accuracy,
+              'মোট প্রশ্ন': total,
+              'সঠিক': correct
+          };
+      });
+  }, [profileData?.stats]);
 
   // Saved Questions State
   const [savedQuestions, setSavedQuestions] = useState<any[]>(cachedData.savedQuestions || []);
@@ -179,6 +412,11 @@ const ProfilePage: React.FC = () => {
                 // If we don't have stats or want to refresh
                 if (!profileData.stats) {
                     const data = await fetchUserStatsAPI(viewingUserId);
+                    const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+                    const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+                    const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+                    const aggregatedStats = aggregateStatsFromAttempts(localAttempts, data);
+
                     setProfileData((prev: any) => ({ 
                         ...prev, 
                         displayName: currentUser?.displayName || '',
@@ -188,12 +426,17 @@ const ProfilePage: React.FC = () => {
                         hscBatch: extendedProfile?.hscBatch || '',
                         department: extendedProfile?.department || 'Science',
                         target: extendedProfile?.target || 'Medical',
-                        stats: data 
+                        stats: aggregatedStats 
                     }));
                 }
             } else {
                 const data = await fetchUserStatsAPI(viewingUserId);
                 if (data) {
+                    const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+                    const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+                    const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+                    const aggregatedStats = aggregateStatsFromAttempts(localAttempts, data);
+
                     setProfileData({
                         displayName: data.user?.displayName || 'Unknown User',
                         photoURL: data.user?.photoURL || AVATARS[0],
@@ -202,7 +445,7 @@ const ProfilePage: React.FC = () => {
                         hscBatch: data.user?.hscBatch || '',
                         department: data.user?.department || '',
                         target: data.user?.target || '',
-                        stats: data
+                        stats: aggregatedStats
                     });
                 }
             }
@@ -483,16 +726,6 @@ const ProfilePage: React.FC = () => {
     navigate(`/exam/${examId}`);
   };
 
-  const getLevel = (points: number) => {
-    if (points < 100) return { name: 'Novice', color: 'bg-gray-400' };
-    if (points < 500) return { name: 'Apprentice', color: 'bg-orange-500' };
-    if (points < 1000) return { name: 'Scholar', color: 'bg-orange-600' };
-    if (points < 2000) return { name: 'Master', color: 'bg-orange-700' };
-    return { name: 'Grandmaster', color: 'bg-orange-500' };
-  };
-
-  const currentLevel = getLevel(profileData.stats?.points || 0);
-
   // Helper to render Avatar
   const renderProfileAvatar = () => {
     const avatarUrl = isEditing ? selectedAvatar : profileData.photoURL;
@@ -553,7 +786,7 @@ const ProfilePage: React.FC = () => {
           <select 
               value={currentFilterSubject} 
               onChange={(e) => { setCurrentFilterSubject(e.target.value); setCurrentFilterChapter('ALL'); }}
-              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
+              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
           >
               <option value="ALL">সকল বিষয়</option>
               {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -561,14 +794,14 @@ const ProfilePage: React.FC = () => {
           <select 
               value={currentFilterChapter} 
               onChange={(e) => setCurrentFilterChapter(e.target.value)}
-              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
+              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
           >
               <option value="ALL">সকল অধ্যায়</option>
               {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <button 
             onClick={resetCurrentFilters}
-            className="text-[10px] text-red-500 hover:text-red-600 font-bold px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors whitespace-nowrap"
+            className="text-[12px] text-red-500 hover:text-red-600 font-bold px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors whitespace-nowrap"
           >
             রিসেট
           </button>
@@ -671,23 +904,23 @@ const ProfilePage: React.FC = () => {
                {isEditing && isOwnProfile ? (
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full bg-gray-50/50 dark:bg-zinc-900/30 p-5 rounded-3xl border border-gray-100 dark:border-white/5">
                     <div className="space-y-1.5">
-                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{t('auth_name')}</label>
+                      <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{t('auth_name')}</label>
                       <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">College</label>
+                      <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">College</label>
                       <input type="text" value={editCollege} onChange={(e) => setEditCollege(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Batch</label>
+                      <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Batch</label>
                       <input type="text" value={editHscBatch} onChange={(e) => setEditHscBatch(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Department</label>
+                      <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Department</label>
                       <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none"><option>Science</option><option>Arts</option><option>Commerce</option></select>
                     </div>
                     <div className="space-y-1.5 md:col-span-2">
-                      <label className="block text-[10px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Target</label>
+                      <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Target</label>
                       <select value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none"><option>Medical</option><option>Engineering</option><option>University</option><option>Guccho</option></select>
                     </div>
                  </div>
@@ -695,16 +928,14 @@ const ProfilePage: React.FC = () => {
                  <div className="space-y-4">
                     <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 justify-center md:justify-start">
                         <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">{profileData.displayName}</h1>
-                        {profileData.stats && (
-                            <motion.span 
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className={`px-4 py-1 rounded-full text-[10px] md:text-xs font-black text-white uppercase tracking-widest shadow-lg ${currentLevel.color.replace('bg-', 'bg-')}`}
-                            >
-                                {currentLevel.name}
-                            </motion.span>
-                        )}
                     </div>
+
+                    {/*
+                                 ""
+                             </p>
+                         </div>
+                     */}
+
                     <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-3 text-[11px] md:text-sm text-gray-600 dark:text-gray-300 mt-2">
                        {profileData.college && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><GraduationCap size={16} className="text-primary"/> {profileData.college}</div>}
                        {profileData.hscBatch && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><Calendar size={16} className="text-orange-500"/> Batch: {profileData.hscBatch}</div>}
@@ -742,6 +973,9 @@ const ProfilePage: React.FC = () => {
                    <button onClick={() => setActiveTab('MISTAKES')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'MISTAKES' ? 'bg-red-600 text-white shadow-xl shadow-red-500/20' : 'text-gray-500 hover:text-red-600 dark:hover:text-red-400'}`}>
                        <AlertTriangle size={16}/> {t('profile_mistakes')}
                    </button>
+                   <button onClick={() => setActiveTab('HISTORY')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'HISTORY' ? 'bg-orange-500 text-white shadow-xl shadow-orange-500/20' : 'text-gray-500 hover:text-orange-500'}`}>
+                       <Calendar size={16}/> {t('profile_history')}
+                   </button>
                </>
            ) : (
                <div className="flex items-center gap-2 px-6 text-xs text-gray-400 italic font-bold"><Lock size={14}/> Private Data Hidden</div>
@@ -772,24 +1006,106 @@ const ProfilePage: React.FC = () => {
                             </div>
                             <div className="text-center relative z-10">
                                 <p className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">{stat.value}</p>
-                                <p className="text-[10px] md:text-[11px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-[0.15em] mt-2">{stat.label}</p>
+                                <p className="text-[12px] md:text-[11px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-[0.15em] mt-2">{stat.label}</p>
                             </div>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Subject Performance Detailed - Native App Style */}
-                <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-[2.5rem] border border-gray-200 dark:border-white/5 shadow-2xl shadow-gray-200/50 dark:shadow-none overflow-hidden">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="font-black text-gray-900 dark:text-white flex items-center gap-3 text-lg md:text-2xl tracking-tight">
-                            <PieChart size={28} className="text-primary"/> এনালাইসিস
-                        </h3>
-                        <div className="px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full text-[10px] font-black text-gray-500 dark:text-zinc-500 uppercase tracking-widest">
-                            Detailed View
+                {/* Performance Visualization Dashboard */}
+                {profileData.stats && profileData.stats.subjectBreakdown && profileData.stats.subjectBreakdown.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-300">
+                        {/* Bar Chart: Subject Comparison (Spans 7 Cols) */}
+                        <div className="lg:col-span-7 bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm min-h-[360px] flex flex-col">
+                            <div className="mb-4">
+                                <h4 className="text-sm font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5">
+                                    <BarChart3 size={18} className="text-orange-500"/> বিষয়ভিত্তিক নির্ভুলতা
+                                </h4>
+                            </div>
+                            
+                            <div className="flex-1 w-full min-h-[250px] mt-2 select-none">
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <BarChart data={subjectChartData} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
+                                        <XAxis dataKey="name" stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} />
+                                        <Tooltip 
+                                            contentStyle={{ background: '#1F2937', border: 'none', borderRadius: '16px', color: '#FFF', fontSize: '11px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                            formatter={(value) => [`${value}%`, 'অ্যাকুরেসি']}
+                                        />
+                                        <Bar dataKey="অ্যাকুরেসি (%)" fill="#F97316" radius={[10, 10, 0, 0]}>
+                                            {subjectChartData.map((entry: any, index: number) => {
+                                                let barColor = "#EF4444"; 
+                                                if (entry['অ্যাকুরেসি (%)'] >= 80) barColor = "#10B981"; 
+                                                else if (entry['অ্যাকুরেসি (%)'] >= 60) barColor = "#F97316"; 
+                                                else if (entry['অ্যাকুরেসি (%)'] >= 45) barColor = "#EAB308"; 
+                                                return <Cell key={`cell-${index}`} fill={barColor} />;
+                                            })}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Pie Chart: Answer Breakdown (Spans 5 Cols) */}
+                        <div className="lg:col-span-5 bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm min-h-[360px] flex flex-col">
+                            <div className="mb-4">
+                                <h4 className="text-sm font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5">
+                                    <PieChart size={18} className="text-orange-500"/> সামগ্রিক প্রগ্রেস
+                                </h4>
+                            </div>
+
+                            <div className="flex-1 w-full min-h-[220px] flex items-center justify-center relative">
+                                <ResponsiveContainer width="100%" height={220}>
+                                    <ReChartsPieChart>
+                                        <Pie
+                                            data={pieData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={4}
+                                            dataKey="value"
+                                        >
+                                            {pieData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip 
+                                            contentStyle={{ background: '#1F2937', border: 'none', borderRadius: '16px', color: '#FFF', fontSize: '11px' }}
+                                        />
+                                    </ReChartsPieChart>
+                                </ResponsiveContainer>
+                                
+                                <div className="absolute flex flex-col items-center justify-center pointer-events-none">
+                                    <span className="text-3xl font-black text-gray-900 dark:text-white leading-none">
+                                        {pieData.reduce((acc, curr) => acc + curr.value, 0)}
+                                    </span>
+                                    <span className="text-[10px] font-extrabold text-gray-400 dark:text-zinc-550 mt-1 uppercase tracking-wider font-sans">মোট উত্তর</span>
+                                </div>
+                            </div>
+
+                            {/* Legend Labels */}
+                            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-2">
+                                {pieData.map((item, index) => (
+                                    <div key={index} className="flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">
+                                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                                        <span>{item.name}: {item.value}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
+                )}
+
+                {/* Subject Performance Detailed - Ultra Minimalist Bento Board */}
+                <div className="bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm overflow-hidden mt-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5 text-base md:text-lg tracking-tight">
+                            <BarChart3 size={20} className="text-orange-500"/> বিষয়ভিত্তিক বিশ্লেষণ
+                        </h3>
+                    </div>
                     
-                    <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {profileData.stats.subjectBreakdown?.map((sub: any, idx: number) => {
                             const isExpanded = expandedSubjectStats.has(sub.subject);
                             
@@ -799,86 +1115,100 @@ const ProfilePage: React.FC = () => {
                             const skipped = sub.skipped !== undefined ? sub.skipped : 0;
                             const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-                            // Determine Color based on accuracy
-                            let statusColor = "text-red-500";
-                            let statusBg = "bg-red-50 dark:bg-red-900/20";
-                            let statusGlow = "shadow-red-500/20";
-                            
-                            if (accuracy >= 80) {
-                                statusColor = "text-emerald-500";
-                                statusBg = "bg-emerald-50 dark:bg-emerald-900/20";
-                                statusGlow = "shadow-emerald-500/20";
-                            } else if (accuracy >= 60) {
-                                statusColor = "text-orange-500";
-                                statusBg = "bg-orange-50 dark:bg-orange-900/20";
-                                statusGlow = "shadow-orange-500/20";
-                            } else if (accuracy >= 40) {
-                                statusColor = "text-yellow-500";
-                                statusBg = "bg-yellow-50 dark:bg-yellow-900/20";
-                                statusGlow = "shadow-yellow-500/20";
-                            }
+                            const subjectMistakesCount = mistakes.filter(m => 
+                                m.questionId && normalizeBangla(m.questionId.subject) === normalizeBangla(sub.subject)
+                            ).length;
 
                             return (
                                 <motion.div 
                                     key={idx} 
                                     layout
-                                    className="border border-gray-100 dark:border-white/5 rounded-[2rem] overflow-hidden transition-all bg-gray-50/50 dark:bg-zinc-900/30"
+                                    className="border border-gray-150 dark:border-zinc-850 rounded-[1.8rem] overflow-hidden transition-all bg-gray-50/10 dark:bg-zinc-900/10 flex flex-col justify-between"
                                 >
-                                    {/* Subject Header Card */}
+                                    {/* Subject Main Body Row */}
                                     <div 
-                                        className="p-5 cursor-pointer bg-white dark:bg-gray-800 flex flex-col md:flex-row gap-5 md:items-center justify-between group"
+                                        className="p-4 cursor-pointer bg-white dark:bg-zinc-950 flex flex-col gap-3 group"
                                         onClick={() => toggleSubjectStats(sub.subject)}
                                     >
-                                        {/* Left: Info */}
-                                        <div className="flex items-center gap-4 md:w-1/3">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${statusBg} ${statusColor} shadow-lg ${statusGlow} transition-transform group-hover:scale-110`}>
-                                                <BookOpen size={24} />
+                                        {/* Top Line: Title & Percentage */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                                    accuracy >= 80 ? 'bg-emerald-500' : accuracy >= 60 ? 'bg-amber-500' : 'bg-rose-500'
+                                                }`} />
+                                                <h4 className="font-extrabold text-gray-900 dark:text-zinc-100 text-sm md:text-base tracking-tight leading-none truncate" title={sub.subject}>
+                                                    {sub.subject}
+                                                </h4>
+                                                <span className="text-[11px] font-bold text-gray-400 dark:text-zinc-650 shrink-0">
+                                                    ({total})
+                                                </span>
                                             </div>
-                                            <div>
-                                                <h4 className="font-black text-gray-900 dark:text-white text-base md:text-xl tracking-tight">{sub.subject}</h4>
-                                                <p className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">{total} Questions</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Middle: Progress Bar */}
-                                        <div className="flex-1 md:px-6">
-                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
-                                                <span className="text-emerald-600">Correct: {correct}</span>
-                                                <span className="text-red-500">Wrong: {wrong}</span>
-                                                <span className="text-gray-400">Skip: {skipped}</span>
-                                            </div>
-                                            <div className="h-3 w-full bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden flex shadow-inner">
-                                                <motion.div initial={{ width: 0 }} animate={{ width: `${(correct/total)*100}%` }} className="bg-emerald-500 h-full rounded-full" />
-                                                <motion.div initial={{ width: 0 }} animate={{ width: `${(wrong/total)*100}%` }} className="bg-red-500 h-full" />
-                                                <motion.div initial={{ width: 0 }} animate={{ width: `${(skipped/total)*100}%` }} className="bg-gray-300 dark:bg-gray-600 h-full" />
-                                            </div>
-                                        </div>
-
-                                        {/* Right: Accuracy & Toggle */}
-                                        <div className="flex items-center justify-between md:justify-end gap-6 md:w-1/4 mt-2 md:mt-0">
-                                            <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
-                                                <svg className="w-full h-full -rotate-90">
-                                                    <circle
-                                                        cx="50%" cy="50%" r="40%"
-                                                        className="stroke-gray-100 dark:stroke-zinc-700 fill-none"
-                                                        strokeWidth="6"
-                                                    />
-                                                    <motion.circle
-                                                        cx="50%" cy="50%" r="40%"
-                                                        className={`fill-none ${statusColor.replace('text-', 'stroke-')}`}
-                                                        strokeWidth="6"
-                                                        strokeLinecap="round"
-                                                        initial={{ strokeDasharray: "0 100" }}
-                                                        animate={{ strokeDasharray: `${accuracy} 100` }}
-                                                        pathLength="100"
-                                                    />
-                                                </svg>
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                    <span className={`text-sm md:text-base font-black ${statusColor} tracking-tighter`}>{accuracy}%</span>
+                                            
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <span className={`text-sm md:text-base font-black ${
+                                                    accuracy >= 80 ? 'text-emerald-500' : accuracy >= 60 ? 'text-amber-500' : 'text-rose-500'
+                                                }`}>
+                                                    {accuracy}%
+                                                </span>
+                                                <div className={`p-1 text-gray-400 dark:text-zinc-600 transition-all ${isExpanded ? 'rotate-180 text-orange-500 dark:text-orange-400' : ''}`}>
+                                                    <ChevronDown size={14} />
                                                 </div>
                                             </div>
-                                            <div className={`p-2.5 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-500 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10 text-primary' : ''}`}>
-                                                <ChevronDown size={20} />
+                                        </div>
+
+                                        {/* Colored Progress Line Segment */}
+                                        <div className="w-full">
+                                            <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-855 rounded-full overflow-hidden flex">
+                                                {correct > 0 && (
+                                                    <div 
+                                                        title={`সঠিক: ${correct}`}
+                                                        style={{ width: `${(correct / total) * 100}%` }} 
+                                                        className="bg-emerald-500 h-full rounded-l-full" 
+                                                    />
+                                                )}
+                                                {wrong > 0 && (
+                                                    <div 
+                                                        title={`ভুল: ${wrong}`}
+                                                        style={{ width: `${(wrong / total) * 100}%` }} 
+                                                        className="bg-rose-500 h-full" 
+                                                    />
+                                                )}
+                                                {skipped > 0 && (
+                                                    <div 
+                                                        title={`বাদ দেওয়া: ${skipped}`}
+                                                        style={{ width: `${(skipped / total) * 100}%` }} 
+                                                        className="bg-gray-350 dark:bg-zinc-600 h-full rounded-r-full" 
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Bottom Action Row */}
+                                        <div className="flex items-center justify-between gap-2 mt-0.5">
+                                            <div className="text-[11px] font-medium text-gray-400 dark:text-zinc-500">
+                                                {correct} সঠিক • {wrong} ভুল
+                                            </div>
+                                            
+                                            <div>
+                                                {subjectMistakesCount > 0 ? (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveTab('MISTAKES');
+                                                            setMistakeFilterSubject(sub.subject);
+                                                            setMistakeFilterChapter('ALL');
+                                                        }}
+                                                        className="flex items-center gap-1.5 px-3 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/45 text-red-600 dark:text-red-400 text-[11px] font-bold rounded-xl border border-red-105 dark:border-red-900/10 transition-all active:scale-95 cursor-pointer shadow-sm"
+                                                    >
+                                                        <AlertCircle size={11} className="stroke-[2.5px]" />
+                                                        <span>{subjectMistakesCount}টি ভুল দেখুন</span>
+                                                    </button>
+                                                ) : (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/10 px-2 py-0.5 rounded-lg border border-emerald-100/10">
+                                                        <Check size={11} className="stroke-[3px]" />
+                                                        <span>সব শেষ</span>
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -890,60 +1220,59 @@ const ProfilePage: React.FC = () => {
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                className="overflow-hidden"
+                                                className="overflow-hidden bg-gray-50/50 dark:bg-zinc-900/10 border-t border-gray-150 dark:border-zinc-850 mt-auto rounded-b-[1.8rem] p-4"
+                                                onClick={(e) => e.stopPropagation()}
                                             >
-                                                <div className="p-6 bg-gray-50/50 dark:bg-zinc-900/50 border-t border-gray-100 dark:border-white/5">
-                                                    <h5 className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
-                                                        <List size={14}/> অধ্যায়ভিত্তিক বিশ্লেষণ
-                                                    </h5>
-                                                    
-                                                    {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                            {Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
-                                                                const cTotal = chapData.total || 0;
-                                                                const cCorrect = chapData.correct || 0;
-                                                                const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
-                                                                const cAccuracy = cTotal > 0 ? Math.round((cCorrect / cTotal) * 100) : 0;
-                                                                
-                                                                let cColor = "bg-red-500";
-                                                                if (cAccuracy >= 80) cColor = "bg-emerald-500";
-                                                                else if (cAccuracy >= 60) cColor = "bg-orange-500";
-                                                                else if (cAccuracy >= 40) cColor = "bg-yellow-500";
+                                                <h5 className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
+                                                    <List size={11}/> অধ্যায়সমূহ
+                                                </h5>
+                                                
+                                                {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
+                                                    <div className="space-y-2.5">
+                                                        {Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
+                                                            const cTotal = chapData.total || 0;
+                                                            const cCorrect = chapData.correct || 0;
+                                                            const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
+                                                            const cAccuracy = cTotal > 0 ? Math.round((cCorrect / cTotal) * 100) : 0;
+                                                            
+                                                            let cColor = "text-rose-500";
+                                                            let cBg = "bg-rose-500";
+                                                            if (cAccuracy >= 80) {
+                                                                cColor = "text-emerald-500";
+                                                                cBg = "bg-emerald-500";
+                                                            } else if (cAccuracy >= 60) {
+                                                                cColor = "text-amber-500";
+                                                                cBg = "bg-amber-500";
+                                                            } else if (cAccuracy >= 40) {
+                                                                cColor = "text-yellow-500";
+                                                                cBg = "bg-yellow-500";
+                                                            }
 
-                                                                return (
-                                                                    <motion.div 
-                                                                        key={cIdx} 
-                                                                        initial={{ opacity: 0, x: -10 }}
-                                                                        animate={{ opacity: 1, x: 0 }}
-                                                                        transition={{ delay: cIdx * 0.05 }}
-                                                                        className="bg-white dark:bg-gray-800 p-5 rounded-[1.5rem] border border-gray-100 dark:border-white/5 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow group"
-                                                                    >
-                                                                        <div className="flex items-center justify-between gap-4">
-                                                                            <div className="flex-1 min-w-0">
-                                                                                <h6 className="text-sm md:text-base font-black text-gray-900 dark:text-white truncate" title={chapName}>{chapName}</h6>
-                                                                                <div className="flex items-center gap-3 mt-1.5 text-[10px] font-black uppercase tracking-wider">
-                                                                                    <span className="bg-gray-100 dark:bg-zinc-700 px-2.5 py-1 rounded-lg text-gray-500">{cTotal} Questions</span>
-                                                                                    <span className="text-emerald-600">{cCorrect} Correct</span>
-                                                                                    <span className="text-red-500">{cWrong} Wrong</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="text-right">
-                                                                                <span className={`text-lg font-black ${cColor.replace('bg-', 'text-')} tracking-tighter`}>{cAccuracy}%</span>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className="h-2.5 w-full bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden shadow-inner">
-                                                                            <motion.div initial={{ width: 0 }} animate={{ width: `${cAccuracy}%` }} className={`h-full ${cColor} rounded-full`} />
-                                                                        </div>
-                                                                    </motion.div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-center py-8 text-xs text-gray-400 dark:text-zinc-500 italic font-bold">
-                                                            কোনো অধ্যায়ভিত্তিক ডাটা পাওয়া যায়নি
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                            return (
+                                                                <div key={cIdx} className="space-y-1.5 bg-white dark:bg-zinc-950 p-3 rounded-xl border border-gray-100 dark:border-zinc-900 shadow-sm">
+                                                                    <div className="flex items-center justify-between gap-2">
+                                                                        <span className="text-xs font-bold text-gray-700 dark:text-zinc-300 truncate" title={chapName}>
+                                                                            {chapName}
+                                                                        </span>
+                                                                        <span className={`text-[11px] font-black ${cColor}`}>
+                                                                            {cAccuracy}%
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="h-1 w-full bg-gray-100 dark:bg-zinc-850 rounded-full overflow-hidden">
+                                                                        <motion.div initial={{ width: 0 }} animate={{ width: `${cAccuracy}%` }} className={`h-full ${cBg} rounded-full`} />
+                                                                    </div>
+                                                                    <div className="text-[10px] font-medium text-gray-400 dark:text-zinc-550">
+                                                                        {cCorrect} সঠিক • {cWrong} ভুল
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-4 text-[10px] text-gray-400 dark:text-zinc-500 italic font-medium">
+                                                        কোনো অধ্যায়ভিত্তিক ডাটা পাওয়া যায়নি
+                                                    </div>
+                                                )}
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
@@ -952,7 +1281,7 @@ const ProfilePage: React.FC = () => {
                         })}
                         
                         {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) && (
-                             <div className="text-center py-16 bg-gray-50/50 dark:bg-zinc-900/30 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-white/5">
+                             <div className="text-center py-16 bg-gray-50/50 dark:bg-zinc-900/30 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-white/5 col-span-1 md:col-span-2">
                                  <BarChart3 size={48} className="mx-auto text-gray-300 dark:text-zinc-700 mb-4"/>
                                  <p className="text-gray-500 dark:text-zinc-500 font-black text-sm uppercase tracking-widest">কোনো এনালাইসিস ডাটা নেই</p>
                                  <p className="text-xs text-gray-400 dark:text-zinc-600 mt-2">কুইজ বা এক্সাম দিলে এখানে বিস্তারিত দেখা যাবে</p>
@@ -1123,8 +1452,8 @@ const ProfilePage: React.FC = () => {
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex flex-wrap gap-2 items-center">
-                                            <span className="px-3 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[10px] font-bold rounded-xl border border-orange-100 dark:border-orange-800/50">{q.subject}</span>
-                                            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-xl flex items-center gap-2 border border-gray-200 dark:border-gray-600">
+                                            <span className="px-3 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[12px] font-bold rounded-xl border border-orange-100 dark:border-orange-800/50">{q.subject}</span>
+                                            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[12px] font-bold rounded-xl flex items-center gap-2 border border-gray-200 dark:border-gray-600">
                                                 <Folder size={12} className="text-primary"/> {item.folder || 'General'}
                                             </span>
                                             
@@ -1132,7 +1461,7 @@ const ProfilePage: React.FC = () => {
                                             <div className="relative">
                                                 <button 
                                                     onClick={() => setMovingQuestionId(movingQuestionId === item._id ? null : item._id)}
-                                                    className="text-[10px] flex items-center gap-2 text-gray-400 hover:text-primary transition-colors font-bold px-2 py-1 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                    className="text-[12px] flex items-center gap-2 text-gray-400 hover:text-primary transition-colors font-bold px-2 py-1 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700"
                                                 >
                                                     <MoveRight size={12}/> Move
                                                 </button>
@@ -1191,7 +1520,7 @@ const ProfilePage: React.FC = () => {
                                     
                                     <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-700 relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-1 h-full bg-primary/40"></div>
-                                        <span className="font-bold text-primary text-[10px] uppercase tracking-widest block mb-2">Explanation</span>
+                                        <span className="font-bold text-primary text-[12px] uppercase tracking-widest block mb-2">Explanation</span>
                                         <p className="font-tiro text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                                             {q.explanation || 'No explanation available.'}
                                         </p>
@@ -1283,10 +1612,10 @@ const ProfilePage: React.FC = () => {
                             
                             <div className="flex justify-between items-start mb-4 relative z-10">
                                 <div className="flex flex-wrap gap-2">
-                                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold rounded-xl text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{q.subject}</span>
-                                    {q.chapter && <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-[10px] font-bold rounded-xl text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{q.chapter}</span>}
+                                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-[12px] font-bold rounded-xl text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{q.subject}</span>
+                                    {q.chapter && <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-[12px] font-bold rounded-xl text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{q.chapter}</span>}
                                     {m.wrongCount > 1 && (
-                                        <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-bold rounded-xl flex items-center gap-2 border border-red-200 dark:border-red-800/50 shadow-sm">
+                                        <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[12px] font-bold rounded-xl flex items-center gap-2 border border-red-200 dark:border-red-800/50 shadow-sm">
                                             <X size={12} className="stroke-[3px]"/> Missed {m.wrongCount} times
                                         </span>
                                     )}
@@ -1321,7 +1650,7 @@ const ProfilePage: React.FC = () => {
                             
                             <div className="bg-red-50/50 dark:bg-red-900/10 p-4 rounded-[1.5rem] border border-red-100/50 dark:border-red-900/30 relative overflow-hidden z-10">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-red-500/40"></div>
-                                <span className="font-bold text-red-500 text-[10px] uppercase tracking-widest block mb-2">Explanation</span>
+                                <span className="font-bold text-red-500 text-[12px] uppercase tracking-widest block mb-2">Explanation</span>
                                 <p className="font-tiro text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                                     {q.explanation || 'No explanation available.'}
                                 </p>
@@ -1332,6 +1661,158 @@ const ProfilePage: React.FC = () => {
                      <PaginationControls />
                    </div>
                )}
+            </motion.div>
+        )}
+
+        {/* HISTORY TAB */}
+        {activeTab === 'HISTORY' && isOwnProfile && (
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+            >
+                {/* Header Information Card */}
+                <div className="flex justify-between items-center bg-white/40 dark:bg-zinc-900/30 backdrop-blur-xl p-5 rounded-[2rem] border border-gray-150 dark:border-zinc-800 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-orange-50 dark:bg-orange-500/10 rounded-2xl text-orange-500">
+                            <Calendar size={20} />
+                        </div>
+                        <div>
+                            <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                                {t('profile_history')}
+                            </h2>
+                            <p className="text-xs text-gray-400 dark:text-zinc-500 font-semibold mt-0.5">
+                                {attempts.length > 0 ? `মোট ${attempts.length}টি পরীক্ষা সম্পন্ন হয়েছে` : "কোনো পরীক্ষার রেকর্ড পাওয়া যায়নি"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {attempts.length === 0 ? (
+                    <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-gray-150 dark:border-zinc-800 shadow-sm">
+                        <div className="w-16 h-16 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+                            <FileQuestion size={32} className="text-orange-500"/>
+                        </div>
+                        <p className="text-gray-900 dark:text-white font-bold text-base mb-1">কোনো পরীক্ষার রেকর্ড নেই</p>
+                        <p className="text-gray-400 text-xs max-w-xs mx-auto leading-relaxed">আপনি এখনও কোনো পরীক্ষায় অংশ নেননি। পরীক্ষা দেওয়ার পর আপনার সকল ফলাফলের বিস্তারিত বিবরণ এখানে দেখতে পাবেন।</p>
+                        <div className="mt-6">
+                            <button
+                                onClick={() => navigate('/exams')}
+                                className="px-6 py-3 bg-gradient-to-r from-primary to-orange-500 text-white font-bold rounded-xl shadow-md hover:scale-102 active:scale-98 transition-all text-xs"
+                            >
+                                পরীক্ষা দেওয়া শুরু করুন
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {attempts.map((attempt) => {
+                            const totalQ = attempt.totalQuestions || 20;
+                            const correct = attempt.correct || 0;
+                            const percent = Math.min(100, Math.round((correct / totalQ) * 100));
+                            const percentClamped = Math.max(8, Math.min(92, percent));
+
+                            // Determine subject name
+                            const subjectName = attempt.subject || attempt.config?.subject || 'সাধারণ';
+                            const paperName = attempt.config?.paper || (attempt.config?.title?.includes('1st') || attempt.examId?.includes('1st') ? '১ম পত্র' : attempt.config?.title?.includes('2nd') || attempt.examId?.includes('2nd') ? '২য় পত্র' : null);
+                            const chapterName = attempt.config?.chapter || null;
+                            const examTitle = attempt.config?.title || (attempt.examId?.replace(/_/g, ' ') || 'নামহীন পরীক্ষা');
+
+                            // Human-readable date string
+                            const examDate = attempt.timestamp 
+                                ? new Date(attempt.timestamp).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })
+                                : '-';
+
+                            return (
+                                <motion.div 
+                                    key={attempt.examId}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-gray-150/80 dark:border-zinc-800 shadow-sm relative overflow-hidden"
+                                >
+                                    {/* Minimal Header (Subject, Paper, Chapter & Date) */}
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="space-y-1">
+                                            <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                                                {subjectName}
+                                            </h3>
+                                            {paperName && (
+                                                <p className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
+                                                    {paperName}
+                                                </p>
+                                            )}
+                                            {chapterName ? (
+                                                <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
+                                                    {chapterName}
+                                                </p>
+                                            ) : (
+                                                examTitle !== subjectName && (
+                                                    <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
+                                                        {examTitle}
+                                                    </p>
+                                                )
+                                            )}
+                                        </div>
+                                        <span className="text-xs text-gray-400 dark:text-zinc-500 font-bold whitespace-nowrap">
+                                            {examDate}
+                                        </span>
+                                    </div>
+
+                                    {/* Minimalist Progress Meter with score overlay */}
+                                    <div className="relative pt-4 pb-5 my-2">
+                                        <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-800 rounded-full relative">
+                                            <div 
+                                                className="h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-300" 
+                                                style={{ width: `${percent}%` }}
+                                            />
+                                            {/* Floating Pill Over Progress Bar */}
+                                            <div 
+                                                className="absolute top-1/2 flex items-center justify-center bg-white dark:bg-zinc-950 border-2 border-emerald-500 dark:border-emerald-400 text-[10px] font-bold tracking-tight text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full shadow-sm select-none"
+                                                style={{ left: `${percentClamped}%`, transform: 'translate(-50%, -50%)' }}
+                                            >
+                                                {correct}/{totalQ}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action row at bottom */}
+                                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-zinc-800/30">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
+                                                {attempt.config?.examType || 'HSC'}
+                                            </span>
+                                            {attempt.config?.duration && (
+                                                <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
+                                                    {attempt.config.duration} মি.
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => navigate(`/exam/${attempt.examId}`)}
+                                                className="px-4 py-1.5 bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-50 text-white dark:text-gray-900 rounded-xl text-xs font-bold transition-colors shadow-sm active:scale-95 whitespace-nowrap"
+                                            >
+                                                ফলাফল দেখুন
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteAttempt(attempt.examId)} 
+                                                disabled={deletingAttemptId === attempt.examId}
+                                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90"
+                                                title="ভুক্তি মুছুন"
+                                            >
+                                                {deletingAttemptId === attempt.examId ? (
+                                                    <Loader2 size={14} className="animate-spin text-red-500" />
+                                                ) : (
+                                                    <Trash2 size={14} />
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                )}
             </motion.div>
         )}
 

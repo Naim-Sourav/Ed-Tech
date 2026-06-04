@@ -1,12 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import Lottie from 'lottie-react';
 import { Sparkles, GraduationCap, ArrowRight, Trophy, Swords, Zap, Crown, Rocket, Play, Activity, BookOpen, Clock, Archive, ShieldCheck, RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
 
 // Import Lottie animations directly
-import heroAnimation from '../assets/lottie/hero-animation.json';
-import aiAnimation from '../assets/lottie/learning.json';
-import calendarAnimation from '../assets/lottie/CALENDER.json';
+const LazyLottieLoader = ({ importFunc }: { importFunc: () => Promise<any> }) => {
+  const [data, setData] = useState<any>(null);
+  useEffect(() => {
+    importFunc().then(m => setData(m.default));
+  }, [importFunc]);
+  if (!data) return <div className="w-full h-full animate-pulse bg-gray-200 dark:bg-gray-800 rounded-[20%]"></div>;
+  return <Lottie animationData={data} loop={true} />;
+};
+
+// We will use LazyLottieLoader instead of direct imports
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -60,7 +68,7 @@ const QuestionPaperCard = ({ title, sub, icon, color }: any) => (
               <div className={`p-2 rounded-lg bg-gray-50 dark:bg-gray-700 ${color.replace('from-', 'text-').split(' ')[0]}`}>
                   {icon}
               </div>
-              <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">Exam</span>
+              <span className="text-[12px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">Exam</span>
           </div>
           <div>
               <h4 className="font-bold text-gray-800 dark:text-white text-sm line-clamp-1">{title}</h4>
@@ -126,6 +134,15 @@ const Leaf = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" 
 const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
   return (
     <main className="h-screen w-full overflow-y-auto bg-white dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors scroll-smooth selection:bg-primary/30">
+      <Helmet>
+        <title>Porikkhangon | HSC & Admission AI Tutor - Bangladesh's best Prep Platform</title>
+        <meta name="description" content="Porikkhangon (পরীক্ষাঙ্গন) - HSC একাডেমিক এবং এডমিশন প্রস্তুতির জন্য বাংলাদেশের সেরা AI-চালিত লার্নিং প্ল্যাটফর্ম। AI টিউটর, কুইজ ব্যাটল এবং স্মার্ট ট্র্যাকিং এর মাধ্যমে নিজেকে প্রস্তুত করো।" />
+        <meta name="keywords" content="Porikkhangon, পরীক্ষাঙ্গন, HSC Preparation, Admission Test Bangladesh, AI Tutor, BUET Admission, Medical Admission" />
+        <link rel="canonical" href="https://www.porikkhangon.app" />
+        <meta property="og:title" content="Porikkhangon | HSC & Admission AI Tutor" />
+        <meta property="og:description" content="HSC এবং এডমিশন প্রস্তুতির জন্য বাংলাদেশের সেরা AI প্ল্যাটফর্ম।" />
+        <meta property="og:image" content="https://www.porikkhangon.app/Pshape.svg" />
+      </Helmet>
       
       {/* Navbar */}
       <header className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all">
@@ -172,7 +189,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             
             {/* Left Column: Text & Buttons */}
             <div className="text-center lg:text-left space-y-6 md:space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
-              <h1 className="text-3xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.1] tracking-tight text-gray-900 dark:text-white">
+              <h1 className="text-3xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-normal tracking-tight text-gray-900 dark:text-white">
                 পরীক্ষা প্রস্তুতির বিশেষ <span className="text-primary dark:text-orange-400">অঙ্গন</span>
               </h1>
               
@@ -199,7 +216,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             {/* Right Column: Lottie Animation (Desktop Only) */}
             <div className="hidden lg:flex justify-center lg:justify-end animate-in fade-in zoom-in duration-1000 delay-200">
               <div className="lg:w-[550px] lg:h-[550px] xl:w-[650px] xl:h-[650px] drop-shadow-2xl">
-                <Lottie animationData={heroAnimation} loop={true} />
+                <LazyLottieLoader importFunc={() => import('../assets/lottie/hero-animation.json')} />
               </div>
             </div>
 
@@ -210,19 +227,19 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                   <div className="text-center">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
-                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
-                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
                   </div>
                   <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-gray-700 pt-3 md:pt-0 border-t md:border-t-0">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={10} suffix="+" /></p>
-                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
                   </div>
                   <div className="text-center border-l border-gray-200 dark:border-gray-700 pt-3 md:pt-0 border-t md:border-t-0">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
-                      <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
+                      <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
                   </div>
               </div>
           </div>
@@ -230,7 +247,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           {/* Hero Animation (Mobile Only - Placed after Stats) */}
           <div className="flex lg:hidden justify-center mt-12 animate-in fade-in zoom-in duration-1000">
             <div className="w-72 h-72 md:w-96 md:h-96 drop-shadow-2xl">
-              <Lottie animationData={heroAnimation} loop={true} />
+              <LazyLottieLoader importFunc={() => import('../assets/lottie/hero-animation.json')} />
             </div>
           </div>
         </div>
@@ -259,7 +276,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
 
                     <div className="relative z-10 h-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
                         <div className="space-y-3 md:space-y-4 max-w-lg flex-1">
-                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] md:text-xs font-bold text-orange-300 backdrop-blur-md">
+                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[12px] md:text-xs font-bold text-orange-300 backdrop-blur-md">
                                 <Sparkles size={10} className="md:w-3 md:h-3" /> ডেইলি চ্যালেঞ্জ
                             </div>
                             <h3 className="text-2xl md:text-5xl font-bold leading-tight">
@@ -282,14 +299,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                                         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary"><Clock size={20}/></div>
                                         <div>
                                             <p className="text-sm font-bold text-white">Physics Quiz</p>
-                                            <p className="text-[10px] text-gray-400">Time: 20 Mins</p>
+                                            <p className="text-[12px] text-gray-400">Time: 20 Mins</p>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
                                             <div className="h-full bg-primary w-[70%]"></div>
                                         </div>
-                                        <div className="flex justify-between text-[10px] text-gray-400">
+                                        <div className="flex justify-between text-[12px] text-gray-400">
                                             <span>Progress</span>
                                             <span>1500+ Participants</span>
                                         </div>
@@ -338,7 +355,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="w-full md:w-1/2 flex justify-center animate-in fade-in slide-in-from-left-8 duration-1000">
               <div className="w-56 h-56 md:w-80 md:h-80 lg:w-[500px] lg:h-[500px] drop-shadow-2xl relative">
                 <div className="absolute inset-0 bg-primary/10 rounded-full blur-[60px] animate-pulse"></div>
-                <Lottie animationData={aiAnimation} loop={true} />
+                <LazyLottieLoader importFunc={() => import('../assets/lottie/learning.json')} />
               </div>
             </div>
 
@@ -396,7 +413,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             <div className="w-full md:w-1/2 flex justify-center animate-in fade-in slide-in-from-right-8 duration-1000">
               <div className="w-56 h-56 md:w-80 md:h-80 lg:w-[500px] lg:h-[500px] drop-shadow-2xl relative">
                 <div className="absolute inset-0 bg-orange-500/5 rounded-full blur-[60px] animate-pulse"></div>
-                <Lottie animationData={calendarAnimation} loop={true} />
+                <LazyLottieLoader importFunc={() => import('../assets/lottie/CALENDER.json')} />
               </div>
             </div>
 
@@ -482,13 +499,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                                 <div className="w-14 h-14 md:w-20 md:h-20 rounded-full p-1 bg-gradient-to-br from-slate-300 to-slate-500 shadow-[0_0_20px_rgba(148,163,184,0.3)] relative z-10 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
                                     <div className="w-full h-full rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-slate-200 font-bold text-xl md:text-3xl">S</div>
                                 </div>
-                                <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-200 text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg border border-slate-600 flex items-center gap-1">
+                                <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-200 text-[12px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg border border-slate-600 flex items-center gap-1">
                                     <span className="text-slate-400">#</span>2
                                 </div>
                             </div>
                             <div className="mb-2">
-                                <p className="text-[10px] md:text-xs font-bold text-slate-200">Sadia Afrin</p>
-                                <p className="text-[8px] md:text-[10px] text-slate-400">Viqarunnisa Noon</p>
+                                <p className="text-[12px] md:text-xs font-bold text-slate-200">Sadia Afrin</p>
+                                <p className="text-[8px] md:text-[12px] text-slate-400">Viqarunnisa Noon</p>
                             </div>
                             <div className="w-full h-24 md:h-32 bg-gradient-to-t from-slate-800/80 to-slate-700/30 rounded-t-2xl border-t border-slate-500/30 backdrop-blur-xl relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-slate-400/5 group-hover:bg-slate-400/10 transition-colors"></div>
@@ -508,7 +525,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                             </div>
                             <div className="mb-2">
                                 <p className="text-xs md:text-sm font-bold text-yellow-100">Tahmid Khan</p>
-                                <p className="text-[9px] md:text-[10px] text-yellow-500/80">Notre Dame College</p>
+                                <p className="text-[9px] md:text-[12px] text-yellow-500/80">Notre Dame College</p>
                             </div>
                             <div className="w-full h-36 md:h-48 bg-gradient-to-t from-yellow-900/40 to-yellow-600/10 rounded-t-2xl border-t border-yellow-500/30 backdrop-blur-xl relative overflow-hidden shadow-[0_-10px_40px_-15px_rgba(234,179,8,0.2)] group">
                                 <div className="absolute inset-0 bg-yellow-400/5 group-hover:bg-yellow-400/10 transition-colors"></div>
@@ -524,13 +541,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                                 <div className="w-14 h-14 md:w-20 md:h-20 rounded-full p-1 bg-gradient-to-br from-amber-600 to-amber-800 shadow-[0_0_20px_rgba(180,83,9,0.3)] relative z-10 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
                                     <div className="w-full h-full rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-amber-500 font-bold text-xl md:text-3xl">R</div>
                                 </div>
-                                <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 bg-amber-900 text-amber-100 text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg border border-amber-700 flex items-center gap-1">
+                                <div className="absolute -bottom-2 md:-bottom-3 left-1/2 -translate-x-1/2 bg-amber-900 text-amber-100 text-[12px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg border border-amber-700 flex items-center gap-1">
                                     <span className="text-amber-400/70">#</span>3
                                 </div>
                             </div>
                             <div className="mb-2">
-                                <p className="text-[10px] md:text-xs font-bold text-amber-100">Rafi Ahmed</p>
-                                <p className="text-[8px] md:text-[10px] text-amber-500/80">Dhaka College</p>
+                                <p className="text-[12px] md:text-xs font-bold text-amber-100">Rafi Ahmed</p>
+                                <p className="text-[8px] md:text-[12px] text-amber-500/80">Dhaka College</p>
                             </div>
                             <div className="w-full h-16 md:h-24 bg-gradient-to-t from-amber-900/60 to-amber-800/20 rounded-t-2xl border-t border-amber-600/30 backdrop-blur-xl relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-amber-600/5 group-hover:bg-amber-600/10 transition-colors"></div>

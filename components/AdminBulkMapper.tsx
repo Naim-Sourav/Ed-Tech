@@ -201,7 +201,7 @@ const AdminBulkMapper: React.FC = () => {
                 </div>
 
                 <div className="bg-gray-900 text-gray-300 p-4 rounded-xl text-xs font-mono h-[550px] overflow-y-auto flex flex-col">
-                    <h3 className="text-white font-bold mb-3 uppercase tracking-wider text-[10px] flex items-center gap-2">
+                    <h3 className="text-white font-bold mb-3 uppercase tracking-wider text-[12px] flex items-center gap-2">
                         <CheckCircle size={14} className="text-green-400" /> Execution Logs
                     </h3>
                     {logs.length === 0 ? (

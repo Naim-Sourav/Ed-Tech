@@ -105,7 +105,7 @@ const QuestWidget: React.FC<QuestWidgetProps> = ({ quests, onQuestUpdate }) => {
                         )}
                         {!quest.claimed && (
                             <div className="text-right mt-1">
-                                <span className="text-[10px] text-gray-400 font-bold">{quest.progress} / {quest.target}</span>
+                                <span className="text-[12px] text-gray-400 font-bold">{quest.progress} / {quest.target}</span>
                             </div>
                         )}
                     </div>

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { 
   Clock, AlertTriangle, FileText, Upload, 
@@ -116,6 +117,13 @@ Discipline • Dedication • Domination
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors">
+      <Helmet>
+        <title>GST সুপার ফোকাস চ্যালেঞ্জ - Porikkhangon | GST Admission Preparation</title>
+        <meta name="description" content="GST গুচ্ছ ভর্তি পরীক্ষার জন্য ৪৫ দিনের স্পেশাল চ্যালেঞ্জ। চ্যাপ্টার ওয়াইজ মিশন, পেপার ফাইনাল এবং পূর্ণাঙ্গ মডেল টেস্টের মাধ্যমে নিশ্চিত করো তোমার চান্স।" />
+        <meta property="og:title" content="GST সুপার ফোকাস চ্যালেঞ্জ - Porikkhangon" />
+        <meta property="og:description" content="GST গুচ্ছ ভর্তি পরীক্ষার ৪৫ দিনের সেরা রুটিন ও এক্সাম কোর্স।" />
+        <link rel="canonical" href="https://www.porikkhangon.app/#/gst-challenge" />
+      </Helmet>
       
       {/* 1. Hero Section - Aggressive & Motivating */}
       <div className="relative bg-gray-900 text-white overflow-hidden">

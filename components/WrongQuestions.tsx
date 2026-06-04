@@ -6,17 +6,32 @@ import { fetchUserMistakesAPI, deleteUserMistakeAPI } from '../services/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Trash2, ChevronLeft, 
-  Play, Search, CheckCircle, Filter,
-  Zap, ChevronDown, ChevronUp,
+  Play, Search, CheckCircle,
+  ChevronDown, ChevronUp,
   Eye, EyeOff
 } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
+import EmptyState from './EmptyState';
 
 const ITEMS_PER_PAGE = 10;
 
-const WrongQuestions: React.FC = () => {
+const toBanglaDigits = (num: number | string): string => {
+  const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return String(num).replace(/[0-9]/g, (digit) => banglaDigits[parseInt(digit, 10)]);
+};
+
+const getBanglaOptionChar = (i: number): string => {
+  const chars = ['ক', 'খ', 'গ', 'ঘ'];
+  return chars[i] || String.fromCharCode(65 + i);
+};
+
+interface WrongQuestionsProps {
+  embedded?: boolean;
+}
+
+const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { showToast } = useToast();
@@ -31,11 +46,10 @@ const WrongQuestions: React.FC = () => {
   const [filterChapter, setFilterChapter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
-  const [isRevisionMode, setIsRevisionMode] = useState(false);
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
   const [expandedExplanations, setExpandedExplanations] = useState<Record<string, boolean>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [userAnswers, setUserAnswers] = useState<Record<string, number>>({});
+  const [userAnswers, setUserAnswers] = useState<Record<string, number[]>>({});
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const [pageInput, setPageInput] = useState(currentPage.toString());
@@ -113,27 +127,33 @@ const WrongQuestions: React.FC = () => {
     setSelectedIds(newSelected);
   };
 
-  const { uniqueSubjects, uniqueChapters, subjectCounts } = useMemo(() => {
+  const { uniqueSubjects, uniqueChapters, subjectCounts, chapterCounts } = useMemo(() => {
     const subjects = new Set<string>();
     const chapters = new Set<string>();
-    const counts: Record<string, number> = {};
+    const subCounts: Record<string, number> = {};
+    const chapCounts: Record<string, number> = {};
     
     mistakes.forEach(item => {
       const q = item.questionId;
       if (!q) return;
       if (q.subject) {
         subjects.add(q.subject);
-        counts[q.subject] = (counts[q.subject] || 0) + 1;
+        subCounts[q.subject] = (subCounts[q.subject] || 0) + 1;
       }
-      if (q.chapter && (filterSubject === 'ALL' || q.subject === filterSubject)) {
-        chapters.add(q.chapter);
+      if (q.chapter) {
+        const matchesSubject = filterSubject === 'ALL' || normalizeBangla(q.subject) === normalizeBangla(filterSubject);
+        if (matchesSubject) {
+          chapters.add(q.chapter);
+          chapCounts[q.chapter] = (chapCounts[q.chapter] || 0) + 1;
+        }
       }
     });
 
     return {
       uniqueSubjects: uniqueByNormalization(Array.from(subjects)),
       uniqueChapters: uniqueByNormalization(Array.from(chapters)),
-      subjectCounts: counts
+      subjectCounts: subCounts,
+      chapterCounts: chapCounts
     };
   }, [mistakes, filterSubject]);
 
@@ -153,10 +173,12 @@ const WrongQuestions: React.FC = () => {
   }, [mistakes, filterSubject, filterChapter, searchQuery]);
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
-  const displayedItems = filteredItems.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const displayedItems = useMemo(() => {
+    return filteredItems.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    );
+  }, [filteredItems, currentPage]);
 
   useEffect(() => {
     if (window.MathJax && window.MathJax.typesetPromise) {
@@ -173,7 +195,22 @@ const WrongQuestions: React.FC = () => {
   };
 
   const toggleExplanation = (id: string) => {
-    setExpandedExplanations(prev => ({ ...prev, [id]: !prev[id] }));
+    setExpandedExplanations(prev => {
+      const isNowExpanded = !prev[id];
+      if (isNowExpanded) {
+        setTimeout(() => {
+          if (window.MathJax && window.MathJax.typesetPromise) {
+            const el = document.getElementById(`explanation-${id}`);
+            if (el) {
+              window.MathJax.typesetPromise([el]).catch((err: any) => console.error(err));
+            } else {
+              window.MathJax.typesetPromise().catch((err: any) => console.error(err));
+            }
+          }
+        }, 80);
+      }
+      return { ...prev, [id]: isNowExpanded };
+    });
   };
 
   const getFont = (text: string = '') => {
@@ -182,68 +219,115 @@ const WrongQuestions: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 pb-20 font-sans">
+    <div className={`${embedded ? 'bg-transparent text-slate-900 pb-4 dark:text-zinc-100' : 'min-h-screen bg-white text-slate-900 pb-20 dark:bg-black dark:text-zinc-100'} font-sans`}>
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate(-1)}
-              className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <h1 className="text-lg font-bold tracking-tight">ভুল প্রশ্নসমূহ</h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => {
-                setIsSelectionMode(!isSelectionMode);
-                setSelectedIds(new Set());
-              }}
-              className={`p-2 rounded-lg transition-all ${isSelectionMode ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}
-              title="Select Questions"
-            >
-              <CheckCircle size={18} />
-            </button>
-            <button 
-              onClick={() => setIsRevisionMode(!isRevisionMode)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isRevisionMode ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-600'}`}
-            >
-              {isRevisionMode ? <EyeOff size={14} /> : <Eye size={14} />}
-              <span>রিভিশন মোড</span>
-            </button>
-            <button 
-              onClick={startPractice}
-              className="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-xs transition-all"
-            >
-              <Play size={14} fill="currentColor" />
-              <span>রিটেক</span>
-            </button>
+      {!embedded && (
+        <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 dark:bg-black/80 dark:border-zinc-800">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => navigate(-1)}
+                className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <h1 className="text-lg font-bold tracking-tight">ভুল প্রশ্নসমূহ</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => {
+                  setIsSelectionMode(!isSelectionMode);
+                  setSelectedIds(new Set());
+                }}
+                className={`p-2 rounded-lg transition-all ${isSelectionMode ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}
+                title="Select Questions"
+              >
+                <CheckCircle size={18} />
+              </button>
+              <button 
+                onClick={() => setShowAllAnswers(!showAllAnswers)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${showAllAnswers ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-100 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400'}`}
+              >
+                {showAllAnswers ? <EyeOff size={14} /> : <Eye size={14} />}
+                <span>{showAllAnswers ? "উত্তর লুকান" : "সব উত্তর দেখুন"}</span>
+              </button>
+              <button 
+                onClick={startPractice}
+                className="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-xs transition-all"
+              >
+                <Play size={14} fill="currentColor" />
+                <span>রিটেক</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <div className={`${embedded ? 'max-w-4xl mx-auto px-0 py-2 space-y-6' : 'max-w-4xl mx-auto px-4 py-6 space-y-6'}`}>
         
         {/* Subject Summary */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-          <button 
-            onClick={() => setFilterSubject('ALL')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${filterSubject === 'ALL' ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200' : 'bg-white text-slate-600 border-slate-200'}`}
-          >
-            সব ({mistakes.length})
-          </button>
-          {uniqueSubjects.map(subject => (
+        <div className="space-y-4">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             <button 
-              key={subject}
-              onClick={() => setFilterSubject(subject)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${filterSubject === subject ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200' : 'bg-white text-slate-600 border-slate-200'}`}
+              onClick={() => { setFilterSubject('ALL'); setFilterChapter('ALL'); }}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${filterSubject === 'ALL' ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
             >
-              {subject} ({subjectCounts[subject]})
+              সব ({mistakes.length})
             </button>
-          ))}
+            {uniqueSubjects.map(subject => (
+              <button 
+                key={subject}
+                onClick={() => { setFilterSubject(subject); setFilterChapter('ALL'); }}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${filterSubject === subject ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
+              >
+                {subject} ({subjectCounts[subject]})
+              </button>
+            ))}
+          </div>
+
+          {/* Dynamic Chapter Badges List (Shown when a subject is filtered) */}
+          <AnimatePresence>
+            {filterSubject !== 'ALL' && uniqueChapters.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-col gap-1.5 pb-2">
+                  <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
+                    <button 
+                      onClick={() => setFilterChapter('ALL')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
+                        filterChapter === 'ALL' 
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-100 dark:shadow-none' 
+                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-850'
+                      }`}
+                    >
+                      সব অধ্যায় ({subjectCounts[filterSubject] || 0})
+                    </button>
+                    {uniqueChapters.map(chapter => {
+                      const count = chapterCounts[chapter] || 0;
+                      return (
+                        <button 
+                          key={chapter}
+                          onClick={() => setFilterChapter(chapter)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
+                            filterChapter === chapter 
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-100 dark:shadow-none' 
+                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-850'
+                          }`}
+                        >
+                          {chapter} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Bulk Actions */}
@@ -306,70 +390,71 @@ const WrongQuestions: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Search & Filter Toggle */}
+        {/* Search & Answer Reveal Toggle */}
         <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <div className="flex-1 relative font-sans">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" size={16} />
             <input 
               type="text"
               placeholder="প্রশ্ন খুঁজুন..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-200 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm focus:ring-2 focus:ring-slate-100 dark:focus:ring-zinc-850 outline-none transition-all dark:text-white"
             />
           </div>
           <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-bold ${showFilters ? 'bg-slate-100 border-slate-300' : 'bg-white border-slate-200 text-slate-600'}`}
+            onClick={() => setShowAllAnswers(!showAllAnswers)}
+            className={`px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-bold cursor-pointer select-none ${
+              showAllAnswers 
+              ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-105 dark:shadow-none' 
+              : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
+            }`}
+            title={showAllAnswers ? "সব উত্তর লুকান" : "সব উত্তর দেখুন"}
           >
-            <Filter size={16} />
+            {showAllAnswers ? <EyeOff size={16} /> : <Eye size={16} />}
+            <span className="hidden sm:inline">{showAllAnswers ? "সব উত্তর লুকান" : "সব উত্তর দেখুন"}</span>
           </button>
         </div>
-
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">অধ্যায়</label>
-                  <select 
-                    value={filterChapter}
-                    onChange={(e) => setFilterChapter(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-slate-400"
-                  >
-                    <option value="ALL">সব অধ্যায়</option>
-                    {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* List */}
         <div className="space-y-4">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">লোড হচ্ছে...</p>
+            <div className="space-y-4 animate-pulse">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white dark:bg-black rounded-3xl p-5 border border-gray-200 dark:border-white/[0.05]"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gray-200 dark:bg-white/[0.05] rounded-full"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-32 bg-gray-200 dark:bg-white/[0.05] rounded"></div>
+                      <div className="h-3 w-24 bg-gray-200 dark:bg-white/[0.05] rounded"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-3 pl-1">
+                    <div className="h-5 w-5/6 bg-gray-200 dark:bg-white/[0.05] rounded-lg"></div>
+                    <div className="h-4 w-2/3 bg-gray-200 dark:bg-white/[0.05] rounded-lg"></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-5">
+                    <div className="h-11 bg-gray-200 dark:bg-white/[0.05] rounded-2xl"></div>
+                    <div className="h-11 bg-gray-200 dark:bg-white/[0.05] rounded-2xl"></div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : displayedItems.length === 0 ? (
-            <div className="bg-slate-50 rounded-2xl p-12 text-center border border-dashed border-slate-200">
-              <CheckCircle size={40} className="mx-auto mb-4 text-slate-300" />
-              <h3 className="text-lg font-bold text-slate-900 mb-1">সব পরিষ্কার!</h3>
-              <p className="text-slate-500 text-sm">কোনো ভুল প্রশ্ন পাওয়া যায়নি।</p>
-            </div>
+            <EmptyState
+              icon={<CheckCircle size={28} className="text-gray-400" />}
+              message="সব পরিষ্কার! কোনো ভুল প্রশ্ন পাওয়া যায়নি।"
+            />
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {displayedItems.map((item) => {
+              {displayedItems.map((item, index) => {
                 const q = item.questionId;
                 if (!q) return null;
                 const isExpanded = expandedExplanations[item._id];
+                const itemIndexInTotal = (currentPage - 1) * ITEMS_PER_PAGE + index + 1;
                 
                 return (
                   <motion.div 
@@ -377,72 +462,71 @@ const WrongQuestions: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     key={item._id}
                     onClick={() => isSelectionMode && toggleSelect(item._id)}
-                    className={`bg-white p-4 rounded-2xl border transition-all relative overflow-hidden ${
-                      selectedIds.has(item._id) ? 'border-slate-900 ring-2 ring-slate-900/5' : 'border-slate-100 shadow-sm'
+                    className={`bg-white px-4 pt-5 pb-4 md:px-5 rounded-2xl border transition-all relative overflow-hidden dark:bg-zinc-950 dark:border-zinc-850/80 ${
+                      selectedIds.has(item._id) ? 'border-slate-900 ring-2 ring-slate-900/5 dark:border-zinc-100' : 'border-slate-200/60 dark:border-zinc-850 shadow-sm'
                     } ${isSelectionMode ? 'cursor-pointer' : ''}`}
                   >
                     {isSelectionMode && (
-                      <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      <div className={`absolute top-2.5 right-2.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                         selectedIds.has(item._id) ? 'bg-slate-900 border-slate-900' : 'bg-white border-slate-200'
                       }`}>
                         {selectedIds.has(item._id) && <CheckCircle size={12} className="text-white" />}
                       </div>
                     )}
 
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex flex-wrap gap-2">
-                        {/* Tags moved to bottom metadata footer */}
-                      </div>
-                      {!isSelectionMode && (
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDelete(item._id); }}
-                          className="p-1.5 text-slate-400 hover:text-red-500 transition-all"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
+
                     
                     {(q.contextText || q.contextImage) && (
                       <div className="mb-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/30">
                         <span className="text-[9px] font-black text-blue-500/50 dark:text-blue-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
-                        {q.contextText && <div className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                        {q.contextText && <div className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
                         {q.contextImage && (
                           <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                         )}
                       </div>
                     )}
 
-                    <div className={`text-[15px] font-bold text-slate-800 leading-relaxed mb-3 ${getFont(q.question)}`}>
-                      <div dangerouslySetInnerHTML={{ __html: q.question }} />
-                      {q.questionImage && (
-                        <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mx-auto border bg-white" referrerPolicy="no-referrer" />
-                      )}
+                    <div className="flex items-start gap-1.5 mb-3">
+                      <span className="text-slate-950 dark:text-zinc-100 font-extrabold text-sm md:text-base shrink-0 select-none pt-0.5 min-w-[1.25rem]">
+                        {toBanglaDigits(itemIndexInTotal)}.
+                      </span>
+                      <div className="flex-1">
+                        <div className={`text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
+                          <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                          {q.questionImage && (
+                            <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-1.5 mb-3">
+                    <div className="grid grid-cols-1 gap-1.5 mb-2 pl-0 md:pl-6">
                       {q.options.map((opt: string, i: number) => {
                         const isCorrect = i === q.correctAnswerIndex;
-                        const userAns = userAnswers[item._id];
-                        const hasAnswered = userAns !== undefined;
+                        const clickedList = userAnswers[item._id] || [];
+                        const isClicked = clickedList.includes(i);
+                        const isQuestionResolved = clickedList.includes(q.correctAnswerIndex);
                         
-                        let optionStyle = 'bg-slate-50 border-slate-100 text-slate-600';
-                        let iconStyle = 'bg-white border-slate-200 text-slate-400';
+                        let optionStyle = 'bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300';
+                        let iconStyle = 'bg-white border-slate-200 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500';
 
-                        if (isRevisionMode) {
-                          if (hasAnswered) {
-                            if (isCorrect) {
-                              optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700';
-                              iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
-                            } else if (userAns === i) {
-                              optionStyle = 'bg-red-50 border-red-200 text-red-700';
-                              iconStyle = 'bg-red-500 border-red-400 text-white';
-                            }
+                        if (showAllAnswers) {
+                          if (isCorrect) {
+                            optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400';
+                            iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
+                          } else if (isClicked) {
+                            optionStyle = 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400';
+                            iconStyle = 'bg-red-500 border-red-400 text-white';
                           }
                         } else {
-                          if (isCorrect) {
-                            optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700';
-                            iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
+                          if (isClicked) {
+                            if (isCorrect) {
+                              optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400';
+                              iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
+                            } else {
+                              optionStyle = 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400';
+                              iconStyle = 'bg-red-500 border-red-400 text-white';
+                            }
                           }
                         }
                         
@@ -450,20 +534,24 @@ const WrongQuestions: React.FC = () => {
                           <div 
                             key={i}
                             onClick={(e) => {
-                              if (isRevisionMode && !hasAnswered && !isSelectionMode) {
+                              if (!isQuestionResolved && !isSelectionMode) {
                                 e.stopPropagation();
-                                setUserAnswers(prev => ({ ...prev, [item._id]: i }));
+                                setUserAnswers(prev => {
+                                  const current = prev[item._id] || [];
+                                  if (current.includes(i)) return prev;
+                                  return { ...prev, [item._id]: [...current, i] };
+                                });
                               }
                             }}
-                            className={`p-2.5 rounded-xl border transition-all flex items-center gap-3 ${optionStyle} ${
-                              isRevisionMode && !hasAnswered && !isSelectionMode ? 'cursor-pointer hover:border-slate-300' : ''
+                            className={`p-2 rounded-xl border transition-all flex items-center gap-3 ${optionStyle} ${
+                              !isQuestionResolved && !isSelectionMode ? 'cursor-pointer hover:border-slate-300 dark:hover:border-zinc-700' : ''
                             }`}
                           >
-                            <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold border ${iconStyle}`}>
-                              {String.fromCharCode(65 + i)}
+                            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold border shrink-0 transition-colors ${iconStyle}`}>
+                              {getBanglaOptionChar(i)}
                             </span>
                             <div className="flex flex-col gap-1 flex-1">
-                              <div className={`text-sm font-medium ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                              <div className={`text-sm font-medium whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
                               {q.optionsImages?.[i] && (
                                 <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
                               )}
@@ -474,12 +562,11 @@ const WrongQuestions: React.FC = () => {
                     </div>
 
                     {q.explanation && (
-                      <div className="border-t border-slate-100 pt-3">
+                      <div className="border-t border-slate-100 pt-2 mt-3 block">
                         <button 
                           onClick={() => toggleExplanation(item._id)}
                           className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
                         >
-                          <Zap size={14} className="text-orange-500" />
                           <span>ব্যাখ্যা</span>
                           {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
@@ -491,8 +578,8 @@ const WrongQuestions: React.FC = () => {
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div className="mt-2 p-3 bg-slate-50 rounded-xl">
-                                <div className="text-sm text-slate-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                              <div id={`explanation-${item._id}`} className="mt-2 p-3 bg-slate-50 dark:bg-zinc-900/40 rounded-xl border border-slate-150 dark:border-zinc-800/80 flex flex-col gap-2 shadow-sm">
+                                <div className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                                 {q.explanationImage && (
                                   <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-white" referrerPolicy="no-referrer" />
                                 )}
@@ -502,7 +589,7 @@ const WrongQuestions: React.FC = () => {
                         </AnimatePresence>
                       </div>
                     )}
-                    <div className="mt-4 pt-4 border-t border-slate-50 dark:border-gray-800 flex items-center justify-between">
+                    <div className="mt-3 pt-3 border-t border-slate-55 dark:border-gray-800 flex items-center justify-between">
                       <div className="flex flex-wrap gap-2">
                         {q.subject && (
                           <span className="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 rounded-lg uppercase tracking-tight">
@@ -515,10 +602,13 @@ const WrongQuestions: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      {q.examRef && (
-                        <span className="text-[9px] font-black px-2 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg border border-orange-200/50 dark:border-orange-800/50">
-                          {q.examRef}
-                        </span>
+                      {!isSelectionMode && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDelete(item._id); }}
+                          className="p-1.5 text-slate-400 hover:text-red-500 transition-all border border-transparent rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 shrink-0"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       )}
                     </div>
                   </motion.div>
@@ -568,7 +658,7 @@ const WrongQuestions: React.FC = () => {
               <ChevronLeft size={20} className="rotate-180" />
             </button>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">
             মোট {filteredItems.length}টি ভুল প্রশ্ন
           </p>
         </div>

@@ -138,7 +138,7 @@ const AdminPdfUpload: React.FC = () => {
                 2.  **Identify Options:** Look for options labeled with:
                     - English: (a), (b), (c), (d) OR A, B, C, D
                     - Bengali: (ক), (খ), (গ), (ঘ) OR ক, খ, গ, ঘ
-                3.  **Math/LaTeX Rule:** Any mathematical expressions, equations, symbols MUST be wrapped inside $...$ or $$...$$ (e.g., $\sin \theta$, $\frac{1}{2}$). 
+                3.  **Math/LaTeX Rule:** Any mathematical expressions, equations, symbols MUST be wrapped inside $...$ or $$...$$ (e.g., $\\sin \\theta$, $\\frac{1}{2}$). 
                 4.  **Fix OCR Errors:** 
                     - Correct broken Bengali words.
                     - Fix spacing issues (e.g., "ques tion" -> "question").
@@ -176,7 +176,7 @@ const AdminPdfUpload: React.FC = () => {
             if (!textResponse) return [];
 
             // Extract JSON from response
-            let escapedResponse = textResponse.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+            const escapedResponse = textResponse.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
             const jsonMatch = escapedResponse.match(/\[[\s\S]*\]/);
             if (jsonMatch) {
                 const parsed = JSON.parse(jsonMatch[0]);
@@ -455,7 +455,7 @@ const AdminPdfUpload: React.FC = () => {
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                                                 {q.options.map((opt, i) => (
                                                     <div key={i} className={`p-2 rounded-lg text-xs border flex items-center gap-2 ${i === Number(q.correctAnswerIndex) ? 'bg-green-50 border-green-300 text-green-700 font-bold' : 'border-gray-200 dark:border-gray-700 text-gray-600'}`}>
-                                                        <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px]">{String.fromCharCode(65+i)}</span>
+                                                        <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[12px]">{String.fromCharCode(65+i)}</span>
                                                         {opt}
                                                     </div>
                                                 ))}

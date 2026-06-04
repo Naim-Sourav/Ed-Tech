@@ -157,10 +157,10 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Quick HSC Setup */}
                 <div className="p-4 bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-800/30 space-y-4">
-                    <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">HSC Board Quick Setup</p>
+                    <p className="text-[12px] font-black text-purple-600 uppercase tracking-widest mb-1">HSC Board Quick Setup</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-[10px] font-bold text-gray-400 mb-1">বোর্ড সিলেক্ট করুন</label>
+                            <label className="block text-[12px] font-bold text-gray-400 mb-1">বোর্ড সিলেক্ট করুন</label>
                             <select 
                                 onChange={e => {
                                     const board = e.target.value;
@@ -176,7 +176,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-gray-400 mb-1">সাল সিলেক্ট করুন</label>
+                            <label className="block text-[12px] font-bold text-gray-400 mb-1">সাল সিলেক্ট করুন</label>
                             <select 
                                 onChange={e => {
                                     const bengaliYear = e.target.value;
@@ -195,10 +195,10 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
 
                 {/* Quick Admission Setup */}
                 <div className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-800/30 space-y-4">
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Admission Quick Setup</p>
+                    <p className="text-[12px] font-black text-emerald-600 uppercase tracking-widest mb-1">Admission Quick Setup</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-[10px] font-bold text-gray-400 mb-1">পরীক্ষার ধরন</label>
+                            <label className="block text-[12px] font-bold text-gray-400 mb-1">পরীক্ষার ধরন</label>
                             <select 
                                 onChange={e => {
                                     const type = e.target.value;
@@ -218,7 +218,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-gray-400 mb-1">সাল (যেমন: ২৪-২৫)</label>
+                            <label className="block text-[12px] font-bold text-gray-400 mb-1">সাল (যেমন: ২৪-২৫)</label>
                             <input 
                                 type="text"
                                 placeholder="যেমন: ২৪-২৫"
@@ -235,7 +235,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
             </div>
 
             <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-2xl border border-gray-200 dark:border-gray-700">
-                <label className="block text-[10px] font-bold text-gray-400 mb-2">ফাইনাল ট্যাগ (Exam Ref)</label>
+                <label className="block text-[12px] font-bold text-gray-400 mb-2">ফাইনাল ট্যাগ (Exam Ref)</label>
                 <input 
                     type="text" 
                     value={data.examRef || ''}
@@ -350,7 +350,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                         {[0, 1, 2, 3].map(idx => (
                             <div key={idx} className="flex gap-3 items-start p-3 rounded-2xl bg-gray-50/50 dark:bg-gray-900/30 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
                                 <div className="flex flex-col items-center gap-2 mt-1">
-                                    <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-[10px]">
+                                    <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-[12px]">
                                         {String.fromCharCode(65 + idx)}
                                     </div>
                                     <input 
@@ -375,7 +375,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                             type="text" 
                                             value={data.optionsImages?.[idx] || ''}
                                             onChange={e => handleOptionImageChange(idx, e.target.value)}
-                                            className="flex-1 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-[10px]"
+                                            className="flex-1 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-[12px]"
                                             placeholder="Option Image URL"
                                         />
                                     </div>
@@ -840,12 +840,12 @@ const AdminPage: React.FC = () => {
                                 </div>
                                 <div>
                                    <p className="text-sm font-bold text-gray-800 dark:text-white line-clamp-1">{req.userName || 'Unknown'}</p>
-                                   <p className="text-[10px] text-gray-500">{req.courseTitle}</p>
+                                   <p className="text-[12px] text-gray-500">{req.courseTitle}</p>
                                 </div>
                              </div>
                              <div className="text-right">
                                 <p className="text-sm font-bold text-gray-800 dark:text-gray-200">৳{req.amount}</p>
-                                <span className="text-[10px] font-mono text-gray-400">{new Date(req.timestamp).toLocaleDateString()}</span>
+                                <span className="text-[12px] font-mono text-gray-400">{new Date(req.timestamp).toLocaleDateString()}</span>
                              </div>
                           </div>
                        ))}
@@ -1104,12 +1104,12 @@ const AdminPage: React.FC = () => {
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex flex-wrap gap-2">
                                             {!isRepeatStimulus && (
-                                                <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[10px] font-bold rounded-lg border border-orange-100 dark:border-orange-800">
+                                                <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[12px] font-bold rounded-lg border border-orange-100 dark:border-orange-800">
                                                     {q.subject?.split('(')[0]}
                                                 </span>
                                             )}
                                             {q.examRef && !isRepeatStimulus && (
-                                                <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[10px] font-bold rounded-lg border border-purple-100 dark:border-purple-800 flex items-center gap-1">
+                                                <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[12px] font-bold rounded-lg border border-purple-100 dark:border-purple-800 flex items-center gap-1">
                                                     <Bookmark size={10} fill="currentColor"/> {q.examRef}
                                                 </span>
                                             )}
@@ -1141,8 +1141,8 @@ const AdminPage: React.FC = () => {
                                     {/* Question Content */}
                                     <div className="mb-4">
                                         {(q.contextText || q.contextImage) && !isRepeatStimulus && (
-                                            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl border-l-4 border-blue-200 dark:border-blue-800 text-sm font-tiro leading-relaxed">
-                                                <span className="text-[10px] font-black text-blue-500 uppercase mb-1 block">উদ্দীপক (Context)</span>
+                                            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl border-l-4 border-blue-200 dark:border-blue-800 text-sm font-tiro leading-relaxed whitespace-pre-wrap">
+                                                <span className="text-[12px] font-black text-blue-500 uppercase mb-1 block">উদ্দীপক (Context)</span>
                                                 {q.contextText && <div dangerouslySetInnerHTML={{ __html: q.contextText }}></div>}
                                                 {q.contextImage && (
                                                     <img src={q.contextImage} alt="Context" className="mt-2 max-h-32 rounded-lg object-contain border border-blue-100 dark:border-blue-800/30" referrerPolicy="no-referrer" />
@@ -1150,7 +1150,7 @@ const AdminPage: React.FC = () => {
                                             </div>
                                         )}
                                     <h3 
-                                        className="text-lg font-bold text-gray-900 dark:text-white font-tiro leading-relaxed mb-2"
+                                        className="text-lg font-bold text-gray-900 dark:text-white font-tiro leading-relaxed mb-2 whitespace-pre-wrap"
                                         dangerouslySetInnerHTML={{ __html: q.question }}
                                     ></h3>
                                     {q.questionImage && (
@@ -1166,10 +1166,10 @@ const AdminPage: React.FC = () => {
                                             className={`p-2.5 rounded-lg border text-sm flex flex-col gap-2 ${idx === Number(q.correctAnswerIndex) ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300' : 'bg-gray-50/50 dark:bg-gray-700/30 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-gray-800' : 'border-gray-300 bg-white dark:bg-gray-800'}`}>
+                                                <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[12px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-gray-800' : 'border-gray-300 bg-white dark:bg-gray-800'}`}>
                                                     {String.fromCharCode(65 + idx)}
                                                 </span>
-                                                <span className="font-tiro" dangerouslySetInnerHTML={{ __html: opt }}></span>
+                                                <span className="font-tiro whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: opt }}></span>
                                                 {idx === Number(q.correctAnswerIndex) && <Check size={14} className="ml-auto text-green-600"/>}
                                             </div>
                                             {q.optionsImages?.[idx] && (
@@ -1181,7 +1181,7 @@ const AdminPage: React.FC = () => {
 
                                 {/* Explanation */}
                                 {q.explanation && (
-                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border-l-4 border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300">
+                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border-l-4 border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
                                         <span className="font-bold text-xs uppercase tracking-wider text-gray-400 mb-1 block">Explanation</span>
                                         <div className="font-tiro leading-relaxed" dangerouslySetInnerHTML={{ __html: q.explanation }}></div>
                                         {q.explanationImage && (
@@ -1295,7 +1295,7 @@ const AdminPage: React.FC = () => {
                          </div>
                          <div>
                             <p className="text-sm font-bold text-gray-800 dark:text-white">Firebase Push Notification পাঠান</p>
-                            <p className="text-[10px] text-gray-500">এটি সকল ইউজারের ফোনে সরাসরি পুশ নোটিফিকেশন পাঠাবে।</p>
+                            <p className="text-[12px] text-gray-500">এটি সকল ইউজারের ফোনে সরাসরি পুশ নোটিফিকেশন পাঠাবে।</p>
                          </div>
                       </div>
 
@@ -1320,7 +1320,7 @@ const AdminPage: React.FC = () => {
                                    <div key={n.id || n._id} className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-start">
                                        <div>
                                            <div className="flex items-center gap-2 mb-1">
-                                               <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
+                                               <span className={`px-2 py-0.5 text-[12px] font-bold rounded uppercase ${
                                                    n.type === 'SUCCESS' ? 'bg-green-100 text-green-700' :
                                                    n.type === 'WARNING' ? 'bg-yellow-100 text-yellow-700' :
                                                    'bg-orange-100 text-orange-700'

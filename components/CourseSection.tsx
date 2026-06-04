@@ -125,7 +125,7 @@ const CourseSection: React.FC = () => {
             <div className={`p-5 md:p-6 border-b border-white/20 dark:border-white/5 ${themeStyles.bg} relative overflow-hidden`}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                 <div className="flex justify-between items-start mb-3 md:mb-4 relative z-10">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider shadow-sm ${themeStyles.badge}`}>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[12px] md:text-xs font-bold uppercase tracking-wider shadow-sm ${themeStyles.badge}`}>
                         {course.badge}
                     </span>
                     <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium">
@@ -160,7 +160,7 @@ const CourseSection: React.FC = () => {
                             <span className="text-green-600 font-bold text-xs md:text-sm flex items-center gap-1"><CheckCircle size={12} className="md:w-3.5 md:h-3.5"/> {t('course_active')}</span>
                         ) : (
                             <>
-                                <span className="text-[10px] md:text-xs text-gray-400 line-through block font-bold">৳{course.originalPrice}</span>
+                                <span className="text-[12px] md:text-xs text-gray-400 line-through block font-bold">৳{course.originalPrice}</span>
                                 {course.price === 0 ? (
                                     <span className="text-lg md:text-xl font-black text-green-600 dark:text-green-400 tracking-tight">FREE</span>
                                 ) : (
@@ -254,7 +254,7 @@ const CourseSection: React.FC = () => {
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-xs font-medium line-clamp-2">{item.title}</p>
-                                        <p className="text-[10px] text-gray-400 mt-0.5">{item.duration}</p>
+                                        <p className="text-[12px] text-gray-400 mt-0.5">{item.duration}</p>
                                     </div>
                                 </button>
                             ))}

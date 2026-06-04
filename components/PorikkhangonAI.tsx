@@ -474,7 +474,7 @@ const PorikkhangonAI: React.FC = () => {
                         <div className="mb-6">
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center justify-between">
                                 <span className="flex items-center gap-2"><Key size={16} className="text-orange-500"/> Custom API Key</span>
-                                {apiStatus === 'valid' && <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold uppercase tracking-wider">Active</span>}
+                                {apiStatus === 'valid' && <span className="text-[12px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold uppercase tracking-wider">Active</span>}
                             </label>
                             <div className="flex gap-2">
                                 <input 
@@ -600,7 +600,7 @@ const PorikkhangonAI: React.FC = () => {
                                     <div className="w-5 h-5 bg-orange-500 rounded-md flex items-center justify-center text-white">
                                         <Bot size={12} />
                                     </div>
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Porikkhangon AI</span>
+                                    <span className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">Porikkhangon AI</span>
                                 </div>
                             )}
                             
@@ -640,7 +640,7 @@ const PorikkhangonAI: React.FC = () => {
                                                     
                                                     return (
                                                         <div key={pIdx} className="bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/10 rounded-2xl p-4 my-4 shadow-sm">
-                                                            <p className="font-bold text-sm mb-4 text-gray-900 dark:text-white leading-snug">
+                                                            <p className="font-bold text-sm mb-4 text-gray-900 dark:text-white leading-snug whitespace-pre-wrap">
                                                                 <span className="text-orange-500 mr-2">Q.</span>
                                                                 {mcq.question}
                                                             </p>
@@ -666,8 +666,8 @@ const PorikkhangonAI: React.FC = () => {
                                                                             onClick={() => handleMCQOptionClick(msg.id, pIdx, opt.label, mcq.correct)}
                                                                             className={`w-full p-3.5 text-left rounded-xl border-2 text-sm font-medium transition-all flex items-center justify-between ${btnClass}`}
                                                                         >
-                                                                            <span className="flex items-center gap-3">
-                                                                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold border ${isSelected ? 'bg-current text-white border-transparent' : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
+                                                                            <span className="flex items-center gap-3 whitespace-pre-wrap">
+                                                                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[12px] font-bold border ${isSelected ? 'bg-current text-white border-transparent' : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600'}`}>
                                                                                     {opt.label}
                                                                                 </span>
                                                                                 {opt.text}
@@ -686,9 +686,9 @@ const PorikkhangonAI: React.FC = () => {
                                                                 >
                                                                     <div className="flex items-center gap-2 mb-2">
                                                                         <Sparkles size={14} className="text-orange-500" />
-                                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500">Explanation</span>
+                                                                        <span className="text-[12px] font-bold uppercase tracking-widest text-orange-500">Explanation</span>
                                                                     </div>
-                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed italic">
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed italic whitespace-pre-wrap">
                                                                         {mcq.explanation}
                                                                     </p>
                                                                 </motion.div>
@@ -710,7 +710,7 @@ const PorikkhangonAI: React.FC = () => {
                                                 href={src.uri} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
-                                                className="flex items-center gap-1 text-[10px] px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full hover:bg-orange-500 hover:text-white transition-colors"
+                                                className="flex items-center gap-1 text-[12px] px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full hover:bg-orange-500 hover:text-white transition-colors"
                                             >
                                                 <ExternalLink size={10} /> {src.title.length > 15 ? src.title.substring(0, 15) + '...' : src.title}
                                             </a>
@@ -831,7 +831,7 @@ const PorikkhangonAI: React.FC = () => {
                   </button>
               </div>
               
-              <p className="text-[10px] text-center text-gray-400 mt-3 font-medium tracking-wide">
+              <p className="text-[12px] text-center text-gray-400 mt-3 font-medium tracking-wide">
                   AI can make mistakes. Check important info.
               </p>
           </div>

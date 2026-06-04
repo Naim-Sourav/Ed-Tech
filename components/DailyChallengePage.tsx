@@ -122,7 +122,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
       if (quest.type === 'ASK_AI') navigate('/bot');
       else if (quest.type === 'EXAM_COMPLETE') navigate('/quiz');
       else if (quest.type === 'PLAY_BATTLE') navigate('/battle');
-      else if (quest.type === 'STUDY_TIME') navigate('/planner');
+      else if (quest.type === 'STUDY_TIME') navigate('/history');
       else navigate('/quiz');
   };
 
@@ -263,7 +263,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
                                          <div className="flex-1 bg-gray-100 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
                                              <div className={`h-full rounded-full transition-all duration-1000 ease-out ${isCompleted ? 'bg-green-500' : 'bg-primary'}`} style={{ width: `${percent}%` }}></div>
                                          </div>
-                                         <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">{quest.progress >= quest.target ? quest.target : quest.progress}/{quest.target}</span>
+                                         <span className="text-[12px] font-bold text-gray-400 whitespace-nowrap">{quest.progress >= quest.target ? quest.target : quest.progress}/{quest.target}</span>
                                      </div>
                                  </div>
 

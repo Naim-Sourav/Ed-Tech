@@ -8,6 +8,7 @@ import { Crown, Zap, ChevronRight, ArrowRight, Medal, Search, RefreshCw, Users }
 import { useAuth } from '../contexts/AuthContext';
 import { useCache } from '../contexts/CacheContext';
 import { motion, AnimatePresence } from 'motion/react';
+import EmptyState from './EmptyState';
 
 const LeaderboardPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -109,23 +110,23 @@ const LeaderboardPage: React.FC = () => {
 
   const handleUserClick = (uid: string) => navigate(`/profile/${uid}`);
 
-  // Skeleton Loader Component
+  // Skeleton Loader Component (matches HomeDashboard patterns)
   const LeaderboardSkeleton = () => (
-    <div className="space-y-4 w-full">
-      <div className="flex justify-center items-end gap-4 mb-4 md:mb-10 h-32 md:h-48">
-         <div className="w-20 h-32 bg-gray-200 dark:bg-zinc-900/50 rounded-t-2xl animate-pulse"></div>
-         <div className="w-24 h-40 bg-gray-300 dark:bg-zinc-800/50 rounded-t-2xl animate-pulse"></div>
-         <div className="w-20 h-24 bg-gray-200 dark:bg-zinc-900/50 rounded-t-2xl animate-pulse"></div>
+    <div className="space-y-4 w-full animate-pulse">
+      <div className="flex justify-center items-end gap-3 mb-6 md:mb-10 h-32 md:h-48 bg-white dark:bg-black p-4 rounded-3xl border border-gray-200 dark:border-white/[0.05]">
+         <div className="w-20 h-[50%] bg-gray-200 dark:bg-white/[0.05] rounded-t-2xl"></div>
+         <div className="w-24 h-[90%] bg-gray-200 dark:bg-white/[0.05] rounded-t-2xl"></div>
+         <div className="w-20 h-[35%] bg-gray-200 dark:bg-white/[0.05] rounded-t-2xl"></div>
       </div>
       {[...Array(6)].map((_, i) => (
-        <div key={i} className="flex items-center p-4 rounded-2xl border border-gray-200 dark:border-white/5 bg-white dark:bg-zinc-900/20 animate-pulse">
-           <div className="w-8 h-6 bg-gray-200 dark:bg-zinc-800 rounded mr-4"></div>
-           <div className="w-12 h-12 bg-gray-200 dark:bg-zinc-800 rounded-xl mr-4"></div>
-           <div className="flex-1">
-              <div className="h-4 w-32 bg-gray-200 dark:bg-zinc-800 rounded mb-2"></div>
-              <div className="h-3 w-20 bg-gray-100 dark:bg-zinc-900 rounded"></div>
+        <div key={i} className="flex items-center p-4 rounded-2xl border border-gray-155 dark:border-white/[0.05] bg-white dark:bg-black">
+           <div className="w-8 h-6 bg-gray-200 dark:bg-white/[0.05] rounded mr-4"></div>
+           <div className="w-12 h-12 bg-gray-200 dark:bg-white/[0.05] rounded-xl mr-4"></div>
+           <div className="flex-1 space-y-1.55">
+              <div className="h-4 w-32 bg-gray-200 dark:bg-white/[0.05] rounded mb-1"></div>
+              <div className="h-3 w-20 bg-gray-200 dark:bg-white/[0.05] rounded"></div>
            </div>
-           <div className="w-16 h-6 bg-gray-200 dark:bg-zinc-800 rounded"></div>
+           <div className="w-16 h-6 bg-gray-200 dark:bg-white/[0.05] rounded"></div>
         </div>
       ))}
     </div>
@@ -158,7 +159,7 @@ const LeaderboardPage: React.FC = () => {
         <div className="flex justify-between items-center mb-4 md:mb-8">
            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-zinc-900/50 backdrop-blur-xl shadow-sm border border-gray-100 dark:border-white/5">
               <Users size={14} className="text-primary" />
-              <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400">{toBengaliNumber(users.length)} জন অংশগ্রহণকারী</span>
+              <span className="text-[12px] font-bold text-gray-500 dark:text-zinc-400">{toBengaliNumber(users.length)} জন অংশগ্রহণকারী</span>
            </div>
            <motion.button 
              whileTap={{ scale: 0.9 }}
@@ -203,23 +204,12 @@ const LeaderboardPage: React.FC = () => {
         {loading ? (
            <LeaderboardSkeleton />
         ) : filteredUsers.length === 0 ? (
-           <motion.div 
-             initial={{ opacity: 0, scale: 0.9 }}
-             animate={{ opacity: 1, scale: 1 }}
-             className="text-center py-24 bg-white dark:bg-zinc-900/20 rounded-[2.5rem] border border-gray-100 dark:border-white/5 backdrop-blur-2xl"
-           >
-              <div className="w-20 h-20 bg-gray-100 dark:bg-zinc-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search size={32} className="text-gray-300 dark:text-zinc-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">কোনো ব্যবহারকারী পাওয়া যায়নি</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-xs mx-auto">আপনার সার্চের সাথে মিল আছে এমন কাউকে পাওয়া যায়নি।</p>
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="mt-6 text-primary font-bold text-sm hover:underline"
-              >
-                সার্চ মুছুন
-              </button>
-           </motion.div>
+           <EmptyState
+             icon={<Search size={28} className="text-gray-400" />}
+             message="কোনো ব্যবহারকারী পাওয়া যায়নি! আপনার সার্চের সাথে মিল আছে এমন কেউ লিডারবোর্ডে অংশ নেয়নি।"
+             actionText={searchQuery ? "সার্চ মুছুন" : undefined}
+             onActionClick={searchQuery ? () => setSearchQuery('') : undefined}
+           />
         ) : (
            <>
              {/* Podium (Top 3) - Only show if not searching or if search results include them */}
@@ -239,12 +229,12 @@ const LeaderboardPage: React.FC = () => {
                           <div className="w-10 h-10 md:w-20 md:h-20 rounded-full p-0.5 md:p-1 bg-gradient-to-br from-slate-300 to-slate-500 shadow-xl relative z-10">
                               {renderAvatar(top3[1], "w-full h-full object-cover rounded-full border-2 border-white dark:border-black", true)}
                           </div>
-                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-slate-600 text-white text-[8px] md:text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">2</div>
+                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-slate-600 text-white text-[8px] md:text-[12px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">2</div>
                         </div>
                         <p className="font-bold text-[8px] md:text-xs text-gray-600 dark:text-gray-300 text-center mb-0.5 md:mb-2 line-clamp-1">{top3[1].displayName}</p>
                         <div className="w-full h-10 md:h-24 bg-white dark:bg-zinc-900/30 backdrop-blur-2xl rounded-t-xl md:rounded-t-2xl border-t border-x border-gray-100 dark:border-white/5 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1 bg-slate-400/30"></div>
-                            <span className="text-slate-600 dark:text-slate-400 font-black text-[10px] md:text-xs">{top3[1].points}</span>
+                            <span className="text-slate-600 dark:text-slate-400 font-black text-[12px] md:text-xs">{top3[1].points}</span>
                             <span className="text-[6px] md:text-[8px] font-bold text-slate-400 uppercase">PTS</span>
                         </div>
                     </motion.div>
@@ -271,9 +261,9 @@ const LeaderboardPage: React.FC = () => {
                           <div className="w-14 h-14 md:w-24 md:h-24 rounded-full p-1 md:p-1.5 bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-600 shadow-2xl shadow-yellow-500/30 relative z-10">
                               {renderAvatar(top3[0], "w-full h-full object-cover rounded-full border-2 border-white dark:border-black", true)}
                           </div>
-                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-yellow-500 text-white text-[10px] md:text-xs font-black px-3 md:px-4 py-0.5 md:py-1 rounded-full shadow-xl border border-white/20">1</div>
+                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-yellow-500 text-white text-[12px] md:text-xs font-black px-3 md:px-4 py-0.5 md:py-1 rounded-full shadow-xl border border-white/20">1</div>
                         </div>
-                        <p className="font-bold text-[10px] md:text-sm text-yellow-600 dark:text-yellow-400 text-center mb-0.5 md:mb-2 line-clamp-1">{top3[0].displayName}</p>
+                        <p className="font-bold text-[12px] md:text-sm text-yellow-600 dark:text-yellow-400 text-center mb-0.5 md:mb-2 line-clamp-1">{top3[0].displayName}</p>
                         <div className="w-full h-16 md:h-36 bg-white dark:bg-zinc-900/30 backdrop-blur-2xl rounded-t-2xl md:rounded-t-3xl border-t border-x border-yellow-100 dark:border-white/5 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1 md:h-1.5 bg-yellow-400"></div>
                             <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/5 to-transparent"></div>
@@ -297,12 +287,12 @@ const LeaderboardPage: React.FC = () => {
                           <div className="w-8 h-8 md:w-16 md:h-16 rounded-full p-0.5 md:p-1 bg-gradient-to-br from-amber-600 to-amber-800 shadow-xl relative z-10">
                               {renderAvatar(top3[2], "w-full h-full object-cover rounded-full border-2 border-white dark:border-black", true)}
                           </div>
-                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-amber-700 text-white text-[8px] md:text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">3</div>
+                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-amber-700 text-white text-[8px] md:text-[12px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">3</div>
                         </div>
                         <p className="font-bold text-[8px] md:text-xs text-amber-700 dark:text-amber-500 text-center mb-0.5 md:mb-2 line-clamp-1">{top3[2].displayName}</p>
                         <div className="w-full h-8 md:h-20 bg-white dark:bg-zinc-900/30 backdrop-blur-2xl rounded-t-xl md:rounded-t-2xl border-t border-x border-gray-100 dark:border-white/5 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1 bg-amber-600/30"></div>
-                            <span className="text-amber-700 dark:text-amber-600 font-black text-[10px] md:text-xs">{top3[2].points}</span>
+                            <span className="text-amber-700 dark:text-amber-600 font-black text-[12px] md:text-xs">{top3[2].points}</span>
                             <span className="text-[6px] md:text-[8px] font-bold text-amber-600/60 uppercase">PTS</span>
                         </div>
                     </motion.div>
@@ -347,7 +337,7 @@ const LeaderboardPage: React.FC = () => {
                               <p className={`font-bold text-xs md:text-base truncate ${isMe ? 'text-primary dark:text-white' : 'text-gray-800 dark:text-gray-200'}`}>
                                  {u.displayName}
                               </p>
-                              <p className="text-[8px] md:text-[10px] text-gray-400 dark:text-gray-500 font-medium truncate">{u.college || 'Institution Info Missing'}</p>
+                              <p className="text-[8px] md:text-[12px] text-gray-400 dark:text-gray-500 font-medium truncate">{u.college || 'Institution Info Missing'}</p>
                           </div>
 
                           <div className="flex items-center gap-2 md:gap-4 ml-1 md:ml-2">
@@ -366,7 +356,7 @@ const LeaderboardPage: React.FC = () => {
                 
                 {others.length === 0 && top3.length > 0 && !searchQuery && (
                    <div className="text-center py-12 opacity-40">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.3em]">End of list</p>
+                      <p className="text-[12px] font-bold uppercase tracking-[0.3em]">End of list</p>
                    </div>
                 )}
              </div>

@@ -70,7 +70,7 @@ const AdmissionSearch: React.FC = () => {
                <button 
                 key={s}
                 onClick={() => setQuery(s)}
-                className="text-[10px] bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors border border-white/10"
+                className="text-[12px] bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors border border-white/10"
                >
                  {s}
                </button>
@@ -106,7 +106,7 @@ const AdmissionSearch: React.FC = () => {
                        </div>
                        <div>
                          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 group-hover:underline line-clamp-1">{source.title}</p>
-                         <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">{source.uri}</p>
+                         <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">{source.uri}</p>
                        </div>
                      </a>
                    ))}

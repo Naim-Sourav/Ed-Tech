@@ -7,11 +7,11 @@ import {
 } from 'lucide-react';
 
 const SUBJECTS = [
-    { name: 'Physics', group: 'Physics', icon: Atom, color: 'bg-orange-100 text-primary dark:bg-orange-900/30 dark:text-orange-400' },
-    { name: 'Chemistry', group: 'Chemistry', icon: Beaker, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
+    { name: 'Physics', group: 'Physics', icon: Atom, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
+    { name: 'Chemistry', group: 'Chemistry', icon: Beaker, color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
     { name: 'Math', group: 'Higher Math', icon: Calculator, color: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
-    { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
-    { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' },
+    { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
+    { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
 ];
 
 import questions from '../data/gst_a_23_24_questions.json';
@@ -146,7 +146,7 @@ const ExamHub: React.FC = () => {
                 </div>
                 <div>
                     <h2 className="text-xl md:text-4xl font-black mb-1.5 md:mb-2 tracking-tight">মেডিকেল ভর্তি পরীক্ষা</h2>
-                    <p className="text-[10px] md:text-sm text-gray-400 font-medium">মডেল টেস্ট - ০৫ | পূর্ণমান: ১০০ | সময়: ১ ঘণ্টা</p>
+                    <p className="text-[12px] md:text-sm text-gray-400 font-medium">মডেল টেস্ট - ০৫ | পূর্ণমান: ১০০ | সময়: ১ ঘণ্টা</p>
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-[11px] md:text-sm font-bold text-white/90 group-hover:gap-3 transition-all">
                     পরীক্ষা শুরু করুন <ArrowRight size={14} className="text-orange-400 md:w-4 md:h-4"/>
@@ -158,7 +158,7 @@ const ExamHub: React.FC = () => {
         <div>
             <h3 className="text-[11px] md:text-base font-black text-gray-500 dark:text-gray-400 mb-3 px-1 uppercase tracking-wider">কুইক অ্যাক্সেস</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                {/* Rapid Fire */}
+                {/* Flash Cards */}
                 <div 
                     onClick={() => navigate('/quiz', { state: { mode: 'RAPID_FIRE' } })}
                     className="bg-white/60 dark:bg-gray-800/40 backdrop-blur-xl p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden"
@@ -166,11 +166,11 @@ const ExamHub: React.FC = () => {
                     <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
                         <Flame size={50} />
                     </div>
-                    <div className="w-9 h-9 md:w-12 md:h-12 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-2.5 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <div className="w-9 h-9 md:w-12 md:h-12 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-2.5 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
                         <Flame size={18} fill="currentColor" className="md:w-6 md:h-6" />
                     </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg">র‍্যাপিড ফায়ার</h4>
-                    <p className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">১৫টি প্রশ্ন, দ্রুত সমাধান</p>
+                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg">ফ্ল্যাশ কার্ড</h4>
+                    <p className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">দ্রুত রিভিশন দিন</p>
                 </div>
 
                 {/* Custom Quiz */}
@@ -223,10 +223,10 @@ const ExamHub: React.FC = () => {
                         <div className="w-9 h-9 md:w-10 md:h-10 bg-orange-50 dark:bg-orange-500/20 text-primary dark:text-orange-400 rounded-xl flex items-center justify-center shadow-sm">
                             <Atom size={18} className="md:w-5 md:h-5" />
                         </div>
-                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[10px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[12px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
                     </div>
                     <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base mb-0.5 md:mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Physics: ভেক্টর ও গতিবিদ্যা</h4>
-                    <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
+                    <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
                 </div>
 
                 <div 
@@ -237,10 +237,10 @@ const ExamHub: React.FC = () => {
                         <div className="w-9 h-9 md:w-10 md:h-10 bg-orange-50 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center shadow-sm">
                             <Beaker size={18} className="md:w-5 md:h-5" />
                         </div>
-                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[10px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[12px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
                     </div>
                     <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base mb-0.5 md:mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Chemistry: গুণগত রসায়ন</h4>
-                    <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
+                    <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
                 </div>
 
                 <div 
@@ -251,10 +251,10 @@ const ExamHub: React.FC = () => {
                         <div className="w-9 h-9 md:w-10 md:h-10 bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center shadow-sm">
                             <Calculator size={18} className="md:w-5 md:h-5" />
                         </div>
-                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[10px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[12px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
                     </div>
                     <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base mb-0.5 md:mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">Math: ম্যাট্রিক্স ও নির্ণায়ক</h4>
-                    <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
+                    <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
                 </div>
             </div>
         </div>
@@ -286,7 +286,7 @@ const ExamHub: React.FC = () => {
                         </div>
                         <div>
                             <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">মেডিকেল ভর্তি পরীক্ষা</h4>
-                            <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৫-২৬ সেশন | ১০০ প্রশ্ন</p>
+                            <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৫-২৬ সেশন | ১০০ প্রশ্ন</p>
                         </div>
                     </div>
                     <div className="p-1.5 md:p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full group-hover:bg-red-500 group-hover:text-white transition-all">

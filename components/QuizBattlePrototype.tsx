@@ -51,13 +51,13 @@ interface BattleStats {
 type Phase = 'MENU' | 'CREATE' | 'JOIN' | 'LOBBY' | 'GAME' | 'RESULT';
 
 const BATTLE_SUBJECTS = [
-    { id: 'Physics', label: 'পদার্থবিজ্ঞান', icon: Atom, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
-    { id: 'Chemistry', label: 'রসায়ন', icon: Beaker, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
+    { id: 'Physics', label: 'পদার্থবিজ্ঞান', icon: Atom, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800' },
+    { id: 'Chemistry', label: 'রসায়ন', icon: Beaker, color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20', border: 'border-teal-200 dark:border-teal-800' },
     { id: 'Math', label: 'উচ্চতর গণিত', icon: Calculator, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800' },
-    { id: 'Biology', label: 'জীববিজ্ঞান', icon: Dna, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
-    { id: 'ICT', label: 'আইসিটি', icon: Brain, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800' },
-    { id: 'English', label: 'ইংরেজি', icon: BookOpen, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
-    { id: 'Bangla', label: 'বাংলা', icon: Book, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800' },
+    { id: 'Biology', label: 'জীববিজ্ঞান', icon: Dna, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800' },
+    { id: 'ICT', label: 'আইসিটি', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
+    { id: 'English', label: 'ইংরেজি', icon: BookOpen, color: 'text-pink-500', bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-200 dark:border-pink-800' },
+    { id: 'Bangla', label: 'বাংলা', icon: Book, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800' },
     { id: 'General Knowledge', label: 'সাধারণ জ্ঞান', icon: Globe, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
 ];
 
@@ -572,7 +572,7 @@ const QuizBattlePrototype: React.FC = () => {
             <div className={`p-2 rounded-2xl transition-all duration-300 ${isActive ? 'bg-orange-100/50 dark:bg-orange-900/30 scale-110' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
               <tab.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'opacity-100 translate-y-0' : 'opacity-60'}`}>{tab.label}</span>
+            <span className={`text-[12px] font-black uppercase tracking-widest transition-all ${isActive ? 'opacity-100 translate-y-0' : 'opacity-60'}`}>{tab.label}</span>
             {isActive && (
               <motion.div 
                 layoutId="activeTab"
@@ -615,18 +615,18 @@ const QuizBattlePrototype: React.FC = () => {
           
           <h1 className="text-2xl font-black mb-1">{currentUser?.displayName}</h1>
           <div className="flex items-center gap-2 mb-6">
-            <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-sm">Warrior</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full text-[12px] font-black uppercase tracking-widest backdrop-blur-sm">Warrior</span>
             <div className="w-1 h-1 bg-white/40 rounded-full"></div>
             <span className="text-orange-100 text-xs font-bold">Level 12</span>
           </div>
           
           <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
             <div className="bg-black/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/10">
-              <p className="text-[10px] font-black text-orange-200 uppercase tracking-widest mb-1">Rank</p>
+              <p className="text-[12px] font-black text-orange-200 uppercase tracking-widest mb-1">Rank</p>
               <p className="text-xl font-black">#42</p>
             </div>
             <div className="bg-black/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/10">
-              <p className="text-[10px] font-black text-orange-200 uppercase tracking-widest mb-1">Points</p>
+              <p className="text-[12px] font-black text-orange-200 uppercase tracking-widest mb-1">Points</p>
               <p className="text-xl font-black">{myStats.totalPoints}</p>
             </div>
           </div>
@@ -641,7 +641,7 @@ const QuizBattlePrototype: React.FC = () => {
           </div>
           <div className="text-center">
             <p className="text-2xl font-black text-gray-800 dark:text-white">{myStats.totalMatches}</p>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matches</p>
+            <p className="text-[12px] font-black text-gray-400 uppercase tracking-widest">Matches</p>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
@@ -650,7 +650,7 @@ const QuizBattlePrototype: React.FC = () => {
           </div>
           <div className="text-center">
             <p className="text-2xl font-black text-gray-800 dark:text-white">{myStats.winRate}%</p>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Win Rate</p>
+            <p className="text-[12px] font-black text-gray-400 uppercase tracking-widest">Win Rate</p>
           </div>
         </div>
       </div>
@@ -720,14 +720,14 @@ const QuizBattlePrototype: React.FC = () => {
                         </div>
                         <div>
                             <h3 className="font-black text-sm text-gray-900 dark:text-white">Physics Battle</h3>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">21 Mar, 2024 • 10:30 AM</p>
+                            <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">21 Mar, 2024 • 10:30 AM</p>
                         </div>
                     </div>
                     <div className="text-right">
                         <span className={`text-sm font-black ${i % 2 === 0 ? 'text-orange-500' : 'text-red-500'}`}>
                             {i % 2 === 0 ? '+25 XP' : '-10 XP'}
                         </span>
-                        <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">Rank #1</p>
+                        <p className="text-[12px] text-gray-500 font-mono uppercase tracking-widest">Rank #1</p>
                     </div>
                 </motion.div>
             ))}
@@ -750,7 +750,7 @@ const QuizBattlePrototype: React.FC = () => {
                 <div className="flex flex-col items-center gap-2">
                     <div className="relative">
                         <img src="https://picsum.photos/seed/p2/100" className="w-14 h-14 rounded-full border-2 border-gray-300 p-0.5" alt=""/>
-                        <div className="absolute -bottom-1 -right-1 bg-gray-400 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">2</div>
+                        <div className="absolute -bottom-1 -right-1 bg-gray-400 text-white text-[12px] font-bold w-5 h-5 rounded-full flex items-center justify-center">2</div>
                     </div>
                     <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-t-lg"></div>
                 </div>
@@ -765,7 +765,7 @@ const QuizBattlePrototype: React.FC = () => {
                 <div className="flex flex-col items-center gap-2">
                     <div className="relative">
                         <img src="https://picsum.photos/seed/p3/100" className="w-14 h-14 rounded-full border-2 border-orange-600 p-0.5" alt=""/>
-                        <div className="absolute -bottom-1 -right-1 bg-orange-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">3</div>
+                        <div className="absolute -bottom-1 -right-1 bg-orange-600 text-white text-[12px] font-bold w-5 h-5 rounded-full flex items-center justify-center">3</div>
                     </div>
                     <div className="h-10 w-12 bg-orange-600/20 rounded-t-lg"></div>
                 </div>
@@ -786,7 +786,7 @@ const QuizBattlePrototype: React.FC = () => {
                         <img src={`https://picsum.photos/seed/user${i}/100`} className="w-10 h-10 rounded-full bg-gray-100 object-cover" alt=""/>
                         <div>
                             <h3 className="font-black text-sm text-gray-900 dark:text-white">Player {i}</h3>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Level {10 + i}</p>
+                            <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">Level {10 + i}</p>
                         </div>
                     </div>
                     <div className="text-right">
@@ -848,7 +848,7 @@ const QuizBattlePrototype: React.FC = () => {
           </div>
           <div className="text-center">
             <p className="font-black text-gray-900 dark:text-white text-xl mb-1">{host?.name || 'You'}</p>
-            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.15em] rounded-full border border-blue-100 dark:border-blue-800/50">
+            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[12px] font-black uppercase tracking-[0.15em] rounded-full border border-blue-100 dark:border-blue-800/50">
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
                 Host
             </div>
@@ -878,7 +878,7 @@ const QuizBattlePrototype: React.FC = () => {
               </motion.div>
               <div className="text-center">
                 <p className="font-black text-gray-900 dark:text-white text-xl mb-1">{guest.name}</p>
-                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-black uppercase tracking-[0.15em] rounded-full border border-orange-100 dark:border-orange-800/50">
+                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[12px] font-black uppercase tracking-[0.15em] rounded-full border border-orange-100 dark:border-orange-800/50">
                     <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
                     Challenger
                 </div>
@@ -898,7 +898,7 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] border-4 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm relative z-10">
                         <div className="flex flex-col items-center gap-2 text-gray-400">
                             <UserPlus size={32} strokeWidth={1.5} className="animate-pulse"/>
-                            <span className="text-[10px] font-black uppercase tracking-widest">Waiting</span>
+                            <span className="text-[12px] font-black uppercase tracking-widest">Waiting</span>
                         </div>
                     </div>
                 </div>
@@ -931,7 +931,7 @@ const QuizBattlePrototype: React.FC = () => {
         <div className="space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
             {/* 1. Subject Selection Grid */}
             <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block flex items-center gap-2">
+                <label className="text-[12px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block flex items-center gap-2">
                     <Layers size={14}/> Choose Subject
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -960,7 +960,7 @@ const QuizBattlePrototype: React.FC = () => {
             {/* 2. Chapter Selection */}
             {config.subjects.length > 0 && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block flex items-center gap-2">
+                    <label className="text-[12px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block flex items-center gap-2">
                         <BookOpen size={14}/> Select Chapters
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -1031,7 +1031,7 @@ const QuizBattlePrototype: React.FC = () => {
   const renderJoin = () => (
     <div className="space-y-8">
         <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center">Enter 6-Digit Room Code</label>
+            <label className="block text-[12px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 text-center">Enter 6-Digit Room Code</label>
             <input 
                 type="text" 
                 value={inputRoomId}
@@ -1108,7 +1108,7 @@ const QuizBattlePrototype: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-t-[3rem] p-8 shadow-2xl relative"
+              className="w-full md:max-w-xl bg-white dark:bg-gray-800 rounded-t-[3rem] p-8 shadow-2xl relative"
               onClick={e => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-8"></div>
@@ -1143,7 +1143,7 @@ const QuizBattlePrototype: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-t-[3rem] p-8 shadow-2xl relative"
+              className="w-full md:max-w-xl bg-white dark:bg-gray-800 rounded-t-[3rem] p-8 shadow-2xl relative"
               onClick={e => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-8"></div>
@@ -1180,7 +1180,7 @@ const QuizBattlePrototype: React.FC = () => {
         {/* Header */}
         <div className="p-6 text-center relative z-10">
             <div className="inline-block px-4 py-1.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-full border border-white/20 dark:border-gray-700/30 mb-4">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Battle Room</p>
+                <p className="text-[12px] font-black text-gray-400 uppercase tracking-[0.2em]">Battle Room</p>
             </div>
             <h1 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">ROOM CODE</h1>
             <button 
@@ -1278,7 +1278,7 @@ const QuizBattlePrototype: React.FC = () => {
                         {currentQIndex + 1}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Question</span>
+                        <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest">Question</span>
                         <span className="text-sm font-black text-gray-900 dark:text-white">of {battleState?.questions.length}</span>
                     </div>
                 </div>
@@ -1311,7 +1311,7 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-red-500 opacity-50"></div>
                     
                     {question.contextText && (
-                        <div className={`mb-6 p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl border border-orange-100/50 dark:border-orange-800/30 text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 ${getFont(question.contextText)}`}>
+                        <div className={`mb-6 p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl border border-orange-100/50 dark:border-orange-800/30 text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap ${getFont(question.contextText)}`}>
                             <div dangerouslySetInnerHTML={{ __html: question.contextText }} />
                             {question.contextImage && (
                                 <img src={question.contextImage} alt="Context" className="mt-4 rounded-xl max-h-48 object-contain mx-auto border bg-white" referrerPolicy="no-referrer" />
@@ -1319,7 +1319,7 @@ const QuizBattlePrototype: React.FC = () => {
                         </div>
                     )}
                     
-                    <h2 className={`text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-relaxed text-center ${getFont(question.question)}`}>
+                    <h2 className={`text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-relaxed text-center whitespace-pre-wrap ${getFont(question.question)}`}>
                         <div dangerouslySetInnerHTML={{ __html: question.question }} />
                     </h2>
                     
@@ -1371,7 +1371,7 @@ const QuizBattlePrototype: React.FC = () => {
                                             {String.fromCharCode(65 + idx)}
                                         </div>
                                         <div className={`flex flex-col gap-2`}>
-                                            <span className={getFont(opt)}><div dangerouslySetInnerHTML={{ __html: opt }} /></span>
+                                            <span className={`whitespace-pre-wrap ${getFont(opt)}`}><div dangerouslySetInnerHTML={{ __html: opt }} /></span>
                                             {question.optionsImages?.[idx] && (
                                                 <img src={question.optionsImages[idx]} alt={`Option ${idx}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
                                             )}
@@ -1426,7 +1426,7 @@ const QuizBattlePrototype: React.FC = () => {
                             )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">{opponent?.name || 'Opponent'}</p>
+                            <p className="text-[12px] font-black text-gray-400 uppercase tracking-widest truncate">{opponent?.name || 'Opponent'}</p>
                             <div className="flex items-center gap-2">
                                 <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                                     <motion.div 
@@ -1634,14 +1634,14 @@ const QuizBattlePrototype: React.FC = () => {
                                         <span className="font-black text-white/20 text-xl font-mono">{String(idx+1).padStart(2,'0')}</span>
                                         <div className="flex-1">
                                             {q.contextText && (
-                                                <div className={`mb-3 p-3 bg-white/5 rounded-xl border border-white/10 text-sm opacity-80 ${getFont(q.contextText)}`}>
+                                                <div className={`mb-3 p-3 bg-white/5 rounded-xl border border-white/10 text-sm opacity-80 whitespace-pre-wrap ${getFont(q.contextText)}`}>
                                                     <div dangerouslySetInnerHTML={{ __html: q.contextText }} />
                                                     {q.contextImage && (
                                                         <img src={q.contextImage} alt="Context" className="mt-3 rounded-lg max-h-32 object-contain border bg-white" referrerPolicy="no-referrer" />
                                                     )}
                                                 </div>
                                             )}
-                                            <h3 className={`font-bold text-white text-base leading-relaxed ${getFont(q.question)}`}>
+                                            <h3 className={`font-bold text-white text-base leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
                                                 <div dangerouslySetInnerHTML={{ __html: q.question }} />
                                             </h3>
                                             {q.questionImage && (
@@ -1671,11 +1671,11 @@ const QuizBattlePrototype: React.FC = () => {
                                             return (
                                                 <div key={oIdx} className={`relative p-3.5 rounded-xl border ${borderClass} ${bgClass} flex justify-between items-center gap-4`}>
                                                     <div className="flex items-center gap-3 flex-1">
-                                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${isCorrect ? 'border-green-500 text-green-400' : 'border-white/20 text-white/40'}`}>
+                                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold border ${isCorrect ? 'border-green-500 text-green-400' : 'border-white/20 text-white/40'}`}>
                                                             {['A','B','C','D'][oIdx]}
                                                         </div>
                                                         <div className={`flex flex-col gap-2 w-full pr-4`}>
-                                                            <span className={`text-sm ${isCorrect ? 'text-green-400 font-bold' : 'text-gray-300'} ${getFont(opt)}`}>
+                                                            <span className={`text-sm whitespace-pre-wrap ${isCorrect ? 'text-green-400 font-bold' : 'text-gray-300'} ${getFont(opt)}`}>
                                                                 <div dangerouslySetInnerHTML={{ __html: opt }} />
                                                             </span>
                                                             {q.optionsImages?.[oIdx] && (

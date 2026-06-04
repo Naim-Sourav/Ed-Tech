@@ -41,14 +41,14 @@ interface DailyGoal {
 
 // --- Constants ---
 const SUBJECTS = [
-  { name: 'Physics', color: '#F97316' },
-  { name: 'Chemistry', color: '#F97316' },
+  { name: 'Physics', color: '#3B82F6' },
+  { name: 'Chemistry', color: '#14B8A6' },
   { name: 'Math', color: '#EF4444' },
-  { name: 'Biology', color: '#10B981' },
-  { name: 'ICT', color: '#8B5CF6' },
+  { name: 'Biology', color: '#22C55E' },
+  { name: 'ICT', color: '#A855F7' },
   { name: 'English', color: '#EC4899' },
-  { name: 'Bangla', color: '#14B8A6' },
-  { name: 'GK', color: '#F97316' },
+  { name: 'Bangla', color: '#6366F1' },
+  { name: 'GK', color: '#EAB308' },
 ];
 
 const SPECIAL_CATEGORIES = [
@@ -542,14 +542,14 @@ const StudyTracker: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-bold text-gray-800 dark:text-white truncate">{task.title}</h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
+                        <span className={`text-[12px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
                           task.type === 'NAMAZ' ? 'bg-emerald-100 text-emerald-700' :
                           task.type === 'COACHING' ? 'bg-amber-100 text-amber-700' :
                           'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
                         }`}>
                           {task.subject}
                         </span>
-                        <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                        <span className="text-[12px] text-gray-400 flex items-center gap-1">
                           <Clock size={10} /> {task.estimatedMinutes}m
                         </span>
                       </div>
@@ -690,7 +690,7 @@ const StudyTracker: React.FC = () => {
             className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${view === 'DASHBOARD' ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}
           >
             <LayoutDashboard size={24} strokeWidth={view === 'DASHBOARD' ? 2.5 : 2} />
-            <span className="text-[10px] font-bold">Dashboard</span>
+            <span className="text-[12px] font-bold">Dashboard</span>
           </button>
 
           <button 
@@ -698,7 +698,7 @@ const StudyTracker: React.FC = () => {
             className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${view === 'PLANNER' ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}
           >
             <ListTodo size={24} strokeWidth={view === 'PLANNER' ? 2.5 : 2} />
-            <span className="text-[10px] font-bold">Planner</span>
+            <span className="text-[12px] font-bold">Planner</span>
           </button>
 
           {/* Center FAB */}
@@ -716,7 +716,7 @@ const StudyTracker: React.FC = () => {
             className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${view === 'ANALYTICS' ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}
           >
             <PieChartIcon size={24} strokeWidth={view === 'ANALYTICS' ? 2.5 : 2} />
-            <span className="text-[10px] font-bold">Analytics</span>
+            <span className="text-[12px] font-bold">Analytics</span>
           </button>
 
           <button 
@@ -724,7 +724,7 @@ const StudyTracker: React.FC = () => {
             className="flex flex-col items-center justify-center w-16 h-full space-y-1 text-gray-400 dark:text-gray-500"
           >
             <Settings size={24} />
-            <span className="text-[10px] font-bold">Settings</span>
+            <span className="text-[12px] font-bold">Settings</span>
           </button>
         </div>
       </div>

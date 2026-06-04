@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { 
   Trophy, 
@@ -8,7 +8,7 @@ import {
   Settings, Atom, Beaker, Calculator, Dna,
   BookOpen, Brain, Crown, X, 
   Target, 
-  TrendingUp, MoreHorizontal, Sparkles, PieChart
+  TrendingUp, MoreHorizontal, Sparkles, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,11 +21,11 @@ import { toBengaliNumber } from '../utils/numberUtils';
 // --- CONSTANTS & MOCK DATA ---
 
 const SUBJECTS = [
-    { name: 'Physics', group: 'Physics', icon: Atom, color: 'bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-500/10 dark:to-orange-500/5 text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-500/10' },
-    { name: 'Chemistry', group: 'Chemistry', icon: Beaker, color: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/10 dark:to-amber-500/5 text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/10' },
+    { name: 'Physics', group: 'Physics', icon: Atom, color: 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-500/10 dark:to-blue-500/5 text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-500/10' },
+    { name: 'Chemistry', group: 'Chemistry', icon: Beaker, color: 'bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-500/10 dark:to-teal-500/5 text-teal-600 dark:text-teal-400', border: 'border-teal-200 dark:border-teal-500/10' },
     { name: 'Math', group: 'Higher Math', icon: Calculator, color: 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-500/10 dark:to-red-500/5 text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-500/10' },
-    { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-500/10 dark:to-orange-500/5 text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-500/10' },
-    { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-500/10 dark:to-amber-500/5 text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/10' },
+    { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-500/10 dark:to-green-500/5 text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-500/10' },
+    { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-500/10 dark:to-purple-500/5 text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-500/10' },
 ];
 
 // Custom SVG Icon Component for Dashboard Stats
@@ -134,10 +134,8 @@ const HomeDashboard: React.FC = () => {
       navigate('/quiz', { state: { subject: groupName } });
   };
 
-  // Rank Calculation
   const currentStreak = stats?.currentStreak || 0;
   
-  // Filter Leaderboard for Preview
   const topLearners = useMemo(() => {
       if (!leaderboard.length) return [];
       return leaderboard.slice(0, 5);
@@ -188,7 +186,6 @@ const HomeDashboard: React.FC = () => {
     );
   };
 
-  // --- SKELETON LOADER ---
   const DashboardSkeleton = () => (
     <div className="max-w-5xl mx-auto px-3 pt-4 pb-20 space-y-4 animate-pulse">
         <div className="bg-white dark:bg-black rounded-3xl p-4 border border-gray-200 dark:border-white/[0.05]">
@@ -213,7 +210,6 @@ const HomeDashboard: React.FC = () => {
 
   return (
     <div className="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors pb-32 md:pb-40 relative overflow-hidden">
-      {/* Background glows removed for solid look */}
       
       <div className="max-w-5xl mx-auto px-4 pt-4 md:px-6 md:pt-8 space-y-6 md:space-y-8 animate-page-enter relative z-10">
         
@@ -235,7 +231,7 @@ const HomeDashboard: React.FC = () => {
                         <h1 className="text-lg md:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight mb-0.5 tracking-tight">
                             {t(greetingKey)}, <span className="text-primary dark:text-orange-500">{currentUser?.displayName?.split(' ')[0] || 'Learner'}</span>
                         </h1>
-                        <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <p className="text-[12px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
                             <TrendingUp size={12} /> আপনার আজকের প্রগতি
                         </p>
                     </div>
@@ -249,7 +245,6 @@ const HomeDashboard: React.FC = () => {
                 </motion.button>
             </div>
 
-            {/* Segmented Control */}
             <div className="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-2xl mb-4 md:mb-6 relative">
                 <motion.div 
                     layoutId="tabIndicator"
@@ -259,13 +254,13 @@ const HomeDashboard: React.FC = () => {
                 />
                 <button 
                     onClick={() => setActiveTab('today')}
-                    className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider relative z-10 transition-colors ${activeTab === 'today' ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
+                    className={`flex-1 py-2.5 text-[12px] font-bold uppercase tracking-wider relative z-10 transition-colors ${activeTab === 'today' ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
                 >
                     আজকের আপডেট
                 </button>
                 <button 
                     onClick={() => setActiveTab('week')}
-                    className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider relative z-10 transition-colors ${activeTab === 'week' ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
+                    className={`flex-1 py-2.5 text-[12px] font-bold uppercase tracking-wider relative z-10 transition-colors ${activeTab === 'week' ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
                 >
                     সাপ্তাহিক রিপোর্ট
                 </button>
@@ -336,7 +331,7 @@ const HomeDashboard: React.FC = () => {
                         className="bg-gray-50 dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-white/5 flex items-center justify-between"
                     >
                         <div className="flex flex-col gap-1.5">
-                            <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">সাপ্তাহিক লক্ষ্য</p>
+                            <p className="text-[12px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">সাপ্তাহিক লক্ষ্য</p>
                             <h4 className="text-xl font-black text-gray-900 dark:text-white">৮৫% সম্পন্ন</h4>
                             <p className="text-[11px] text-emerald-500 font-bold flex items-center gap-1.5">
                                 <TrendingUp size={14} /> গত সপ্তাহের চেয়ে ১২% বেশি
@@ -376,7 +371,6 @@ const HomeDashboard: React.FC = () => {
             </AnimatePresence>
         </div>
 
-        {/* Development Notice Banner */}
         <AnimatePresence>
           {showDevNotice && (
             <motion.div 
@@ -410,123 +404,52 @@ const HomeDashboard: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* 2. Main Menu Grid - Chorcha Style UI (Unified Sizes) */}
         <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 border border-gray-100 dark:border-white/5 shadow-sm">
             <div className="flex flex-wrap justify-center gap-y-10 gap-x-4 md:gap-x-12">
-                {/* Question Bank */}
-                <div 
-                    onClick={() => navigate('/qbank')}
-                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
-                >
+                <div onClick={() => navigate('/qbank')} className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]">
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
                         <img src="/icons/qbank_bn.png" alt="QBank" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">প্রশ্ন ব্যাংক</span>
                 </div>
-
-                {/* Rapid Fire */}
-                <div 
-                    onClick={() => navigate('/quiz', { state: { mode: 'RAPID_FIRE' } })}
-                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
-                >
+                <div onClick={() => navigate('/quiz', { state: { mode: 'RAPID_FIRE' } })} className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]">
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <img src="/icons/flash.png" alt="Rapid Fire" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <img src="/icons/flash.png" alt="Flash Cards" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">র‍্যাপিড ফায়ার</span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">ফ্ল্যাশ কার্ড</span>
                 </div>
-
-                {/* Model Test (Custom Quiz) */}
-                <div 
-                    onClick={() => navigate('/quiz')}
-                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
-                >
+                <div onClick={() => navigate('/quiz')} className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]">
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <div 
-                            className="w-full h-full bg-gradient-to-br from-amber-400 via-orange-500 to-primary" 
-                            style={{ 
-                                maskImage: 'url(/icons/customize.svg)', 
-                                WebkitMaskImage: 'url(/icons/customize.svg)', 
-                                maskSize: 'contain', 
-                                WebkitMaskSize: 'contain', 
-                                maskRepeat: 'no-repeat', 
-                                WebkitMaskRepeat: 'no-repeat', 
-                                maskPosition: 'center', 
-                                WebkitMaskPosition: 'center' 
-                            }} 
-                        />
+                        <div className="w-full h-full bg-gradient-to-br from-amber-400 via-orange-500 to-primary" style={{ maskImage: 'url(/icons/customize.svg)', WebkitMaskImage: 'url(/icons/customize.svg)', maskSize: 'contain', WebkitMaskSize: 'contain', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskPosition: 'center' }} />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">মডেল টেস্ট</span>
                 </div>
-
-                {/* Battle */}
-                <div 
-                    onClick={() => navigate('/battle')}
-                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
-                >
+                <div onClick={() => navigate('/battle')} className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]">
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
                         <img src="/icons/battle.png" alt="Battle" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">ব্যাটল</span>
                 </div>
-
-                {/* Saved */}
-                <div 
-                    onClick={() => navigate('/saved-questions')}
-                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
-                >
+                <div onClick={() => navigate('/saved-questions')} className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]">
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <div 
-                            className="w-full h-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600" 
-                            style={{ 
-                                maskImage: 'url(/icons/save.png)', 
-                                WebkitMaskImage: 'url(/icons/save.png)', 
-                                maskSize: 'contain', 
-                                WebkitMaskSize: 'contain', 
-                                maskRepeat: 'no-repeat', 
-                                WebkitMaskRepeat: 'no-repeat', 
-                                maskPosition: 'center', 
-                                WebkitMaskPosition: 'center' 
-                            }} 
-                        />
+                        <div className="w-full h-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600" style={{ maskImage: 'url(/icons/save.png)', WebkitMaskImage: 'url(/icons/save.png)', maskSize: 'contain', WebkitMaskSize: 'contain', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskPosition: 'center' }} />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">সেভ্ড</span>
                 </div>
-
-                {/* Wrong Questions */}
-                <div 
-                    onClick={() => navigate('/wrong-questions')}
-                    className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]"
-                >
+                <div onClick={() => navigate('/wrong-questions')} className="flex flex-col items-center gap-2 cursor-pointer group active-scale transition-all w-[70px] md:w-[100px]">
                     <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                        <div 
-                            className="w-full h-full bg-gradient-to-br from-rose-500 via-red-600 to-orange-700" 
-                            style={{ 
-                                maskImage: 'url(/icons/wrong.svg)', 
-                                WebkitMaskImage: 'url(/icons/wrong.svg)', 
-                                maskSize: 'contain', 
-                                WebkitMaskSize: 'contain', 
-                                maskRepeat: 'no-repeat', 
-                                WebkitMaskRepeat: 'no-repeat', 
-                                maskPosition: 'center', 
-                                WebkitMaskPosition: 'center' 
-                            }} 
-                        />
+                        <div className="w-full h-full bg-gradient-to-br from-rose-500 via-red-600 to-orange-700" style={{ maskImage: 'url(/icons/wrong.svg)', WebkitMaskImage: 'url(/icons/wrong.svg)', maskSize: 'contain', WebkitMaskSize: 'contain', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskPosition: 'center' }} />
                     </div>
                     <span className="font-bold text-gray-800 dark:text-gray-200 text-[11px] md:text-sm text-center leading-tight">ভুল প্রশ্ন</span>
                 </div>
             </div>
         </div>
 
-        {/* 3. Subject Bubbles - Compact */}
         <div>
             <h3 className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 mb-4 px-1 flex items-center gap-2 uppercase tracking-wider"><BookOpen size={14}/> বিষয়ভিত্তিক অনুশীলন</h3>
             <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 no-scrollbar px-1">
                 {SUBJECTS.map((sub, idx) => (
-                    <div 
-                        key={idx} 
-                        onClick={() => startSubjectPractice(sub.group)}
-                        className={`min-w-[90px] md:min-w-[110px] bg-white dark:bg-[#121212] p-3 md:p-5 rounded-3xl border ${sub.border} dark:border-white/[0.03] flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden`}
-                    >
+                    <div key={idx} onClick={() => startSubjectPractice(sub.group)} className={`min-w-[90px] md:min-w-[110px] bg-white dark:bg-[#121212] p-3 md:p-5 rounded-3xl border ${sub.border} dark:border-white/[0.03] flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden`}>
                         <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity ${sub.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
                         <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center ${sub.color.split(' ')[0]} ${sub.color.split(' ')[1]} group-hover:scale-110 transition-transform shadow-sm ring-1 ring-black/5 dark:ring-white/5`}>
                             <sub.icon size={20} className="md:w-[22px] md:h-[22px]" />
@@ -537,12 +460,7 @@ const HomeDashboard: React.FC = () => {
             </div>
         </div>
 
-        {/* 4. LEADERBOARD PREVIEW - Cyberpunk Glass */}
-        <div 
-            className="rounded-[2.5rem] relative overflow-hidden group cursor-pointer shadow-2xl shadow-orange-900/10 hover:shadow-orange-500/10 active-scale transition-all border border-gray-100 dark:border-white/5" 
-            onClick={() => navigate('/leaderboard')}
-        >
-            {/* Header */}
+        <div className="rounded-[2.5rem] relative overflow-hidden group cursor-pointer shadow-2xl shadow-orange-900/10 hover:shadow-orange-500/10 active-scale transition-all border border-gray-100 dark:border-white/5" onClick={() => navigate('/leaderboard')}>
             <div className="bg-gradient-to-r from-gray-900 via-orange-950 to-gray-900 dark:from-gray-900 dark:via-zinc-900 dark:to-gray-900 p-6 md:p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/20 rounded-full blur-[80px] -mr-10 -mt-10 animate-pulse-slow"></div>
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/10 rounded-full blur-[60px] -ml-8 -mb-8"></div>
@@ -553,16 +471,15 @@ const HomeDashboard: React.FC = () => {
                             <Trophy size={24} className="text-yellow-400 fill-yellow-400 animate-bounce-slow" />
                             <h3 className="text-xl md:text-3xl font-black text-white tracking-tight uppercase drop-shadow-md">লিডারবোর্ড</h3>
                         </div>
-                        <p className="text-[10px] md:text-xs text-orange-200 font-bold uppercase tracking-[0.2em] opacity-80">সেরা ৫ পারফর্মার</p>
+                        <p className="text-[12px] md:text-xs text-orange-200 font-bold uppercase tracking-[0.2em] opacity-80">সেরা ৫ পারফর্মার</p>
                     </div>
                     <div className="text-right">
                         <div className="text-3xl md:text-4xl font-black text-white drop-shadow-lg">#{toBengaliNumber(rank) || '-'}</div>
-                        <div className="text-[10px] text-orange-200 font-bold uppercase tracking-widest opacity-80">আপনার র‍্যাঙ্ক</div>
+                        <div className="text-[12px] text-orange-200 font-bold uppercase tracking-widest opacity-80">আপনার র‍্যাঙ্ক</div>
                     </div>
                 </div>
             </div>
 
-            {/* List */}
             <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 space-y-3">
                 {topLearners.length === 0 ? (
                     <div className="text-center text-gray-400 dark:text-zinc-500 text-xs py-8 font-medium">No data available</div>
@@ -593,7 +510,7 @@ const HomeDashboard: React.FC = () => {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className={`text-sm md:text-base font-bold ${isMe ? 'text-orange-600 dark:text-orange-400' : 'text-gray-800 dark:text-gray-200'}`}>{isMe ? 'আপনি' : u.displayName}</span>
-                                            <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-medium truncate max-w-[120px] uppercase tracking-wide">{u.college || 'Student'}</span>
+                                            <span className="text-[12px] text-gray-400 dark:text-zinc-500 font-medium truncate max-w-[120px] uppercase tracking-wide">{u.college || 'Student'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -610,183 +527,166 @@ const HomeDashboard: React.FC = () => {
 
       </div>
 
-      {/* Streak Modal - Reverted Calendar + Video Fire Animation */}
-      <AnimatePresence>
-        {showStreakModal && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-                <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-[#1a0f0a] w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden border border-orange-900/20"
-                >
-                    {/* Background Glow */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-orange-600/10 rounded-full blur-[100px] pointer-events-none"></div>
-                    
-                    <div className="absolute top-0 right-0 p-6 z-20">
-                        <button onClick={() => setShowStreakModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
-                            <X size={20} />
-                        </button>
-                    </div>
-                    
-                    <div className="text-center mt-4 mb-10 relative z-10">
-                        <motion.div 
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: "spring", damping: 15, stiffness: 100, delay: 0.2 }}
-                            className="w-40 h-40 mx-auto mb-6 flex items-center justify-center text-orange-500 relative"
-                        >
-                            <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
-                            <StatIcon 
-                                src="/icons/streak.svg" 
-                                className="w-full h-full drop-shadow-[0_0_30px_rgba(249,115,22,0.8)] relative z-10" 
-                            />
-                        </motion.div>
-
-                        <AnimatePresence mode="wait">
-                            {!isCheckedIn ? (
-                                <motion.div
-                                    key="unchecked-text"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-2"
-                                >
-                                    <h2 className="text-3xl font-black text-white leading-tight tracking-tight">Keep the fire alive!</h2>
-                                    <p className="text-lg font-bold text-orange-200/80">আজকের প্র্যাকটিস সম্পন্ন করে স্ট্রিক ধরে রাখুন</p>
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="checked-text"
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="space-y-1"
-                                >
-                                    <h2 className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-orange-400 to-red-600 tracking-tighter drop-shadow-2xl">{toBengaliNumber(stats?.currentStreak)}</h2>
-                                    <p className="text-2xl font-black text-orange-100 uppercase tracking-widest">দিনের স্ট্রিক</p>
-                                    <div className="flex items-center justify-center gap-2 mt-2">
-                                        <Sparkles size={16} className="text-yellow-400" />
-                                        <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">You're on fire!</span>
-                                        <Sparkles size={16} className="text-yellow-400" />
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Reverted Calendar Design */}
-                    <div className="bg-gray-800/30 rounded-3xl p-5 border border-white/5 backdrop-blur-sm mb-8">
-                        <div className="flex justify-between items-center text-center">
-                            {getWeekDays().map((day, idx) => {
-                                const isActive = stats?.activityLog?.includes(day.date);
-                                return (
-                                    <div key={idx} className="flex flex-col items-center gap-3">
-                                        <span className={`text-[10px] font-bold uppercase tracking-wider ${day.isToday ? 'text-orange-400' : 'text-gray-500'}`}>{day.name}</span>
-                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold border transition-all duration-300 ${
-                                            isActive 
-                                            ? 'bg-gradient-to-br from-orange-500 to-red-600 border-orange-400 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)] scale-110' 
-                                            : day.isToday 
-                                                ? 'border-dashed border-orange-500/50 text-orange-500/50 bg-orange-500/5' 
-                                                : 'border-gray-800 bg-gray-900/50 text-gray-600'
-                                        }`}>
-                                            {isActive ? (
-                                                <CheckCircle size={18} fill="currentColor" className="text-white"/>
-                                            ) : day.isToday ? (
-                                                <Circle size={18} className="text-orange-500/40 border-dashed" strokeWidth={2.5} />
-                                            ) : (
-                                                <div className="w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )
-                            })}
+      {/* PORTAL: Streak Modal */}
+      {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {showStreakModal && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+                    <motion.div 
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        className="bg-[#1a0f0a] w-full max-w-sm rounded-[2.5rem] shadow-2xl p-6 md:p-8 relative overflow-y-auto max-h-[90dvh] no-scrollbar border border-orange-900/20"
+                    >
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-orange-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+                        
+                        <div className="absolute top-0 right-0 p-4 z-20">
+                            <button onClick={() => setShowStreakModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
+                                <X size={20} />
+                            </button>
                         </div>
-                    </div>
-                    
-                    <div className="relative z-10">
-                        {!isCheckedIn ? (
-                            <motion.button 
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    setShowStreakModal(false);
-                                    navigate('/quiz');
-                                }}
-                                className="w-full py-5 bg-orange-500 text-white rounded-3xl font-black text-lg transition-all duration-500 shadow-xl shadow-orange-600/20 hover:bg-orange-600 flex items-center justify-center gap-2"
+                        
+                        <div className="text-center mt-4 mb-8 relative z-10">
+                            <motion.div 
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", damping: 15, stiffness: 100, delay: 0.2 }}
+                                className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-6 flex items-center justify-center text-orange-500 relative"
                             >
-                                প্র্যাকটিস শুরু করো <Flame size={20} />
-                            </motion.button>
-                        ) : (
-                            <motion.button 
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setShowStreakModal(false)}
-                                className="w-full py-5 bg-white/5 text-orange-200 rounded-3xl font-black text-lg transition-all duration-500 border border-white/10 hover:bg-white/10"
-                            >
-                                অসাধারণ! বন্ধ করো
-                            </motion.button>
-                        )}
-                    </div>
-                </motion.div>
-            </div>
-        )}
-      </AnimatePresence>
+                                <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
+                                <StatIcon src="/icons/streak.svg" className="w-full h-full drop-shadow-[0_0_30px_rgba(249,115,22,0.8)] relative z-10" />
+                            </motion.div>
 
-      {/* Action Sheet (Bottom Sheet) */}
-      <AnimatePresence>
-        {showActionSheet && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowActionSheet(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-            />
-            <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              drag="y"
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(_, info) => {
-                if (info.offset.y > 100) setShowActionSheet(false);
-              }}
-              className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-[2.5rem] z-[110] p-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] border-t border-gray-100 dark:border-white/5 shadow-2xl"
-            >
-              <div className="w-12 h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-full mx-auto mb-6" />
-              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-6 text-center">কুইক মেনু</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { icon: Settings, label: 'সেটিংস', path: '/settings' },
-                  { icon: PieChart, label: 'প্ল্যানার', path: '/planner' },
-                  { icon: Target, label: 'লক্ষ্য', path: '/profile' },
-                  { icon: Archive, label: 'আর্কাইভ', path: '/qbank' },
-                  { icon: Trophy, label: 'অ্যাচিভমেন্ট', path: '/leaderboard' },
-                  { icon: Brain, label: 'এআই টিউটর', path: '/bot' },
-                ].map((item, i) => (
-                  <motion.button 
-                    key={i}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => { 
-                      setShowActionSheet(false); 
-                      // Small delay to allow ActionSheet exit animation to start
-                      // and prevent race conditions with the main page transition
-                      setTimeout(() => navigate(item.path), 50);
-                    }}
-                    className="flex flex-col items-center gap-2"
-                  >
-                    <div className="w-14 h-14 bg-gray-50 dark:bg-zinc-900/50 rounded-2xl flex items-center justify-center text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-white/5">
-                      <item.icon size={24} />
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">{item.label}</span>
-                  </motion.button>
-                ))}
+                            <AnimatePresence mode="wait">
+                                {!isCheckedIn ? (
+                                    <motion.div key="unchecked-text" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2">
+                                        <h2 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tight">Keep the fire alive!</h2>
+                                        <p className="text-base md:text-lg font-bold text-orange-200/80">আজকের প্র্যাকটিস সম্পন্ন করে স্ট্রিক ধরে রাখুন</p>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key="checked-text" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="space-y-1">
+                                        <h2 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-orange-400 to-red-600 tracking-tighter drop-shadow-2xl">{toBengaliNumber(stats?.currentStreak)}</h2>
+                                        <p className="text-xl md:text-2xl font-black text-orange-100 uppercase tracking-widest">দিনের স্ট্রিক</p>
+                                        <div className="flex items-center justify-center gap-2 mt-2">
+                                            <Sparkles size={16} className="text-yellow-400" />
+                                            <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">You're on fire!</span>
+                                            <Sparkles size={16} className="text-yellow-400" />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        <div className="bg-gray-800/30 rounded-3xl p-4 md:p-5 border border-white/5 backdrop-blur-sm mb-6">
+                            <div className="flex justify-between items-center text-center">
+                                {getWeekDays().map((day, idx) => {
+                                    const isActive = stats?.activityLog?.includes(day.date);
+                                    return (
+                                        <div key={idx} className="flex flex-col items-center gap-2 md:gap-3">
+                                            <span className={`text-[10px] md:text-[12px] font-bold uppercase tracking-wider ${day.isToday ? 'text-orange-400' : 'text-gray-500'}`}>{day.name}</span>
+                                            <div className={`w-7 h-7 md:w-9 md:h-9 rounded-xl flex items-center justify-center text-xs font-bold border transition-all duration-300 ${
+                                                isActive 
+                                                ? 'bg-gradient-to-br from-orange-500 to-red-600 border-orange-400 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)] scale-110' 
+                                                : day.isToday 
+                                                    ? 'border-dashed border-orange-500/50 text-orange-500/50 bg-orange-500/5' 
+                                                    : 'border-gray-800 bg-gray-900/50 text-gray-600'
+                                            }`}>
+                                                {isActive ? (
+                                                    <CheckCircle size={16} fill="currentColor" className="text-white"/>
+                                                ) : day.isToday ? (
+                                                    <Circle size={16} className="text-orange-500/40 border-dashed" strokeWidth={2.5} />
+                                                ) : (
+                                                    <div className="w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                        
+                        <div className="relative z-10">
+                            {!isCheckedIn ? (
+                                <motion.button 
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => { setShowStreakModal(false); navigate('/quiz'); }}
+                                    className="w-full py-4 bg-orange-500 text-white rounded-3xl font-black text-base md:text-lg transition-all duration-500 shadow-xl shadow-orange-600/20 hover:bg-orange-600 flex items-center justify-center gap-2"
+                                >
+                                    প্র্যাকটিস শুরু করো <Flame size={20} />
+                                </motion.button>
+                            ) : (
+                                <motion.button 
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setShowStreakModal(false)}
+                                    className="w-full py-4 bg-white/5 text-orange-200 rounded-3xl font-black text-base md:text-lg transition-all duration-500 border border-white/10 hover:bg-white/10"
+                                >
+                                    অসাধারণ! বন্ধ করো
+                                </motion.button>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+          </AnimatePresence>
+      , document.body)}
+
+      {/* PORTAL: Action Sheet (Bottom Sheet) */}
+      {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {showActionSheet && (
+              <div className="fixed inset-0 z-[9999] flex items-end justify-center">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowActionSheet(false)}
+                  className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                />
+                <motion.div 
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                  drag="y"
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 100) setShowActionSheet(false);
+                  }}
+                  className="relative w-full md:max-w-xl bg-white dark:bg-gray-900 rounded-t-[2.5rem] p-6 pb-[calc(2.5rem+env(safe-area-inset-bottom))] border-t border-gray-100 dark:border-white/5 shadow-2xl overflow-y-auto max-h-[90dvh]"
+                >
+                  <div className="w-12 h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-full mx-auto mb-6 shrink-0" />
+                  <h3 className="text-lg font-black text-gray-900 dark:text-white mb-6 text-center">কুইক মেনু</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { icon: Settings, label: 'সেটিংস', path: '/settings' },
+                      { icon: Clock, label: 'ইতিহাস', path: '/history' },
+                      { icon: Target, label: 'লক্ষ্য', path: '/profile' },
+                      { icon: Archive, label: 'আর্কাইভ', path: '/qbank' },
+                      { icon: Trophy, label: 'অ্যাচিভমেন্ট', path: '/leaderboard' },
+                      { icon: Brain, label: 'এআই টিউটর', path: '/bot' },
+                    ].map((item, i) => (
+                      <motion.button 
+                        key={i}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => { 
+                          setShowActionSheet(false); 
+                          setTimeout(() => navigate(item.path), 50);
+                        }}
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className="w-14 h-14 bg-gray-50 dark:bg-zinc-900/50 rounded-2xl flex items-center justify-center text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-white/5">
+                          <item.icon size={24} />
+                        </div>
+                        <span className="text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">{item.label}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            )}
+          </AnimatePresence>
+      , document.body)}
     </div>
   );
 };

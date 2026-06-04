@@ -172,7 +172,7 @@ const PaymentPage: React.FC = () => {
                           </div>
                           <div className="flex-1">
                               <h4 className="font-bold text-gray-900 dark:text-white line-clamp-2">{item.title}</h4>
-                              <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded">
+                              <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[12px] font-bold rounded">
                                   {type === 'PACK' ? 'Exam Pack' : 'Course'}
                               </span>
                           </div>
@@ -230,7 +230,7 @@ const PaymentPage: React.FC = () => {
                           </div>
                       </div>
 
-                      <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">
+                      <div className="mt-6 flex items-center justify-center gap-2 text-[12px] text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">
                           <Lock size={12}/> পেমেন্ট তথ্য ১০০% নিরাপদ ও এনক্রিপ্টেড
                       </div>
                   </div>

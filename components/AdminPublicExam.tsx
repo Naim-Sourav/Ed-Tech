@@ -148,6 +148,47 @@ const AdminPublicExam = () => {
                   return text;
               }
 
+              // If it contains Bengali text, do not wrap the entire string in inline math $...$
+              // Instead, find and wrap only the mathematical formulas, equations, variables, etc.
+              if (/[\u0980-\u09FF]/.test(text)) {
+                  // Regex to match math/LaTeX patterns, variables, units, equations:
+                  // - LaTeX macros like: \frac{...}{...}, \vec{...}, \theta, \alpha, \beta, \gamma, \mu, \lambda, \pi, etc.
+                  // - Terms with subscripts/superscripts/units: E_K, E_k, P^2, ms^{-1}, ms^{-2}, kg, m/s^2, r²
+                  // - Algebraic expressions with math operators: P^2 = 2mE_K, v = u+at, F = ma
+                  // - Standalone variables like: P, v, m, x, y, u, a, t (isolated English letters)
+                  // - Avoid wrapping standalone pure numbers like "3", "30", or common short English words (vs, and, or)
+                  const mathRegex = /(?:(?<!\\)\\[a-zA-Z]+(?:\{[^{}]*\})*|[A-Za-z0-9_+\-*/^(){}[\].,\\=<>~²³\s]*(?:_[A-Za-z0-9{}]+|\^[A-Za-z0-9{}]+|\\(?:[a-zA-Z]+)|[²³=+\-*/<>])[A-Za-z0-9_+\-*/^(){}[\].,\\=<>~²³\s]*|\b[A-Za-z]\b)/g;
+
+                  return text.replace(mathRegex, (match) => {
+                      // We separate any leading/trailing spaces or punctuation that shouldn't be inside math mode
+                      // (like trailing commas, periods, question marks, or spaces)
+                      const leadingSpaceMatch = match.match(/^\s+/);
+                      const trailingSpaceAndPunctMatch = match.match(/[\s,.:;?]+$/);
+                      
+                      const leadingSpace = leadingSpaceMatch ? leadingSpaceMatch[0] : '';
+                      const trailingSpaceAndPunct = trailingSpaceAndPunctMatch ? trailingSpaceAndPunctMatch[0] : '';
+                      
+                      // Extract the core math expression
+                      const coreStart = leadingSpace.length;
+                      const coreEnd = match.length - trailingSpaceAndPunct.length;
+                      const core = coreStart < coreEnd ? match.slice(coreStart, coreEnd) : '';
+                      const trimmed = core.trim();
+                      
+                      if (!trimmed) return match;
+                      
+                      // Skip plain numbers (e.g., "3", "30")
+                      if (/^\d+(?:\.\d+)?$/.test(trimmed)) {
+                          return match;
+                      }
+                      // Skip common English short words
+                      if (/^(vs|and|or|of|in|to|at|by|with|for|on|the|is|are|a|an)$/i.test(trimmed)) {
+                          return match;
+                      }
+                      
+                      return `${leadingSpace}$${trimmed}$${trailingSpaceAndPunct}`;
+                  });
+              }
+
               if (/\\(frac|sqrt|sin|cos|tan|log|ln|theta|alpha|beta|gamma|pi|pm|therefore|implies|text\{|sec|cosec|cot)|[\^_]/.test(text)) {
                   return `$${text}$`;
               }

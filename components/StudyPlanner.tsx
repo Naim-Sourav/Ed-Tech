@@ -657,7 +657,7 @@ const StudyPlanner: React.FC = () => {
                   <Zap size={24} fill="currentColor" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-primary uppercase tracking-widest">মোট পড়ার সময়</p>
+                  <p className="text-[12px] font-black text-primary uppercase tracking-widest">মোট পড়ার সময়</p>
                   <h2 className="text-xl font-black text-gray-900 dark:text-white">{formatDuration(totalMinutes)}</h2>
                 </div>
               </div>
@@ -768,7 +768,7 @@ const StudyPlanner: React.FC = () => {
                   <div className="w-10 h-10 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center mb-3">
                     <Clock size={20} />
                   </div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">আজকের পড়া</p>
+                  <p className="text-[12px] font-black text-gray-400 uppercase tracking-widest">আজকের পড়া</p>
                   <h3 className="text-xl font-black text-gray-900 dark:text-white mt-1">
                     {Math.floor(studyHistory.filter(s => new Date(s.timestamp).toDateString() === new Date().toDateString()).reduce((acc, s) => acc + s.duration, 0))} <span className="text-xs">মিনিট</span>
                   </h3>
@@ -777,7 +777,7 @@ const StudyPlanner: React.FC = () => {
                   <div className="w-10 h-10 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center mb-3">
                     <TrendingUp size={20} />
                   </div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">গড় পড়া</p>
+                  <p className="text-[12px] font-black text-gray-400 uppercase tracking-widest">গড় পড়া</p>
                   <h3 className="text-xl font-black text-gray-900 dark:text-white mt-1">
                     {Math.round(totalMinutes / (Math.max(1, subjects.length)))} <span className="text-xs">মিনিট</span>
                   </h3>
@@ -886,7 +886,7 @@ const StudyPlanner: React.FC = () => {
               </div>
 
               <div className="pt-8 text-center">
-                <p className="text-[10px] font-black text-gray-300 dark:text-zinc-700 uppercase tracking-[0.3em]">Porikkhangon Study Planner v2.0</p>
+                <p className="text-[12px] font-black text-gray-300 dark:text-zinc-700 uppercase tracking-[0.3em]">Porikkhangon Study Planner v2.0</p>
               </div>
             </motion.div>
           )}
@@ -912,7 +912,7 @@ const StudyPlanner: React.FC = () => {
             <div className={`p-2 rounded-2xl transition-all ${activeTab === tab.id ? 'bg-primary/10' : ''}`}>
               <tab.icon size={22} strokeWidth={activeTab === tab.id ? 3 : 2} />
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'opacity-100' : 'opacity-0'}`}>
+            <span className={`text-[12px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'opacity-100' : 'opacity-0'}`}>
               {tab.label}
             </span>
           </button>
@@ -944,7 +944,7 @@ const StudyPlanner: React.FC = () => {
                 <X size={24} />
               </button>
               <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-primary uppercase tracking-widest">পড়ছেন</span>
+                <span className="text-[12px] font-black text-primary uppercase tracking-widest">পড়ছেন</span>
                 <h2 className="text-xl font-black text-gray-900 dark:text-white">{activeSubject.name}</h2>
               </div>
               <div className="w-10" />
@@ -1046,7 +1046,7 @@ const StudyPlanner: React.FC = () => {
                   {/* Session Stats */}
                   <div className="mt-12 w-full max-w-xs">
                     <div className="bg-gray-50 dark:bg-zinc-900 p-6 rounded-3xl border border-gray-100 dark:border-white/[0.05] text-center">
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">অতিক্রান্ত সময়</p>
+                      <p className="text-[12px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">অতিক্রান্ত সময়</p>
                       <p className="text-3xl font-black text-gray-900 dark:text-white">{Math.floor(elapsedSeconds / 60)} <span className="text-sm">মিনিট</span></p>
                     </div>
                   </div>
@@ -1067,7 +1067,7 @@ const StudyPlanner: React.FC = () => {
                       {/* BGM Selector */}
                       <div className="w-full max-w-xs mb-8">
                         <div className="flex items-center justify-between mb-3 px-1">
-                          <span className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Focus Sounds</span>
+                          <span className="text-[12px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Focus Sounds</span>
                           <button 
                             onClick={() => setIsBgmEnabled(!isBgmEnabled)}
                             className={`p-1.5 rounded-lg transition-all ${isBgmEnabled ? 'text-primary bg-primary/10' : 'text-gray-400 bg-gray-100 dark:bg-zinc-800'}`}
@@ -1175,7 +1175,7 @@ const StudyPlanner: React.FC = () => {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-1">বিষয় এর নাম</label>
+                  <label className="block text-[12px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-1">বিষয় এর নাম</label>
                   <input 
                     type="text"
                     value={newSubjectName}
@@ -1186,7 +1186,7 @@ const StudyPlanner: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-1">পড়ার সময় (মিনিট এ)</label>
+                  <label className="block text-[12px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-1">পড়ার সময় (মিনিট এ)</label>
                   <div className="relative">
                     <input 
                       type="number"
