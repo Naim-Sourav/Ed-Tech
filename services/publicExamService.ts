@@ -119,7 +119,7 @@ export const fetchPublicExam = async (examId: string) => {
       let text = JSON.stringify(data);
       text = text.replace(/\$([^$]*_{2,}[^$]*)\$/g, '$1');
       data = JSON.parse(text);
-    } catch (e) {
+    } catch {
       // Ignore if stringify/parse fails for some reason
     }
     return { id: docSnap.id, ...data } as PublicExam;

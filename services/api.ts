@@ -134,7 +134,7 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
     }
 
     // 2. Handle Success (200)
-    let text = await response.text();
+    const text = await response.text();
     try {
         return JSON.parse(text);
     } catch (_e) {
@@ -224,6 +224,12 @@ export const saveExamResultAPI = async (userId: string, resultData: any) => {
 
 export const fetchExamResultAPI = async (userId: string, examId: string) => {
     return fetchWithFallback(`/users/${userId}/exam-results/${examId}`, {}, null);
+};
+
+export const deleteExamResultAPI = async (userId: string, examId: string) => {
+  return fetchWithFallback(`/users/${userId}/exam-results/${examId}`, {
+    method: 'DELETE'
+  }, { success: true });
 };
 
 export const fetchUserStatsAPI = async (userId: string) => {
@@ -340,7 +346,7 @@ export const saveQuestionsToBankAPI = async (questions: any[], metadata?: Questi
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ questions, metadata })
-  }, { success: true });
+  });
 };
 
 export const fetchQuestionPapersAPI = async (): Promise<QuestionPaperMetadata[]> => {
@@ -389,13 +395,26 @@ export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai')
     }
 };
 
-export const fetchQuestionsFromBankAPI = async (page: number, limit: number, subject?: string, chapter?: string, topic?: string, examRef?: string, search?: string, level?: string) => {
+export const fetchQuestionsFromBankAPI = async (
+  page: number, 
+  limit: number, 
+  subject?: string, 
+  chapter?: string, 
+  topic?: string, 
+  examRef?: string, 
+  search?: string, 
+  level?: string,
+  board?: string,
+  college?: string
+) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
   if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(normalizeBangla(subject))}`;
   if (chapter && chapter !== 'ALL') url += `&chapter=${encodeURIComponent(normalizeBangla(chapter))}`;
   if (topic && topic !== 'ALL') url += `&topic=${encodeURIComponent(normalizeBangla(topic))}`;
   if (examRef && examRef !== 'ALL') url += `&examRef=${encodeURIComponent(examRef)}`;
   if (level && level !== 'ALL') url += `&level=${encodeURIComponent(level)}`;
+  if (board && board !== 'ALL') url += `&board=${encodeURIComponent(board)}`;
+  if (college && college !== 'ALL') url += `&college=${encodeURIComponent(college)}`;
   
   if (search) {
     url += `&search=${encodeURIComponent(normalizeBangla(search))}`;
@@ -511,7 +530,7 @@ export const fetchIncompleteExamRefsAPI = async () => {
           const data = await response.json();
           return data;
       }
-  } catch (error) {
+  } catch {
       console.warn("Fast API failed, falling back to client-side evaluation.");
   }
   
@@ -533,7 +552,7 @@ export const fetchIncompleteExamRefsAPI = async () => {
                   if (questions && questions.some((q: any) => !q.subject || !q.chapter || !q.topic)) {
                       incompleteRefs.push(ref);
                   }
-              } catch(e) {
+              } catch {
                   // ignore failing refs
               }
           }));
