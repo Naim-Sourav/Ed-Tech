@@ -123,6 +123,7 @@ export const translations = {
     profile_weakness: "Weak Topics",
     profile_strength: "Strong Topics",
     profile_total_exams: "Total Exams",
+    profile_history: "Exam History",
 
     // Study Tracker
     tracker_dashboard: "Dashboard",
@@ -277,6 +278,7 @@ export const translations = {
     profile_weakness: "দুর্বল টপিক",
     profile_strength: "শক্তিশালী টপিক",
     profile_total_exams: "মোট এক্সাম",
+    profile_history: "এক্সাম হিস্ট্রি",
 
     // Study Tracker
     tracker_dashboard: "ড্যাশবোর্ড",
