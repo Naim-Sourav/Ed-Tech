@@ -251,8 +251,10 @@ const MainLayout: React.FC<{
   const isWrongQuestions = location.pathname === '/wrong-questions';
   const isQuizPage = location.pathname === '/quiz';
   const isQbankPage = location.pathname === '/qbank';
-  const hideNav = isExamPage || isPaymentPage || isBotPage || isSavedQuestions || isWrongQuestions || isQuizPage;
-  const hideTopNav = hideNav || isQbankPage;
+  const isDashboard = location.pathname === '/dashboard';
+  const isQbankInnerPage = isQbankPage && (location.search.includes('subject=') || location.search.includes('examRef='));
+  const hideNav = isExamPage || isPaymentPage || isBotPage || isSavedQuestions || isWrongQuestions || isQuizPage || isQbankInnerPage;
+  const hideTopNav = hideNav || isQbankPage || isDashboard;
 
   // Main tabs where back button should NOT appear
   const mainTabs = ['/dashboard', '/courses', '/bot', '/profile', '/planner', '/history', '/qbank'];
@@ -280,7 +282,7 @@ const MainLayout: React.FC<{
   };
 
   return (
-    <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
+    <div className="flex h-[100dvh] bg-gray-50 dark:bg-black font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
       {!profileLoading && !isProfileComplete && !location.pathname.startsWith('/exam/') && <OnboardingModal />}
 
       {!hideNav && (
@@ -298,106 +300,17 @@ const MainLayout: React.FC<{
       )}
 
       <div className="flex-1 flex flex-col h-full relative w-full">
-        {!hideTopNav && (
-            <motion.div 
-                initial={{ y: 0 }}
-                animate={{ y: 0 }}
-                className={`md:hidden fixed top-0 left-0 right-0 z-[60] px-4 h-16 pt-safe-area flex items-center justify-between ${isLeaderboard ? 'bg-transparent' : 'bg-white dark:bg-gray-900 shadow-sm'}`}
-            >
-                {/* Left side: Back button and Notification */}
-                <div className="flex items-center gap-1 z-10">
-                    {!isLeaderboard && showBackButton && (
-                        <button 
-                            onClick={() => {
-                                if (navigator.vibrate) navigator.vibrate(5);
-                                navigate(-1);
-                            }} 
-                            className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300"
-                        >
-                            <ArrowLeft size={22} />
-                        </button>
-                    )}
-                    {!isLeaderboard && (
-                        <button 
-                            onClick={() => {
-                                if (navigator.vibrate) navigator.vibrate(5);
-                                setIsNotificationOpen(true);
-                            }} 
-                            className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300 relative"
-                        >
-                            <Bell size={22} />
-                            {unreadCount > 0 && <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-white dark:border-gray-900"></span>}
-                        </button>
-                    )}
-                </div>
-
-                {/* Center: Logo or Title */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[50%] flex justify-center items-center pointer-events-none">
-                    {!isLeaderboard && (
-                        <AnimatePresence mode="wait">
-                            <motion.div 
-                                key={location.pathname}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
-                                className="pointer-events-auto"
-                            >
-                                {showBackButton ? (
-                                    <span className="font-bold text-gray-800 dark:text-white text-lg tracking-tight line-clamp-1">
-                                        {getTitle(location.pathname)}
-                                    </span>
-                                ) : (
-                                    <div className="flex items-center gap-1.5">
-                                        <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-10 w-auto object-contain logo-dark-mode" />
-                                        <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-6 w-auto object-contain logo-dark-mode" />
-                                    </div>
-                                )}
-                            </motion.div>
-                        </AnimatePresence>
-                    )}
-                </div>
-                
-                {/* Right side: Menu button */}
-                <div className="flex items-center justify-end z-10">
-                    {!isLeaderboard && (
-                        <button 
-                            onClick={() => {
-                                if (navigator.vibrate) navigator.vibrate(5);
-                                setIsMobileMenuOpen(true);
-                            }} 
-                            className="p-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 text-gray-600 dark:text-gray-300"
-                        >
-                            <Menu size={22} />
-                        </button>
-                    )}
-                </div>
-            </motion.div>
-        )}
-
         <main 
             ref={mainContentRef}
             className={`flex-1 transition-colors relative scroll-smooth ${
               (isQuizPage || isExamPage || isBotPage || isPaymentPage) 
                 ? 'h-full overflow-hidden flex flex-col p-0' 
-                : `overflow-y-auto overflow-x-hidden ${hideNav ? 'p-0' : `${(isLeaderboard || isQbankPage) ? 'pt-0' : 'pt-16'} pb-[calc(80px+env(safe-area-inset-bottom))] md:pt-6 md:pb-6 md:px-6`}`
+                : `overflow-y-auto overflow-x-hidden p-0 md:px-6`
             }`}
         >
-          {/* Key on location.pathname forces a re-render/animation on route change */}
-          <AnimatePresence mode="wait">
-            <motion.div 
-                key={location.pathname} 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="min-h-full w-full animate-in fade-in slide-in-from-bottom-2 duration-300"
-            >
-                <Suspense fallback={<PageLoader />}>
-                    {children}
-                </Suspense>
-            </motion.div>
-          </AnimatePresence>
+          <Suspense fallback={<PageLoader />}>
+              {children}
+          </Suspense>
         </main>
       </div>
     </div>
@@ -460,7 +373,7 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-primary">
+      <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-black text-primary">
         <PageLoader />
       </div>
     );
@@ -491,7 +404,7 @@ const AppRoutes: React.FC<{
 
     if (profileLoading) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-black">
                 <PageLoader />
             </div>
         );
@@ -509,7 +422,7 @@ const AppRoutes: React.FC<{
               currentUser ? (
                 <MainLayout themeMode={themeMode} toggleTheme={toggleTheme}>
                     <Routes location={location}>
-                      <Route path="/dashboard" element={<HomeDashboard />} />
+                      <Route path="/dashboard" element={<HomeDashboard toggleTheme={toggleTheme} themeMode={themeMode} />} />
                       <Route path="/courses" element={<CourseSection />} />
                       <Route path="/qbank" element={<QuestionBank />} />
                       <Route path="/exams" element={<ExamHub />} />

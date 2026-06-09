@@ -25,6 +25,23 @@
         "sentBy": { "type": "string" }
       },
       "required": ["title", "body", "status"]
+    },
+    "Attempt": {
+      "title": "Exam Attempt",
+      "description": "Record of a completed exam attempt",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "examId": { "type": "string" },
+        "subject": { "type": "string" },
+        "totalQuestions": { "type": "integer" },
+        "correct": { "type": "integer" },
+        "wrong": { "type": "integer" },
+        "skipped": { "type": "integer" },
+        "score": { "type": "number" },
+        "timestamp": { "type": "integer" }
+      },
+      "required": ["userId", "examId", "timestamp"]
     }
   },
   "firestore": {
@@ -35,6 +52,10 @@
     "/push_notifications/{notifId}": {
       "schema": "PushNotification",
       "description": "Queue for push notifications"
+    },
+    "/attempts/{attemptId}": {
+      "schema": "Attempt",
+      "description": "User exam attempts history records"
     }
   }
 }
