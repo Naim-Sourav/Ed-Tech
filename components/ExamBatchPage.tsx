@@ -112,11 +112,11 @@ const ExamBatchPage: React.FC = () => {
   if (!courseData) return <div>Course not found</div>;
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black p-4 md:p-8 transition-colors">
       <div className="max-w-4xl mx-auto space-y-6 pb-20">
         
         {/* Header Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
             
             <div className="relative z-10">
@@ -130,7 +130,7 @@ const ExamBatchPage: React.FC = () => {
                     </div>
                     
                     {/* Roll ID Card */}
-                    <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center min-w-[160px]">
+                    <div className="bg-gray-100 dark:bg-black p-4 rounded-xl border border-gray-200 dark:border-zinc-800 flex flex-col items-center min-w-[160px]">
                         <p className="text-xs font-bold text-gray-500 uppercase mb-1">Your Roll ID</p>
                         <div className="flex items-center gap-2">
                             <span className="text-xl font-mono font-black text-primary tracking-wider">{userRoll}</span>
@@ -178,19 +178,19 @@ const ExamBatchPage: React.FC = () => {
 
             <div className="grid gap-3">
                 {courseData.exams.length === 0 ? (
-                    <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                    <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-gray-300 dark:border-zinc-800">
                         <p className="text-gray-500">No exams scheduled yet.</p>
                     </div>
                 ) : (
                     courseData.exams.map((exam: any, idx: number) => (
-                        <div key={idx} className={`bg-white dark:bg-gray-800 p-4 rounded-xl border ${exam.status === 'UPCOMING' ? 'border-primary/30 shadow-md shadow-primary/5' : 'border-gray-200 dark:border-gray-700'} flex flex-col md:flex-row items-center justify-between gap-4 transition-all hover:border-primary/50`}>
+                        <div key={idx} className={`bg-white dark:bg-zinc-900 p-4 rounded-xl border ${exam.status === 'UPCOMING' ? 'border-primary/30 shadow-md shadow-primary/5' : 'border-gray-200 dark:border-zinc-800'} flex flex-col md:flex-row items-center justify-between gap-4 transition-all hover:border-primary/50`}>
                             
                             {/* Left: Info */}
                             <div className="flex items-center gap-4 w-full md:w-auto">
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-bold text-lg
                                     ${exam.status === 'COMPLETED' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 
                                       exam.status === 'MISSED' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' :
-                                      exam.status === 'LOCKED' ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500' :
+                                      exam.status === 'LOCKED' ? 'bg-gray-100 text-gray-400 dark:bg-zinc-900 dark:text-gray-500' :
                                       'bg-primary/10 text-primary'
                                     }
                                 `}>
@@ -224,8 +224,8 @@ const ExamBatchPage: React.FC = () => {
                                     onClick={() => handleStartExam(exam.id, exam.status)}
                                     disabled={exam.status === 'LOCKED'}
                                     className={`px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all w-full md:w-auto justify-center
-                                        ${exam.status === 'LOCKED' ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600' : 
-                                          exam.status === 'COMPLETED' ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300' :
+                                        ${exam.status === 'LOCKED' ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-900 dark:text-gray-600' : 
+                                          exam.status === 'COMPLETED' ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-zinc-900 dark:border-zinc-800 dark:text-gray-300' :
                                           'bg-primary text-white hover:bg-primary-dark shadow-lg shadow-primary/20'
                                         }
                                     `}

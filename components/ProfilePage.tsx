@@ -13,6 +13,9 @@ import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart as ReChartsPieChart, Pie, Cell } from 'recharts';
 
 
+import { db } from '../services/firebase';
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+
 const AVATARS: string[] = [];
 
 const ITEMS_PER_PAGE = 10; // Limits items per page to prevent full-page PDF saves
@@ -189,11 +192,21 @@ const ProfilePage: React.FC = () => {
       const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
       const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
       const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
-      // Sort descending by timestamp
+      // Sort descending by timestamp and deduplicate extremely close timestamp duplicates (e.g. within 1 minute)
       const sortedAttempts = localAttempts.sort((a: any, b: any) => {
         return (b.timestamp || 0) - (a.timestamp || 0);
       });
-      setAttempts(sortedAttempts);
+      const deduplicated: any[] = [];
+      for (const item of sortedAttempts) {
+        const isDup = deduplicated.some(existing => 
+          existing.examId === item.examId && 
+          Math.abs((existing.timestamp || 0) - (item.timestamp || 0)) < 60000
+        );
+        if (!isDup) {
+          deduplicated.push(item);
+        }
+      }
+      setAttempts(deduplicated);
     }
   }, [viewingUserId]);
   
@@ -221,6 +234,21 @@ const ProfilePage: React.FC = () => {
     try {
       if (currentUser) {
         await deleteExamResultAPI(currentUser.uid, examId);
+        try {
+          const q = query(
+            collection(db, 'attempts'), 
+            where('userId', '==', currentUser.uid),
+            where('examId', '==', examId)
+          );
+          const snap = await getDocs(q);
+          const promises: Promise<void>[] = [];
+          snap.forEach((d) => {
+            promises.push(deleteDoc(doc(db, 'attempts', d.id)));
+          });
+          await Promise.all(promises);
+        } catch (fErr) {
+          console.error("Failed to delete from Firestore:", fErr);
+        }
       }
       
       const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
@@ -753,10 +781,10 @@ const ProfilePage: React.FC = () => {
   const ProfileSkeleton = () => (
     <div className="space-y-6 animate-pulse">
         {/* Header Skeleton */}
-        <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-gray-200 dark:border-gray-700 h-72 relative overflow-hidden">
+        <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-gray-200 dark:border-zinc-800 h-72 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-32 bg-gray-200/50 dark:bg-gray-700/50"></div>
             <div className="relative flex flex-col md:flex-row items-center gap-8 mt-12">
-                <div className="w-32 h-32 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-gray-800 shadow-xl"></div>
+                <div className="w-32 h-32 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-zinc-800 shadow-xl"></div>
                 <div className="space-y-4 flex-1 w-full text-center md:text-left">
                     <div className="h-8 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-2xl mx-auto md:mx-0"></div>
                     <div className="flex gap-3 justify-center md:justify-start">
@@ -769,7 +797,7 @@ const ProfilePage: React.FC = () => {
         {/* Stats Skeleton */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-24 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-gray-700"></div>
+                <div key={i} className="h-24 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-zinc-800"></div>
             ))}
         </div>
     </div>
@@ -781,12 +809,12 @@ const ProfilePage: React.FC = () => {
 
   // Helper component for Filters
   const FilterSection = () => (
-      <div className="flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-gray-900/50 p-2 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-inner animate-in fade-in slide-in-from-top-1">
+      <div className="flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-black/50 p-2 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-inner animate-in fade-in slide-in-from-top-1">
           <div className="flex items-center justify-center text-gray-400 px-2"><Filter size={16}/></div>
           <select 
               value={currentFilterSubject} 
               onChange={(e) => { setCurrentFilterSubject(e.target.value); setCurrentFilterChapter('ALL'); }}
-              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
+              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
           >
               <option value="ALL">সকল বিষয়</option>
               {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -794,7 +822,7 @@ const ProfilePage: React.FC = () => {
           <select 
               value={currentFilterChapter} 
               onChange={(e) => setCurrentFilterChapter(e.target.value)}
-              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
+              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
           >
               <option value="ALL">সকল অধ্যায়</option>
               {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
@@ -816,17 +844,17 @@ const ProfilePage: React.FC = () => {
               <button 
                   onClick={() => setCurrentPage((prev: number) => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
+                  className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
               >
                   <ChevronLeft size={20} />
               </button>
-              <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
+              <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-900 px-6 py-3 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-lg">
                   Page <span className="text-primary">{currentPage}</span> of {totalPages}
               </span>
               <button 
                   onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
+                  className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
               >
                   <ChevronRight size={20} />
               </button>
@@ -837,12 +865,12 @@ const ProfilePage: React.FC = () => {
   return (
     <div 
         ref={scrollContainerRef}
-        className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors no-scrollbar"
+        className="h-full overflow-y-auto bg-gray-50 dark:bg-black p-4 md:p-8 transition-colors no-scrollbar"
     >
       <div className="max-w-5xl mx-auto space-y-6 md:space-y-10 pb-24">
         
         {/* Header Section - Native App Style */}
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 border border-gray-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
+        <div className="bg-white dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 border border-gray-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
           {/* Enhanced Background Pattern */}
           <div className="absolute top-0 left-0 w-full h-full opacity-40 dark:opacity-20 pointer-events-none">
             <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-br from-primary/30 via-orange-500/20 to-transparent"></div>
@@ -858,7 +886,7 @@ const ProfilePage: React.FC = () => {
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsEditing(true)}
-                  className="p-3.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl text-primary hover:shadow-primary/20 transition-all flex items-center justify-center"
+                  className="p-3.5 bg-white/90 dark:bg-black/90 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl text-primary hover:shadow-primary/20 transition-all flex items-center justify-center"
                >
                   <Edit2 size={18} strokeWidth={2.5} />
                </motion.button>
@@ -870,7 +898,7 @@ const ProfilePage: React.FC = () => {
             <div className="relative">
                <motion.div 
                   whileHover={{ scale: 1.02 }}
-                  className="w-28 h-28 md:w-40 md:h-40 rounded-[2.5rem] border-4 border-white dark:border-gray-800 shadow-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 flex items-center justify-center relative z-10"
+                  className="w-28 h-28 md:w-40 md:h-40 rounded-[2.5rem] border-4 border-white dark:border-zinc-800 shadow-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 flex items-center justify-center relative z-10"
                >
                   {renderProfileAvatar()}
                </motion.div>
@@ -879,7 +907,7 @@ const ProfilePage: React.FC = () => {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-                    className="absolute -bottom-2 -right-2 p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl hover:scale-110 transition-transform shadow-xl z-20 border-2 border-white dark:border-gray-800"
+                    className="absolute -bottom-2 -right-2 p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl hover:scale-110 transition-transform shadow-xl z-20 border-2 border-white dark:border-zinc-800"
                  >
                     <Camera size={18} />
                  </motion.button>
@@ -888,7 +916,7 @@ const ProfilePage: React.FC = () => {
                    <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="absolute top-full left-0 mt-4 bg-white dark:bg-gray-800 p-5 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 z-50 w-72 backdrop-blur-xl"
+                    className="absolute top-full left-0 mt-4 bg-white dark:bg-zinc-900 p-5 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 z-50 w-72 backdrop-blur-xl"
                    >
                        <p className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4">প্রোফাইল ছবি</p>
 
@@ -962,7 +990,7 @@ const ProfilePage: React.FC = () => {
         </div>
 
         {/* Navigation Tabs - Segmented Control Style */}
-        <div className="flex p-1.5 bg-white/80 dark:bg-gray-800/50 backdrop-blur-xl rounded-[1.5rem] border border-gray-200 dark:border-white/5 w-full md:w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar shadow-sm">
+        <div className="flex p-1.5 bg-white/80 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[1.5rem] border border-gray-200 dark:border-white/5 w-full md:w-fit mx-auto md:mx-0 overflow-x-auto no-scrollbar shadow-sm">
            <button onClick={() => setActiveTab('INFO')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'INFO' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><LayoutGrid size={16}/> Analysis</button>
            {isOwnProfile ? (
                <>
@@ -998,7 +1026,7 @@ const ProfilePage: React.FC = () => {
                         <motion.div 
                             key={i}
                             whileHover={{ y: -8, scale: 1.02 }}
-                            className="bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl shadow-gray-200/40 dark:shadow-none flex flex-col items-center justify-center gap-4 relative overflow-hidden group"
+                            className="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-xl shadow-gray-200/40 dark:shadow-none flex flex-col items-center justify-center gap-4 relative overflow-hidden group"
                         >
                             <div className={`absolute -right-6 -bottom-6 w-28 h-28 ${stat.bg.replace('/10', '/5')} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
                             <div className={`p-4.5 rounded-[1.5rem] ${stat.bg} ${stat.text} shadow-inner relative z-10`}>
@@ -1300,7 +1328,7 @@ const ProfilePage: React.FC = () => {
                 className="space-y-6"
             >
                 {enrolledCourses.length === 0 ? (
-                    <div className="text-center py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-xl">
+                    <div className="text-center py-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-zinc-800 shadow-xl">
                         <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                             <BookOpen size={40} className="text-gray-400"/>
                         </div>
@@ -1319,7 +1347,7 @@ const ProfilePage: React.FC = () => {
                             <motion.div 
                                 key={course.id} 
                                 whileHover={{ y: -5 }}
-                                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all group"
+                                className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-lg hover:shadow-xl transition-all group"
                             >
                                 <div className="flex justify-between items-start mb-4">
                                     <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-primary transition-colors leading-tight">{course.title}</h3>
@@ -1372,7 +1400,7 @@ const ProfilePage: React.FC = () => {
                 className="space-y-6"
             >
                 {/* Folder & Filter Management */}
-                <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-sm">
                     <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
                         {availableFolders.map(f => (
                             <button 
@@ -1418,7 +1446,7 @@ const ProfilePage: React.FC = () => {
 
                 {/* Filter Section */}
                 {savedQuestions.length > 0 && (
-                    <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-sm">
                         <FilterSection />
                     </div>
                 )}
@@ -1426,11 +1454,11 @@ const ProfilePage: React.FC = () => {
                 {loadingSaved ? (
                     <div className="space-y-4 animate-pulse">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-40 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-gray-700"></div>
+                            <div key={i} className="h-40 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-zinc-800"></div>
                         ))}
                     </div>
                 ) : filteredItems.length === 0 ? (
-                    <div className="text-center py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-xl">
+                    <div className="text-center py-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-zinc-800 shadow-xl">
                         <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                             <Bookmark size={40} className="text-gray-400"/>
                         </div>
@@ -1448,7 +1476,7 @@ const ProfilePage: React.FC = () => {
                                     layout
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all group"
+                                    className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-lg hover:shadow-xl transition-all group"
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex flex-wrap gap-2 items-center">
@@ -1472,9 +1500,9 @@ const ProfilePage: React.FC = () => {
                                                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                            className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-20 w-40 py-2 overflow-hidden"
+                                                            className="absolute top-full left-0 mt-2 bg-white dark:bg-black border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-20 w-40 py-2 overflow-hidden"
                                                         >
-                                                            <div className="px-3 py-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 mb-1">Move to folder</div>
+                                                            <div className="px-3 py-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-zinc-800 mb-1">Move to folder</div>
                                                             {availableFolders.filter(f => f !== (item.folder || 'General')).map(f => (
                                                                 <button 
                                                                     key={f}
@@ -1484,7 +1512,7 @@ const ProfilePage: React.FC = () => {
                                                                     {f}
                                                                 </button>
                                                             ))}
-                                                            <button onClick={() => setMovingQuestionId(null)} className="block w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border-t border-gray-100 dark:border-gray-800 mt-1 font-bold">Cancel</button>
+                                                            <button onClick={() => setMovingQuestionId(null)} className="block w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border-t border-gray-100 dark:border-zinc-800 mt-1 font-bold">Cancel</button>
                                                         </motion.div>
                                                     )}
                                                 </AnimatePresence>
@@ -1507,10 +1535,10 @@ const ProfilePage: React.FC = () => {
                                                 className={`p-3 rounded-2xl border text-xs transition-all ${
                                                     i === q.correctAnswerIndex 
                                                     ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 font-bold shadow-sm' 
-                                                    : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                                                    : 'bg-gray-50 dark:bg-black/50 border-gray-100 dark:border-zinc-800 text-gray-600 dark:text-gray-400'
                                                 }`}
                                             >
-                                                <span className="inline-block w-6 h-6 rounded-lg bg-white/50 dark:bg-gray-800/50 text-center leading-6 mr-2 font-bold shadow-inner">
+                                                <span className="inline-block w-6 h-6 rounded-lg bg-white/50 dark:bg-zinc-900/50 text-center leading-6 mr-2 font-bold shadow-inner">
                                                     {String.fromCharCode(65 + i)}
                                                 </span>
                                                 {opt}
@@ -1518,7 +1546,7 @@ const ProfilePage: React.FC = () => {
                                         ))}
                                     </div>
                                     
-                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                                    <div className="bg-gray-50 dark:bg-black/50 p-4 rounded-[1.5rem] border border-gray-100 dark:border-zinc-800 relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-1 h-full bg-primary/40"></div>
                                         <span className="font-bold text-primary text-[12px] uppercase tracking-widest block mb-2">Explanation</span>
                                         <p className="font-tiro text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -1542,7 +1570,7 @@ const ProfilePage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
             >
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-sm">
                    <div className="flex items-center gap-4">
                        <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-2xl text-red-500">
                            <AlertTriangle size={24} />
@@ -1575,7 +1603,7 @@ const ProfilePage: React.FC = () => {
 
                {/* Filter Section */}
                {mistakes.length > 0 && (
-                   <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                   <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-sm">
                        <FilterSection />
                    </div>
                )}
@@ -1583,11 +1611,11 @@ const ProfilePage: React.FC = () => {
                {loadingMistakes ? (
                    <div className="space-y-4 animate-pulse">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-40 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-gray-700"></div>
+                            <div key={i} className="h-40 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-zinc-800"></div>
                         ))}
                    </div>
                ) : filteredItems.length === 0 ? (
-                   <div className="text-center py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-xl">
+                   <div className="text-center py-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 dark:border-zinc-800 shadow-xl">
                        <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                            <CheckCircle size={40} className="text-green-500"/>
                        </div>
@@ -1606,7 +1634,7 @@ const ProfilePage: React.FC = () => {
                             layout
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-[2rem] border border-red-100 dark:border-red-900/30 shadow-lg hover:shadow-xl transition-all group relative overflow-hidden"
+                            className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-[2rem] border border-red-100 dark:border-red-900/30 shadow-lg hover:shadow-xl transition-all group relative overflow-hidden"
                         >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                             
@@ -1637,10 +1665,10 @@ const ProfilePage: React.FC = () => {
                                         className={`p-3 rounded-2xl border text-xs transition-all ${
                                             i === q.correctAnswerIndex 
                                             ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 font-bold shadow-sm' 
-                                            : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400'
+                                            : 'bg-gray-50 dark:bg-black/50 border-gray-100 dark:border-zinc-800 text-gray-500 dark:text-gray-400'
                                         }`}
                                     >
-                                        <span className="inline-block w-6 h-6 rounded-lg bg-white/50 dark:bg-gray-800/50 text-center leading-6 mr-2 font-bold shadow-inner">
+                                        <span className="inline-block w-6 h-6 rounded-lg bg-white/50 dark:bg-zinc-900/50 text-center leading-6 mr-2 font-bold shadow-inner">
                                             {String.fromCharCode(65 + i)}
                                         </span>
                                         {opt}
@@ -1833,7 +1861,7 @@ const ProfilePage: React.FC = () => {
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="bg-white dark:bg-gray-800 w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 border border-gray-200 dark:border-gray-700 relative z-10 overflow-hidden"
+                    className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 border border-gray-200 dark:border-zinc-800 relative z-10 overflow-hidden"
                 >
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-orange-500"></div>
                     

@@ -145,7 +145,7 @@ const LeaderboardPage: React.FC = () => {
 
   return (
     <div 
-      className="min-h-full bg-[#F8F9FE] dark:bg-black text-gray-900 dark:text-white relative transition-colors duration-500"
+      className="min-h-full bg-[#F8F9FE] dark:bg-black text-gray-900 dark:text-white relative transition-colors duration-500 pb-24"
     >
       {/* Premium Background Elements */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -371,7 +371,7 @@ const LeaderboardPage: React.FC = () => {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-10 left-4 right-4 md:left-auto md:right-8 md:w-72 z-50"
+            className="fixed bottom-[5rem] md:bottom-10 left-4 right-4 md:left-auto md:right-8 md:w-72 z-50"
           >
               <motion.div 
                 whileTap={{ scale: 0.95 }}

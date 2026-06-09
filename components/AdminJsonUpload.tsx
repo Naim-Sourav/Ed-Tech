@@ -95,7 +95,7 @@ const ImageInput = ({
           type="text"
           value={value === "IMAGE_REQUIRED" ? "" : value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full p-2 pl-7 pr-3 rounded-xl border text-[12px] font-mono transition-all ${isMissing ? "bg-red-50 border-red-200 text-red-600 focus:ring-red-100" : "bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 focus:ring-primary/10 border-gray-100"}`}
+          className={`w-full p-2 pl-7 pr-3 rounded-xl border text-[12px] font-mono transition-all ${isMissing ? "bg-red-50 border-red-200 text-red-600 focus:ring-red-100" : "bg-gray-50 dark:bg-black dark:border-zinc-800 dark:text-gray-300 focus:ring-primary/10 border-gray-100"}`}
           placeholder={isMissing ? "Paste URL here..." : "URL here..."}
           onFocus={(e) => {
             if (e.target.value === "") {
@@ -851,7 +851,7 @@ const AdminJsonUpload: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 shadow-xl p-4 md:p-8">
+    <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-200 shadow-xl p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b pb-8">
@@ -904,7 +904,7 @@ const AdminJsonUpload: React.FC = () => {
                       setSelectedBoard(e.target.value);
                       setSelectedCollege("");
                     }}
-                    className="p-2.5 rounded-xl border font-tiro text-xs font-bold bg-white dark:bg-gray-800 dark:border-gray-700 outline-none focus:ring-2 ring-primary/20"
+                    className="p-2.5 rounded-xl border font-tiro text-xs font-bold bg-white dark:bg-zinc-900 dark:border-zinc-800 outline-none focus:ring-2 ring-primary/20"
                   >
                     <option value="">কোন বোর্ড নয়</option>
                     {BOARDS.map((b) => (
@@ -922,7 +922,7 @@ const AdminJsonUpload: React.FC = () => {
                       setSelectedCollege(e.target.value);
                       setSelectedBoard("");
                     }}
-                    className="p-2.5 rounded-xl border text-xs font-bold bg-white dark:bg-gray-800 dark:border-gray-700 outline-none focus:ring-2 ring-primary/20"
+                    className="p-2.5 rounded-xl border text-xs font-bold bg-white dark:bg-zinc-900 dark:border-zinc-800 outline-none focus:ring-2 ring-primary/20"
                   >
                     <option value="">কোন কলেজ নয়</option>
                     {COLLEGES.map((c) => (
@@ -934,7 +934,7 @@ const AdminJsonUpload: React.FC = () => {
                   <select
                     value={selectedAcademicYear}
                     onChange={(e) => setSelectedAcademicYear(e.target.value)}
-                    className="p-2.5 rounded-xl border text-xs font-bold bg-white dark:bg-gray-800 dark:border-gray-700 outline-none focus:ring-2 ring-primary/20"
+                    className="p-2.5 rounded-xl border text-xs font-bold bg-white dark:bg-zinc-900 dark:border-zinc-800 outline-none focus:ring-2 ring-primary/20"
                   >
                     {YEARS.map((yr) => (
                       <option key={yr.english} value={yr.english}>
@@ -950,7 +950,7 @@ const AdminJsonUpload: React.FC = () => {
                   <select
                     value={selectedTarget}
                     onChange={(e) => setSelectedTarget(e.target.value)}
-                    className="p-2.5 rounded-xl border font-mono text-xs font-bold bg-white dark:bg-gray-800 dark:border-gray-700 outline-none focus:ring-2 ring-primary/20"
+                    className="p-2.5 rounded-xl border font-mono text-xs font-bold bg-white dark:bg-zinc-900 dark:border-zinc-800 outline-none focus:ring-2 ring-primary/20"
                   >
                     {TARGETS.map((t) => (
                       <option key={t} value={t}>
@@ -961,7 +961,7 @@ const AdminJsonUpload: React.FC = () => {
                   <select
                     value={selectedSession}
                     onChange={(e) => setSelectedSession(e.target.value)}
-                    className="p-2.5 rounded-xl border text-xs font-bold bg-white dark:bg-gray-800 dark:border-gray-700 outline-none focus:ring-2 ring-primary/20"
+                    className="p-2.5 rounded-xl border text-xs font-bold bg-white dark:bg-zinc-900 dark:border-zinc-800 outline-none focus:ring-2 ring-primary/20"
                   >
                     <option value="">Year/Session</option>
                     {SESSIONS.map((s) => (
@@ -981,7 +981,7 @@ const AdminJsonUpload: React.FC = () => {
                     setSelectedSubject(e.target.value);
                     setSelectedChapter("");
                   }}
-                  className="p-2 rounded-lg border-0 text-xs font-bold bg-white dark:bg-gray-800 dark:text-white outline-none shadow-sm min-w-[140px]"
+                  className="p-2 rounded-lg border-0 text-xs font-bold bg-white dark:bg-zinc-900 dark:text-white outline-none shadow-sm min-w-[140px]"
                 >
                   <option value="">Select Subject</option>
                   {subjects.map((s) => (
@@ -994,7 +994,7 @@ const AdminJsonUpload: React.FC = () => {
                   value={selectedChapter}
                   disabled={!selectedSubject}
                   onChange={(e) => setSelectedChapter(e.target.value)}
-                  className="p-2 rounded-lg border-0 text-xs font-bold bg-white dark:bg-gray-800 dark:text-white outline-none shadow-sm min-w-[140px] disabled:opacity-50"
+                  className="p-2 rounded-lg border-0 text-xs font-bold bg-white dark:bg-zinc-900 dark:text-white outline-none shadow-sm min-w-[140px] disabled:opacity-50"
                 >
                   <option value="">Select Chapter</option>
                   {chapters.map((c) => (
@@ -1030,7 +1030,7 @@ const AdminJsonUpload: React.FC = () => {
               {copiedPrompt ? "Copied" : "Copy JSON Format"}
             </button>
           </div>
-          <pre className="bg-white dark:bg-gray-900 border border-indigo-100 dark:border-gray-700 p-4 rounded-xl text-xs font-mono overflow-auto text-indigo-900 dark:text-indigo-300">
+          <pre className="bg-white dark:bg-black border border-indigo-100 dark:border-zinc-800 p-4 rounded-xl text-xs font-mono overflow-auto text-indigo-900 dark:text-indigo-300">
             {expectedJsonStructure}
           </pre>
         </div>
@@ -1054,7 +1054,7 @@ const AdminJsonUpload: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm text-[12px] font-bold text-gray-600 dark:text-gray-300 flex items-center gap-2 hover:border-primary hover:text-primary transition-all cursor-pointer"
+                  className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg shadow-sm text-[12px] font-bold text-gray-600 dark:text-gray-300 flex items-center gap-2 hover:border-primary hover:text-primary transition-all cursor-pointer"
                 >
                   <Upload size={12} /> JSON আপলোড করুন
                 </button>
@@ -1062,7 +1062,7 @@ const AdminJsonUpload: React.FC = () => {
               <textarea
                 value={rawInput}
                 onChange={(e) => setRawInput(e.target.value)}
-                className={`w-full h-[500px] p-5 rounded-3xl border transition-all duration-300 bg-gray-50 dark:bg-gray-900 font-mono text-[11px] outline-none ${isDragging ? "border-purple-300 bg-purple-50/10 dark:bg-purple-950/10 opacity-60" : "border-gray-200 dark:border-gray-700"}`}
+                className={`w-full h-[500px] p-5 rounded-3xl border transition-all duration-300 bg-gray-50 dark:bg-black font-mono text-[11px] outline-none ${isDragging ? "border-purple-300 bg-purple-50/10 dark:bg-purple-950/10 opacity-60" : "border-gray-200 dark:border-zinc-800"}`}
                 placeholder="জেমিনির JSON এখানে পেস্ট করুন অথবা ফাইল ড্র্যাগ এন্ড ড্রপ করুন..."
               />
               {isDragging && (
@@ -1070,7 +1070,7 @@ const AdminJsonUpload: React.FC = () => {
                   <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/40 text-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                     <Upload size={32} className="animate-bounce" />
                   </div>
-                  <span className="text-sm font-black text-purple-700 dark:text-purple-300 bg-white/90 dark:bg-gray-800/90 px-4 py-2 rounded-xl shadow-sm border border-purple-200 dark:border-purple-800">
+                  <span className="text-sm font-black text-purple-700 dark:text-purple-300 bg-white/90 dark:bg-zinc-900/90 px-4 py-2 rounded-xl shadow-sm border border-purple-200 dark:border-purple-800">
                     JSON ফাইলটি এখানে ছেড়ে দিন
                   </span>
                 </div>
@@ -1084,8 +1084,8 @@ const AdminJsonUpload: React.FC = () => {
             </button>
           </div>
 
-          <div className="lg:col-span-7 flex flex-col h-[610px] bg-gray-50/50 dark:bg-gray-900/50 rounded-[2.5rem] border overflow-hidden">
-            <div className="p-5 border-b bg-white dark:bg-gray-800 flex justify-between items-center sticky top-0 z-20">
+          <div className="lg:col-span-7 flex flex-col h-[610px] bg-gray-50/50 dark:bg-black/50 rounded-[2.5rem] border overflow-hidden">
+            <div className="p-5 border-b bg-white dark:bg-zinc-900 flex justify-between items-center sticky top-0 z-20">
               <div className="flex items-center gap-4">
                 <h3 className="font-black text-sm">
                   Preview ({processedQuestions.length})
@@ -1144,7 +1144,7 @@ const AdminJsonUpload: React.FC = () => {
                      {bulkSummary.map(({ level, tags, count, questionCount }) => (
                       <div
                         key={level}
-                        className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-blue-100/40 dark:border-gray-700 shadow-sm"
+                        className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-blue-100/40 dark:border-zinc-800 shadow-sm"
                       >
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <span className="text-xs font-extrabold text-blue-800 dark:text-blue-200 bg-blue-100/60 dark:bg-blue-900/40 px-2.5 py-1 rounded-lg">
@@ -1195,7 +1195,7 @@ const AdminJsonUpload: React.FC = () => {
               ) : (
                 <>
                   {/* Top Pagination Bar */}
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-gray-50/50 dark:bg-gray-900/30 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-gray-50/50 dark:bg-black/30 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm">
                     <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
                       সরাসরি প্রিভিউ: প্রথম থেকে <span className="text-purple-600 font-extrabold bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded-md">{toBengaliNumber(processedQuestions.length.toString())} টি</span> প্রশ্ন (পৃষ্ঠা প্রতি {toBengaliNumber(itemsPerPage.toString())} টি)
                     </div>
@@ -1203,7 +1203,7 @@ const AdminJsonUpload: React.FC = () => {
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                         disabled={currentPage === 1}
-                        className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                        className="p-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         title="পূর্ববর্তী পৃষ্ঠা"
                       >
                         <ChevronLeft size={14} />
@@ -1225,7 +1225,7 @@ const AdminJsonUpload: React.FC = () => {
                           <button
                             key={pg}
                             onClick={() => setCurrentPage(pg)}
-                            className={`min-w-[28px] h-[28px] text-xs font-bold rounded-lg border transition ${currentPage === pg ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
+                            className={`min-w-[28px] h-[28px] text-xs font-bold rounded-lg border transition ${currentPage === pg ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
                           >
                             {toBengaliNumber(pg.toString())}
                           </button>
@@ -1235,7 +1235,7 @@ const AdminJsonUpload: React.FC = () => {
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(Math.ceil(processedQuestions.length / itemsPerPage), prev + 1))}
                         disabled={currentPage === Math.ceil(processedQuestions.length / itemsPerPage)}
-                        className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                        className="p-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         title="পরবর্তী পৃষ্ঠা"
                       >
                         <ChevronRight size={14} />
@@ -1285,7 +1285,7 @@ const AdminJsonUpload: React.FC = () => {
                   return (
                     <div
                       key={idx}
-                      className={`bg-white dark:bg-gray-800 p-6 rounded-3xl border shadow-sm relative transition-all ${isMissing ? "border-red-300 ring-4 ring-red-500/5" : "border-gray-200"} ${isRepeatStimulus ? "border-dashed border-t-0 rounded-t-none -mt-6" : ""}`}
+                      className={`bg-white dark:bg-zinc-900 p-6 rounded-3xl border shadow-sm relative transition-all ${isMissing ? "border-red-300 ring-4 ring-red-500/5" : "border-gray-200"} ${isRepeatStimulus ? "border-dashed border-t-0 rounded-t-none -mt-6" : ""}`}
                     >
                       <button
                         onClick={() => handleDelete(idx)}
@@ -1296,7 +1296,7 @@ const AdminJsonUpload: React.FC = () => {
 
                       {/* Stimulus Instruction Header */}
                       {stimulusRange && (
-                        <div className="mb-4 text-center border-y border-gray-100 dark:border-gray-700 py-1 bg-gray-50/50 dark:bg-gray-900/30">
+                        <div className="mb-4 text-center border-y border-gray-100 dark:border-zinc-800 py-1 bg-gray-50/50 dark:bg-black/30">
                           <p className="text-[12px] font-bold text-gray-400 font-tiro italic">
                             নিচের উদ্দীপকের আলোকে{" "}
                             {toBengaliNumber(stimulusRange.start.toString())} ও{" "}
@@ -1364,7 +1364,7 @@ const AdminJsonUpload: React.FC = () => {
                                   showAllFieldsIndex === idx ? null : idx,
                                 )
                               }
-                              className={`p-1.5 rounded-lg border flex-shrink-0 transition-all ${showAllFieldsIndex === idx ? "bg-primary text-white border-primary" : "bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 shadow-sm"}`}
+                              className={`p-1.5 rounded-lg border flex-shrink-0 transition-all ${showAllFieldsIndex === idx ? "bg-primary text-white border-primary" : "bg-white dark:bg-zinc-900 text-gray-400 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-gray-600 shadow-sm"}`}
                               title="Add/Edit Images"
                             >
                               <ImageIcon size={14} />
@@ -1375,7 +1375,7 @@ const AdminJsonUpload: React.FC = () => {
                               <img
                                 src={q.questionImage}
                                 alt="Question"
-                                className="max-h-48 rounded-lg object-contain border border-gray-100 dark:border-gray-700 mb-4"
+                                className="max-h-48 rounded-lg object-contain border border-gray-100 dark:border-zinc-800 mb-4"
                                 referrerPolicy="no-referrer"
                               />
                             )}
@@ -1403,14 +1403,14 @@ const AdminJsonUpload: React.FC = () => {
                                 e.target.value,
                               )
                             }
-                            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border dark:border-gray-700 rounded-xl text-xs font-tiro leading-relaxed outline-none min-h-[60px]"
+                            className="w-full p-3 bg-gray-50 dark:bg-black border dark:border-zinc-800 rounded-xl text-xs font-tiro leading-relaxed outline-none min-h-[60px]"
                             placeholder="প্রশ্নটি এখানে এডিট করুন..."
                           />
                         </div>
                       )}
 
                       {(hasTopImages || forceAll) && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-gray-100/50 dark:bg-gray-900/50 rounded-2xl mb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-gray-100/50 dark:bg-black/50 rounded-2xl mb-4">
                           <ImageInput
                             value={
                               forceAll
@@ -1527,14 +1527,14 @@ const AdminJsonUpload: React.FC = () => {
                       </div>
 
                       {/* Explanation Editor */}
-                      <div className="mt-6 p-4 bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                      <div className="mt-6 p-4 bg-gray-50/50 dark:bg-black/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                         <label className="text-[12px] font-black text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
                           <Info size={12} /> Explanation / ব্যাখ্যা
                         </label>
 
                         {renderMode === "RENDERED" ? (
                           <div className="space-y-3">
-                            <div className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 text-xs font-tiro leading-relaxed tex2jax_process whitespace-pre-wrap">
+                            <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 text-xs font-tiro leading-relaxed tex2jax_process whitespace-pre-wrap">
                               {q.explanation || "No explanation provided."}
                             </div>
                             {q.explanationImage &&
@@ -1542,7 +1542,7 @@ const AdminJsonUpload: React.FC = () => {
                                 <img
                                   src={q.explanationImage}
                                   alt="Explanation"
-                                  className="max-h-32 rounded-lg object-contain border border-gray-100 dark:border-gray-700"
+                                  className="max-h-32 rounded-lg object-contain border border-gray-100 dark:border-zinc-800"
                                   referrerPolicy="no-referrer"
                                 />
                               )}
@@ -1557,7 +1557,7 @@ const AdminJsonUpload: React.FC = () => {
                                 e.target.value,
                               )
                             }
-                            className="w-full p-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl text-xs font-tiro leading-relaxed focus:ring-2 ring-primary/10 outline-none min-h-[100px]"
+                            className="w-full p-3 bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl text-xs font-tiro leading-relaxed focus:ring-2 ring-primary/10 outline-none min-h-[100px]"
                             placeholder="ব্যাখ্যা এখানে লিখুন বা এডিট করুন..."
                           />
                         )}
@@ -1580,7 +1580,7 @@ const AdminJsonUpload: React.FC = () => {
                 })}
 
                 {/* Bottom Pagination Bar */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 mt-6 bg-gray-50/50 dark:bg-gray-900/30 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 mt-6 bg-gray-50/50 dark:bg-black/30 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm">
                   <div className="text-xs font-bold text-gray-500 dark:text-gray-400">
                     কাঙ্ক্ষিত পৃষ্ঠা খুঁজুন: পৃষ্ঠা {toBengaliNumber(currentPage.toString())} (মোট {toBengaliNumber(Math.ceil(processedQuestions.length / itemsPerPage).toString())} টি পৃষ্ঠা)
                   </div>
@@ -1588,7 +1588,7 @@ const AdminJsonUpload: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                      className="p-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                       title="পূর্ববর্তী পৃষ্ঠা"
                     >
                       <ChevronLeft size={14} />
@@ -1610,7 +1610,7 @@ const AdminJsonUpload: React.FC = () => {
                         <button
                           key={pg}
                           onClick={() => setCurrentPage(pg)}
-                          className={`min-w-[28px] h-[28px] text-xs font-bold rounded-lg border transition ${currentPage === pg ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
+                          className={`min-w-[28px] h-[28px] text-xs font-bold rounded-lg border transition ${currentPage === pg ? "bg-purple-600 text-white border-purple-600 shadow-sm" : "bg-white dark:bg-zinc-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
                         >
                           {toBengaliNumber(pg.toString())}
                         </button>
@@ -1620,7 +1620,7 @@ const AdminJsonUpload: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.min(Math.ceil(processedQuestions.length / itemsPerPage), prev + 1))}
                       disabled={currentPage === Math.ceil(processedQuestions.length / itemsPerPage)}
-                      className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                      className="p-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                       title="পরবর্তী পৃষ্ঠা"
                     >
                       <ChevronRight size={14} />

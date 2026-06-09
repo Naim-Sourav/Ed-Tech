@@ -8,6 +8,7 @@ interface ToastMessage {
   id: string;
   message: string;
   type: ToastType;
+  createdAt?: number;
 }
 
 interface ToastContextType {
@@ -28,8 +29,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const showToast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = Date.now().toString() + Math.random().toString();
-    setToasts((prev) => [...prev, { id, message, type }]);
+    const now = Date.now();
+    const id = now.toString() + Math.random().toString();
+    setToasts((prev) => {
+      // Prevent duplicate toasts with the exact same message within 500ms (fixes StrictMode double-fire)
+      const isDuplicate = prev.some(t => t.message === message && (now - (t.createdAt || 0)) < 500);
+      if (isDuplicate) return prev;
+      return [...prev, { id, message, type, createdAt: now }];
+    });
   }, []);
 
   const removeToast = useCallback((id: string) => {
@@ -57,10 +64,10 @@ const ToastItem: React.FC<{ toast: ToastMessage; onRemove: (id: string) => void 
   }, [toast.id, onRemove]);
 
   const styles = {
-    success: 'bg-white dark:bg-gray-800 border-l-4 border-green-500 shadow-lg shadow-green-500/10',
-    error: 'bg-white dark:bg-gray-800 border-l-4 border-red-500 shadow-lg shadow-red-500/10',
-    warning: 'bg-white dark:bg-gray-800 border-l-4 border-yellow-500 shadow-lg shadow-yellow-500/10',
-    info: 'bg-white dark:bg-gray-800 border-l-4 border-blue-500 shadow-lg shadow-blue-500/10',
+    success: 'bg-white dark:bg-zinc-900 border-l-4 border-green-500 shadow-lg shadow-green-500/10',
+    error: 'bg-white dark:bg-zinc-900 border-l-4 border-red-500 shadow-lg shadow-red-500/10',
+    warning: 'bg-white dark:bg-zinc-900 border-l-4 border-yellow-500 shadow-lg shadow-yellow-500/10',
+    info: 'bg-white dark:bg-zinc-900 border-l-4 border-blue-500 shadow-lg shadow-blue-500/10',
   };
 
   const icons = {
@@ -71,7 +78,7 @@ const ToastItem: React.FC<{ toast: ToastMessage; onRemove: (id: string) => void 
   };
 
   return (
-    <div className={`pointer-events-auto flex items-start gap-3 p-4 rounded-lg border border-gray-100 dark:border-gray-700 transition-all duration-500 animate-in slide-in-from-right-full ${styles[toast.type]}`}>
+    <div className={`pointer-events-auto flex items-start gap-3 p-4 rounded-lg border border-gray-100 dark:border-zinc-800 transition-all duration-500 animate-in slide-in-from-right-full ${styles[toast.type]}`}>
       <div className="shrink-0 mt-0.5">{icons[toast.type]}</div>
       <div className="flex-1">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 leading-snug font-sans">{toast.message}</p>

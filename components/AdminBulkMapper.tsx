@@ -129,8 +129,8 @@ const AdminBulkMapper: React.FC = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden animate-in fade-in">
+            <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex justify-between items-center bg-gray-50 dark:bg-black/50">
                 <div className="flex items-center gap-3">
                     <Database className="text-primary hidden sm:block" size={24} />
                     <div>
@@ -145,14 +145,14 @@ const AdminBulkMapper: React.FC = () => {
                     <div>
                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Target Exam (from Question Bank)</label>
                         {isLoadingRefs ? (
-                            <div className="flex items-center gap-2 p-3 text-sm text-gray-500 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-2 p-3 text-sm text-gray-500 rounded-xl border border-gray-200 dark:border-zinc-800">
                                 <Loader2 size={16} className="animate-spin" /> Fetching available exams...
                             </div>
                         ) : availableExamRefs.length > 0 ? (
                             <select
                                 value={examRef}
                                 onChange={(e) => setExamRef(e.target.value)}
-                                className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
+                                className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-black border-gray-200 dark:border-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
                             >
                                 <option value="">Select an exam...</option>
                                 {availableExamRefs.map((ref) => (
@@ -165,7 +165,7 @@ const AdminBulkMapper: React.FC = () => {
                                 value={examRef}
                                 onChange={(e) => setExamRef(e.target.value)}
                                 placeholder="e.g. DU A Unit 23-24"
-                                className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
+                                className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-black border-gray-200 dark:border-zinc-800 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
                             />
                         )}
                     </div>
@@ -179,7 +179,7 @@ const AdminBulkMapper: React.FC = () => {
                             onChange={(e) => setJsonInput(e.target.value)}
                             placeholder="Paste JSON array here..."
                             rows={12}
-                            className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-xs font-mono outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
+                            className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-black border-gray-200 dark:border-zinc-800 text-xs font-mono outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
                         />
                     </div>
 

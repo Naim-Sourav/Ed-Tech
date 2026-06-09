@@ -607,7 +607,7 @@ const StudyPlanner: React.FC = () => {
       <div className="absolute bottom-[20%] left-[-10%] w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="bg-white/80 dark:bg-zinc-900/50 backdrop-blur-xl p-6 pt-safe-area rounded-b-[2.5rem] shadow-sm border-b border-gray-200 dark:border-white/[0.05] sticky top-0 z-30">
+      <div className="bg-white/80 dark:bg-zinc-900/50 backdrop-blur-xl p-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200 dark:border-white/[0.05] sticky top-0 z-30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button 
@@ -894,7 +894,7 @@ const StudyPlanner: React.FC = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 inset-x-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/[0.05] px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center justify-between z-40">
+      <div className="fixed bottom-0 inset-x-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/[0.05] px-6 py-4 flex items-center justify-between z-40">
         {[
           { id: 'home', icon: Home, label: 'হোম' },
           { id: 'todo', icon: CheckSquare, label: 'টাস্ক' },
@@ -930,7 +930,7 @@ const StudyPlanner: React.FC = () => {
             className="fixed inset-0 bg-white dark:bg-black z-[200] flex flex-col overflow-hidden"
           >
             {/* Session Header */}
-            <div className="p-6 pt-safe-area flex items-center justify-between">
+            <div className="p-6 flex items-center justify-between">
               <button 
                 onClick={() => {
                   if (sessionMode === 'running' || sessionMode === 'break') {

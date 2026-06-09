@@ -90,7 +90,7 @@ const OnboardingModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/95 backdrop-blur-md animate-in fade-in duration-500">
-      <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden relative flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-black w-full max-w-lg rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden relative flex flex-col max-h-[90vh]">
         
         {/* Decorative Background */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
@@ -134,7 +134,7 @@ const OnboardingModal: React.FC = () => {
                             type="text"
                             value={college}
                             onChange={(e) => setCollege(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium shadow-sm transition-all"
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium shadow-sm transition-all"
                             placeholder="আপনার কলেজের নাম লিখুন..."
                             autoFocus
                         />
@@ -150,7 +150,7 @@ const OnboardingModal: React.FC = () => {
                                 <button
                                     key={g.id}
                                     onClick={() => setGroup(g.id)}
-                                    className={`py-3 px-2 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-1 border ${group === g.id ? 'bg-primary/10 border-primary text-primary' : 'bg-gray-50 dark:bg-gray-800 border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                    className={`py-3 px-2 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-1 border ${group === g.id ? 'bg-primary/10 border-primary text-primary' : 'bg-gray-50 dark:bg-zinc-900 border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                                 >
                                     <span className="text-lg">{g.icon}</span>
                                     {g.label}
@@ -169,7 +169,7 @@ const OnboardingModal: React.FC = () => {
                                 <select 
                                     value={batch}
                                     onChange={(e) => setBatch(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium appearance-none"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium appearance-none"
                                 >
                                     <option value="HSC-24">HSC-24</option>
                                     <option value="HSC-25">HSC-25</option>
@@ -188,7 +188,7 @@ const OnboardingModal: React.FC = () => {
                                 type="tel"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium shadow-sm transition-all"
+                                className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium shadow-sm transition-all"
                                 placeholder="017..."
                             />
                         </div>
@@ -210,7 +210,7 @@ const OnboardingModal: React.FC = () => {
                                 <button
                                     key={t.id}
                                     onClick={() => setTarget(t.id)}
-                                    className={`relative p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] active:scale-95 ${target === t.id ? `${t.color} border-current shadow-md` : 'bg-gray-50 dark:bg-gray-800 border-transparent hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm text-gray-500 dark:text-gray-400'}`}
+                                    className={`relative p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] active:scale-95 ${target === t.id ? `${t.color} border-current shadow-md` : 'bg-gray-50 dark:bg-zinc-900 border-transparent hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm text-gray-500 dark:text-gray-400'}`}
                                 >
                                     <div className="text-2xl mb-2">{t.icon}</div>
                                     <h4 className="font-bold text-sm">{t.label}</h4>
@@ -230,7 +230,7 @@ const OnboardingModal: React.FC = () => {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex gap-4 relative z-20">
+        <div className="p-6 bg-white dark:bg-black border-t border-gray-100 dark:border-zinc-800 flex gap-4 relative z-20">
             {step > 1 && (
                 <button 
                     onClick={() => setStep(prev => prev - 1)}

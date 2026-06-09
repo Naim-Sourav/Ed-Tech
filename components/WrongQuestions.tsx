@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchUserMistakesAPI, deleteUserMistakeAPI } from '../services/api';
+import { fetchUserMistakesAPI, deleteUserMistakeAPI, updateUserMistakeCategoryAPI } from '../services/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Trash2, ChevronLeft, 
@@ -44,6 +44,8 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
   const [loading, setLoading] = useState(!cachedData.mistakes);
   const [filterSubject, setFilterSubject] = useState<string>('ALL');
   const [filterChapter, setFilterChapter] = useState<string>('ALL');
+  const [filterCategory, setFilterCategory] = useState<string>('ALL');
+  const [activeCategoryMenuId, setActiveCategoryMenuId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllAnswers, setShowAllAnswers] = useState(false);
@@ -53,6 +55,20 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const [pageInput, setPageInput] = useState(currentPage.toString());
+
+  const handleSelectCategory = async (mistakeId: string, category: string | null) => {
+    if (!currentUser) return;
+    try {
+      await updateUserMistakeCategoryAPI(currentUser.uid, mistakeId, category);
+      setMistakes(prev => prev.map(m => m._id === mistakeId ? { ...m, category } : m));
+      showToast("ক্যাটাগরি আপডেট করা হয়েছে", "success");
+    } catch (e) {
+      console.error(e);
+      showToast("ক্যাটাগরি আপডেট করা সম্ভব হয়নি", "error");
+    } finally {
+      setActiveCategoryMenuId(null);
+    }
+  };
 
   useEffect(() => {
     setPageInput(currentPage.toString());
@@ -164,13 +180,14 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
       
       const matchSubject = filterSubject === 'ALL' || normalizeBangla(q.subject) === normalizeBangla(filterSubject);
       const matchChapter = filterChapter === 'ALL' || normalizeBangla(q.chapter) === normalizeBangla(filterChapter);
+      const matchCategory = filterCategory === 'ALL' || item.category === filterCategory;
       const matchSearch = searchQuery === '' || 
         q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.explanation?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      return matchSubject && matchChapter && matchSearch;
+      return matchSubject && matchChapter && matchCategory && matchSearch;
     });
-  }, [mistakes, filterSubject, filterChapter, searchQuery]);
+  }, [mistakes, filterSubject, filterChapter, filterCategory, searchQuery]);
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
   const displayedItems = useMemo(() => {
@@ -219,19 +236,25 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
   };
 
   return (
-    <div className={`${embedded ? 'bg-transparent text-slate-900 pb-4 dark:text-zinc-100' : 'min-h-screen bg-white text-slate-900 pb-20 dark:bg-black dark:text-zinc-100'} font-sans`}>
+    <div className={`${embedded ? 'bg-transparent text-slate-900 pb-4 dark:text-zinc-100' : 'min-h-screen bg-white text-slate-900 pb-24 dark:bg-black dark:text-zinc-100'} font-sans`}>
       {/* Header */}
       {!embedded && (
         <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 dark:bg-black/80 dark:border-zinc-800">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button 
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                  if (window.history.length > 1) {
+                    navigate(-1);
+                  } else {
+                    navigate('/dashboard', { replace: true });
+                  }
+                }}
                 className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all"
               >
                 <ChevronLeft size={20} />
               </button>
-              <h1 className="text-lg font-bold tracking-tight">ভুল প্রশ্নসমূহ</h1>
+              <h1 className="text-lg font-bold tracking-tight">ভুলের খাতা (Mistake Book)</h1>
             </div>
             
             <div className="flex items-center gap-2">
@@ -286,6 +309,37 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
             ))}
           </div>
 
+          {/* Category Filter Pills */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 pt-1 border-t border-slate-100/50 dark:border-zinc-900/50">
+            <button 
+              onClick={() => setFilterCategory('ALL')}
+              className={`px-4 py-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap border transition-all ${filterCategory === 'ALL' ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
+            >
+              সব ভুল ({mistakes.length})
+            </button>
+            <button 
+              onClick={() => setFilterCategory('CONCEPT')}
+              className={`px-4 py-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap border transition-all flex items-center gap-1.5 ${filterCategory === 'CONCEPT' ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-200/50 dark:shadow-none' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
+            >
+              <span>🔴 Concept ভুল</span>
+              <span className="text-[10px] opacity-75">({mistakes.filter(m => m.category === 'CONCEPT').length})</span>
+            </button>
+            <button 
+              onClick={() => setFilterCategory('MEMORY')}
+              className={`px-4 py-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap border transition-all flex items-center gap-1.5 ${filterCategory === 'MEMORY' ? 'bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-200/50 dark:shadow-none' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
+            >
+              <span>🟡 Memory ভুল</span>
+              <span className="text-[10px] opacity-75">({mistakes.filter(m => m.category === 'MEMORY').length})</span>
+            </button>
+            <button 
+              onClick={() => setFilterCategory('SILLY')}
+              className={`px-4 py-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap border transition-all flex items-center gap-1.5 ${filterCategory === 'SILLY' ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-200/50 dark:shadow-none' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
+            >
+              <span>🟢 Silly Mistake</span>
+              <span className="text-[10px] opacity-75">({mistakes.filter(m => m.category === 'SILLY').length})</span>
+            </button>
+          </div>
+
           {/* Dynamic Chapter Badges List (Shown when a subject is filtered) */}
           <AnimatePresence>
             {filterSubject !== 'ALL' && uniqueChapters.length > 0 && (
@@ -302,7 +356,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
                         filterChapter === 'ALL' 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-100 dark:shadow-none' 
-                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-850'
+                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-800'
                       }`}
                     >
                       সব অধ্যায় ({subjectCounts[filterSubject] || 0})
@@ -316,7 +370,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
                             filterChapter === chapter 
                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-100 dark:shadow-none' 
-                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-850'
+                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-800'
                           }`}
                         >
                           {chapter} ({count})
@@ -399,7 +453,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
               placeholder="প্রশ্ন খুঁজুন..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm focus:ring-2 focus:ring-slate-100 dark:focus:ring-zinc-850 outline-none transition-all dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm focus:ring-2 focus:ring-slate-100 dark:focus:ring-zinc-800 outline-none transition-all dark:text-white"
             />
           </div>
           <button 
@@ -462,8 +516,8 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                     animate={{ opacity: 1, y: 0 }}
                     key={item._id}
                     onClick={() => isSelectionMode && toggleSelect(item._id)}
-                    className={`bg-white px-4 pt-5 pb-4 md:px-5 rounded-2xl border transition-all relative overflow-hidden dark:bg-zinc-950 dark:border-zinc-850/80 ${
-                      selectedIds.has(item._id) ? 'border-slate-900 ring-2 ring-slate-900/5 dark:border-zinc-100' : 'border-slate-200/60 dark:border-zinc-850 shadow-sm'
+                    className={`bg-white px-4 pt-5 pb-4 md:px-5 rounded-2xl border transition-all relative overflow-hidden dark:bg-zinc-950 dark:border-zinc-800/80 ${
+                      selectedIds.has(item._id) ? 'border-slate-900 ring-2 ring-slate-900/5 dark:border-zinc-100' : 'border-slate-200/60 dark:border-zinc-800 shadow-sm'
                     } ${isSelectionMode ? 'cursor-pointer' : ''}`}
                   >
                     {isSelectionMode && (
@@ -487,9 +541,72 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                     )}
 
                     <div className="flex items-start gap-1.5 mb-3">
-                      <span className="text-slate-950 dark:text-zinc-100 font-extrabold text-sm md:text-base shrink-0 select-none pt-0.5 min-w-[1.25rem]">
-                        {toBanglaDigits(itemIndexInTotal)}.
-                      </span>
+                      <div className="relative shrink-0 z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isSelectionMode) return;
+                            setActiveCategoryMenuId(activeCategoryMenuId === item._id ? null : item._id);
+                          }}
+                          className="flex items-center gap-1 text-slate-950 dark:text-zinc-100 font-extrabold text-sm md:text-base cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-800 px-1.5 py-0.5 rounded-lg select-none transition-all border border-slate-100 dark:border-zinc-800"
+                          title="ভুলের ক্যাটাগরি সেট করতে চাপুন"
+                        >
+                          <span>{toBanglaDigits(itemIndexInTotal)}.</span>
+                          {item.category === 'CONCEPT' && <span className="w-2 h-2 rounded-full bg-red-500" />}
+                          {item.category === 'MEMORY' && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+                          {item.category === 'SILLY' && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
+                          <ChevronDown size={12} className="text-slate-400 dark:text-zinc-500 ml-0.5" />
+                        </button>
+                        
+                        {activeCategoryMenuId === item._id && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40 bg-transparent" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveCategoryMenuId(null);
+                              }}
+                            />
+                            <div className="absolute left-0 mt-1 w-64 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50 text-left">
+                              <div className="px-3 py-1 text-[10px] uppercase font-black tracking-wider text-slate-400 dark:text-zinc-500">
+                                ভুলের ধরণ নির্বাচন করুন
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleSelectCategory(item._id, 'CONCEPT'); }}
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2 transition-all cursor-pointer"
+                              >
+                                <span className="w-3.5 h-3.5 rounded-full bg-red-500 flex items-center justify-center text-[8px] text-white font-bold">🔴</span>
+                                <span>Concept ভুল (বিষয় বুঝিনি)</span>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleSelectCategory(item._id, 'MEMORY'); }}
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/20 flex items-center gap-2 transition-all cursor-pointer"
+                              >
+                                <span className="w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-[8px] text-white font-bold">🟡</span>
+                                <span>Memory ভুল (জানতাম কিন্তু ভুলে গেছি)</span>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleSelectCategory(item._id, 'SILLY'); }}
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 flex items-center gap-2 transition-all cursor-pointer"
+                              >
+                                <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center text-[8px] text-white font-bold">🟢</span>
+                                <span>Silly Mistake (অমনোযোগ)</span>
+                              </button>
+                              {item.category && (
+                                <div className="border-t border-slate-100 dark:border-zinc-800 my-1 pt-1">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleSelectCategory(item._id, null); }}
+                                    className="w-full text-left px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-slate-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition-all cursor-pointer"
+                                  >
+                                    <span className="w-3.5 h-3.5 rounded-full border border-red-200 flex items-center justify-center text-[9px]">✕</span>
+                                    <span>ক্যাটাগরি বাতিল (Remove)</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <div className="flex-1">
                         <div className={`text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
                           <div dangerouslySetInnerHTML={{ __html: q.question }} />
@@ -562,10 +679,10 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                     </div>
 
                     {q.explanation && (
-                      <div className="border-t border-slate-100 pt-2 mt-3 block">
+                      <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 mt-3 block">
                         <button 
                           onClick={() => toggleExplanation(item._id)}
-                          className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
+                          className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-all"
                         >
                           <span>ব্যাখ্যা</span>
                           {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -578,10 +695,10 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div id={`explanation-${item._id}`} className="mt-2 p-3 bg-slate-50 dark:bg-zinc-900/40 rounded-xl border border-slate-150 dark:border-zinc-800/80 flex flex-col gap-2 shadow-sm">
-                                <div className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                              <div id={`explanation-${item._id}`} className="mt-2 p-3 bg-slate-50 dark:bg-zinc-900/40 rounded-xl border border-slate-150 dark:border-zinc-800/80 flex flex-col gap-2 shadow-sm overflow-hidden">
+                                <div className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                                 {q.explanationImage && (
-                                  <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-white" referrerPolicy="no-referrer" />
+                                  <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                                 )}
                               </div>
                             </motion.div>
@@ -589,16 +706,31 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                         </AnimatePresence>
                       </div>
                     )}
-                    <div className="mt-3 pt-3 border-t border-slate-55 dark:border-gray-800 flex items-center justify-between">
+                    <div className="mt-3 pt-3 border-t border-slate-55 dark:border-zinc-800 flex items-center justify-between">
                       <div className="flex flex-wrap gap-2">
                         {q.subject && (
-                          <span className="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 rounded-lg uppercase tracking-tight">
+                          <span className="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-zinc-900 text-slate-500 dark:text-gray-400 rounded-lg uppercase tracking-tight">
                             {q.subject}
                           </span>
                         )}
                         {q.chapter && (
                           <span className="text-[9px] font-black px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 rounded-lg">
                             {q.chapter}
+                          </span>
+                        )}
+                        {item.category === 'CONCEPT' && (
+                          <span className="text-[9px] font-black px-2 py-1 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-lg border border-red-100 dark:border-red-900/30 flex items-center gap-1">
+                            <span>🔴</span> Concept ভুল
+                          </span>
+                        )}
+                        {item.category === 'MEMORY' && (
+                          <span className="text-[9px] font-black px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-lg border border-amber-100 dark:border-amber-900/30 flex items-center gap-1">
+                            <span>🟡</span> Memory ভুল
+                          </span>
+                        )}
+                        {item.category === 'SILLY' && (
+                          <span className="text-[9px] font-black px-2 py-1 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-1">
+                            <span>🟢</span> Silly Mistake
                           </span>
                         )}
                       </div>

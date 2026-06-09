@@ -553,7 +553,7 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const renderBottomNav = () => (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800 px-6 py-3 flex justify-between items-center z-[150] pb-safe-area shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-gray-100 dark:border-zinc-800 px-6 py-3 flex justify-between items-center z-[150] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       {[
         { id: 'HOME', icon: Home, label: 'Home' },
         { id: 'HISTORY', icon: History, label: 'History' },
@@ -593,7 +593,7 @@ const QuizBattlePrototype: React.FC = () => {
           <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Welcome back,</p>
           <h2 className="text-2xl font-black text-gray-900 dark:text-white">{currentUser?.displayName?.split(' ')[0]} 👋</h2>
         </div>
-        <button className="w-12 h-12 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center justify-center shadow-sm active:scale-90 transition-transform">
+        <button className="w-12 h-12 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 flex items-center justify-center shadow-sm active:scale-90 transition-transform">
           <Search size={20} className="text-gray-400" />
         </button>
       </div>
@@ -635,7 +635,7 @@ const QuizBattlePrototype: React.FC = () => {
 
       {/* Quick Stats Bento */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+        <div className="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 shadow-sm flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
           <div className="p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-500 rounded-2xl">
             <Swords size={24}/>
           </div>
@@ -644,7 +644,7 @@ const QuizBattlePrototype: React.FC = () => {
             <p className="text-[12px] font-black text-gray-400 uppercase tracking-widest">Matches</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+        <div className="bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 shadow-sm flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
           <div className="p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-500 rounded-2xl">
             <Percent size={24}/>
           </div>
@@ -660,7 +660,7 @@ const QuizBattlePrototype: React.FC = () => {
         <motion.button 
           whileTap={{ scale: 0.96 }}
           onClick={() => { triggerHaptic('medium'); setPhase('CREATE'); }}
-          className="group bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border-2 border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all text-left relative overflow-hidden shadow-xl shadow-orange-500/10"
+          className="group bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border-2 border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all text-left relative overflow-hidden shadow-xl shadow-orange-500/10"
         >
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform">
             <Zap size={100} />
@@ -700,7 +700,7 @@ const QuizBattlePrototype: React.FC = () => {
     <div className="flex flex-col h-full space-y-6 pb-32">
         <div className="flex justify-between items-center pt-2">
             <h2 className="text-2xl font-black text-gray-900 dark:text-white">Match History</h2>
-            <button className="p-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <button className="p-2 bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
                 <Search size={20} className="text-gray-400" />
             </button>
         </div>
@@ -712,7 +712,7 @@ const QuizBattlePrototype: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="bg-white dark:bg-gray-800 p-5 rounded-[2rem] border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all cursor-pointer active:scale-[0.98] shadow-sm"
+                    className="bg-white dark:bg-zinc-900 p-5 rounded-[2rem] border border-gray-100 dark:border-zinc-800 flex items-center justify-between hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all cursor-pointer active:scale-[0.98] shadow-sm"
                 >
                     <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${i % 2 === 0 ? 'bg-orange-100 text-orange-600' : 'bg-red-100 text-red-600'}`}>
@@ -779,7 +779,7 @@ const QuizBattlePrototype: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className={`p-5 rounded-[2rem] flex items-center justify-between transition-all ${i === 1 ? 'bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800' : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm'}`}
+                    className={`p-5 rounded-[2rem] flex items-center justify-between transition-all ${i === 1 ? 'bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800' : 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm'}`}
                 >
                     <div className="flex items-center gap-4">
                         <span className="font-mono font-bold text-gray-400 w-4">{i}</span>
@@ -811,7 +811,7 @@ const QuizBattlePrototype: React.FC = () => {
           <motion.div 
             initial={{ scale: 0, rotate: -45 }}
             animate={{ scale: 1, rotate: 0 }}
-            className="w-20 h-20 bg-white dark:bg-gray-800 rounded-[1.5rem] flex items-center justify-center shadow-2xl border-4 border-orange-500 relative overflow-hidden group"
+            className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-[1.5rem] flex items-center justify-center shadow-2xl border-4 border-orange-500 relative overflow-hidden group"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
             <span className="text-3xl font-black italic text-orange-600 relative z-10">VS</span>
@@ -832,7 +832,7 @@ const QuizBattlePrototype: React.FC = () => {
                 rotate: [0, 2, 0]
               }}
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] border-4 border-blue-500 p-2 shadow-2xl shadow-blue-500/30 bg-white dark:bg-gray-800 relative overflow-hidden"
+              className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] border-4 border-blue-500 p-2 shadow-2xl shadow-blue-500/30 bg-white dark:bg-zinc-900 relative overflow-hidden"
             >
               <img src={host?.avatar || userAvatar} className="w-full h-full rounded-[2.5rem] object-cover" alt="Host"/>
               <div className="absolute inset-0 bg-gradient-to-t from-blue-500/20 to-transparent"></div>
@@ -871,7 +871,7 @@ const QuizBattlePrototype: React.FC = () => {
                     y: [0, -10, 0],
                     rotate: [0, -2, 0]
                 }}
-                className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] border-4 border-orange-500 p-2 shadow-2xl shadow-orange-500/30 bg-white dark:bg-gray-800 relative overflow-hidden"
+                className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] border-4 border-orange-500 p-2 shadow-2xl shadow-orange-500/30 bg-white dark:bg-zinc-900 relative overflow-hidden"
               >
                 <img src={guest.avatar} className="w-full h-full rounded-[2.5rem] object-cover" alt="Guest"/>
                 <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 to-transparent"></div>
@@ -895,7 +895,7 @@ const QuizBattlePrototype: React.FC = () => {
                         transition={{ repeat: Infinity, duration: 2 }}
                         className="absolute inset-0 bg-orange-500 rounded-full blur-2xl"
                     ></motion.div>
-                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] border-4 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm relative z-10">
+                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] border-4 border-dashed border-gray-300 dark:border-zinc-800 flex items-center justify-center bg-gray-50/50 dark:bg-zinc-900/50 backdrop-blur-sm relative z-10">
                         <div className="flex flex-col items-center gap-2 text-gray-400">
                             <UserPlus size={32} strokeWidth={1.5} className="animate-pulse"/>
                             <span className="text-[12px] font-black uppercase tracking-widest">Waiting</span>
@@ -944,9 +944,9 @@ const QuizBattlePrototype: React.FC = () => {
                                   triggerHaptic('light');
                                   setConfig({ ...config, subjects: [subj.id], chapters: ['Full Syllabus'] });
                                 }}
-                                className={`relative p-4 rounded-3xl border-2 transition-all flex items-center gap-4 group ${isSelected ? `${subj.bg} ${subj.border} ring-4 ring-orange-500/10` : 'bg-gray-50 dark:bg-gray-900/50 border-transparent hover:border-gray-200 dark:hover:border-gray-700'}`}
+                                className={`relative p-4 rounded-3xl border-2 transition-all flex items-center gap-4 group ${isSelected ? `${subj.bg} ${subj.border} ring-4 ring-orange-500/10` : 'bg-gray-50 dark:bg-black/50 border-transparent hover:border-gray-200 dark:hover:border-gray-700'}`}
                             >
-                                <div className={`p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm transition-transform group-hover:scale-110 ${isSelected ? 'scale-110' : ''}`}>
+                                <div className={`p-3 rounded-2xl bg-white dark:bg-zinc-900 shadow-sm transition-transform group-hover:scale-110 ${isSelected ? 'scale-110' : ''}`}>
                                     <subj.icon className={subj.color} size={20} />
                                 </div>
                                 <span className={`text-sm font-black ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{subj.label}</span>
@@ -966,7 +966,7 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => { triggerHaptic('light'); setConfig({ ...config, chapters: ['Full Syllabus'] }); }}
-                            className={`px-5 py-3 rounded-2xl text-xs font-black border transition-all ${config.chapters.includes('Full Syllabus') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-100 dark:border-gray-700 hover:border-gray-300'}`}
+                            className={`px-5 py-3 rounded-2xl text-xs font-black border transition-all ${config.chapters.includes('Full Syllabus') ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white' : 'bg-white dark:bg-zinc-900 text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-gray-300'}`}
                         >
                             Full Syllabus
                         </button>
@@ -979,7 +979,7 @@ const QuizBattlePrototype: React.FC = () => {
                                         triggerHaptic('light');
                                         setConfig({ ...config, chapters: [chap] });
                                     }}
-                                    className={`px-5 py-3 rounded-2xl text-xs font-black border transition-all ${isChapSelected ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-100 dark:border-gray-700 hover:border-gray-300'}`}
+                                    className={`px-5 py-3 rounded-2xl text-xs font-black border transition-all ${isChapSelected ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800' : 'bg-white dark:bg-zinc-900 text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-gray-300'}`}
                                 >
                                     {chap}
                                 </button>
@@ -990,7 +990,7 @@ const QuizBattlePrototype: React.FC = () => {
             )}
 
             {/* 3. Game Settings */}
-            <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-700 space-y-6">
+            <div className="bg-gray-50 dark:bg-black/50 p-6 rounded-[2rem] border border-gray-100 dark:border-zinc-800 space-y-6">
                 <div>
                     <div className="flex justify-between mb-4">
                         <span className="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2"><Hash size={14}/> Questions</span>
@@ -1038,7 +1038,7 @@ const QuizBattlePrototype: React.FC = () => {
                 onChange={e => setInputRoomId(e.target.value)}
                 placeholder="000000"
                 maxLength={6}
-                className="w-full p-8 text-5xl font-mono text-center tracking-[0.3em] rounded-[2.5rem] bg-gray-50 dark:bg-gray-900 border-4 border-dashed border-gray-200 dark:border-gray-700 focus:border-orange-500 focus:bg-white outline-none dark:text-white transition-all"
+                className="w-full p-8 text-5xl font-mono text-center tracking-[0.3em] rounded-[2.5rem] bg-gray-50 dark:bg-black border-4 border-dashed border-gray-200 dark:border-zinc-800 focus:border-orange-500 focus:bg-white outline-none dark:text-white transition-all"
             />
         </div>
         <button 
@@ -1052,7 +1052,7 @@ const QuizBattlePrototype: React.FC = () => {
   );
 
   if (phase === 'MENU' || phase === 'CREATE' || phase === 'JOIN') return (
-    <div className="h-full bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+    <div className="h-full bg-gray-50 dark:bg-black relative overflow-hidden">
       <div className="h-full overflow-y-auto p-6 md:p-8 max-w-4xl mx-auto no-scrollbar">
         <AnimatePresence mode="wait">
           {subPhase === 'HOME' && (
@@ -1108,7 +1108,7 @@ const QuizBattlePrototype: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="w-full md:max-w-xl bg-white dark:bg-gray-800 rounded-t-[3rem] p-8 shadow-2xl relative"
+              className="w-full md:max-w-xl bg-white dark:bg-zinc-900 rounded-t-[3rem] p-8 shadow-2xl relative"
               onClick={e => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-8"></div>
@@ -1143,7 +1143,7 @@ const QuizBattlePrototype: React.FC = () => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="w-full md:max-w-xl bg-white dark:bg-gray-800 rounded-t-[3rem] p-8 shadow-2xl relative"
+              className="w-full md:max-w-xl bg-white dark:bg-zinc-900 rounded-t-[3rem] p-8 shadow-2xl relative"
               onClick={e => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-8"></div>
@@ -1166,7 +1166,7 @@ const QuizBattlePrototype: React.FC = () => {
   );
 
   if (phase === 'LOBBY') return (
-    <div className="fixed inset-0 z-[200] flex flex-col bg-gray-50 dark:bg-gray-900 animate-in fade-in pb-10 overflow-hidden">
+    <div className="fixed inset-0 z-[200] flex flex-col bg-gray-50 dark:bg-black animate-in fade-in pb-10 overflow-hidden">
         {/* Background Decorative Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[100px] animate-pulse"></div>
@@ -1179,7 +1179,7 @@ const QuizBattlePrototype: React.FC = () => {
 
         {/* Header */}
         <div className="p-6 text-center relative z-10">
-            <div className="inline-block px-4 py-1.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-full border border-white/20 dark:border-gray-700/30 mb-4">
+            <div className="inline-block px-4 py-1.5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-full border border-white/20 dark:border-zinc-800/30 mb-4">
                 <p className="text-[12px] font-black text-gray-400 uppercase tracking-[0.2em]">Battle Room</p>
             </div>
             <h1 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">ROOM CODE</h1>
@@ -1189,7 +1189,7 @@ const QuizBattlePrototype: React.FC = () => {
                     navigator.clipboard.writeText(roomId); 
                     showToast("Code Copied!", "success"); 
                 }}
-                className="group relative inline-flex items-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-black/5 border border-gray-100 dark:border-gray-700 active:scale-95 transition-all"
+                className="group relative inline-flex items-center gap-3 px-6 py-3 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl shadow-black/5 border border-gray-100 dark:border-zinc-800 active:scale-95 transition-all"
             >
                 <span className="text-3xl font-mono font-black text-orange-600 dark:text-orange-500 tracking-wider">{roomId}</span>
                 <Copy size={20} className="text-gray-400 group-hover:text-orange-500 transition-colors"/>
@@ -1221,7 +1221,7 @@ const QuizBattlePrototype: React.FC = () => {
                     )}
                 </motion.button>
             ) : (
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/20 dark:border-gray-700/30 flex flex-col items-center justify-center gap-4 shadow-xl">
+                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/20 dark:border-zinc-800/30 flex flex-col items-center justify-center gap-4 shadow-xl">
                     <div className="relative">
                         <div className="absolute inset-0 bg-orange-500 rounded-full blur-lg opacity-20 animate-pulse"></div>
                         <Loader2 className="animate-spin text-orange-500 relative z-10" size={32} />
@@ -1251,9 +1251,9 @@ const QuizBattlePrototype: React.FC = () => {
     const bothAnswered = hasAnswered && opponent?.answers?.[currentQIndex] !== undefined;
 
     return (
-        <div className="fixed inset-0 z-[200] flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden relative">
+        <div className="fixed inset-0 z-[200] flex flex-col bg-gray-50 dark:bg-black overflow-hidden relative">
             {/* Timer Progress Bar */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gray-100 dark:bg-gray-800 z-[70]">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gray-100 dark:bg-zinc-900 z-[70]">
                 <motion.div 
                     initial={{ width: '100%' }}
                     animate={{ width: `${(timeLeft / battleState.config.timePerQuestion) * 100}%` }}
@@ -1273,7 +1273,7 @@ const QuizBattlePrototype: React.FC = () => {
 
             {/* Top Bar: Players & Stats */}
             <div className="p-4 pt-8 flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-lg">
+                <div className="flex items-center gap-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/20 dark:border-zinc-800/30 shadow-lg">
                     <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20 font-black text-white">
                         {currentQIndex + 1}
                     </div>
@@ -1293,7 +1293,7 @@ const QuizBattlePrototype: React.FC = () => {
                             <Flame size={16} fill="currentColor" className="animate-bounce"/> {streak} STREAK
                         </motion.div>
                     )}
-                    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl px-5 py-2 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-lg">
+                    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl px-5 py-2 rounded-2xl border border-white/20 dark:border-zinc-800/30 shadow-lg">
                         <span className={`text-2xl font-mono font-black ${timeLeft < 5 ? 'text-red-500 animate-pulse' : 'text-gray-800 dark:text-white'}`}>
                             {timeLeft < 10 ? `0${timeLeft}` : timeLeft}
                         </span>
@@ -1306,7 +1306,7 @@ const QuizBattlePrototype: React.FC = () => {
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-700 mb-8 relative overflow-hidden"
+                    className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-zinc-800 mb-8 relative overflow-hidden"
                 >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-red-500 opacity-50"></div>
                     
@@ -1335,7 +1335,7 @@ const QuizBattlePrototype: React.FC = () => {
                             const isCorrect = idx === Number(question.correctAnswerIndex);
                             const isDisabled = disabledOptions.includes(idx);
                             
-                            let btnClass = "bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-200 shadow-md";
+                            let btnClass = "bg-white dark:bg-zinc-900 border-2 border-gray-100 dark:border-zinc-800 text-gray-700 dark:text-gray-200 shadow-md";
                             
                             if (hasAnswered) {
                                 if (isSelected) {
@@ -1390,7 +1390,7 @@ const QuizBattlePrototype: React.FC = () => {
 
                 {/* Status Indicator */}
                 {hasAnswered && opponent && !opponent.answers?.[currentQIndex] && (
-                    <div className="text-center mt-8 p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-gray-700/30 animate-pulse">
+                    <div className="text-center mt-8 p-4 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-zinc-800/30 animate-pulse">
                         <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Waiting for opponent...</p>
                     </div>
                 )}
@@ -1413,14 +1413,14 @@ const QuizBattlePrototype: React.FC = () => {
             </div>
 
             {/* Bottom HUD: Opponent & Power-ups */}
-            <div className="fixed bottom-0 left-0 right-0 p-6 pb-safe-area bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent z-50">
                 <div className="max-w-lg mx-auto flex items-center justify-between gap-4">
                     {/* Opponent Status */}
-                    <div className="flex-1 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-3 rounded-[2rem] border border-white/20 dark:border-gray-700/30 shadow-xl flex items-center gap-3">
+                    <div className="flex-1 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-3 rounded-[2rem] border border-white/20 dark:border-zinc-800/30 shadow-xl flex items-center gap-3">
                         <div className="relative">
                             <img src={opponent?.avatar || userAvatar} className="w-10 h-10 rounded-full border-2 border-orange-500 p-0.5" alt=""/>
                             {opponent?.answers?.[currentQIndex] !== undefined && (
-                                <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-white dark:border-gray-800">
+                                <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-white dark:border-zinc-800">
                                     <Check size={8} className="text-white" strokeWidth={4}/>
                                 </div>
                             )}
@@ -1445,14 +1445,14 @@ const QuizBattlePrototype: React.FC = () => {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => { triggerHaptic('medium'); usePowerUp('50-50'); }}
                             disabled={hasAnswered || powerUpsUsed.includes('50-50')}
-                            className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 dark:border-gray-700 disabled:opacity-30 active:bg-orange-50 transition-colors"
+                            className="w-14 h-14 bg-white dark:bg-zinc-900 rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 dark:border-zinc-800 disabled:opacity-30 active:bg-orange-50 transition-colors"
                         >
                             <Zap size={24} className="text-orange-500" />
                         </motion.button>
                         <motion.button 
                             whileTap={{ scale: 0.9 }}
                             onClick={() => { triggerHaptic('medium'); setShowReactions(!showReactions); }}
-                            className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 dark:border-gray-700 active:bg-orange-50 transition-colors"
+                            className="w-14 h-14 bg-white dark:bg-zinc-900 rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 dark:border-zinc-800 active:bg-orange-50 transition-colors"
                         >
                             <Smile size={24} className="text-blue-500" />
                         </motion.button>
@@ -1466,7 +1466,7 @@ const QuizBattlePrototype: React.FC = () => {
                             initial={{ opacity: 0, y: 20, scale: 0.8 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 20, scale: 0.8 }}
-                            className="absolute bottom-24 right-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-4 rounded-[2rem] shadow-2xl border border-white/20 dark:border-gray-700/30 flex gap-3"
+                            className="absolute bottom-24 right-6 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-4 rounded-[2rem] shadow-2xl border border-white/20 dark:border-zinc-800/30 flex gap-3"
                         >
                             {['🔥', '😎', '🤔', '😂', '👏', '💔'].map(emoji => (
                                 <button 
@@ -1722,7 +1722,7 @@ const QuizBattlePrototype: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-black">
         {loading ? <Loader2 className="animate-spin text-primary" size={48} /> : renderCreate()}
     </div>
   );

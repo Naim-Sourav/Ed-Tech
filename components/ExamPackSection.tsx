@@ -52,7 +52,7 @@ const ExamPackSection: React.FC = () => {
       case 'blue': return 'text-orange-600 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
       case 'purple': return 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-900/30 dark:border-amber-800';
       case 'orange': return 'text-orange-600 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-gray-800 dark:border-gray-700';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-900 dark:border-zinc-800';
     }
   };
 
@@ -60,8 +60,8 @@ const ExamPackSection: React.FC = () => {
   const PacksSkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl animate-pulse">
         {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 h-64 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 dark:border-gray-700 h-24 bg-gray-50 dark:bg-gray-900">
+            <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 h-64 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 dark:border-zinc-800 h-24 bg-gray-50 dark:bg-black">
                     <div className="flex justify-between mb-4">
                         <div className="w-20 h-6 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                         <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -90,8 +90,8 @@ const ExamPackSection: React.FC = () => {
       }));
 
       return (
-          <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
-              <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between shadow-sm z-20">
+          <div className="h-full flex flex-col bg-gray-50 dark:bg-black overflow-hidden">
+              <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between shadow-sm z-20">
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={closePack} 
@@ -109,7 +109,7 @@ const ExamPackSection: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-4 md:p-8">
                   <div className="max-w-4xl mx-auto grid gap-4">
                       {mockExams.map((exam) => (
-                          <div key={exam.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between group hover:border-primary/50 transition-all">
+                          <div key={exam.id} className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm flex items-center justify-between group hover:border-primary/50 transition-all">
                               <div className="flex items-center gap-4">
                                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${exam.status === 'COMPLETED' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'}`}>
                                       {exam.status === 'COMPLETED' ? <CheckCircle size={20}/> : <span className="text-sm">{exam.id}</span>}
@@ -138,7 +138,7 @@ const ExamPackSection: React.FC = () => {
 
   // --- RENDER: LIST VIEW ---
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-black transition-colors">
         <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
             <header className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-3">
@@ -159,8 +159,8 @@ const ExamPackSection: React.FC = () => {
                         const isOwned = isEnrolled(pack.id); 
 
                         return (
-                            <div key={pack.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all group">
-                                <div className={`p-6 border-b border-gray-100 dark:border-gray-700 bg-opacity-10 dark:bg-opacity-10 ${themeClass.split(' ')[1]}`}>
+                            <div key={pack.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all group">
+                                <div className={`p-6 border-b border-gray-100 dark:border-zinc-800 bg-opacity-10 dark:bg-opacity-10 ${themeClass.split(' ')[1]}`}>
                                     <div className="flex justify-between items-start mb-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${themeClass.split(' ')[1]} border ${themeClass.split(' ')[2]}`}>
                                             {pack.tag}
@@ -183,7 +183,7 @@ const ExamPackSection: React.FC = () => {
                                         ))}
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-zinc-800">
                                         <div>
                                             {isOwned ? (
                                                 <span className="text-green-600 font-bold text-sm flex items-center gap-1"><CheckCircle size={14}/> Purchased</span>

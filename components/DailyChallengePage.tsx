@@ -158,7 +158,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
   const QuestSkeleton = () => (
     <div className="space-y-4 animate-pulse">
         {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <div key={i} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-gray-200 dark:border-zinc-800">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
                     <div className="flex-1">
@@ -173,7 +173,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
   );
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black p-4 md:p-8 transition-colors">
       {showConfetti && <Confetti />}
       
       <div className="max-w-3xl mx-auto pb-20">
@@ -193,7 +193,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
          </div>
 
          {/* Tab Switcher */}
-         <div className="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 w-full overflow-x-auto no-scrollbar">
+         <div className="flex bg-white dark:bg-zinc-900 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 mb-6 w-full overflow-x-auto no-scrollbar">
              <button 
                 onClick={() => setActiveTab('DAILY')}
                 className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'DAILY' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
@@ -217,7 +217,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
          {loading ? (
              <QuestSkeleton />
          ) : questsToRender.length === 0 ? (
-             <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
+             <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-3xl border border-gray-200 dark:border-zinc-800 shadow-sm">
                  <p className="text-gray-500">কোনো চ্যালেঞ্জ লোড করা যাচ্ছে না।</p>
              </div>
          ) : (
@@ -229,7 +229,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
                      const diffColor = getDifficultyColor(quest.difficulty);
 
                      return (
-                         <div key={quest.id} className={`bg-white dark:bg-gray-800 p-4 rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md ${diffColor} ${isCompleted ? 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 opacity-70' : 'border-gray-200 dark:border-gray-700'}`}>
+                         <div key={quest.id} className={`bg-white dark:bg-zinc-900 p-4 rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md ${diffColor} ${isCompleted ? 'border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-black/30 opacity-70' : 'border-gray-200 dark:border-zinc-800'}`}>
                              <div className="flex items-center gap-4">
                                  
                                  {/* Icon */}

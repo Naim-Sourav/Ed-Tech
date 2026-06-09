@@ -52,7 +52,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="relative w-full md:max-w-xl bg-white dark:bg-gray-800 rounded-t-[2.5rem] shadow-2xl overflow-hidden border-t border-gray-200 dark:border-gray-700 flex flex-col"
+            className="relative w-full md:max-w-xl bg-white dark:bg-zinc-900 rounded-t-[2.5rem] shadow-2xl overflow-hidden border-t border-gray-200 dark:border-zinc-800 flex flex-col"
             style={{ maxHeight }}
           >
             {/* Drag Handle */}
@@ -61,7 +61,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             </div>
 
             {/* Header */}
-            <div className="px-6 pb-4 flex items-center justify-between border-b border-gray-50 dark:border-gray-700/50 shrink-0">
+            <div className="px-6 pb-4 flex items-center justify-between border-b border-gray-50 dark:border-zinc-800/50 shrink-0">
               {title && (
                 <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
                   {title}

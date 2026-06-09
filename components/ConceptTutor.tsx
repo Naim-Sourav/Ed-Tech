@@ -95,9 +95,9 @@ const ConceptTutor: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+    <div className="flex flex-col h-full bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden transition-colors">
       {/* Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="p-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-black/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-bold text-gray-800 dark:text-white">কনসেপ্ট ওস্তাদ</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">জটিল বিষয় সহজ করে বুঝুন</p>
@@ -105,7 +105,7 @@ const ConceptTutor: React.FC = () => {
         <select 
           value={selectedSubject}
           onChange={(e) => setSelectedSubject(e.target.value as Subject)}
-          className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+          className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-200"
         >
           {Object.values(Subject).map((sub) => (
             <option key={sub} value={sub}>{sub}</option>
@@ -114,7 +114,7 @@ const ConceptTutor: React.FC = () => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-gray-900 transition-colors">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-black transition-colors">
         {messages.map((msg) => (
           <div 
             key={msg.id} 
@@ -129,7 +129,7 @@ const ConceptTutor: React.FC = () => {
             <div className={`p-4 rounded-2xl shadow-sm text-sm leading-relaxed overflow-hidden ${
               msg.role === 'user' 
                 ? 'bg-primary text-white rounded-tr-none' 
-                : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-tl-none'
+                : 'bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-800 rounded-tl-none'
             }`}>
                <ReactMarkdown 
                  components={{
@@ -154,7 +154,7 @@ const ConceptTutor: React.FC = () => {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+      <div className="p-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800">
         <form 
           onSubmit={(e) => { e.preventDefault(); handleSend(); }}
           className="flex items-center gap-2"
@@ -164,7 +164,7 @@ const ConceptTutor: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="আপনার প্রশ্ন এখানে লিখুন..."
-            className="flex-1 p-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+            className="flex-1 p-3 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             disabled={loading}
           />
           <button 

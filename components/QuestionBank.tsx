@@ -17,6 +17,9 @@ import {
 } from "../services/api";
 import {
   ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Archive,
   Play,
   Eye,
@@ -44,6 +47,9 @@ import {
   Clock,
   BookMarked,
   Layers,
+  X,
+  Settings2,
+  Plus
 } from "lucide-react";
 import { QuizQuestion } from "../types";
 import { SYLLABUS_DB } from "../services/syllabusData";
@@ -54,7 +60,6 @@ import EmptyState from "./EmptyState";
 
 // --- BOARD & COLLEGE CONSTANTS FOR ACADEMIC ---
 const BOARDS = [
-  { id: "AB", name: "সকল" },
   { id: "DB", name: "ঢাকা" },
   { id: "RB", name: "রাজশাহী" },
   { id: "CB", name: "কুমিল্লা" },
@@ -135,7 +140,7 @@ const RevisionQuestionCard = React.memo(
     }, [showFeedback, q.question]);
 
     let roundedClasses = "rounded-3xl";
-    let borderClasses = "border border-gray-150 dark:border-gray-800";
+    let borderClasses = "border border-gray-150 dark:border-zinc-800";
     let marginClass = "mt-5";
 
     if (isGroupStart) {
@@ -160,36 +165,35 @@ const RevisionQuestionCard = React.memo(
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className={`p-5 md:p-6 transition-all duration-300 relative group bg-white dark:bg-gray-900 shadow-sm hover:shadow-md ${roundedClasses} ${borderClasses} ${marginClass}`}
+        className={`p-4 pt-5 pb-4 md:px-5 transition-all duration-300 relative group bg-white dark:bg-zinc-950 shadow-sm hover:shadow-md ${roundedClasses} ${borderClasses} ${marginClass}`}
       >
         {/* Question Text & Stimulus */}
         <div className="relative z-10">
           {(q.contextText || q.contextImage) && !isRepeatStimulus && (
-            <div className="p-4 md:p-5 bg-sky-50/50 dark:bg-sky-950/10 rounded-2xl border-l-4 border-l-sky-500 border border-sky-100/50 dark:border-sky-800/30 text-sm md:text-base text-gray-800 dark:text-gray-200 font-tiro leading-relaxed mb-5 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 bg-sky-500/5 rounded-full blur-xl" />
+            <div className="mb-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/30">
               {stimulusStart && stimulusEnd ? (
-                <div className="mb-3 pb-2 border-b border-sky-100 dark:border-sky-800/20 flex items-center justify-between">
-                  <span className="text-xs font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider flex items-center gap-1.5 font-sans">
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                <div className="mb-2 pb-1 border-b border-blue-100/30 dark:border-blue-800/20 flex flex-col sm:flex-row items-center justify-between gap-1">
+                  <span className="text-[10px] font-black tracking-widest text-blue-500 uppercase font-sans flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                     নিচের উদ্দীপকের আলোকে {toBengaliNumber(stimulusStart)} ও{" "}
                     {toBengaliNumber(stimulusEnd)} নং প্রশ্নের উত্তর দাও:
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400 font-sans">
-                    উদ্দীপক (Context)
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[9px] font-black tracking-widest text-blue-600 dark:text-blue-400 font-sans uppercase">
+                    উদ্দীপক
                   </span>
                 </div>
               )}
               {q.contextText && (
                 <div
-                  className="whitespace-pre-wrap leading-loose"
+                  className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{ __html: q.contextText }}
                 />
               )}
               {q.contextImage && (
-                <div className="mt-4 rounded-xl overflow-hidden bg-white/50 dark:bg-black/10 border border-sky-200/30 p-2 shadow-sm">
+                <div className="mt-2 rounded-xl overflow-hidden bg-white/50 dark:bg-black/10 border border-blue-200/30 p-2 shadow-sm">
                   <img
                     src={q.contextImage}
                     alt="Context"
@@ -201,19 +205,19 @@ const RevisionQuestionCard = React.memo(
             </div>
           )}
 
-          <div className="flex items-start gap-3 md:gap-4 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-orange-500/10 dark:bg-orange-500/20 text-primary flex items-center justify-center font-black text-sm shrink-0 border border-orange-500/10 shadow-inner">
-              {toBengaliNumber(idx + 1)}
-            </div>
-            <div className="flex-1 space-y-4 pt-0.5">
+          <div className="flex items-start gap-1.5 mb-3">
+            <span className="text-slate-950 dark:text-zinc-100 font-extrabold text-sm md:text-base shrink-0 select-none pt-0.5 min-w-[1.25rem]">
+              {toBengaliNumber(idx + 1)}.
+            </span>
+            <div className="flex-1 min-w-0">
               <h3
-                className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap"
+                className="text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap"
                 id={`q-title-${idx}`}
               >
                 <div dangerouslySetInnerHTML={{ __html: q.question }} />
               </h3>
               {q.questionImage && (
-                <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm">
+                <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm mt-2">
                   <img
                     src={q.questionImage}
                     alt="Question"
@@ -226,7 +230,7 @@ const RevisionQuestionCard = React.memo(
               {/* Tags list */}
               <div className="flex flex-wrap gap-1.5 items-center mt-2">
                 {q.examRef && (
-                  <span className="text-[12px] font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg border border-blue-100/50 dark:border-blue-800/30">
+                  <span className="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg border border-blue-100/50 dark:border-blue-800/30">
                     {q.examRef}
                   </span>
                 )}
@@ -234,18 +238,18 @@ const RevisionQuestionCard = React.memo(
                   q.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-[12px] font-medium bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-100/50 dark:border-orange-800/30"
+                      className="text-[10px] font-medium bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-100/50 dark:border-orange-800/30"
                     >
                       {tag}
                     </span>
                   ))}
                 {showChapter && q.chapter && (
-                  <span className="text-[12px] font-semibold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-lg border border-purple-100/50 dark:border-purple-800/30">
+                  <span className="text-[10px] font-semibold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-lg border border-purple-100/50 dark:border-purple-800/30">
                     {q.chapter}
                   </span>
                 )}
                 {isRepeatStimulus && (
-                  <span className="text-[12px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-400 px-2 py-0.5 rounded-lg border border-gray-200/50 dark:border-gray-700/50 font-sans">
+                  <span className="text-[10px] font-medium bg-gray-100 dark:bg-gray-805 text-gray-400 px-2 py-0.5 rounded-lg border border-gray-200/50 dark:border-zinc-800/50 font-sans">
                     পূর্বের উদ্দীপক
                   </span>
                 )}
@@ -258,7 +262,7 @@ const RevisionQuestionCard = React.memo(
               className={`p-2 rounded-xl border transition-all duration-300 ${
                 isSaved
                   ? "bg-orange-500/10 text-primary border-orange-500/20"
-                  : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  : "bg-gray-50 hover:bg-gray-100 dark:bg-zinc-900 dark:hover:bg-gray-700 border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               }`}
             >
               <Bookmark
@@ -271,17 +275,25 @@ const RevisionQuestionCard = React.memo(
         </div>
 
         {/* Options */}
-        <div className="flex flex-col gap-2.5 relative z-10 w-full pl-0 md:pl-13 mt-5">
+        <div className="grid grid-cols-1 gap-1.5 mb-2 pl-0 md:pl-6 mt-4">
           {q.options.map((option, oIdx) => {
             const isSelected = userSelected === oIdx;
             const isRight = oIdx === q.correctAnswerIndex;
 
-            let variant = "default";
+            let optionStyle = "bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300";
+            let iconStyle = "bg-white border-slate-200 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500";
+
             if (showFeedback) {
-              if (isRight) variant = "correct";
-              else if (isSelected) variant = "wrong";
+              if (isRight) {
+                optionStyle = "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400 font-medium";
+                iconStyle = "bg-emerald-500 border-emerald-400 text-white";
+              } else if (isSelected) {
+                optionStyle = "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400";
+                iconStyle = "bg-red-500 border-red-400 text-white";
+              }
             } else if (isSelected) {
-              variant = "selected";
+              optionStyle = "bg-orange-50 border-primary text-primary font-bold dark:bg-orange-950/10 dark:text-orange-400";
+              iconStyle = "bg-primary border-primary text-white";
             }
 
             return (
@@ -289,78 +301,46 @@ const RevisionQuestionCard = React.memo(
                 key={oIdx}
                 disabled={showFeedback}
                 onClick={() => onOptionClick(idx, oIdx)}
-                className={`p-3 md:p-3.5 rounded-xl text-left text-sm md:text-base font-normal transition-all duration-300 border flex flex-col gap-2 group/opt ${
-                  variant === "correct"
-                    ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 shadow-sm"
-                    : variant === "wrong"
-                      ? "bg-rose-50/60 dark:bg-rose-950/20 border-rose-500 text-rose-800 dark:text-rose-300 shadow-sm"
-                      : variant === "selected"
-                        ? "bg-orange-50/40 dark:bg-orange-950/10 border-primary text-gray-900 dark:text-white font-medium shadow-sm"
-                        : "bg-gray-50/50 hover:bg-white dark:bg-gray-800/55 dark:hover:bg-gray-800 border-gray-150 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-300"
+                className={`p-2 rounded-xl text-left text-sm md:text-base font-normal transition-all duration-200 border flex items-center gap-3 w-full ${optionStyle} ${
+                  !showFeedback ? "cursor-pointer hover:border-slate-350 dark:hover:border-zinc-700" : ""
                 }`}
               >
-                <div className="flex items-center gap-3 w-full">
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold border shrink-0 transition-colors ${iconStyle}`}>
+                  {["ক", "খ", "গ", "ঘ"][oIdx] || String.fromCharCode(65 + oIdx)}
+                </span>
+                <div className="flex flex-col gap-1 flex-1">
                   <span
-                    className={`w-7 h-7 flex items-center justify-center font-bold text-xs rounded-lg shrink-0 transition-all duration-300 ${
-                      variant === "correct"
-                        ? "bg-emerald-500 text-white shadow-md"
-                        : variant === "wrong"
-                          ? "bg-rose-500 text-white shadow-md"
-                          : variant === "selected"
-                            ? "bg-primary text-white shadow-md"
-                            : "bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 group-hover/opt:bg-orange-500/10 group-hover/opt:text-primary group-hover/opt:border-primary/20"
-                    }`}
-                  >
-                    {String.fromCharCode(65 + oIdx)}
-                  </span>
-                  <span
-                    className="flex-1 font-tiro whitespace-pre-wrap leading-relaxed"
+                    className="text-sm font-normal whitespace-pre-wrap leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: option }}
                   ></span>
-
-                  {variant === "correct" && (
-                    <div className="shrink-0 text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1 rounded-full border border-emerald-150">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    </div>
-                  )}
-                  {variant === "wrong" && (
-                    <div className="shrink-0 text-rose-500 bg-rose-50 dark:bg-rose-900/30 p-1 rounded-full border border-rose-150">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </div>
+                  {q.optionsImages?.[oIdx] && (
+                    <img
+                      src={q.optionsImages[oIdx]}
+                      alt={`Option ${oIdx}`}
+                      className="h-16 w-fit object-contain rounded border self-start bg-white select-none mt-1"
+                      referrerPolicy="no-referrer"
+                    />
                   )}
                 </div>
-                {q.optionsImages?.[oIdx] && (
-                  <img
-                    src={q.optionsImages[oIdx]}
-                    alt={`Option ${oIdx}`}
-                    className="h-16 w-fit object-contain rounded self-center mt-1 select-none"
-                    referrerPolicy="no-referrer"
-                  />
+                {showFeedback && (
+                  <div className="shrink-0 ml-auto">
+                    {isRight ? (
+                      <div className="shrink-0 text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1 rounded-full border border-emerald-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                    ) : (
+                      isSelected && (
+                        <div className="shrink-0 text-rose-500 bg-rose-50 dark:bg-rose-900/30 p-1 rounded-full border border-rose-150">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </div>
+                      )
+                    )}
+                  </div>
                 )}
               </button>
             );
@@ -384,8 +364,8 @@ const RevisionQuestionCard = React.memo(
                     ব্যাখ্যা ও তথ্যাবলী
                   </h4>
                 </div>
-                <div className="text-sm text-gray-800 dark:text-gray-200 leading-loose font-tiro whitespace-pre-wrap pl-1">
-                  <div dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                <div className="text-sm text-gray-800 dark:text-gray-200 leading-loose font-tiro whitespace-pre-wrap pl-1 overflow-hidden">
+                  <div className="overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                   {q.explanationImage && (
                     <div className="mt-3 rounded-lg overflow-hidden border border-orange-200/20 p-1 max-w-sm bg-white dark:bg-black/20 self-start">
                       <img
@@ -706,13 +686,23 @@ const QuestionBank: React.FC = () => {
 
   // Revision/Exam Mode State
   const [isRevisionMode, setIsRevisionMode] = useState(false);
+  const [isLiveQuizMode, setIsLiveQuizMode] = useState(false);
+  const [liveQuizStats, setLiveQuizStats] = useState({ correct: 0, wrong: 0, totalAnswered: 0 });
   const [showAllAnswers, setShowAllAnswers] = useState(false);
-  const [userSelections, setUserSelections] = useState<Record<number, number>>(
-    {},
-  );
+  const [expandedExplanations, setExpandedExplanations] = useState<Record<string, boolean>>({});
+  const [userAnswers, setUserAnswers] = useState<Record<string, number[]>>({});
   const [savedQuestionIds, setSavedQuestionIds] = useState<Set<string>>(
     new Set(),
   );
+
+  // Exam Config Sheet State
+  const [showExamTypeSelect, setShowExamTypeSelect] = useState(false);
+  const [showExamConfig, setShowExamConfig] = useState(false);
+  const [examConfigState, setExamConfigState] = useState({
+    numQuestions: 25,
+    timeLimit: 20,
+    negativeMark: 0.25,
+  });
 
   // Debounced search logic
   useEffect(() => {
@@ -752,27 +742,7 @@ const QuestionBank: React.FC = () => {
 
     let ignore = false;
 
-    const currentParams = {
-      level: selectedLevel || "",
-      subject: selectedSubject || "",
-      chapter: selectedChapter || "",
-      topic: "",
-      examRef: selectedExamRef || "",
-      search: debouncedSearch,
-      board: academicFilterType === "board" ? (selectedBoardTag || "") : "",
-      college: academicFilterType === "college" ? (selectedCollegeTag || "") : "",
-    };
-
-    const isFilterChange =
-      lastFetchParams.current.level !== currentParams.level ||
-      lastFetchParams.current.subject !== currentParams.subject ||
-      lastFetchParams.current.chapter !== currentParams.chapter ||
-      (lastFetchParams.current as any).examRef !== currentParams.examRef ||
-      lastFetchParams.current.search !== currentParams.search ||
-      (lastFetchParams.current as any).board !== currentParams.board ||
-      (lastFetchParams.current as any).college !== currentParams.college;
-
-    if (isFilterChange) {
+    if (isFilterDirty) {
       lastFetchParams.current = { ...currentParams } as any;
       if (page !== 1) {
         setPage(1);
@@ -796,21 +766,22 @@ const QuestionBank: React.FC = () => {
         } else {
           res = await fetchQuestionsFromBankAPI(
             page,
-            50,
+            25,
             selectedSubject ?? undefined,
             selectedChapter ?? undefined,
             undefined, // topic
             undefined, // examRef
             debouncedSearch || undefined, // search query
             selectedLevel ?? undefined, // level
-            academicFilterType === "board" ? (selectedBoardTag || undefined) : undefined,
-            academicFilterType === "college" ? (selectedCollegeTag || undefined) : undefined,
+            academicFilterType === "board" ? (selectedBoardTag || "ANY") : undefined,
+            academicFilterType === "college" ? (selectedCollegeTag || "ANY") : undefined,
           );
         }
 
         if (ignore) return;
 
         const fetchedQuestions = res.questions || [];
+        const totalCount = res.total || 0; // if available from API
 
         const extractYear = (ref: string) => {
           const match = ref?.match(/\d{2,4}/);
@@ -826,19 +797,9 @@ const QuestionBank: React.FC = () => {
           return (a.orderIndex || 0) - (b.orderIndex || 0);
         });
 
-        if (page === 1) {
-          setQuestions(sortedFetched);
-        } else {
-          setQuestions((prev: any[]) => {
-            const existingIds = new Set(prev.map((q) => q._id || q.id));
-            const newUnique = sortedFetched.filter(
-              (q: any) => !existingIds.has(q._id || q.id),
-            );
-            return [...prev, ...newUnique];
-          });
-        }
-
-        setHasMore(fetchedQuestions.length >= 50);
+        // Always replace questions for pagination
+        setQuestions(sortedFetched);
+        setHasMore(fetchedQuestions.length >= 25);
       } catch (err) {
         console.error(err);
         if (!ignore) showToast("প্রশ্ন লোড করতে সমস্যা হয়েছে", "error");
@@ -882,6 +843,27 @@ const QuestionBank: React.FC = () => {
   const normalizeText = normalizeBangla;
 
   // Filter questions on client side to keep dynamic filters smooth & responsive
+
+  const currentParams = {
+    level: selectedLevel || "",
+    subject: selectedSubject || "",
+    chapter: selectedChapter || "",
+    topic: "",
+    examRef: selectedExamRef || "",
+    search: debouncedSearch,
+    board: academicFilterType === "board" ? (selectedBoardTag || "") : "",
+    college: academicFilterType === "college" ? (selectedCollegeTag || "") : "",
+  };
+
+  const isFilterDirty =
+    lastFetchParams.current.level !== currentParams.level ||
+    lastFetchParams.current.subject !== currentParams.subject ||
+    lastFetchParams.current.chapter !== currentParams.chapter ||
+    (lastFetchParams.current as any).examRef !== currentParams.examRef ||
+    lastFetchParams.current.search !== currentParams.search ||
+    (lastFetchParams.current as any).board !== currentParams.board ||
+    (lastFetchParams.current as any).college !== currentParams.college;
+
   const filteredQuestions = useMemo(() => {
     if (selectedLevel !== "ACADEMIC") return questions;
     
@@ -901,10 +883,13 @@ const QuestionBank: React.FC = () => {
 
     return questions.filter((q) => {
       const examRefStr = q.examRef || "";
+      const tagsStr = (q.tags || []).join(" ");
+      const combinedRefStr = `${examRefStr} ${tagsStr}`.toUpperCase();
       
       // If we seek Board questions
       if (academicFilterType === "board") {
-        const isCg = !!q.college || COLLEGES.some(col => examRefStr.toUpperCase().includes(col.toUpperCase()));
+        const checkArr = [...COLLEGES, "কলেজ", "COLLEGE"];
+        const isCg = !!q.college || checkArr.some(col => combinedRefStr.includes(col.toUpperCase()));
         if (isCg) return false;
         
         // Since it's Academic level and not a College question, it's considered a Board question
@@ -932,7 +917,8 @@ const QuestionBank: React.FC = () => {
       
       // If we seek College test questions
       if (academicFilterType === "college") {
-        const hasCollege = !!q.college || COLLEGES.some(col => examRefStr.toUpperCase().includes(col.toUpperCase()));
+        const checkArr = [...COLLEGES, "কলেজ", "COLLEGE"];
+        const hasCollege = !!q.college || checkArr.some(col => combinedRefStr.includes(col.toUpperCase()));
         if (!hasCollege) return false;
         
         if (selectedCollegeTag) {
@@ -975,11 +961,11 @@ const QuestionBank: React.FC = () => {
   };
 
   const handleLevelSelect = (level: "ACADEMIC" | "ADMISSION" | "MAINBOOK") => {
-    setSearchParams({ level });
+    setSearchParams({ level }, { replace: true });
   };
 
   const handleSubjectSelect = (subject: string) => {
-    setSearchParams({ level: selectedLevel || "", subject });
+    setSearchParams({ level: selectedLevel || "", subject }, { replace: true });
   };
 
   const handleChapterSelect = (chapter: string) => {
@@ -987,13 +973,13 @@ const QuestionBank: React.FC = () => {
       setSearchParams({
         level: selectedLevel || "",
         subject: selectedSubject || "",
-      });
+      }, { replace: true });
     } else {
       setSearchParams({
         level: selectedLevel || "",
         subject: selectedSubject || "",
         chapter,
-      });
+      }, { replace: true });
     }
   };
 
@@ -1004,9 +990,9 @@ const QuestionBank: React.FC = () => {
         level: "ADMISSION",
         institution: instId,
         unit: inst.units[0].id,
-      });
+      }, { replace: true });
     } else {
-      setSearchParams({ level: "ADMISSION", institution: instId });
+      setSearchParams({ level: "ADMISSION", institution: instId }, { replace: true });
     }
   };
 
@@ -1015,7 +1001,7 @@ const QuestionBank: React.FC = () => {
       level: "ADMISSION",
       institution: selectedInstitution || "",
       unit: unitId,
-    });
+    }, { replace: true });
   };
 
   const handleExamPaperSelect = (examRef: string) => {
@@ -1024,7 +1010,31 @@ const QuestionBank: React.FC = () => {
       institution: selectedInstitution || "",
       unit: selectedUnit || "",
       examRef,
+    }, { replace: true });
+  };
+
+  const toggleExplanation = (id: string) => {
+    setExpandedExplanations(prev => {
+      const isNowExpanded = !prev[id];
+      if (isNowExpanded) {
+        setTimeout(() => {
+          if (window.MathJax && window.MathJax.typesetPromise) {
+            const el = document.getElementById(`explanation-${id}`);
+            if (el) {
+              window.MathJax.typesetPromise([el]).catch((err: any) => console.error(err));
+            } else {
+              window.MathJax.typesetPromise().catch((err: any) => console.error(err));
+            }
+          }
+        }, 80);
+      }
+      return { ...prev, [id]: isNowExpanded };
     });
+  };
+
+  const getFont = (text: string = '') => {
+    const isBangla = /[\u0980-\u09FF]/.test(text);
+    return isBangla ? 'font-tiro' : 'font-sans';
   };
 
   const handleBack = () => {
@@ -1033,43 +1043,33 @@ const QuestionBank: React.FC = () => {
         level: "ADMISSION",
         institution: selectedInstitution || "",
         unit: selectedUnit || "",
-      });
+      }, { replace: true });
     } else if (selectedUnit) {
       const inst = ADMISSION_INSTITUTIONS.find(
         (i) => i.id === selectedInstitution,
       );
       if (inst && inst.units.length === 1) {
-        setSearchParams({ level: "ADMISSION" });
+        setSearchParams({ level: "ADMISSION" }, { replace: true });
       } else {
         setSearchParams({
           level: "ADMISSION",
           institution: selectedInstitution || "",
-        });
+        }, { replace: true });
       }
     } else if (selectedInstitution) {
-      setSearchParams({ level: "ADMISSION" });
+      setSearchParams({ level: "ADMISSION" }, { replace: true });
     } else if (selectedChapter) {
       setSearchParams({
         level: selectedLevel || "",
         subject: selectedSubject || "",
-      });
+      }, { replace: true });
     } else if (selectedSubject) {
-      setSearchParams({ level: selectedLevel || "" });
+      setSearchParams({ level: selectedLevel || "" }, { replace: true });
     } else if (selectedLevel) {
-      setSearchParams({});
+      setSearchParams({}, { replace: true });
     } else {
-      navigate(-1);
+      navigate('/dashboard', { replace: true });
     }
-  };
-
-  const handleStartRevision = () => {
-    if (filteredQuestions.length === 0) {
-      showToast("কোনো প্রশ্ন পাওয়া যায়নি", "warning");
-      return;
-    }
-    setIsRevisionMode(true);
-    setShowAllAnswers(false);
-    setUserSelections({});
   };
 
   const handleStartExam = () => {
@@ -1077,12 +1077,81 @@ const QuestionBank: React.FC = () => {
       showToast("কোনো প্রশ্ন পাওয়া যায়নি", "warning");
       return;
     }
+    setShowExamTypeSelect(!showExamTypeSelect);
+  };
+
+  const handleStartLiveQuiz = () => {
+    setShowExamTypeSelect(false);
+    setShowExamConfig(false);
+    setIsLiveQuizMode(true);
+    setUserAnswers({});
+    setLiveQuizStats({ correct: 0, wrong: 0, totalAnswered: 0 });
+    document.getElementById("qbank-scroll-container")?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleConfirmExamStart = async () => {
+    setShowExamConfig(false);
+
+    let examQuestions = [...filteredQuestions];
+    const { numQuestions, timeLimit, negativeMark } = examConfigState;
+
+    if (examQuestions.length < numQuestions && hasMore) {
+      showToast("অপেক্ষা করুন, প্রশ্ন লোড হচ্ছে...", "info");
+      try {
+        let res;
+        if (selectedExamRef) {
+          const data = await fetchQuestionsByExamRefAPI(selectedExamRef);
+          res = {
+            questions: Array.isArray(data) ? data : data.questions || [],
+            total: Array.isArray(data) ? data.length : data.total || 0,
+          };
+          if (res?.questions?.length > 0) {
+            examQuestions = res.questions;
+          }
+        } else {
+          // Fetch pages until we have at least numQuestions * 2 or run out of pages
+          const requiredCount = numQuestions * 2;
+          let currentPage = 1;
+          let allFetched: any[] = [];
+          
+          while (allFetched.length < requiredCount) {
+             res = await fetchQuestionsFromBankAPI(
+                currentPage,
+                50, // Fetch in chunks of 50
+                selectedSubject ?? undefined,
+                selectedChapter ?? undefined,
+                undefined, // topic
+                undefined, // examRef
+                debouncedSearch,
+                selectedLevel ?? undefined,
+                academicFilterType === "board" ? (selectedBoardTag || "ANY") : undefined,
+                academicFilterType === "college" ? (selectedCollegeTag || "ANY") : undefined
+              );
+              
+              const newQuestions = res?.questions || [];
+              if (newQuestions.length === 0) break;
+              
+              allFetched = [...allFetched, ...newQuestions];
+              if (newQuestions.length < 50) break; // No more pages
+              
+              currentPage++;
+          }
+          
+          if (allFetched.length > 0) {
+             examQuestions = allFetched;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
     const examId = `qbank_exam_${Date.now()}`;
 
     // Stimulus-aware selection
     const grouped: Record<string, QuizQuestion[]> = {};
     const singles: QuizQuestion[] = [];
-    const shuffledRaw = [...filteredQuestions].sort(() => 0.5 - Math.random());
+    const shuffledRaw = [...examQuestions].sort(() => 0.5 - Math.random());
 
     shuffledRaw.forEach((q) => {
       const key = q.contextText || q.contextImage || null;
@@ -1099,22 +1168,22 @@ const QuestionBank: React.FC = () => {
     const singlesShuffled = singles.sort(() => 0.5 - Math.random());
 
     groups.forEach((group) => {
-      if (selectedQs.length + group.length <= 25) {
+      if (selectedQs.length + group.length <= numQuestions) {
         selectedQs.push(...group);
       }
     });
 
     singlesShuffled.forEach((q) => {
-      if (selectedQs.length < 25) {
+      if (selectedQs.length < numQuestions) {
         selectedQs.push(q);
       }
     });
 
     // Fallback
-    if (selectedQs.length < 25) {
+    if (selectedQs.length < numQuestions) {
       groups.forEach((group) => {
-        if (selectedQs.length < 25) {
-          const needed = 25 - selectedQs.length;
+        if (selectedQs.length < numQuestions) {
+          const needed = numQuestions - selectedQs.length;
           const alreadyIn = group.every((gq) =>
             selectedQs.some((sq) => sq.question === gq.question),
           );
@@ -1128,7 +1197,8 @@ const QuestionBank: React.FC = () => {
     const config = {
       title: `${selectedSubject} - ${selectedChapter || "All Chapters"}`,
       questions: selectedQs,
-      timeLimit: 20,
+      timeLimit: timeLimit,
+      negativeMarking: negativeMark,
       mode: "ALL_AT_ONCE",
       type: "QBANK_EXAM",
       isPracticeMode: false,
@@ -1136,10 +1206,6 @@ const QuestionBank: React.FC = () => {
     localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
     navigate(`/exam/${examId}`);
   };
-
-  const handleOptionClick = useCallback((qIdx: number, oIdx: number) => {
-    setUserSelections((prev) => ({ ...prev, [qIdx]: oIdx }));
-  }, []);
 
   const toggleSaveQuestion = useCallback(
     async (question: QuizQuestion) => {
@@ -1150,19 +1216,30 @@ const QuestionBank: React.FC = () => {
       const qId = question._id || question.id;
       if (!qId) return;
 
+      let wasSaved = false;
+
       setSavedQuestionIds((prev) => {
         const newSet = new Set(prev);
-        if (newSet.has(qId)) {
+        wasSaved = newSet.has(qId);
+        if (wasSaved) {
           newSet.delete(qId);
-          unsaveQuestionAPI(currentUser.uid, qId).catch(console.error);
-          showToast("বুকমার্ক রিমুভ করা হয়েছে", "info");
         } else {
           newSet.add(qId);
-          saveQuestionAPI(currentUser.uid, qId).catch(console.error);
-          showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
         }
         return newSet;
       });
+
+      // Side effects moved OUTSIDE the setState updater function to prevent double invocation in React StrictMode
+      // and "Cannot update a component while rendering a different component" warnings.
+      setTimeout(() => {
+        if (wasSaved) {
+          unsaveQuestionAPI(currentUser.uid, qId).catch(console.error);
+          showToast("বুকমার্ক রিমুভ করা হয়েছে", "info");
+        } else {
+          saveQuestionAPI(currentUser.uid, qId).catch(console.error);
+          showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
+        }
+      }, 0);
     },
     [currentUser, showToast],
   );
@@ -1188,256 +1265,72 @@ const QuestionBank: React.FC = () => {
 
   // --- RENDERING VIEWS ---
 
-  if (isRevisionMode) {
-    return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors">
-        {/* Premium revision portal header */}
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-150 dark:border-gray-800 p-4 sticky top-0 z-20 shadow-sm">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsRevisionMode(false)}
-                className="p-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-gray-700 transition-all duration-300"
-                id="btn-back-rev"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <div>
-                <span className="text-[12px] font-bold text-primary dark:text-primary uppercase tracking-widest flex items-center gap-1 font-sans">
-                  <Sparkles size={10} /> রিভিশন স্টাডি মোড
-                </span>
-                <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                  {selectedSubject
-                    ? SUBJECT_DEFINITIONS[selectedSubject]?.display ||
-                      selectedSubject
-                    : "রিভিশন"}
-                </h1>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowAllAnswers(!showAllAnswers)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all duration-300 border ${
-                  showAllAnswers
-                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                    : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200/50"
-                }`}
-                id="btn-toggle-ans-rev"
-              >
-                {showAllAnswers ? <EyeOff size={13} /> : <Eye size={13} />}
-                {showAllAnswers ? "উত্তর লুকান" : "সব উত্তর দেখুন"}
-              </button>
-            </div>
-          </div>
-        </div>
 
-        {/* Revision Cards Feed */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24">
-          <div className="max-w-3xl mx-auto flex flex-col space-y-4">
-            {questions.map((q, idx) => {
-              const isRepeatStimulus =
-                idx > 0 &&
-                q.contextText &&
-                q.contextText === questions[idx - 1].contextText &&
-                q.contextImage === questions[idx - 1].contextImage;
-
-              let stimulusRange = null;
-              let isGroupStart = false;
-              let isGroupMiddle = false;
-              let isGroupEnd = false;
-
-              if (!isRepeatStimulus && (q.contextText || q.contextImage)) {
-                let endIndex = idx;
-                for (let i = idx + 1; i < questions.length; i++) {
-                  if (
-                    questions[i].contextText === q.contextText &&
-                    questions[i].contextImage === q.contextImage
-                  ) {
-                    endIndex = i;
-                  } else {
-                    break;
-                  }
-                }
-                if (endIndex > idx) {
-                  stimulusRange = { start: idx + 1, end: endIndex + 1 };
-                  isGroupStart = true;
-                }
-              } else if (isRepeatStimulus) {
-                const hasNextMatch =
-                  idx + 1 < questions.length &&
-                  questions[idx + 1].contextText === q.contextText &&
-                  questions[idx + 1].contextImage === q.contextImage;
-                if (hasNextMatch) {
-                  isGroupMiddle = true;
-                } else {
-                  isGroupEnd = true;
-                }
-              }
-
-              return (
-                <RevisionQuestionCard
-                  key={idx}
-                  idx={idx}
-                  q={q}
-                  userSelected={userSelections[idx]}
-                  showAllAnswers={showAllAnswers}
-                  isSaved={savedQuestionIds.has(q._id || q.id || "")}
-                  onOptionClick={handleOptionClick}
-                  onToggleSave={toggleSaveQuestion}
-                  showChapter={!selectedChapter}
-                  isGroupStart={isGroupStart}
-                  isGroupMiddle={isGroupMiddle}
-                  isGroupEnd={isGroupEnd}
-                  stimulusStart={stimulusRange?.start}
-                  stimulusEnd={stimulusRange?.end}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-slate-50/50 dark:bg-gray-950 transition-colors">
-      {/* Premium Header Bar */}
-      <div className="bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-150 dark:border-gray-800 p-4 sticky top-0 z-10 shadow-sm shrink-0">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {(selectedLevel || selectedSubject) && (
+      {/* Premium Header Bar (Hidden in detailed view) */}
+      {(!selectedSubject && !selectedExamRef) && (
+        <div className="bg-white/95 dark:bg-black/90 backdrop-blur-xl border-b border-gray-150 dark:border-zinc-800 p-4 sticky top-0 z-10 shadow-sm shrink-0">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleBack}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-150 dark:border-gray-800 transition-all duration-300"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-150 dark:border-zinc-800 transition-all duration-300"
                 id="btn-header-back"
               >
                 <ChevronLeft size={18} />
               </button>
-            )}
-            <div>
-              <span className="text-[12px] font-black tracking-widest text-primary uppercase pb-0.5 block font-sans">
-                {selectedLevel === "ADMISSION"
-                  ? "ভর্তি পরীক্ষা (ADMISSION)"
-                  : selectedLevel === "ACADEMIC"
-                    ? "এইচএসসি পরীক্ষা (ACADEMIC)"
-                    : selectedLevel === "MAINBOOK"
-                      ? "অনুশীলনীর প্রশ্ন (MAINBOOK)"
-                      : "STUDY HUB"}
-              </span>
-              <h1 className="text-lg md:text-xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                {selectedExamRef
-                  ? selectedExamRef
-                  : selectedSubject
-                    ? SUBJECT_DEFINITIONS[selectedSubject]?.display ||
-                      selectedSubject
-                    : "স্মার্ট প্রশ্নব্যাংক"}
-              </h1>
+              <div>
+                <span className="text-[12px] font-black tracking-widest text-primary uppercase pb-0.5 block font-sans">
+                  {selectedLevel === "ADMISSION"
+                    ? "ভর্তি পরীক্ষা (ADMISSION)"
+                    : selectedLevel === "ACADEMIC"
+                      ? "এইচএসসি পরীক্ষা (ACADEMIC)"
+                      : selectedLevel === "MAINBOOK"
+                        ? "অনুশীলনীর প্রশ্ন (MAINBOOK)"
+                        : "STUDY HUB"}
+                </span>
+                <h1 className="text-lg md:text-xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                  স্মার্ট প্রশ্নব্যাংক
+                </h1>
+              </div>
             </div>
           </div>
-          {/* Quick study metrics or buttons */}
-          {(selectedSubject || selectedExamRef) && (
-            <div className="hidden md:flex gap-2">
-              <button
-                onClick={handleStartRevision}
-                className="px-4 py-2 bg-gray-50 border border-gray-150 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all duration-300"
-                id="btn-rev-desktop"
-              >
-                <Eye size={14} /> রিভিশন মোড
-              </button>
-              <button
-                onClick={handleStartExam}
-                className="px-4 py-2 bg-primary hover:bg-orange-600 text-white shadow-md shadow-orange-500/20 active:translate-y-0.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all duration-300"
-                id="btn-exam-desktop"
-              >
-                <Play size={12} fill="currentColor" /> পরীক্ষা দিন
-              </button>
-            </div>
-          )}
         </div>
-      </div>
+      )}
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="max-w-4xl mx-auto p-4 md:p-6 pb-40">
+      <div id="qbank-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden relative">
+        <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24">
           {!selectedLevel ? (
             /* LEVEL 1: ACADEMIC vs ADMISSION vs MAINBOOK */
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 py-6">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleLevelSelect("ACADEMIC")}
-                className="p-6 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-150 dark:border-gray-800 hover:border-primary/20 shadow-md hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 group text-center relative overflow-hidden"
-                id="btn-select-academic"
-              >
-                {/* Glowing Accent */}
-                <div className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 bg-blue-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-2xl mx-auto flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                  <BookOpen size={28} />
-                </div>
-                <h2 className="text-lg md:text-xl font-black text-gray-900 dark:text-white mb-2 font-tiro">
-                  একাডেমিক প্রশ্নব্যাংক
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-                  বোর্ড পরীক্ষা, কলেজের নির্বাচনী ও গুরুত্বপূর্ণ মডেল টেস্টের
-                  অধ্যায়ভিত্তিক প্রশ্ন ও সমাধান
-                </p>
-
-                <div className="inline-flex items-center gap-1.5 text-[12px] font-bold text-blue-500 mt-5 bg-blue-500/10 px-3 py-1.5 rounded-full">
-                  <Compass size={12} /> প্রবেশ করুন
-                </div>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleLevelSelect("ADMISSION")}
-                className="p-6 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-150 dark:border-gray-800 hover:border-primary/20 shadow-md hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 group text-center relative overflow-hidden"
-                id="btn-select-admission"
-              >
-                {/* Glowing Accent */}
-                <div className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 bg-orange-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                <div className="w-16 h-16 bg-orange-500/10 dark:bg-orange-500/20 text-primary rounded-2xl mx-auto flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                  <Stethoscope size={28} />
-                </div>
-                <h2 className="text-lg md:text-xl font-black text-gray-900 dark:text-white mb-2 font-tiro">
-                  ভর্তি পরীক্ষার প্রশ্নব্যাংক
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-                  মেডিকেল, ডেন্টাল, ঢাবি ও জিএসটি গুচ্ছ বিশ্ববিদ্যালয়ের বিগত
-                  বছরের প্রশ্নাবলী
-                </p>
-
-                <div className="inline-flex items-center gap-1.5 text-[12px] font-bold text-primary mt-5 bg-orange-500/10 px-3 py-1.5 rounded-full">
-                  <Compass size={12} /> প্রবেশ করুন
-                </div>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleLevelSelect("MAINBOOK")}
-                className="p-6 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-150 dark:border-gray-800 hover:border-primary/20 shadow-md hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 group text-center relative overflow-hidden"
-                id="btn-select-mainbook"
-              >
-                {/* Glowing Accent */}
-                <div className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 bg-emerald-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 rounded-2xl mx-auto flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                  <BookMarked size={28} />
-                </div>
-                <h2 className="text-lg md:text-xl font-black text-gray-900 dark:text-white mb-2 font-tiro">
-                  অনুশীলনীর প্রশ্নব্যাংক
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-                  বিভিন্ন স্বনামধন্য স্যারদের বইয়ের অনুশীলনী ও অধ্যায়ভিত্তিক
-                  গুরুত্বপূর্ণ MCQ সমাধান (Mainbook MCQ)
-                </p>
-
-                <div className="inline-flex items-center gap-1.5 text-[12px] font-bold text-emerald-500 mt-5 bg-emerald-500/10 px-3 py-1.5 rounded-full">
-                  <Compass size={12} /> প্রবেশ করুন
-                </div>
-              </motion.button>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 py-4 md:py-6 max-w-4xl mx-auto">
+              {[
+                { id: "ACADEMIC", title: "একাডেমিক", subtitle: "বোর্ড ও কলেজ সংক্রান্ত", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-500/10", borderHover: "hover:border-blue-500" },
+                { id: "ADMISSION", title: "ভর্তি পরীক্ষা", subtitle: "ভার্সিটি, মেডিকেল", icon: Stethoscope, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-500/10", borderHover: "hover:border-orange-500" },
+                { id: "MAINBOOK", title: "অনুশীলনী", subtitle: "মেইন বইয়ের প্রশ্ন", icon: BookMarked, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10", borderHover: "hover:border-emerald-500" }
+              ].map(item => (
+                <motion.div
+                  key={item.id}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleLevelSelect(item.id as any)}
+                  className="aspect-square bg-white dark:bg-[#121212] p-4 rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer hover:shadow-md transition-all flex flex-col items-center justify-center gap-3 md:gap-4 group"
+                  id={`btn-select-${item.id.toLowerCase()}`}
+                >
+                  <div className={`w-14 h-14 md:w-16 md:h-16 rounded-[20px] flex items-center justify-center ${item.bg} text-gray-800 dark:text-white group-hover:scale-110 transition-transform shadow-sm`}>
+                    <item.icon size={28} strokeWidth={2.5} className={item.color} />
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <span className="font-bold text-[15px] md:text-[17px] text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">
+                      {item.title}
+                    </span>
+                    <span className="text-[11px] md:text-sm text-gray-500 dark:text-gray-400 font-medium mt-0.5">
+                      {item.subtitle}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           ) : !selectedSubject && !selectedInstitution && !selectedExamRef ? (
             /* LEVEL 2: COMPACT OR CHOOSE SUBJECT/INSTITUTION */
@@ -1456,7 +1349,7 @@ const QuestionBank: React.FC = () => {
                         whileHover={{ y: -4, scale: 1.01 }}
                         key={idx}
                         onClick={() => handleInstitutionSelect(inst.id)}
-                        className="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-150 dark:border-gray-800 text-left hover:border-blue-500 transition-all duration-300 group flex items-start gap-4 shadow-sm"
+                        className="bg-white dark:bg-black p-5 rounded-2xl border border-gray-150 dark:border-zinc-800 text-left hover:border-blue-500 transition-all duration-300 group flex items-start gap-4 shadow-sm"
                         id={`btn-inst-${inst.id}`}
                       >
                         <div
@@ -1479,55 +1372,38 @@ const QuestionBank: React.FC = () => {
               ) */}
 
               <section>
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-4 px-2">
                   <span className="w-1 h-5 bg-orange-500 rounded-full" />
                   <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest font-sans">
-                    বিষয় ভিত্তিক প্রশ্নব্যাংক
+                    বিষয় নির্বাচন করুন
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
                   {Object.entries(SUBJECT_DEFINITIONS).map(
                     ([key, subject], idx) => {
                       const count = getStatsFor(key);
                       return (
-                        <motion.button
-                          whileHover={{ y: -3, scale: 1.01 }}
+                        <motion.div
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
                           key={idx}
                           onClick={() => handleSubjectSelect(key)}
-                          className="bg-white dark:bg-gray-900 p-4.5 rounded-2xl border border-gray-150 dark:border-gray-800 text-left hover:border-primary transition-all duration-300 group flex items-center justify-between shadow-sm relative overflow-hidden"
+                          className="aspect-square bg-white dark:bg-[#121212] p-4 rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer hover:shadow-md transition-all flex flex-col items-center justify-center gap-3 md:gap-4 group"
                           id={`btn-sub-${idx}`}
                         >
-                          {/* Left Content */}
-                          <div className="flex items-center gap-3.5 min-w-0">
-                            <div
-                              className={`w-11 h-11 rounded-xl ${subject.bg} ${subject.color} flex items-center justify-center shrink-0 shadow-inner group-hover:scale-115 transition-transform duration-300`}
-                            >
-                              <subject.icon size={20} />
-                            </div>
-                            <div className="min-w-0 pr-1">
-                              <h3 className="text-sm md:text-base font-extrabold text-gray-900 dark:text-white truncate font-tiro">
-                                {subject.display}
-                              </h3>
-                              <span className="text-[12px] text-gray-400 lowercase block font-sans">
-                                Syllabus Chapter Analysis
-                              </span>
-                            </div>
+                          <div className={`w-14 h-14 md:w-16 md:h-16 rounded-[20px] flex items-center justify-center ${subject.bg} ${subject.color} group-hover:scale-110 transition-transform shadow-sm`}>
+                            <subject.icon size={28} strokeWidth={2.5} />
                           </div>
-
-                          {/* Question badge count */}
-                          <div className="flex items-center gap-2shrink-0">
-                            {count > 0 ? (
-                              <span className="text-[11px] font-black bg-orange-500/10 text-primary dark:bg-orange-500/15 px-2.5 py-1 rounded-lg border border-orange-500/10">
-                                {toBengaliNumber(count.toLocaleString())} প্রশ্ন
-                              </span>
-                            ) : (
-                              <span className="text-[12px] text-gray-400 italic">
-                                প্রস্তুত হচ্ছে
-                              </span>
-                            )}
+                          <div className="flex flex-col items-center text-center">
+                            <span className="font-bold text-[15px] md:text-[17px] text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors font-tiro p-0.5">
+                              {subject.display}
+                            </span>
+                            <span className="text-[11px] md:text-sm text-gray-500 dark:text-gray-400 font-medium mt-0.5">
+                              {count > 0 ? `${toBengaliNumber(count.toLocaleString())} প্রশ্ন` : "প্রস্তুত হচ্ছে"}
+                            </span>
                           </div>
-                        </motion.button>
+                        </motion.div>
                       );
                     },
                   )}
@@ -1552,7 +1428,7 @@ const QuestionBank: React.FC = () => {
                     whileTap={{ scale: 0.99 }}
                     key={idx}
                     onClick={() => handleUnitSelect(unit.id)}
-                    className="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-150 dark:border-gray-800 hover:border-blue-500 hover:shadow-md transition-all flex items-center justify-between group text-left shadow-sm"
+                    className="bg-white dark:bg-black p-5 rounded-2xl border border-gray-150 dark:border-zinc-800 hover:border-blue-500 hover:shadow-md transition-all flex items-center justify-between group text-left shadow-sm"
                     id={`btn-unit-${unit.id}`}
                   >
                     <div className="flex items-center gap-3.5">
@@ -1595,7 +1471,7 @@ const QuestionBank: React.FC = () => {
                       key={idx}
                       whileHover={{ y: -3, scale: 1.01 }}
                       onClick={() => handleExamPaperSelect(exam.examRef)}
-                      className="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-150 dark:border-gray-800 hover:border-blue-500 text-left hover:shadow-md transition-all duration-300 flex flex-col justify-between shadow-sm relative overflow-hidden group"
+                      className="bg-white dark:bg-black p-5 rounded-2xl border border-gray-150 dark:border-zinc-800 hover:border-blue-500 text-left hover:shadow-md transition-all duration-300 flex flex-col justify-between shadow-sm relative overflow-hidden group"
                       id={`btn-exampaper-${idx}`}
                     >
                       <div className="absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-colors" />
@@ -1619,62 +1495,38 @@ const QuestionBank: React.FC = () => {
             </div>
           ) : (
             /* LEVEL 3: DETAILED QUESTIONS BROWSER (THE HIGH-END PORTAL SHELL) */
-            <div className="space-y-6">
-              {/* HERO STATS WIDGET PANEL (BENTO EXCEL) */}
-              <div className="bg-white dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-3xl p-5 shadow-sm relative overflow-hidden">
-                {/* Background decoration */}
-                <div className="absolute top-0 right-0 w-56 h-56 -mr-20 -mt-20 bg-orange-500/5 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-1/3 w-32 h-32 -ml-16 -mb-16 bg-blue-500/5 rounded-full blur-2xl" />
-
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
-                  <div>
-                    <span className="inline-flex items-center gap-1.5 text-[12px] font-black text-primary uppercase tracking-widest bg-orange-500/5 dark:bg-orange-500/15 border border-orange-500/10 px-2.5 py-1 rounded-full font-sans mb-2">
-                      <Sparkles size={11} /> স্টাডি ড্যাশবোর্ড
-                    </span>
-                    <h2 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
-                      {selectedSubject
-                        ? SUBJECT_DEFINITIONS[selectedSubject]?.display ||
-                          selectedSubject
-                        : selectedExamRef}
-                    </h2>
-                    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
-                      <Clock size={12} /> {filteredQuestions.length} টি প্রশ্ন এই বিভাগে
-                      লোড হয়েছে
-                    </p>
-                  </div>
-                  <div className="flex gap-2 w-full sm:w-auto self-stretch sm:self-auto pt-2 sm:pt-0">
-                    <button
-                      onClick={handleStartRevision}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 bg-slate-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 dark:text-gray-300 transition-all duration-300 hover:bg-slate-100"
-                      id="btn-stats-rev"
-                    >
-                      <Eye size={13} /> রিভিশন দিন
-                    </button>
-                    <button
-                      onClick={handleStartExam}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 bg-primary text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 hover:bg-orange-600 transition-all duration-300 shadow-md shadow-orange-500/10"
-                      id="btn-stats-exam"
-                    >
-                      <Play size={11} fill="currentColor" /> এক্সাম দিন
-                    </button>
-                  </div>
+            <div className="space-y-5 flex flex-col pt-2">
+              {/* HEADER INFO */}
+              <div className="relative flex items-center justify-center min-h-[60px] mb-2 mt-2">
+                <button
+                  onClick={handleBack}
+                  className="absolute left-0 p-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shadow-sm"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="flex flex-col items-center text-center gap-1 px-12">
+                  <h2 className="text-[26px] md:text-[30px] font-extrabold text-gray-900 dark:text-gray-100 leading-tight break-words">
+                    {selectedSubject
+                      ? SUBJECT_DEFINITIONS[selectedSubject]?.display ||
+                        selectedSubject
+                      : selectedExamRef}
+                  </h2>
+                  <span className="text-[14px] font-bold text-gray-500 dark:text-gray-400">
+                    {selectedLevel === "ADMISSION"
+                      ? "ভর্তি পরীক্ষা (ADMISSION)"
+                      : selectedLevel === "ACADEMIC"
+                        ? "এইচএসসি পরীক্ষা (ACADEMIC)"
+                        : selectedLevel === "MAINBOOK"
+                          ? "অনুশীলনীর প্রশ্ন (MAINBOOK)"
+                          : "STUDY HUB"}
+                  </span>
                 </div>
               </div>
 
               {/* SLIDER 1: CHAPTERS BADGES ROW */}
               {selectedSubject && (
-                <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">
-                    অধ্যায়সমূহ (Chapters)
-                  </h3>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 pt-1">
-                    <button
-                      onClick={() => handleChapterSelect("")}
-                      className={`px-4 py-1.8 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border duration-300 ${!selectedChapter ? "bg-primary text-white border-primary shadow-sm shadow-orange-500/20" : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-150 dark:border-gray-800 hover:border-gray-300"}`}
-                      id="btn-chap-all"
-                    >
-                      সব অধ্যায়
-                    </button>
+                <div className="pt-2 border-t border-gray-100 dark:border-[#222]">
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {chapters.map((chapter, idx) => {
                       const count = getStatsFor(selectedSubject, chapter);
                       const isSelected =
@@ -1685,12 +1537,11 @@ const QuestionBank: React.FC = () => {
                         <button
                           key={idx}
                           onClick={() => handleChapterSelect(chapter)}
-                          className={`px-4 py-1.8 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border duration-300 flex items-center gap-2 ${isSelected ? "bg-primary text-white border-primary shadow-sm shadow-orange-500/20" : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-150 dark:border-gray-800 hover:border-primary/40"}`}
-                          id={`btn-chap-${idx}`}
+                          className={`px-4 py-2 rounded-2xl text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${isSelected ? "bg-orange-500/10 text-primary border-orange-500/20 shadow-sm" : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-[#333]"}`}
                         >
                           {chapter}
                           <span
-                            className={`px-1.5 py-0.5 rounded-lg text-[12px] ${selectedChapter === chapter ? "bg-white/20 text-white" : "bg-gray-100 dark:bg-gray-800 font-bold text-gray-500 dark:text-gray-400"}`}
+                            className={`px-1.5 py-0.5 rounded-lg text-[11px] ${selectedChapter === chapter ? "bg-orange-500/20 text-primary" : "bg-gray-100 dark:bg-[#222] text-gray-500"}`}
                           >
                             {toBengaliNumber(count)}
                           </span>
@@ -1701,195 +1552,111 @@ const QuestionBank: React.FC = () => {
                 </div>
               )}
 
-              {/* LEVEL-SPECIFIC ACADEMIC CATEGORY FILTERS (BOARD VS COLLEGE TEST EXAMS) */}
+              {/* LEVEL-SPECIFIC ACADEMIC CATEGORY FILTERS */}
               {selectedLevel === "ACADEMIC" && (
-                <div className="bg-white dark:bg-gray-900 duration-300 p-4 border border-gray-150 dark:border-gray-800 rounded-3xl shadow-sm space-y-3.5 relative z-10">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg shrink-0">
-                        <Layers size={14} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-gray-850 dark:text-gray-250 uppercase tracking-wider">
-                          পরীক্ষার ধরণ ফিল্টার (Exam Category)
-                        </h4>
-                        <p className="text-[12px] text-gray-400 font-medium">ক্যাটাগরি ভিত্তিক প্রশ্নগুলো আলাদা করুন</p>
-                      </div>
-                    </div>
-                    <div className="flex bg-gray-50 dark:bg-gray-800 p-0.5.5 rounded-xl border border-gray-200/60 dark:border-gray-700/80 self-start sm:self-auto shrink-0">
-                      <button
-                        onClick={() => {
+                <div className="pt-2 border-t border-gray-100 dark:border-[#222]">
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <button
+                      onClick={() => {
+                        if (academicFilterType === "board") {
                           setAcademicFilterType("all");
-                          setSelectedBoardTag("");
-                          setSelectedCollegeTag("");
-                        }}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                          academicFilterType === "all"
-                            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-xs"
-                            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                        }`}
-                      >
-                        সকল প্রশ্ন
-                      </button>
-                      <button
-                        onClick={() => {
+                        } else {
                           setAcademicFilterType("board");
-                          setSelectedBoardTag("");
-                          setSelectedCollegeTag("");
-                        }}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                          academicFilterType === "board"
-                            ? "bg-purple-600 text-white shadow-sm shadow-purple-500/15"
-                            : "text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                        }`}
-                      >
-                        বোর্ড প্রশ্ন
-                      </button>
-                      <button
-                        onClick={() => {
+                        }
+                        setSelectedBoardTag("");
+                        setSelectedCollegeTag("");
+                      }}
+                      className={`px-4 py-2 rounded-2xl text-[13px] font-bold transition-all whitespace-nowrap border ${
+                        academicFilterType === "board"
+                          ? "bg-purple-600 border-purple-600 text-white shadow-sm"
+                          : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1A1A1A]"
+                      }`}
+                    >
+                      বোর্ড প্রশ্ন
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (academicFilterType === "college") {
+                          setAcademicFilterType("all");
+                        } else {
                           setAcademicFilterType("college");
-                          setSelectedBoardTag("");
-                          setSelectedCollegeTag("");
-                        }}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                          academicFilterType === "college"
-                            ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/15"
-                            : "text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                        }`}
-                      >
-                        কলেজ টেস্ট
-                      </button>
-                    </div>
+                        }
+                        setSelectedBoardTag("");
+                        setSelectedCollegeTag("");
+                      }}
+                      className={`px-4 py-2 rounded-2xl text-[13px] font-bold transition-all whitespace-nowrap border ${
+                        academicFilterType === "college"
+                          ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
+                          : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1A1A1A]"
+                      }`}
+                    >
+                      কলেজ টেস্ট
+                    </button>
                   </div>
 
                   {/* CONDITIONAL BOARDS SELECTION */}
                   {academicFilterType === "board" && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-1.5">
-                      <span className="text-[12px] font-black tracking-widest text-purple-600 dark:text-purple-400 uppercase block pl-0.5">
-                        নির্দিষ্ট শিক্ষা বোর্ড চয়ন করুন (Select Board)
-                      </span>
-                      <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2 pb-1">
+                      {BOARDS.map((b) => (
                         <button
-                          onClick={() => setSelectedBoardTag("")}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border shrink-0 ${
-                            !selectedBoardTag
-                              ? "bg-purple-500 text-white border-purple-500 shadow-sm"
-                              : "bg-white dark:bg-gray-900 border-gray-150 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-purple-300"
+                          key={b.id}
+                          onClick={() => {
+                            if (selectedBoardTag === b.id) {
+                              setSelectedBoardTag("");
+                            } else {
+                              setSelectedBoardTag(b.id);
+                            }
+                          }}
+                          className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold transition-all border shrink-0 ${
+                            selectedBoardTag === b.id
+                              ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                              : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400"
                           }`}
                         >
-                          সকল বোর্ড
+                          {b.name} ({b.id})
                         </button>
-                        {BOARDS.map((b) => (
-                          <button
-                            key={b.id}
-                            onClick={() => setSelectedBoardTag(b.id)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border shrink-0 ${
-                              selectedBoardTag === b.id
-                                ? "bg-purple-600 text-white border-purple-600 shadow-sm shadow-purple-500/20"
-                                : "bg-white dark:bg-gray-900 border-gray-150 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-purple-400/40"
-                            }`}
-                          >
-                            {b.name} ({b.id})
-                          </button>
-                        ))}
-                      </div>
+                      ))}
                     </div>
                   )}
 
-                  { academicFilterType === "college" && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-1.5">
-                      <span className="text-[12px] font-black tracking-widest text-emerald-600 dark:text-emerald-400 uppercase block pl-0.5">
-                        কলেজ নির্বাচন করুন (Select College Tag)
-                      </span>
-                      <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                  {/* CONDITIONAL COLLEGES SELECTION */}
+                  {academicFilterType === "college" && (
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2 pb-1">
+                      {COLLEGES.map((c) => (
                         <button
-                          onClick={() => setSelectedCollegeTag("")}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border shrink-0 ${
-                            !selectedCollegeTag
-                              ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-                              : "bg-white dark:bg-gray-900 border-gray-150 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-emerald-300"
+                          key={c}
+                          onClick={() => {
+                            if (selectedCollegeTag === c) {
+                              setSelectedCollegeTag("");
+                            } else {
+                              setSelectedCollegeTag(c);
+                            }
+                          }}
+                          className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold transition-all border shrink-0 ${
+                            selectedCollegeTag === c
+                              ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                              : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400"
                           }`}
                         >
-                          সকল কলেজ
+                          {c}
                         </button>
-                        {COLLEGES.map((c) => (
-                          <button
-                            key={c}
-                            onClick={() => setSelectedCollegeTag(c)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border shrink-0 ${
-                              selectedCollegeTag === c
-                                ? "bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-500/20"
-                                : "bg-white dark:bg-gray-900 border-gray-150 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-emerald-400/40"
-                            }`}
-                          >
-                            {c}
-                          </button>
-                        ))}
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* SMART SEARCH, VIEW MODE TOGGLES, AND COMPACT CHANGER PANEL */}
-              <div className="bg-white dark:bg-gray-900 p-3.5 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3 relative z-10">
-                {/* Search Field */}
-                <div className="relative w-full md:max-w-md">
-                  <Search
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={16}
-                  />
-                  <input
-                    type="text"
-                    placeholder="প্রশ্ন সার্চ করুন (যেমন: ভরবেগ, ডিএনএ)..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 text-sm rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 hover:text-gray-600 bg-gray-200/50 dark:bg-gray-700 px-1.5 py-0.5 rounded-md"
-                    >
-                      ক্লিয়ার
-                    </button>
-                  )}
-                </div>
 
-                {/* Compact vs Detailed Layout Mode Toggles */}
-                <div className="flex gap-2 self-stretch md:self-auto justify-end w-full md:w-auto">
-                  <div className="flex p-0.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shrink-0">
-                    <button
-                      onClick={() => setLayoutMode("detailed")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 ${layoutMode === "detailed" ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-                      id="btn-layout-detailed"
-                    >
-                      <SlidersHorizontal size={12} /> বিস্তারিত
-                    </button>
-                    <button
-                      onClick={() => setLayoutMode("compact")}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 ${layoutMode === "compact" ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-                      id="btn-layout-compact"
-                    >
-                      <Archive size={12} /> কম্প্যাক্ট
-                    </button>
-                  </div>
-                </div>
-              </div>
 
               {/* MAIN QUESTIONS CONTAINER */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-4 px-1">
-                  <h2 className="text-base md:text-lg font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 font-sans">
-                    <BookMarked size={16} className="text-primary" />
-                    {selectedChapter ? `${selectedChapter}` : "সব প্রশ্নাবলী"}
-                    <span className="text-xs bg-slate-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-gray-500 font-bold ml-1 font-sans">
-                      {filteredQuestions.length} loaded
-                    </span>
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-[15px] font-bold text-gray-900 dark:text-white flex items-center gap-1.5 flex-1 min-w-0">
+                    <span className="truncate">{selectedChapter ? `${selectedChapter}` : "সব প্রশ্নাবলী"}</span>
                   </h2>
                 </div>
 
-                {loading && questions.length === 0 ? (
+                {loading && questions.length === 0 || isFilterDirty ? (
                   <div className="space-y-4 animate-pulse">
                     {[1, 2, 3].map((i) => (
                       <div
@@ -1918,254 +1685,174 @@ const QuestionBank: React.FC = () => {
                   <AnimatePresence mode="popLayout">
                     <div className="space-y-4">
                       {filteredQuestions.map((q, idx) => {
-                        const isSaved = savedQuestionIds.has(
-                          q._id || q.id || "",
-                        );
-                        const isRevealed = userSelections[idx] !== undefined;
+                        const itemIndexInTotal = (page - 1) * 25 + idx + 1;
+                        const isSaved = savedQuestionIds.has(q._id || q.id || "");
+                        const isExpanded = expandedExplanations[q._id || q.id || `${idx}`] || false;
+                        const itemId = q._id || q.id || `${idx}`;
 
                         return (
-                          <motion.div
-                            layout
-                            key={q._id || q.id || idx}
-                            initial={{ opacity: 0, y: 12 }}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.28, ease: "easeOut" }}
-                            className="bg-white dark:bg-gray-950 p-5 md:p-6 rounded-3xl border border-gray-150 dark:border-gray-850 shadow-sm hover:shadow-md transition-all duration-300 relative group overflow-hidden"
+                            key={itemId}
+                            className="bg-white px-4 pt-5 pb-4 md:px-5 rounded-2xl border transition-all relative overflow-hidden dark:bg-zinc-950 dark:border-zinc-800/80 border-slate-200/60 dark:border-zinc-800 shadow-sm"
                           >
-                            {/* Glowing card graphic background */}
-                            <div className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 bg-orange-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                            {/* Top corner share & save tools */}
-                            <div className="absolute top-4 right-4 flex gap-1 z-10">
+                            <div className="absolute top-4 right-4 flex gap-1 z-10 bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-xl">
                               <button
-                                id={`btn-save-item-${idx}`}
                                 onClick={() => toggleSaveQuestion(q)}
                                 className={`p-2 rounded-xl transition-all ${
                                   isSaved
                                     ? "bg-orange-500/10 text-primary"
-                                    : "bg-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    : "bg-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 pointer-events-auto"
                                 }`}
                               >
-                                <Bookmark
-                                  size={15}
-                                  fill={isSaved ? "currentColor" : "none"}
-                                />
-                              </button>
-                              <button
-                                onClick={() => handleShare(q)}
-                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors"
-                              >
-                                <Share2 size={15} />
+                                <Bookmark size={15} fill={isSaved ? "currentColor" : "none"} />
                               </button>
                             </div>
-
-                            {/* Body Wrapper */}
-                            <div className="flex gap-3 md:gap-4 relative z-10">
-                              {/* Left serial line indicator */}
-                              <div className="flex flex-col items-center gap-1.5 shrink-0">
-                                <span className="text-lg font-black text-gray-200 dark:text-gray-800 font-mono leading-none pt-0.5">
-                                  {String(idx + 1).padStart(2, "0")}
+                            
+                            {(q.contextText || q.contextImage) && (
+                              <div className="mb-4 p-4 bg-sky-50/50 dark:bg-sky-900/10 rounded-2xl border border-sky-100/50 dark:border-sky-800/30 mr-12">
+                                <span className="text-[9px] font-black text-sky-600/50 dark:text-sky-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
+                                {q.contextText && <div className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                                {q.contextImage && (
+                                  <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
+                                )}
+                              </div>
+                            )}
+                            
+                            <div className="flex items-start gap-1.5 mb-3 pr-10">
+                                <span className="text-slate-950 dark:text-zinc-100 font-extrabold text-sm md:text-base shrink-0 select-none pt-0.5 min-w-[1.25rem]">
+                                    {toBengaliNumber(itemIndexInTotal)}.
                                 </span>
-                                <div className="w-0.5 h-full bg-slate-100 dark:bg-gray-850 min-h-[22px] rounded-full" />
-                              </div>
-
-                              <div className="flex-1 space-y-3 pr-10">
-                                {/* Stimulus Segment */}
-                                {(q.contextText || q.contextImage) && (
-                                  <div className="p-3.5 bg-sky-500/5 dark:bg-sky-500/5 rounded-2xl border border-sky-100/50 dark:border-sky-900/15 leading-relaxed relative overflow-hidden font-tiro text-sm">
-                                    <div className="text-[9px] font-black tracking-widest text-sky-500 uppercase mb-2 font-sans flex items-center gap-1.5">
-                                      <span className="w-1 h-1 rounded-full bg-sky-500" />{" "}
-                                      উদ্দীপক context
+                                <div className="flex-1">
+                                    <div className={`text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
+                                      <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                                      {q.questionImage && (
+                                        <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
+                                      )}
                                     </div>
-                                    {q.contextText && (
-                                      <div
-                                        className="text-gray-800 dark:text-gray-200 leading-relaxed max-w-full font-tiro whitespace-pre-wrap font-book"
-                                        dangerouslySetInnerHTML={{
-                                          __html: q.contextText,
-                                        }}
-                                      />
-                                    )}
-                                    {q.contextImage && (
-                                      <img
-                                        src={q.contextImage}
-                                        alt="Context"
-                                        className="mt-2 text-center max-h-36 mx-auto object-contain rounded border pr-1 bg-white"
-                                        referrerPolicy="no-referrer"
-                                      />
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Actual Question */}
-                                <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap">
-                                  {q.question}
-                                </h3>
-                                {q.questionImage && (
-                                  <div className="rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900/50 p-2 max-w-xs border border-gray-100 dark:border-gray-800">
-                                    <img
-                                      src={q.questionImage}
-                                      alt="Question"
-                                      className="max-h-48 object-contain"
-                                      referrerPolicy="no-referrer"
-                                    />
-                                  </div>
-                                )}
-
-                                {/* TAG FLAGS */}
-                                <div className="flex flex-wrap gap-1.5 pt-1">
-                                  {q.examRef && (
-                                    <span className="px-2 py-0.5 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
-                                      {q.examRef}
-                                    </span>
-                                  )}
-                                  {!selectedChapter && q.chapter && (
-                                    <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-[9px] font-semibold border border-blue-500/10 font-sans">
-                                      {q.chapter}
-                                    </span>
-                                  )}
                                 </div>
-                              </div>
                             </div>
 
-                            {/* OPTIONS BLOCK (REPRESENTATION CHANGES BY LAYOUT PRESTIGE) */}
-                            {layoutMode === "detailed" ? (
-                              /* DETAILED OPTION PREVIEW WITH FILLS */
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 pl-0 md:pl-8.5 relative z-10">
-                                {q.options.map((option, optIdx) => {
-                                  const isCorrect =
-                                    optIdx === q.correctAnswerIndex;
-                                  return (
-                                    <div
-                                      key={optIdx}
-                                      className={`p-3 rounded-2xl border text-xs md:text-sm transition-all flex items-center gap-2.5 font-tiro ${
-                                        isRevealed && isCorrect
-                                          ? "bg-emerald-500/5 border-emerald-400 text-emerald-800 dark:text-emerald-300 font-bold"
-                                          : "bg-slate-50/50 dark:bg-gray-900 border-gray-150 dark:border-gray-850 text-gray-700 dark:text-gray-300"
-                                      }`}
-                                    >
-                                      <span
-                                        className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center font-bold font-sans text-[12px] shrink-0 border ${
-                                          isRevealed && isCorrect
-                                            ? "bg-emerald-500 text-white border-transparent"
-                                            : "bg-white dark:bg-gray-800 text-gray-400 border-gray-200"
-                                        }`}
-                                      >
-                                        {String.fromCharCode(65 + optIdx)}
-                                      </span>
-                                      <span
-                                        className="flex-1 truncate"
-                                        dangerouslySetInnerHTML={{
-                                          __html: option,
-                                        }}
-                                      ></span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : null}
+                            <div className="flex flex-col gap-1.5 mb-2 pl-0 md:pl-6">
+                              {q.options.map((opt: string, i: number) => {
+                                const isCorrect = i === q.correctAnswerIndex;
+                                const clickedList = userAnswers[itemId] || [];
+                                const isClicked = clickedList.includes(i);
+                                const isQuestionResolved = clickedList.includes(q.correctAnswerIndex);
+                                
+                                let optionStyle = 'bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300';
+                                let iconStyle = 'bg-white border-slate-200 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500';
 
-                            {/* BOTTOM ACTION WRAPPER */}
-                            <div className="flex items-center justify-between mt-5 pt-3 border-t border-slate-50 dark:border-gray-900 relative z-10 pl-0 md:pl-8.5">
-                              <span className="text-[12px] uppercase font-bold text-gray-400 tracking-wider font-sans">
-                                {layoutMode === "compact"
-                                  ? "কম্প্যাক্ট মোড"
-                                  : "বিস্তারিত ভিউ"}
-                              </span>
-                              <button
-                                id={`btn-reveal-ans-${idx}`}
-                                onClick={() => {
-                                  if (isRevealed) {
-                                    // Toggle/hide
-                                    setUserSelections((prev) => {
-                                      const update = { ...prev };
-                                      delete update[idx];
-                                      return update;
-                                    });
-                                  } else {
-                                    setUserSelections((prev) => ({
-                                      ...prev,
-                                      [idx]: 99,
-                                    }));
+                                if (showAllAnswers) {
+                                  if (isCorrect) {
+                                    optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400';
+                                    iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
+                                  } else if (isClicked) {
+                                    optionStyle = 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400';
+                                    iconStyle = 'bg-red-500 border-red-400 text-white';
                                   }
-                                }}
-                                className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm flex items-center gap-1 hover:scale-[1.02] active:scale-[0.98] transition-all border ${
-                                  isRevealed
-                                    ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200"
-                                    : "bg-gray-900 text-white dark:bg-white dark:text-gray-950 border-transparent font-medium shadow-gray-900/10"
-                                }`}
-                              >
-                                {isRevealed ? (
-                                  <>উত্তর লুকান</>
-                                ) : (
-                                  <>উত্তর দেখুন</>
-                                )}
-                              </button>
+                                } else {
+                                  if (isClicked) {
+                                    if (isCorrect) {
+                                      optionStyle = 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400';
+                                      iconStyle = 'bg-emerald-500 border-emerald-400 text-white';
+                                    } else {
+                                      optionStyle = 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400';
+                                      iconStyle = 'bg-red-500 border-red-400 text-white';
+                                    }
+                                  }
+                                }
+
+                                return (
+                                  <div 
+                                    key={i}
+                                    onClick={(e) => {
+                                      if (!isQuestionResolved) {
+                                        if (isLiveQuizMode && clickedList.length > 0) return;
+
+                                        e.stopPropagation();
+                                        
+                                        if (isLiveQuizMode) {
+                                          setLiveQuizStats(prev => ({
+                                            correct: prev.correct + (isCorrect ? 1 : 0),
+                                            wrong: prev.wrong + (isCorrect ? 0 : 1),
+                                            totalAnswered: prev.totalAnswered + 1
+                                          }));
+                                          setUserAnswers(prev => ({
+                                            ...prev,
+                                            [itemId]: isCorrect ? [i] : [i, q.correctAnswerIndex]
+                                          }));
+                                        } else {
+                                          setUserAnswers(prev => {
+                                            const current = prev[itemId] || [];
+                                            if (current.includes(i)) return prev;
+                                            return { ...prev, [itemId]: [...current, i] };
+                                          });
+                                        }
+                                      }
+                                    }}
+                                    className={`p-2 rounded-xl border transition-all flex items-center gap-3 ${optionStyle} ${
+                                      !isQuestionResolved ? 'cursor-pointer hover:border-slate-350 dark:hover:border-zinc-700' : ''
+                                    }`}
+                                  >
+                                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0 transition-colors ${iconStyle}`}>
+                                      {['ক', 'খ', 'গ', 'ঘ'][i] || String.fromCharCode(65 + i)}
+                                    </span>
+                                    <div className="flex flex-col gap-1 flex-1">
+                                      <div className={`text-sm font-normal whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                                      {q.optionsImages?.[i] && (
+                                        <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded self-start bg-transparent mix-blend-multiply dark:mix-blend-normal" referrerPolicy="no-referrer" />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
 
-                            {/* COLLAPSED EXPANDABLE DETAILED DRAWER WRAPPER */}
-                            <AnimatePresence>
-                              {isRevealed && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: "auto" }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.28 }}
-                                  className="overflow-hidden"
+                            {q.explanation && (
+                              <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 mt-3 block">
+                                <button 
+                                  onClick={() => toggleExplanation(itemId)}
+                                  className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all ml-0 md:ml-10"
                                 >
-                                  <div className="mt-4 p-5 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/5 dark:to-gray-900 border border-emerald-500/10 dark:border-emerald-500/5 rounded-2xl">
-                                    {/* correct ans line */}
-                                    <div className="flex items-center gap-2 mb-3.5">
-                                      <CheckCircle
-                                        className="text-emerald-500 shrink-0"
-                                        size={16}
-                                      />
-                                      <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest font-sans">
-                                        সঠিক উত্তর মডিউল
-                                      </span>
-                                    </div>
-
-                                    <div className="flex gap-3 pl-1 mb-4">
-                                      <div className="w-6.5 h-6.5 bg-emerald-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 rounded-lg shadow-sm">
-                                        {String.fromCharCode(
-                                          65 + q.correctAnswerIndex,
-                                        )}
-                                      </div>
-                                      <p
-                                        className="text-sm md:text-base font-extrabold text-gray-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap pt-0.5"
-                                        dangerouslySetInnerHTML={{
-                                          __html:
-                                            q.options[q.correctAnswerIndex],
-                                        }}
-                                      />
-                                    </div>
-
-                                    {/* Explanations block */}
-                                    {q.explanation && (
-                                      <div className="pl-4 border-l-2 border-dashed border-gray-200 dark:border-gray-800 mt-2">
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1.5 font-sans">
-                                          ব্যখ্যা (Explanation)
-                                        </p>
-                                        <p
-                                          className="text-xs md:text-sm text-gray-600 dark:text-gray-400 italic font-tiro leading-loose whitespace-pre-wrap select-text"
-                                          dangerouslySetInnerHTML={{
-                                            __html: q.explanation,
-                                          }}
-                                        />
+                                  <span>ব্যাখ্যা</span>
+                                  {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                </button>
+                                <AnimatePresence>
+                                  {isExpanded && (
+                                    <motion.div 
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: 'auto', opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      className="overflow-hidden"
+                                    >
+                                      <div id={`explanation-${itemId}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
+                                        <div className="text-sm text-slate-800 dark:text-gray-200 leading-relaxed font-tiro whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                                         {q.explanationImage && (
-                                          <img
-                                            src={q.explanationImage}
-                                            alt="Explanation"
-                                            className="mt-3 select-none text-center max-h-36 object-contain rounded border p-1"
-                                            referrerPolicy="no-referrer"
-                                          />
+                                          <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
                                         )}
                                       </div>
-                                    )}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            )}
+
+                            <div className="mt-3 pt-3 border-t border-slate-55 dark:border-zinc-800 flex items-center justify-between">
+                              <div className="flex flex-wrap gap-2">
+                                {q.examRef && (
+                                  <span className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
+                                    {q.examRef}
+                                  </span>
+                                )}
+                                {!selectedChapter && q.chapter && (
+                                  <span className="text-[9px] font-black px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 rounded-lg">
+                                    {q.chapter}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </motion.div>
                         );
                       })}
@@ -2181,22 +1868,286 @@ const QuestionBank: React.FC = () => {
                 )}
               </div>
 
-              {/* BOTTOM HASMORE CONTAINER */}
-              {hasMore && questions.length > 0 && (
-                <div className="pt-2 text-center">
+              {/* PAGINATION CONTROLS */}
+              {questions.length > 0 && (page > 1 || hasMore) && (
+                <div className="pt-8 pb-24 flex items-center justify-center gap-3">
                   <button
-                    onClick={() => setPage(page + 1)}
-                    className="px-6 py-3 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-primary text-xs font-black text-gray-500 dark:text-gray-400 hover:text-primary rounded-xl transition-all duration-300 uppercase tracking-widest active:scale-98 shadow-sm"
-                    id="btn-load-more"
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                      document.getElementById("qbank-scroll-container")?.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    disabled={page === 1}
+                    className="p-3 border border-gray-200 dark:border-zinc-800 bg-white dark:bg-[#121212] disabled:opacity-30 disabled:pointer-events-none text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-900 transition-all shadow-sm active:scale-95"
                   >
-                    আরো প্রশ্ন লোড করুন
+                    <ChevronLeft size={20} />
+                  </button>
+                  <div className="px-5 py-2.5 bg-white dark:bg-[#121212] border border-gray-200 dark:border-zinc-800 rounded-xl font-black text-gray-800 dark:text-gray-200 text-sm shadow-sm min-w-[3rem] text-center">
+                    {page}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPage((p) => p + 1);
+                      document.getElementById("qbank-scroll-container")?.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    disabled={!hasMore}
+                    className="p-3 border border-gray-200 dark:border-zinc-800 bg-white dark:bg-[#121212] disabled:opacity-30 disabled:pointer-events-none text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-900 transition-all shadow-sm active:scale-95"
+                  >
+                    <ChevronRight size={20} />
                   </button>
                 </div>
               )}
+
+              {/* FLOATING ACTION EXAM BUTTON */}
+              {!isLiveQuizMode && !isRevisionMode && (
+                <>
+                  <AnimatePresence>
+                    {showExamTypeSelect && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowExamTypeSelect(false)}
+                        className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-sm z-[55] block"
+                      />
+                    )}
+                  </AnimatePresence>
+                  
+                  <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3 pointer-events-none">
+                    <AnimatePresence>
+                      {showExamTypeSelect && (
+                        <>
+                          <motion.button
+                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => {
+                              setShowExamTypeSelect(false);
+                              setShowExamConfig(true);
+                            }}
+                            className="flex items-center gap-3 active:scale-95 transition-transform pointer-events-auto group"
+                          >
+                            <span className="bg-white dark:bg-zinc-800 px-4 py-2 rounded-2xl text-[14px] font-bold text-gray-700 dark:text-gray-200 shadow-md border border-gray-100 dark:border-zinc-700">মডেল টেস্ট</span>
+                            <div className="w-14 h-14 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center shadow-lg border border-gray-100 dark:border-zinc-700 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                              <Play size={20} fill="currentColor" />
+                            </div>
+                          </motion.button>
+
+                          <motion.button
+                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                            transition={{ duration: 0.2, delay: 0.05 }}
+                            onClick={handleStartLiveQuiz}
+                            className="flex items-center gap-3 active:scale-95 transition-transform pointer-events-auto group"
+                          >
+                            <span className="bg-white dark:bg-zinc-800 px-4 py-2 rounded-2xl text-[14px] font-bold text-gray-700 dark:text-gray-200 shadow-md border border-gray-100 dark:border-zinc-700">লাইভ কুইজ</span>
+                            <div className="w-14 h-14 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center shadow-lg border border-gray-100 dark:border-zinc-700 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                              <CheckCircle size={24} className="group-hover:fill-current" />
+                            </div>
+                          </motion.button>
+                        </>
+                      )}
+                    </AnimatePresence>
+
+                    <button
+                      onClick={handleStartExam}
+                      className="bg-primary text-white font-bold rounded-full flex items-center justify-center shadow-xl hover:bg-orange-600 hover:shadow-orange-500/20 active:scale-95 transition-all w-16 h-16 relative pointer-events-auto"
+                    >
+                      <motion.div animate={{ rotate: showExamTypeSelect ? 45 : 0 }} className="flex items-center justify-center absolute inset-0">
+                        {showExamTypeSelect ? <Plus size={32} /> : (
+                            <div
+                              className="w-7 h-7 bg-white"
+                              style={{
+                                maskImage: "url(/icons/exam.svg)",
+                                WebkitMaskImage: "url(/icons/exam.svg)",
+                                maskSize: "contain",
+                                WebkitMaskSize: "contain",
+                                maskRepeat: "no-repeat",
+                                WebkitMaskRepeat: "no-repeat",
+                                maskPosition: "center",
+                                WebkitMaskPosition: "center",
+                              }}
+                            />
+                        )}
+                      </motion.div>
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* LIVE QUIZ BOTTOM BAR */}
+              <AnimatePresence>
+                {isLiveQuizMode && (
+                  <motion.div
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#121212] border-t border-gray-100 dark:border-zinc-800 p-4 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-none"
+                  >
+                    <div className="max-w-4xl mx-auto flex items-center justify-between">
+                      <div className="flex gap-6 items-center">
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] md:text-[11px] font-black text-gray-400 mt-0.5">সঠিক</span>
+                          <span className="text-emerald-500 font-black text-lg md:text-xl leading-none">{toBengaliNumber(liveQuizStats.correct)}</span>
+                        </div>
+                        <div className="w-px h-8 bg-gray-200 dark:bg-zinc-800" />
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] md:text-[11px] font-black text-gray-400 mt-0.5">ভুল</span>
+                          <span className="text-rose-500 font-black text-lg md:text-xl leading-none">{toBengaliNumber(liveQuizStats.wrong)}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setIsLiveQuizMode(false);
+                          setUserAnswers({});
+                          setLiveQuizStats({ correct: 0, wrong: 0, totalAnswered: 0 });
+                        }}
+                        className="px-5 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 font-bold rounded-xl active:scale-95 transition-all text-sm flex items-center gap-2"
+                      >
+                        <X size={16} strokeWidth={3} /> কুইজ শেষ করুন
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
       </div>
+
+      {/* EXAM CONFIG SHEET CONTENT */}
+      <AnimatePresence>
+        {showExamConfig && (
+          <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center pointer-events-none md:p-6">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowExamConfig(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
+            />
+            
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="w-full md:max-w-xl bg-white dark:bg-[#121212] rounded-t-[32px] md:rounded-3xl p-6 md:p-8 relative pointer-events-auto border-t md:border border-gray-100 dark:border-zinc-800 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-none"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl md:text-2xl font-bold dark:text-white">মডেল টেস্ট কনফিগারেশন</h3>
+                  <p className="text-[13px] md:text-[14px] text-gray-500 mt-1">আপনার পছন্দমতো সেটিং বেছে নিন</p>
+                </div>
+                <button
+                  onClick={() => setShowExamConfig(false)}
+                  className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-full text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Number of Questions */}
+                <div>
+                  <label className="text-[13px] md:text-[14px] font-bold text-gray-600 dark:text-gray-400 mb-3 block">
+                    প্রশ্ন সংখ্যা
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="flex bg-gray-100 dark:bg-zinc-900/80 p-1 rounded-xl flex-1">
+                      {[10, 15, 25, 50].map(n => (
+                        <button
+                          key={n}
+                          onClick={() => setExamConfigState(s => ({ ...s, numQuestions: n }))}
+                          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${examConfigState.numQuestions === n ? 'bg-white dark:bg-black text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                    <input 
+                      type="number"
+                      max={100}
+                      min={1}
+                      value={examConfigState.numQuestions}
+                      onChange={(e) => {
+                         let val = parseInt(e.target.value) || 0;
+                         if(val > 100) val = 100;
+                         setExamConfigState(s => ({...s, numQuestions: val}))
+                      }}
+                      className="w-16 md:w-24 bg-gray-100 dark:bg-zinc-900/80 border-none rounded-xl text-center text-[15px] font-bold text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-primary/50 outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Time Limit */}
+                <div>
+                  <label className="text-[13px] md:text-[14px] font-bold text-gray-600 dark:text-gray-400 mb-3 block">
+                    সময় (মিনিট)
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="flex bg-gray-100 dark:bg-zinc-900/80 p-1 rounded-xl flex-1">
+                      {[10, 15, 20, 30].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => setExamConfigState(s => ({ ...s, timeLimit: t }))}
+                          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${examConfigState.timeLimit === t ? 'bg-white dark:bg-black text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                    <input 
+                      type="number"
+                      min={1}
+                      value={examConfigState.timeLimit}
+                      onChange={(e) => {
+                         let val = parseInt(e.target.value) || 0;
+                         setExamConfigState(s => ({...s, timeLimit: val}))
+                      }}
+                      className="w-16 md:w-24 bg-gray-100 dark:bg-zinc-900/80 border-none rounded-xl text-center text-[15px] font-bold text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-primary/50 outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Negative Marking Toggle */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-900/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                  <div>
+                    <label className="text-[14px] font-bold text-gray-800 dark:text-gray-200 block">
+                      নেগেটিভ মার্কিং
+                    </label>
+                    <p className="text-[11px] text-gray-500 mt-0.5">ভুল উত্তরের জন্য -০.২৫ নম্বর কাটা যাবে</p>
+                  </div>
+                  <button
+                    onClick={() => setExamConfigState(s => ({ ...s, negativeMark: s.negativeMark > 0 ? 0 : 0.25 }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      examConfigState.negativeMark > 0 ? 'bg-primary' : 'bg-gray-300 dark:bg-zinc-700'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        examConfigState.negativeMark > 0 ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3">
+                <button
+                  onClick={handleConfirmExamStart}
+                  className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/25 active:scale-95"
+                >
+                  <Play size={18} fill="currentColor" /> পরীক্ষা শুরু করুন
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

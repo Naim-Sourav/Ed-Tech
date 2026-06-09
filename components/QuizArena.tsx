@@ -415,7 +415,7 @@ const QuizArena: React.FC = () => {
         const newP = new URLSearchParams(prev);
         newP.set('step', 'LOADING');
         return newP;
-    });
+    }, { replace: true });
 
     try {
         const { fetchUserMistakesAPI } = await import('../services/api');
@@ -423,7 +423,7 @@ const QuizArena: React.FC = () => {
         
         if (!mistakes || mistakes.length === 0) {
             showToast("আপনার কোনো ভুল প্রশ্নের রেকর্ড নেই", 'info');
-            setSearchParams({ step: 'SELECTION' });
+            setSearchParams({ step: 'SELECTION' }, { replace: true });
             return;
         }
 
@@ -442,7 +442,7 @@ const QuizArena: React.FC = () => {
     } catch (err) {
         console.error("Failed to load mistakes", err);
         showToast("ভুল প্রশ্ন লোড করা যায়নি", 'error');
-        setSearchParams({ step: 'SELECTION' });
+        setSearchParams({ step: 'SELECTION' }, { replace: true });
     }
   };
 
@@ -480,7 +480,7 @@ const QuizArena: React.FC = () => {
         const newP = new URLSearchParams(prev);
         newP.set('step', 'LOADING');
         return newP;
-    });
+    }, { replace: true });
 
     try {
       let qs: QuizQuestion[] = [];
@@ -510,7 +510,7 @@ const QuizArena: React.FC = () => {
                 const newP = new URLSearchParams(prev);
                 newP.set('step', 'TOPIC_CONFIG');
                 return newP;
-             });
+             }, { replace: true });
              return;
          }
       } else {
@@ -611,7 +611,7 @@ const QuizArena: React.FC = () => {
         const newP = new URLSearchParams(prev);
         newP.set('step', 'TOPIC_CONFIG');
         return newP;
-      });
+      }, { replace: true });
     }
   };
 
@@ -644,7 +644,7 @@ const QuizArena: React.FC = () => {
           view: 'CHAPTER_DRILLDOWN',
           subject: subjectName,
           paper: paperName
-      });
+      }, { replace: true });
   };
 
   const handleNextStep = () => {
@@ -652,7 +652,7 @@ const QuizArena: React.FC = () => {
           const newP = new URLSearchParams(prev);
           newP.set('step', 'TOPIC_CONFIG');
           return newP;
-      });
+      }, { replace: true });
   };
 
   const handlePrevStep = () => {
@@ -660,7 +660,7 @@ const QuizArena: React.FC = () => {
           const newP = new URLSearchParams(prev);
           newP.set('step', 'SELECTION');
           return newP;
-      });
+      }, { replace: true });
   };
 
   const handlePaperTabChange = (paper: string) => {
@@ -668,18 +668,33 @@ const QuizArena: React.FC = () => {
           const newP = new URLSearchParams(prev);
           newP.set('paper', paper);
           return newP;
-      });
+      }, { replace: true });
   };
 
   // --- VIEWS ---
 
   if (currentStep === 'SELECTION') {
     return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden transition-colors relative">
+      <div className="h-full flex flex-col bg-gray-50 dark:bg-black overflow-hidden transition-colors relative">
         {/* Custom Header (Since global one is hidden) */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 px-4 py-3 flex justify-between items-center sticky top-0 z-30 shrink-0">
+        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 px-4 py-3 flex justify-between items-center sticky top-0 z-30 shrink-0">
             <div className="flex items-center gap-3">
-                <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-colors">
+                <button 
+                    onClick={() => {
+                        if (selectionView === 'CHAPTER_DRILLDOWN') {
+                            setSearchParams(prev => {
+                                const newP = new URLSearchParams(prev);
+                                newP.delete('view');
+                                newP.delete('subject');
+                                newP.delete('paper');
+                                return newP;
+                            }, { replace: true });
+                        } else {
+                            navigate('/dashboard', { replace: true });
+                        }
+                    }} 
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-colors"
+                >
                     <ChevronLeft size={20} strokeWidth={3}/>
                 </button>
                 <h1 className="text-base font-black text-gray-800 dark:text-white uppercase tracking-tight">
@@ -712,7 +727,7 @@ const QuizArena: React.FC = () => {
                 
                     <div className="h-full flex flex-col">
                         {selectionView === 'SUBJECT_GRID' ? (
-                            <div className="overflow-y-auto p-4 md:p-8 pb-32 md:pb-32 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
+                            <div className="overflow-y-auto p-4 md:p-8 pb-48 md:pb-48 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
                                 {SUBJECT_GROUPS.map((subject, idx) => {
                                     const selectedCount = getSelectedTopicCountForGroup(subject.papers);
                                     const availableCount = getStatsFor(subject.name);
@@ -721,10 +736,10 @@ const QuizArena: React.FC = () => {
                                         <button
                                             key={idx}
                                             onClick={() => handleSubjectClick(subject.name, subject.papers[0])}
-                                            className={`relative bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 flex flex-col items-center justify-center gap-4 transition-all duration-500 group active:scale-[0.98] border-2 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.08)] ${selectedCount > 0 ? 'border-primary ring-4 ring-primary/5 shadow-primary/10 scale-[1.02]' : 'border-gray-50 dark:border-gray-700/50 hover:border-orange-100 dark:hover:border-orange-900/30'}`}
+                                            className={`relative bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 flex flex-col items-center justify-center gap-4 transition-all duration-500 group active:scale-[0.98] border-2 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.08)] ${selectedCount > 0 ? 'border-primary ring-4 ring-primary/5 shadow-primary/10 scale-[1.02]' : 'border-gray-50 dark:border-zinc-800/50 hover:border-orange-100 dark:hover:border-orange-900/30'}`}
                                         >
                                             {!isRapidFire && selectedCount > 0 && (
-                                                <div className="absolute -top-1 -right-1 bg-white dark:bg-gray-800 p-1 rounded-full shadow-lg z-20">
+                                                <div className="absolute -top-1 -right-1 bg-white dark:bg-zinc-900 p-1 rounded-full shadow-lg z-20">
                                                     <div className="bg-primary text-white text-[12px] font-black w-8 h-8 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 animate-in zoom-in duration-500">
                                                         {selectedCount}
                                                     </div>
@@ -743,7 +758,7 @@ const QuizArena: React.FC = () => {
                                                     {subject.subDisplay}
                                                 </p>
                                                 
-                                                <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-700/50 w-full flex items-center justify-center">
+                                                <div className="mt-4 pt-4 border-t border-gray-50 dark:border-zinc-800/50 w-full flex items-center justify-center">
                                                     <span className={`text-[12px] md:text-xs font-black px-3 py-1 rounded-full bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-all`}>
                                                         {availableCount.toLocaleString()} Questions
                                                     </span>
@@ -754,12 +769,12 @@ const QuizArena: React.FC = () => {
                                 })}
                             </div>
                         ) : (
-                            <div className="flex-1 flex flex-col h-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm shadow-inner rounded-t-[2.5rem] overflow-hidden">
+                            <div className="flex-1 flex flex-col h-full bg-white/50 dark:bg-black/50 backdrop-blur-sm shadow-inner rounded-t-[2.5rem] overflow-hidden">
                                 
                                 {/* Paper Selection Segmented Control */}
                                 {(SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers.length || 0) > 1 && (
-                                    <div className="px-4 py-3 bg-white/80 dark:bg-gray-900/80 border-b border-gray-100 dark:border-gray-800 backdrop-blur-md sticky top-0 z-20">
-                                        <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                                    <div className="px-4 py-3 bg-white/80 dark:bg-black/80 border-b border-gray-100 dark:border-zinc-800 backdrop-blur-md sticky top-0 z-20">
+                                        <div className="flex p-1 bg-gray-100 dark:bg-zinc-900 rounded-xl">
                                             {SUBJECT_GROUPS.find(g => g.name === activeSubjectGroup)?.papers.map(paper => (
                                                 <button
                                                     key={paper}
@@ -808,7 +823,7 @@ const QuizArena: React.FC = () => {
                                                                 key={cIdx}
                                                                 whileTap={{ scale: 0.98 }}
                                                                 onClick={() => handleStartRapidFire(paperName, chapter)}
-                                                                className="w-full flex items-center justify-between p-4 rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all group text-left"
+                                                                className="w-full flex items-center justify-between p-4 rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all group text-left"
                                                             >
                                                                 <div className="flex items-center gap-4">
                                                                     <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500 group-hover:rotate-6 transition-all">
@@ -828,13 +843,13 @@ const QuizArena: React.FC = () => {
 
                                                     // Standard Selection Mode Card (Compact Style)
                                                     return (
-                                                        <div key={cIdx} className={`rounded-3xl border transition-all duration-300 overflow-hidden ${isFullySelected || isPartiallySelected ? 'bg-orange-50/20 dark:bg-orange-950/20 border-primary/30 ring-2 ring-primary/5' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-800 shadow-sm'}`}>
+                                                        <div key={cIdx} className={`rounded-3xl border transition-all duration-300 overflow-hidden ${isFullySelected || isPartiallySelected ? 'bg-orange-50/20 dark:bg-orange-950/20 border-primary/30 ring-2 ring-primary/5' : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 shadow-sm'}`}>
                                                             <div className="flex items-center p-1.5">
                                                                 <button
                                                                     onClick={() => toggleAllTopicsInChapter(paperName, chapter)}
                                                                     className="flex-1 flex items-center gap-4 p-3 text-left rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
                                                                 >
-                                                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center border-2 transition-all duration-300 shrink-0 ${isFullySelected ? 'bg-primary border-primary shadow-sm' : isPartiallySelected ? 'bg-white dark:bg-gray-800 border-primary' : 'border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'}`}>
+                                                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center border-2 transition-all duration-300 shrink-0 ${isFullySelected ? 'bg-primary border-primary shadow-sm' : isPartiallySelected ? 'bg-white dark:bg-zinc-900 border-primary' : 'border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-zinc-900'}`}>
                                                                         {isFullySelected && <Check size={16} className="text-white" strokeWidth={4} />}
                                                                         {isPartiallySelected && <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />}
                                                                     </div>
@@ -845,7 +860,7 @@ const QuizArena: React.FC = () => {
                                                                         <div className="flex items-center gap-2 mt-1">
                                                                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{chapQ} Q</span>
                                                                             {selectedTopics.length > 0 && (
-                                                                                <span className="text-[9px] text-primary dark:text-orange-400 font-black bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full border border-orange-100 dark:border-orange-900/30">
+                                                                                <span className="text-[9px] text-primary dark:text-orange-400 font-black bg-white dark:bg-zinc-900 px-2 py-0.5 rounded-full border border-orange-100 dark:border-orange-900/30">
                                                                                     {selectedTopics.length}/{totalItemsCount} SELECTED
                                                                                 </span>
                                                                             )}
@@ -859,15 +874,15 @@ const QuizArena: React.FC = () => {
                                                             
                                                             {isExpanded && (
                                                                 <div className="px-4 pb-4 pt-1 animate-in slide-in-from-top-2 duration-300">
-                                                                    <div className="grid grid-cols-1 gap-2 pl-4 border-l-2 border-gray-100 dark:border-gray-700">
+                                                                    <div className="grid grid-cols-1 gap-2 pl-4 border-l-2 border-gray-100 dark:border-zinc-800">
                                                                         {availableTopics.map((item, idx) => {
                                                                             if (typeof item === 'string') {
                                                                                 const topic = item;
                                                                                 const isTopicSelected = selectedTopics.includes(topic);
                                                                                 const topicCount = getStatsFor(paperName, chapter, topic);
                                                                                 return (
-                                                                                    <label key={idx} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${isTopicSelected ? 'bg-orange-50/50 dark:bg-orange-950/20 border-primary/10' : 'bg-white dark:bg-gray-800 border-transparent hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
-                                                                                        <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${isTopicSelected ? 'bg-primary border-primary' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'}`}>
+                                                                                    <label key={idx} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${isTopicSelected ? 'bg-orange-50/50 dark:bg-orange-950/20 border-primary/10' : 'bg-white dark:bg-zinc-900 border-transparent hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+                                                                                        <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${isTopicSelected ? 'bg-primary border-primary' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-zinc-900'}`}>
                                                                                             {isTopicSelected && <Check size={12} className="text-white" strokeWidth={4} />}
                                                                                         </div>
                                                                                         <input type="checkbox" className="hidden" checked={isTopicSelected} onChange={() => toggleTopic(paperName, chapter, topic)} />
@@ -886,7 +901,7 @@ const QuizArena: React.FC = () => {
                                                                                 const isGroupFullySelected = groupItems.every(t => selectedTopics.includes(t));
                                                                                 const isGroupPartiallySelected = groupItems.some(t => selectedTopics.includes(t)) && !isGroupFullySelected;
                                                                                 return (
-                                                                                    <div key={idx} className={`rounded-2xl border transition-all ${isGroupFullySelected || isGroupPartiallySelected ? 'bg-white dark:bg-gray-800 border-primary/20' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-800'}`}>
+                                                                                    <div key={idx} className={`rounded-2xl border transition-all ${isGroupFullySelected || isGroupPartiallySelected ? 'bg-white dark:bg-zinc-900 border-primary/20' : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800'}`}>
                                                                                         <div className="flex items-center p-1.5">
                                                                                             <button onClick={() => toggleTopicGroup(paperName, chapter, item)} className="p-2 mr-1 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-xl transition-all">
                                                                                                 <div className={`w-4 h-4 rounded-md border-2 flex items-center justify-center transition-all ${isGroupFullySelected ? 'bg-primary border-primary' : isGroupPartiallySelected ? 'border-primary' : 'border-gray-200 dark:border-gray-600'}`}>
@@ -937,16 +952,16 @@ const QuizArena: React.FC = () => {
             </div>
         </div>
         {(!isRapidFire) && (
-            <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-[360px] z-50 animate-in slide-in-from-bottom-10 duration-500">
-                <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border border-gray-100 dark:border-gray-800 shadow-2xl rounded-3xl p-3 flex items-center justify-between gap-4 overflow-hidden relative">
-                    <div className="absolute inset-y-0 left-0 bg-primary/5 transition-all duration-700" style={{ width: `${Math.min(100, (Object.values(topicSelection).flat().length / 50) * 100)}%` }}></div>
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border-t border-gray-100 dark:border-zinc-800 z-50">
+                <div className="max-w-4xl mx-auto flex items-center justify-between gap-4 relative">
+                    <div className="absolute inset-y-0 left-0 bg-primary/5 transition-all duration-700 pointer-events-none rounded-xl" style={{ width: `${Math.min(100, (Object.values(topicSelection).flat().length / 50) * 100)}%` }}></div>
                     
-                    <div className="relative pl-3">
-                        <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none">Selected</p>
-                        <p className="text-2xl font-black text-gray-800 dark:text-white leading-tight mt-1">{Object.values(topicSelection).flat().length}</p>
+                    <div className="flex flex-col justify-center shrink-0 w-24">
+                        <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none mb-1">নির্বাচিত টপিক</p>
+                        <p className="text-2xl font-black text-gray-800 dark:text-white leading-none">{Object.values(topicSelection).flat().length}</p>
                     </div>
                     
-                    <div className="relative flex-1">
+                    <div className="flex-1 max-w-sm">
                         <motion.button 
                             whileTap={{ scale: 0.95 }}
                             onClick={() => {
@@ -957,7 +972,7 @@ const QuizArena: React.FC = () => {
                                 handleNextStep(); 
                             }} 
                             disabled={Object.values(topicSelection).flat().length === 0} 
-                            className="w-full bg-primary hover:bg-orange-700 text-white p-3.5 rounded-2xl font-black flex items-center justify-center gap-2 disabled:opacity-30 disabled:grayscale transition-all shadow-lg shadow-primary/20 text-sm group"
+                            className="w-full bg-primary hover:bg-orange-700 text-white py-3.5 px-6 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-30 disabled:grayscale transition-all shadow-md group"
                         >
                             <span>পরবর্তী ধাপ</span>
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" strokeWidth={3} />
@@ -997,7 +1012,7 @@ const QuizArena: React.FC = () => {
 
     // Settings Step UI Redesign
     return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors relative overflow-hidden">
+      <div className="h-full flex flex-col bg-gray-50 dark:bg-black transition-colors relative overflow-hidden">
         {/* Background Ambient Glow */}
         <div className="fixed inset-0 pointer-events-none">
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/5 rounded-full blur-[100px]"></div>
@@ -1005,7 +1020,7 @@ const QuizArena: React.FC = () => {
         </div>
 
         {/* Header */}
-        <div className="px-4 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 relative z-30 flex items-center justify-between shrink-0">
+        <div className="px-4 py-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 relative z-30 flex items-center justify-between shrink-0">
             <button onClick={handlePrevStep} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-all">
                 <ChevronLeft size={20} strokeWidth={3}/>
             </button>
@@ -1018,31 +1033,8 @@ const QuizArena: React.FC = () => {
         <div className="flex-1 overflow-y-auto px-4 pt-4 pb-48 relative z-10 custom-scrollbar">
             <div className="max-w-2xl mx-auto space-y-4">
                 
-                {/* Practice Mode */}
-                <button 
-                    onClick={() => setIsPracticeMode(!isPracticeMode)} 
-                    className={`w-full flex items-center justify-between p-4 rounded-3xl border transition-all duration-300 ${isPracticeMode ? 'bg-orange-50/50 dark:bg-orange-950/20 border-primary ring-4 ring-primary/5' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-800'}`}
-                >
-                    <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${isPracticeMode ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}>
-                            <Zap size={20} fill={isPracticeMode ? "currentColor" : "none"} strokeWidth={2.5}/>
-                        </div>
-                        <div className="text-left">
-                            <p className={`font-black text-sm uppercase tracking-tight ${isPracticeMode ? 'text-primary dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                                {t('quiz_practice_mode')}
-                            </p>
-                            <p className="text-[12px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none mt-0.5">
-                                তাৎক্ষণিক ব্যাখ্যা মোড
-                            </p>
-                        </div>
-                    </div>
-                    <div className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${isPracticeMode ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-sm ${isPracticeMode ? 'left-7' : 'left-1'}`}></div>
-                    </div>
-                </button>
-
                 {/* Settings Grid */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-800 p-5 space-y-6 shadow-sm">
+                <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800 p-5 space-y-6 shadow-sm">
                     
                     {/* Question Count Slider */}
                     <div className="space-y-4">
@@ -1053,7 +1045,7 @@ const QuizArena: React.FC = () => {
                                     {t('quiz_question_count')}
                                 </label>
                             </div>
-                            <span className="text-sm font-black text-primary dark:text-orange-400 bg-orange-50 dark:bg-gray-900 px-3 py-1 rounded-full border border-orange-100 dark:border-orange-900/30">
+                            <span className="text-sm font-black text-primary dark:text-orange-400 bg-orange-50 dark:bg-black px-3 py-1 rounded-full border border-orange-100 dark:border-orange-900/30">
                                 {questionCount} Quality Questions
                             </span>
                         </div>
@@ -1144,7 +1136,7 @@ const QuizArena: React.FC = () => {
                 </div>
 
                 {/* Selection Summary */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-800 p-5 space-y-4 shadow-sm">
+                <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800 p-5 space-y-4 shadow-sm">
                     <div className="flex items-center justify-between">
                          <div className="flex items-center gap-2">
                             <CheckCircle2 size={16} className="text-green-500" />
@@ -1175,11 +1167,11 @@ const QuizArena: React.FC = () => {
                                     </div>
                                     <div className="grid grid-cols-1 gap-1.5">
                                         {Object.entries(chapters).map(([chapter, topics]) => (
-                                            <div key={chapter} className="bg-gray-50/50 dark:bg-gray-700/30 p-2.5 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                            <div key={chapter} className="bg-gray-50/50 dark:bg-gray-700/30 p-2.5 rounded-2xl border border-gray-100 dark:border-zinc-800">
                                                 <p className="text-[11px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tighter leading-tight mb-1">{chapter}</p>
                                                 <div className="flex flex-wrap gap-1">
                                                     {topics.map(t => (
-                                                        <span key={t} className="text-[9px] text-gray-500 font-bold bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded-md border border-gray-100 dark:border-gray-700">{t}</span>
+                                                        <span key={t} className="text-[9px] text-gray-500 font-bold bg-white dark:bg-zinc-900 px-1.5 py-0.5 rounded-md border border-gray-100 dark:border-zinc-800">{t}</span>
                                                     ))}
                                                 </div>
                                             </div>
@@ -1195,7 +1187,7 @@ const QuizArena: React.FC = () => {
         </div>
 
         {/* Start Button - Sticky Bottom */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800 z-40">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-gray-100 dark:border-zinc-800 z-40">
              <div className="max-w-2xl mx-auto flex items-center gap-4">
                 <div className="shrink-0 flex flex-col justify-center">
                     <p className="text-[8px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-none">TOTAL QUESTIONS</p>
@@ -1217,7 +1209,7 @@ const QuizArena: React.FC = () => {
   // LOADING STEP
   if (currentStep === 'LOADING') {
     return (
-        <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 text-center p-6 transition-colors relative overflow-hidden">
+        <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-black text-center p-6 transition-colors relative overflow-hidden">
             {/* Background Ambient Glow */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] animate-pulse"></div>
@@ -1226,7 +1218,7 @@ const QuizArena: React.FC = () => {
             <div className="relative z-10 flex flex-col items-center">
                 <div className="relative mb-8">
                     <div className="absolute inset-0 bg-primary/30 dark:bg-orange-500/30 rounded-full blur-2xl animate-pulse"></div>
-                    <div className="relative bg-white dark:bg-gray-800 p-6 rounded-full shadow-xl border border-gray-100 dark:border-white/10">
+                    <div className="relative bg-white dark:bg-zinc-900 p-6 rounded-full shadow-xl border border-gray-100 dark:border-white/10">
                         <Loader2 size={48} className="text-primary dark:text-orange-400 animate-spin" strokeWidth={2.5} />
                     </div>
                 </div>

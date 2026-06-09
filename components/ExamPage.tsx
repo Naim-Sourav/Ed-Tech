@@ -6,7 +6,7 @@ import { useToast } from './Toast';
 import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI, generateQuizFromDB, fetchQuestionPapersAPI, syncUserToMongoDB, fetchSavedQuestionsAPI } from '../services/api';
 import { fetchPublicExamLeaderboard, getUserRank, submitGuestExamResult, fetchPublicExam } from '../services/publicExamService';
 import { 
-  Clock, CheckCircle, XCircle,
+  Clock, CheckCircle,
   BookOpen, Bookmark, LayoutGrid, HelpCircle, 
   Trophy, RefreshCw, Home, LayoutList, X, Flame, Layers, ArrowRight, Check, AlertTriangle, Loader2,
   User, Mail, Lock, ChevronLeft, ChevronRight
@@ -17,7 +17,8 @@ import { motion } from 'motion/react';
 import { toBengaliNumber } from '../utils/numberUtils';
 import Confetti from './Confetti'; // Use existing confetti instead of Lottie to be safe
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { auth, db } from '../services/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 // Helper to normalize subject names for display (Same as QuestionBank)
 const getDisplaySubject = (subject: string = '') => {
@@ -620,6 +621,8 @@ const ExamPage: React.FC = () => {
                 setShowStreakModal(true);
             }
 
+            const submissionTimestamp = Date.now();
+
             await saveExamResultAPI(currentUser.uid, {
                 examId: examId,
                 subject: questions[0]?.subject || 'General',
@@ -635,12 +638,39 @@ const ExamPage: React.FC = () => {
                 config
             });
 
+            // Save to Firebase Firestore for permanent persistence (strictly optimized to save space)
+            try {
+                await addDoc(collection(db, 'attempts'), {
+                    userId: currentUser.uid,
+                    examId: examId,
+                    subject: questions[0]?.subject || 'General',
+                    totalQuestions: questions.length,
+                    correct: correctCount,
+                    wrong: wrongCount,
+                    skipped: skippedCount,
+                    score: finalScore,
+                    topicStats,
+                    mistakes,
+                    userAnswers,
+                    questions: questions.map((q: any) => ({
+                        _id: q._id || q.id || '',
+                        subject: q.subject || '',
+                        chapter: q.chapter || '',
+                        correctAnswerIndex: q.correctAnswerIndex ?? q.correctAnswer ?? 0
+                    })),
+                    config,
+                    timestamp: submissionTimestamp
+                });
+            } catch (err) {
+                console.error("Failed to store attempt in Firebase Firestore:", err);
+            }
+
             // Save copy locally for offline and detailed client-side statistics
             try {
                 const localAttemptsKey = `porikkhangon_attempts_${currentUser.uid}`;
                 const existingAttemptsRaw = localStorage.getItem(localAttemptsKey);
                 const existingAttempts = existingAttemptsRaw ? JSON.parse(existingAttemptsRaw) : [];
-                if (!existingAttempts.some((a: any) => a.examId === examId)) {
+                if (!existingAttempts.some((a: any) => a.examId === examId && Math.abs((a.timestamp || 0) - submissionTimestamp) < 30000)) {
                     existingAttempts.push({
                         examId: examId,
                         subject: questions[0]?.subject || 'General',
@@ -654,7 +684,7 @@ const ExamPage: React.FC = () => {
                         userAnswers,
                         questions,
                         config,
-                        timestamp: Date.now()
+                        timestamp: submissionTimestamp
                     });
                     localStorage.setItem(localAttemptsKey, JSON.stringify(existingAttempts));
                 }
@@ -783,7 +813,7 @@ const ExamPage: React.FC = () => {
 
   if (loading || isSubmitting) {
       return (
-        <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-black">
             <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             <p className="mt-6 text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">
                 {isSubmitting ? "ফলাফল সাবমিট হচ্ছে..." : "প্রশ্নপত্র লোড হচ্ছে..."}
@@ -795,11 +825,11 @@ const ExamPage: React.FC = () => {
   // --- GUEST LANDING VIEW ---
   if (!currentUser && guestExamInfo) {
       return (
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
-              <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+          <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col items-center justify-center p-4">
+              <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-zinc-800">
                   
                   {/* Minimal Header */}
-                  <div className="bg-white dark:bg-gray-800 p-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                  <div className="bg-white dark:bg-zinc-900 p-6 pb-4 border-b border-gray-100 dark:border-zinc-800">
                       <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
                           <Trophy size={14} /> Public Exam
                       </div>
@@ -926,7 +956,7 @@ const ExamPage: React.FC = () => {
       // Safety check to prevent crash if questions are missing or index is out of bounds
       if (!questions || questions.length === 0 || !questions[currentQIndex]) {
           return (
-            <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-black">
                 <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                 <p className="mt-6 text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">
                     প্রশ্নপত্র লোড হচ্ছে...
@@ -988,7 +1018,7 @@ const ExamPage: React.FC = () => {
                       <span className="text-[12px] font-bold text-gray-400 dark:text-gray-500 font-mono">
                           {toBengaliNumber(currentQIndex + 1)}/{toBengaliNumber(questions.length)}
                       </span>
-                      <div className="w-16 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div className="w-16 h-1.5 bg-gray-100 dark:bg-zinc-900 rounded-full overflow-hidden">
                           <div 
                               className="h-full bg-primary"
                               style={{ width: `${((currentQIndex + 1) / questions.length) * 100}%` }}
@@ -1020,7 +1050,7 @@ const ExamPage: React.FC = () => {
       };
 
       return (
-        <div id="exam-container" className="h-full flex flex-col bg-slate-50/50 dark:bg-gray-900 transition-colors relative">
+        <div id="exam-container" className="h-full flex flex-col bg-slate-50/50 dark:bg-black transition-colors relative">
             {/* Linear Progress Bar Timer (Full Width at the very top) */}
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gray-100 dark:bg-gray-700 z-50 overflow-hidden">
                 <motion.div 
@@ -1032,7 +1062,7 @@ const ExamPage: React.FC = () => {
             </div>
 
             {/* Header */}
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-4 py-3 flex justify-between items-center sticky top-[2px] z-30 shadow-sm shrink-0">
+            <div className="bg-white dark:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800 px-4 py-3 flex justify-between items-center sticky top-[2px] z-30 shadow-sm shrink-0">
                 <div className="flex items-center gap-2.5 max-w-[50%]">
                     <button onClick={handleExit} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-550 dark:text-gray-400 transition-colors" title="Exit">
                         <X size={20}/>
@@ -1062,7 +1092,7 @@ const ExamPage: React.FC = () => {
                     
                     {/* Compact/Subtle progress bar just to show reading index */}
                     {(viewMode === 'SINGLE_PAGE' || isRapidFire) && (
-                        <div className="mb-4 h-[2px] bg-gray-105 dark:bg-gray-800 rounded-full w-full overflow-hidden shrink-0">
+                        <div className="mb-4 h-[2px] bg-gray-105 dark:bg-zinc-900 rounded-full w-full overflow-hidden shrink-0">
                             <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${((currentQIndex + 1) / questions.length) * 100}%` }}
@@ -1076,11 +1106,11 @@ const ExamPage: React.FC = () => {
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col h-full">
                             
                             {/* Question Card */}
-                            <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-750 shadow-sm mb-6 relative overflow-hidden shrink-0 transition-all hover:shadow-md">
+                            <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-gray-750 shadow-sm mb-6 relative overflow-hidden shrink-0 transition-all hover:shadow-md">
                                 
                                 {/* Stimulus Part (Softer Background) */}
                                 {(currentQ.contextText || currentQ.contextImage) && (
-                                    <div className="p-5 md:p-8 pb-0 bg-sky-50/50 dark:bg-sky-500/5 border-b border-gray-50 dark:border-gray-700/50">
+                                    <div className="p-5 md:p-8 pb-0 bg-sky-50/50 dark:bg-sky-500/5 border-b border-gray-50 dark:border-zinc-800/50">
                                         {stimulusRange && (
                                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-900/40 text-[11px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-tighter mb-3">
                                                 <BookOpen size={10}/> {toBengaliNumber(stimulusRange.start)} - {toBengaliNumber(stimulusRange.end)} নং প্রশ্নের উদ্দীপক
@@ -1124,7 +1154,7 @@ const ExamPage: React.FC = () => {
                                     </h2>
 
                                     {currentQ.questionImage && (
-                                        <div className="mt-4 rounded-xl overflow-hidden border border-gray-50 dark:border-gray-750 bg-gray-50 dark:bg-gray-900/50 p-2 shadow-inner">
+                                        <div className="mt-4 rounded-xl overflow-hidden border border-gray-50 dark:border-gray-750 bg-gray-50 dark:bg-black/50 p-2 shadow-inner">
                                             <img src={currentQ.questionImage} alt="Question" className="w-full max-h-[250px] object-contain rounded-lg mx-auto" referrerPolicy="no-referrer" />
                                         </div>
                                     )}
@@ -1132,7 +1162,7 @@ const ExamPage: React.FC = () => {
                             </div>
 
                             {/* Options List */}
-                            <div className="space-y-3 mb-24 mt-4">
+                            <div className="space-y-2 mb-24 mt-4">
                                 {questions[currentQIndex].options.map((opt, idx) => {
                                     const isSelected = userAnswers[currentQIndex] === idx;
                                     const isPractice = config?.isPracticeMode;
@@ -1140,40 +1170,40 @@ const ExamPage: React.FC = () => {
                                     const optImage = questions[currentQIndex].optionsImages?.[idx];
                                     
                                     // Row wrapper classes base
-                                    let rowClass = "w-full min-h-[50px] py-3.5 px-4 text-left flex items-center justify-between transition-all group cursor-pointer disabled:cursor-not-allowed rounded-2xl border outline-none focus:outline-none focus:ring-0";
+                                    let rowClass = "w-full p-2.5 text-left flex items-center justify-between transition-all group cursor-pointer disabled:cursor-not-allowed rounded-xl border outline-none focus:outline-none focus:ring-0";
                                     // Circle container classes base
-                                    let circleClass = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all border select-none";
+                                    let circleClass = "w-7 h-7 rounded-full flex items-center justify-center font-bold text-[12px] shrink-0 transition-all border select-none";
 
                                     if (isRapidFire) {
                                         if (isRapidFireCorrect && isCorrect) {
-                                            rowClass += " bg-emerald-50/20 dark:bg-emerald-950/10 border-emerald-450 dark:border-emerald-805/80 text-emerald-800 dark:text-emerald-300 shadow-sm";
-                                            circleClass += " bg-emerald-500 border-emerald-500 text-white";
+                                            rowClass += " bg-emerald-50 border-emerald-250 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400 font-medium";
+                                            circleClass += " bg-emerald-500 border-emerald-400 text-white";
                                         } else if (rapidFireWrongAttempt === idx) {
-                                            rowClass += " bg-rose-50/20 dark:bg-rose-950/10 border-rose-450 dark:border-rose-805/85 text-rose-850 dark:text-rose-300 shadow-sm";
-                                            circleClass += " bg-rose-500 border-rose-500 text-white";
+                                            rowClass += " bg-red-50 border-red-253 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400 font-medium";
+                                            circleClass += " bg-red-500 border-red-400 text-white";
                                         } else {
-                                            rowClass += " bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-750 text-gray-700 dark:text-gray-300 hover:border-gray-200 dark:hover:border-gray-650 hover:bg-gray-50/40 dark:hover:bg-gray-700/20 shadow-[0_2px_8px_rgba(0,0,0,0.025)] dark:shadow-none";
-                                            circleClass += " bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-650 text-gray-400";
+                                            rowClass += " bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300 hover:border-slate-350 dark:hover:border-zinc-700";
+                                            circleClass += " bg-white border-slate-200 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500";
                                         }
                                     } 
                                     else if (isPractice && userAnswers[currentQIndex] !== null) {
                                         if (isCorrect) {
-                                            rowClass += " bg-emerald-50/20 dark:bg-emerald-950/10 border-emerald-450 dark:border-emerald-805/80 text-emerald-800 dark:text-emerald-300 shadow-sm";
-                                            circleClass += " bg-emerald-500 border-emerald-500 text-white";
+                                            rowClass += " bg-emerald-50 border-emerald-250 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400 font-medium";
+                                            circleClass += " bg-emerald-500 border-emerald-400 text-white";
                                         } else if (isSelected) {
-                                            rowClass += " bg-rose-50/20 dark:bg-rose-950/10 border-rose-450 dark:border-rose-805/85 text-rose-850 dark:text-rose-300 shadow-sm";
-                                            circleClass += " bg-rose-500 border-rose-500 text-white";
+                                            rowClass += " bg-red-50 border-red-253 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400 font-medium";
+                                            circleClass += " bg-red-500 border-red-400 text-white";
                                         } else {
-                                            rowClass += " bg-white/40 dark:bg-gray-800/40 border-gray-100 dark:border-gray-750 opacity-40 grayscale";
-                                            circleClass += " bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-650 text-gray-400";
+                                            rowClass += " bg-slate-50/40 border-slate-100/40 opacity-40 grayscale text-slate-400 dark:bg-zinc-900/20 dark:border-zinc-800/40";
+                                            circleClass += " bg-white border-slate-205 text-slate-400 dark:bg-zinc-805 dark:border-zinc-700";
                                         }
                                     } else {
                                         if (isSelected) {
-                                            rowClass += " bg-orange-50/15 dark:bg-orange-950/5 border-primary text-primary font-bold shadow-[0_2px_10px_rgba(249,115,22,0.08)]";
+                                            rowClass += " bg-orange-50 border-primary text-primary font-bold dark:bg-orange-950/10 dark:text-orange-400";
                                             circleClass += " bg-primary border-primary text-white";
                                         } else {
-                                            rowClass += " bg-white dark:bg-gray-800 border-gray-100/80 dark:border-gray-750 text-gray-750 dark:text-gray-300 hover:border-gray-200 dark:hover:border-gray-650 hover:bg-gray-50/40 dark:hover:bg-gray-700/20 shadow-[0_2px_8px_rgba(0,0,0,0.025)] dark:shadow-none";
-                                            circleClass += " bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-650 text-gray-400";
+                                            rowClass += " bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300 hover:border-slate-350 dark:hover:border-zinc-700";
+                                            circleClass += " bg-white border-slate-202 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500";
                                         }
                                     }
 
@@ -1185,13 +1215,13 @@ const ExamPage: React.FC = () => {
                                             disabled={(isPractice && userAnswers[currentQIndex] !== null && !isRapidFire) || isRapidFireCorrect}
                                             className={rowClass}
                                         >
-                                            <div className="flex items-center gap-4 w-full">
+                                            <div className="flex items-center gap-3 w-full">
                                                 <div className={circleClass}>
-                                                    {['A','B','C','D'][idx]}
+                                                    {['ক','খ','গ','ঘ'][idx] || String.fromCharCode(65 + idx)}
                                                 </div>
-                                                <div className="flex-1 pr-2">
-                                                    {opt && <span className={`text-[14px] md:text-[15px] font-semibold leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
-                                                    {optImage && <img src={optImage} alt={`Option ${idx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-105 dark:border-gray-700" />}
+                                                <div className="flex-1 text-left min-w-0 pr-2">
+                                                    {opt && <span className={`text-[14px] md:text-[15px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
+                                                    {optImage && <img src={optImage} alt={`Option ${idx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-100 bg-white dark:border-gray-755" />}
                                                 </div>
                                             </div>
                                             {(isPractice && (userAnswers[currentQIndex] !== null || isRapidFire)) && (
@@ -1208,11 +1238,11 @@ const ExamPage: React.FC = () => {
                             </div>
 
                             {((config?.isPracticeMode && !isRapidFire && userAnswers[currentQIndex] !== null) || (isRapidFire && isRapidFireCorrect)) && (
-                                <div id={`explanation-${currentQIndex}`} className="mb-24 p-6 md:p-8 bg-amber-50/50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-800/50 animate-in slide-in-from-bottom-2 duration-500">
+                                <div id={`explanation-${currentQIndex}`} className="mb-24 p-6 md:p-8 bg-amber-50/50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-800/50 animate-in slide-in-from-bottom-2 duration-500 overflow-hidden">
                                     <div className="flex items-center gap-2 mb-4 font-black text-amber-600 dark:text-amber-400 text-xs uppercase tracking-widest">
                                         <BookOpen size={16}/> Explanation
                                     </div>
-                                    <p className={`text-sm md:text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process ${getFont(questions[currentQIndex].explanation)}`}>
+                                    <p className={`text-sm md:text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(questions[currentQIndex].explanation)}`}>
                                         {questions[currentQIndex].explanation || "অফিসিয়াল ব্যাখ্যা পাওয়া যায়নি।"}
                                     </p>
                                     {questions[currentQIndex].explanationImage && (
@@ -1224,7 +1254,7 @@ const ExamPage: React.FC = () => {
                             )}
 
                             {isRapidFire && isRapidFireCorrect && (
-                                <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-40 border-t border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-full duration-500">
+                                <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/80 dark:bg-black/80 backdrop-blur-md z-40 border-t border-gray-100 dark:border-zinc-800 animate-in slide-in-from-bottom-full duration-500">
                                     <div className="max-w-2xl mx-auto">
                                         <button 
                                             onClick={handleRapidFireNext}
@@ -1245,103 +1275,103 @@ const ExamPage: React.FC = () => {
                                         return (
                                             <React.Fragment key={idx}>
                                                 {showSubjectHeader && q.subject && (
-                                                    <div className="sticky top-[58px] z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md py-2.5 px-4 mb-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
+                                                    <div className="sticky top-[58px] z-20 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md py-2.5 px-4 mb-4 rounded-xl border border-gray-100 dark:border-zinc-800 flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
                                                         <BookOpen size={14} className="text-primary" />
                                                         <span className="uppercase tracking-wider">বিষয়: {getDisplaySubject(q.subject)}</span>
                                                     </div>
                                                 )}
                                                 {renderStimulusBox(q, idx, questions)}
-                                            <div id={`q-${idx}`} className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm scroll-mt-32">
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div className="flex items-start gap-3 w-full">
-                                                        <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
-                                                        <div className="flex-1 min-w-0 pt-0.5">
-                                                            <h3 className={`font-extrabold text-gray-905 dark:text-gray-50 text-base md:text-xl leading-relaxed tex2jax_process ${getFont(q.question)}`}>
-                                                                <span dangerouslySetInnerHTML={{ __html: q.question }} />
-                                                            </h3>
-                                                            {q.questionImage && (
-                                                                <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-705 bg-gray-50 dark:bg-gray-900/50 p-2 max-w-sm">
-                                                                    <img src={q.questionImage} alt="Question" className="max-h-56 w-auto rounded object-contain mx-auto" referrerPolicy="no-referrer" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-2 shrink-0 ml-2">
-                                                        <button onClick={() => toggleSaveQuestion(idx)} className={`p-1.5 rounded-lg transition-colors ${savedQuestionIndices.has(idx) ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-gray-55 dark:hover:bg-gray-700'}`} title="Bookmark">
-                                                            <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary' : ''}/>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-3 mt-4">
-                                                    {q.options.map((opt, oIdx) => {
-                                                        const isSelected = userAnswers[idx] === oIdx;
-                                                        const isPractice = config?.isPracticeMode;
-                                                        const isCorrect = oIdx === q.correctAnswerIndex;
-                                                        const optImage = q.optionsImages?.[oIdx];
-                                                        
-                                                        // Row wrapper classes base
-                                                        let rowClass = "w-full min-h-[50px] py-3.5 px-4 text-left flex items-center justify-between transition-all group cursor-pointer disabled:cursor-not-allowed rounded-2xl border outline-none focus:outline-none focus:ring-0";
-                                                        // Circle container classes base
-                                                        let circleClass = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all border select-none";
-
-                                                        if (isPractice && userAnswers[idx] !== null) {
-                                                            if (isCorrect) {
-                                                                rowClass += " bg-emerald-50/20 dark:bg-emerald-950/10 border-emerald-450 dark:border-emerald-805/80 text-emerald-800 dark:text-emerald-300 shadow-sm";
-                                                                circleClass += " bg-emerald-500 border-emerald-500 text-white";
-                                                            } else if (isSelected) {
-                                                                rowClass += " bg-rose-50/20 dark:bg-rose-950/10 border-rose-450 dark:border-rose-805/85 text-rose-850 dark:text-rose-300 shadow-sm";
-                                                                circleClass += " bg-rose-500 border-rose-500 text-white";
-                                                            } else {
-                                                                rowClass += " bg-white/40 dark:bg-gray-800/40 border-gray-100 dark:border-gray-750 opacity-40 grayscale";
-                                                                circleClass += " bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-650 text-gray-400";
-                                                            }
-                                                        } else {
-                                                            if (isSelected) {
-                                                                rowClass += " bg-orange-50/15 dark:bg-orange-950/5 border-primary text-primary font-bold shadow-[0_2px_10px_rgba(249,115,22,0.08)]";
-                                                                circleClass += " bg-primary border-primary text-white";
-                                                            } else {
-                                                                rowClass += " bg-white dark:bg-gray-800 border-gray-100/80 dark:border-gray-750 text-gray-750 dark:text-gray-300 hover:border-gray-200 dark:hover:border-gray-650 hover:bg-gray-50/40 dark:hover:bg-gray-700/20 shadow-[0_2px_8px_rgba(0,0,0,0.025)] dark:shadow-none";
-                                                                circleClass += " bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-650 text-gray-400";
-                                                            }
-                                                        }
-
-                                                        return (
-                                                            <button 
-                                                                key={oIdx}
-                                                                onClick={() => handleOptionSelect(idx, oIdx)}
-                                                                disabled={isPractice && userAnswers[idx] !== null}
-                                                                className={rowClass}
-                                                            >
-                                                                <div className="flex items-center gap-4 w-full">
-                                                                    <div className={circleClass}>
-                                                                        {['A','B','C','D'][oIdx]}
-                                                                    </div>
-                                                                    <div className="flex-1 pr-2">
-                                                                        {opt && <span className={`text-[14px] md:text-[15px] font-semibold leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
-                                                                        {optImage && <img src={optImage} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-105 dark:border-gray-700" />}
-                                                                    </div>
-                                                                </div>
-                                                                {(isPractice && userAnswers[idx] !== null) && (
-                                                                    <div className="ml-2 shrink-0">
-                                                                        {isCorrect ? 
-                                                                            <div className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center"><Check size={14} strokeWidth={4}/></div> : 
-                                                                            (isSelected && <div className="w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center"><X size={14} strokeWidth={4}/></div>)
-                                                                        }
+                                                <div id={`q-${idx}`} className="bg-white dark:bg-zinc-950 p-5 md:p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm scroll-mt-32">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div className="flex items-start gap-3 w-full">
+                                                            <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
+                                                            <div className="flex-1 min-w-0 pt-0.5">
+                                                                <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-base md:text-[17px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
+                                                                    <span dangerouslySetInnerHTML={{ __html: q.question }} />
+                                                                </h3>
+                                                                {q.questionImage && (
+                                                                    <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm">
+                                                                        <img src={q.questionImage} alt="Question" className="max-h-56 w-auto rounded object-contain mx-auto" referrerPolicy="no-referrer" />
                                                                     </div>
                                                                 )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-2 shrink-0 ml-2">
+                                                            <button onClick={() => toggleSaveQuestion(idx)} className={`p-1.5 rounded-lg transition-colors ${savedQuestionIndices.has(idx) ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-gray-55 dark:hover:bg-gray-700'}`} title="Bookmark font">
+                                                                <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary' : ''}/>
                                                             </button>
-                                                        )
-                                                    })}
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2 mt-4">
+                                                        {q.options.map((opt, oIdx) => {
+                                                            const isSelected = userAnswers[idx] === oIdx;
+                                                            const isPractice = config?.isPracticeMode;
+                                                            const isCorrect = oIdx === q.correctAnswerIndex;
+                                                            const optImage = q.optionsImages?.[oIdx];
+                                                            
+                                                            // Row wrapper classes base
+                                                            let rowClass = "w-full p-2.5 text-left flex items-center justify-between transition-all group cursor-pointer disabled:cursor-not-allowed rounded-xl border outline-none focus:outline-none focus:ring-0";
+                                                            // Circle container classes base
+                                                            let circleClass = "w-7 h-7 rounded-full flex items-center justify-center font-bold text-[12px] shrink-0 transition-all border select-none";
+
+                                                            if (isPractice && userAnswers[idx] !== null) {
+                                                                if (isCorrect) {
+                                                                    rowClass += " bg-emerald-50 border-emerald-250 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400 font-medium";
+                                                                    circleClass += " bg-emerald-500 border-emerald-400 text-white";
+                                                                } else if (isSelected) {
+                                                                    rowClass += " bg-red-50 border-red-253 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400 font-medium";
+                                                                    circleClass += " bg-red-500 border-red-400 text-white";
+                                                                } else {
+                                                                    rowClass += " bg-slate-50/40 border-slate-100/40 opacity-40 grayscale text-slate-400 dark:bg-zinc-900/20 dark:border-zinc-800/40";
+                                                                    circleClass += " bg-white border-slate-205 text-slate-400 dark:bg-zinc-805 dark:border-zinc-700";
+                                                                }
+                                                            } else {
+                                                                if (isSelected) {
+                                                                    rowClass += " bg-orange-50 border-primary text-primary font-bold dark:bg-orange-950/10 dark:text-orange-400";
+                                                                    circleClass += " bg-primary border-primary text-white";
+                                                                } else {
+                                                                    rowClass += " bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300 hover:border-slate-350 dark:hover:border-zinc-700";
+                                                                    circleClass += " bg-white border-slate-202 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500";
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <button 
+                                                                    key={oIdx}
+                                                                    onClick={() => handleOptionSelect(idx, oIdx)}
+                                                                    disabled={isPractice && userAnswers[idx] !== null}
+                                                                    className={rowClass}
+                                                                >
+                                                                    <div className="flex items-center gap-3 w-full">
+                                                                        <div className={circleClass}>
+                                                                            {['ক','খ','গ','ঘ'][oIdx] || String.fromCharCode(65 + oIdx)}
+                                                                        </div>
+                                                                        <div className="flex-1 text-left min-w-0 pr-2">
+                                                                            {opt && <span className={`text-[14px] md:text-[15px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
+                                                                            {optImage && <img src={optImage} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-100 bg-white dark:border-gray-755" />}
+                                                                        </div>
+                                                                    </div>
+                                                                    {(isPractice && userAnswers[idx] !== null) && (
+                                                                        <div className="ml-2 shrink-0">
+                                                                            {isCorrect ? 
+                                                                                <div className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center"><Check size={14} strokeWidth={4}/></div> : 
+                                                                                (isSelected && <div className="w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center"><X size={14} strokeWidth={4}/></div>)
+                                                                            }
+                                                                        </div>
+                                                                    )}
+                                                                </button>
+                                                            )
+                                                        })}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </React.Fragment>
-                                    );
-                                })}
+                                            </React.Fragment>
+                                        );
+                                    })}
                                 </div>
                             </div>
                             
                             <div className="hidden lg:block w-72 shrink-0">
-                                <div className="sticky top-24 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm max-h-[80vh] overflow-y-auto">
+                                <div className="sticky top-24 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 shadow-sm max-h-[80vh] overflow-y-auto">
                                     <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 text-sm flex items-center gap-2"><LayoutGrid size={16}/> প্রশ্ন তালিকা</h3>
                                     <div className="grid grid-cols-5 gap-2 font-mono">
                                         {questions.map((_, i) => (
@@ -1362,14 +1392,14 @@ const ExamPage: React.FC = () => {
             </div>
 
             {!isRapidFire && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-700 p-2.5 md:p-4 z-40 transition-all">
+                <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 p-2.5 md:p-4 z-40 transition-all">
                     <div className="max-w-3xl mx-auto flex justify-between items-center gap-3">
                         {viewMode === 'SINGLE_PAGE' ? (
                             <>
                                 <button 
                                     onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
                                     disabled={currentQIndex === 0}
-                                    className="p-3 rounded-full border border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-755 transition-all disabled:opacity-30 disabled:hover:bg-transparent shrink-0"
+                                    className="p-3 rounded-full border border-gray-100 dark:border-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-755 transition-all disabled:opacity-30 disabled:hover:bg-transparent shrink-0"
                                     title="পূর্ববর্তী"
                                 >
                                     <ChevronLeft size={22} />
@@ -1415,7 +1445,7 @@ const ExamPage: React.FC = () => {
 
             {showMobileNav && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4" onClick={() => setShowMobileNav(false)}>
-                    <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl p-4 shadow-2xl animate-in slide-in-from-bottom-10" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-2xl p-4 shadow-2xl animate-in slide-in-from-bottom-10" onClick={e => e.stopPropagation()}>
                         <div className="grid grid-cols-5 gap-2 max-h-60 overflow-y-auto">
                             {questions.map((_, i) => (
                                 <button 
@@ -1436,7 +1466,7 @@ const ExamPage: React.FC = () => {
 
             {showSubmitModal && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95">
+                    <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-zinc-800 animate-in zoom-in-95">
                         <div className="text-center mb-6">
                             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <HelpCircle size={32}/>
@@ -1463,7 +1493,7 @@ const ExamPage: React.FC = () => {
       
       return (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-500">
-              <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden text-center animate-in zoom-in-95 duration-500">
+              <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden text-center animate-in zoom-in-95 duration-500">
                   <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-orange-100 to-transparent dark:from-orange-900/20 dark:to-transparent pointer-events-none"></div>
                   
                   <div className="relative z-10">
@@ -1479,7 +1509,7 @@ const ExamPage: React.FC = () => {
                           Streak on Fire! 🔥
                       </p>
 
-                      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 mb-8">
+                      <div className="bg-gray-50 dark:bg-black rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 mb-8">
                           <div className="flex justify-between items-center">
                               {weekDays.map((day, idx) => {
                                   const isActive = streakData.activityLog.includes(day.date);
@@ -1493,7 +1523,7 @@ const ExamPage: React.FC = () => {
                                               ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/30 scale-110' 
                                               : isToday 
                                                   ? 'border-dashed border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-900/10 text-orange-200' 
-                                                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-300'
+                                                  : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-300'
                                           }`}>
                                               {isActive ? (
                                                   <Check size={18} strokeWidth={4} className="text-white"/>
@@ -1538,9 +1568,9 @@ const ExamPage: React.FC = () => {
 
       if (isRapidFire) {
           return (
-            <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
+            <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black p-4 md:p-8 transition-colors">
                 <div className="max-w-3xl mx-auto space-y-8 pb-20">
-                    <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-gray-200 dark:border-zinc-800 text-center relative overflow-hidden">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] -mt-20"></div>
                         
                         <div className="relative z-10 flex flex-col items-center">
@@ -1568,12 +1598,12 @@ const ExamPage: React.FC = () => {
                     <div className="space-y-4">
                         <h3 className="font-extrabold text-gray-900 dark:text-white text-lg px-2">প্রশ্নগুলোর ওভারভিউ</h3>
                         {resultQuestions.map((q, idx) => (
-                            <div key={idx} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
+                            <div key={idx} className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
                                 <div className="flex gap-4">
                                     <span className="font-bold text-gray-300 font-mono">{String(idx+1).padStart(2,'0')}</span>
                                     <div className="flex-1">
                                         <h3 className={`font-bold text-gray-800 dark:text-gray-200 text-sm mb-2 tex2jax_process ${getFont(q.question)}`}>{q.question}</h3>
-                                        {q.questionImage && <img src={q.questionImage} alt="Question" className="max-h-24 rounded object-contain mb-2 border border-gray-100 dark:border-gray-700" />}
+                                        {q.questionImage && <img src={q.questionImage} alt="Question" className="max-h-24 rounded object-contain mb-2 border border-gray-100 dark:border-zinc-800" />}
                                         <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50 rounded-lg">
                                             <p className={`text-xs text-green-700 dark:text-green-400 font-bold flex items-center gap-2 tex2jax_process ${getFont(q.options[q.correctAnswerIndex])}`}>
                                                 <CheckCircle size={14}/> {q.options[q.correctAnswerIndex]}
@@ -1609,7 +1639,7 @@ const ExamPage: React.FC = () => {
       });
 
       return (
-        <div id="exam-container" className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
+        <div id="exam-container" className="h-full overflow-y-auto bg-gray-50 dark:bg-black p-4 md:p-8 transition-colors">
             <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 pb-20">
                 {clearedMistakesCount > 0 && (
                     <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center mb-6 animate-in zoom-in relative overflow-hidden">
@@ -1628,7 +1658,7 @@ const ExamPage: React.FC = () => {
                     </div>
                 )}
 
-                <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-6 md:p-10 shadow-sm border border-gray-200 dark:border-gray-700 relative overflow-hidden">
+                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-6 md:p-10 shadow-sm border border-gray-200 dark:border-zinc-800 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-20 -mt-20"></div>
                     
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
@@ -1670,14 +1700,14 @@ const ExamPage: React.FC = () => {
                                     )`
                                 }}
                             ></div>
-                            <div className="absolute inset-4 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-sm">
+                            <div className="absolute inset-4 bg-white dark:bg-zinc-900 rounded-full flex flex-col items-center justify-center shadow-sm">
                                 <span className="text-2xl md:text-5xl font-black text-gray-900 dark:text-white">{percentage}%</span>
                                 <span className="text-[9px] md:text-[12px] font-bold text-gray-400 uppercase tracking-widest">Accuracy</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-8 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-8 border-t border-gray-100 dark:border-zinc-800">
                         <button onClick={handleRetake} className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2 text-sm">
                             <RefreshCw size={18}/> আবার পরীক্ষা দিন
                         </button>
@@ -1690,7 +1720,7 @@ const ExamPage: React.FC = () => {
                 <div className="space-y-6">
                     {/* Leaderboard Section - Only for Public Exams */}
                     {config?.type === 'PUBLIC_EXAM' && (
-                        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-zinc-800">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg text-yellow-600 dark:text-yellow-400">
                                     <Trophy size={24} />
@@ -1711,7 +1741,7 @@ const ExamPage: React.FC = () => {
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr className="border-b border-gray-100 dark:border-gray-700">
+                                                <tr className="border-b border-gray-100 dark:border-zinc-800">
                                                     <th className="py-2 px-3 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rank</th>
                                                     <th className="py-2 px-3 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
                                                     <th className="py-2 px-3 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Score</th>
@@ -1767,7 +1797,7 @@ const ExamPage: React.FC = () => {
 
                                                 {!isUserInView && userRank && (
                                                     <>
-                                                        <tr className="border-t-2 border-dashed border-gray-200 dark:border-gray-700">
+                                                        <tr className="border-t-2 border-dashed border-gray-200 dark:border-zinc-800">
                                                             <td colSpan={6} className="py-1 text-center text-[12px] text-gray-400">...</td>
                                                         </tr>
                                                         <tr className="bg-orange-50 dark:bg-orange-900/20 border-t border-orange-100 dark:border-orange-800">
@@ -1802,7 +1832,7 @@ const ExamPage: React.FC = () => {
                                     </div>
 
                                     {totalPages > 1 && (
-                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-zinc-800">
                                             <button
                                                 onClick={() => setLeaderboardPage(p => Math.max(1, p - 1))}
                                                 disabled={leaderboardPage === 1}
@@ -1832,7 +1862,7 @@ const ExamPage: React.FC = () => {
                             <button
                                 key={filter}
                                 onClick={() => setReviewFilter(filter)}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${reviewFilter === filter ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'}`}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${reviewFilter === filter ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'bg-white dark:bg-zinc-900 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-zinc-800'}`}
                             >
                                 {filter === 'ALL' ? 'সব প্রশ্ন' : filter} ({
                                     filter === 'CORRECT' ? correctCount : filter === 'WRONG' ? wrongCount : filter === 'SKIPPED' ? skippedCount : resultQuestions.length
@@ -1849,57 +1879,118 @@ const ExamPage: React.FC = () => {
                         return (
                             <React.Fragment key={idx}>
                                 {renderStimulusBox(q, idx, resultQuestions)}
-                                <div className={`bg-white dark:bg-gray-800 p-6 rounded-2xl border ${isCorrect ? 'border-green-200 dark:border-green-900/50' : isSkipped ? 'border-gray-200 dark:border-gray-700' : 'border-red-200 dark:border-red-900/50'} shadow-sm`}>
-                                    <div className="flex gap-4 mb-4">
-                                        <span className="font-bold text-gray-400 font-mono text-lg">{String(idx+1).padStart(2,'0')}</span>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className={`font-extrabold text-gray-900 dark:text-white text-base md:text-lg pr-4 tex2jax_process whitespace-pre-wrap ${getFont(q.question)}`}>{q.question}</h3>
-                                                <button 
-                                                    onClick={() => toggleSaveQuestion(idx)} 
-                                                    className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary transition-colors shrink-0"
-                                                >
-                                                    <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary text-primary' : ''}/>
-                                                </button>
+                                <div className={`bg-white dark:bg-zinc-950 p-5 md:p-6 rounded-2xl border ${isCorrect ? 'border-emerald-250 dark:border-emerald-805/50' : isSkipped ? 'border-gray-200 dark:border-zinc-800/80' : 'border-rose-253 dark:border-red-500/30'} shadow-sm relative group`}>
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className="flex items-start gap-3 w-full">
+                                            <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
+                                            <div className="flex-1 min-w-0 pt-0.5">
+                                                <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-base md:text-[17px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
+                                                    <span dangerouslySetInnerHTML={{ __html: q.question }} />
+                                                </h3>
+                                                {q.questionImage && (
+                                                    <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm">
+                                                        <img src={q.questionImage} alt="Question" className="max-h-56 w-auto rounded object-contain mx-auto" referrerPolicy="no-referrer" />
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Tags list */}
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {q.chapter && (
+                                                        <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-orange-100/50 dark:border-orange-900/30">
+                                                            {q.chapter}
+                                                        </span>
+                                                    )}
+                                                    {q.subject && (
+                                                        <span className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-blue-100/50 dark:border-blue-800/30">
+                                                            {getDisplaySubject(q.subject)}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            {q.questionImage && <img src={q.questionImage} alt="Question" className="max-h-60 w-auto rounded-xl object-contain mb-3 border border-gray-100 dark:border-gray-700 mx-auto" />}
-                                            <div className="flex flex-wrap gap-2 mb-4">
-                                                <span className="bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded text-[12px] font-bold">{q.chapter || 'General'}</span>
-                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 shrink-0 ml-2">
+                                            <button onClick={() => toggleSaveQuestion(idx)} className={`p-1.5 rounded-lg transition-colors ${savedQuestionIndices.has(idx) ? 'text-primary bg-primary/10' : 'text-gray-400 hover:bg-gray-55 dark:hover:bg-gray-700'}`} title="Bookmark text">
+                                                <Bookmark size={18} className={savedQuestionIndices.has(idx) ? 'fill-primary text-primary' : ''}/>
+                                            </button>
                                         </div>
                                     </div>
 
-                                <div className="grid gap-2 mb-4">
-                                    {q.options.map((opt, oIdx) => {
-                                        let style = "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400";
-                                        if (oIdx === q.correctAnswerIndex) style = "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400 font-bold";
-                                        else if (userAnswer === oIdx) style = "bg-red-50 dark:bg-red-900/20 border-red-500 text-red-700 dark:text-red-400 font-bold";
+                                    <div className="space-y-2 mt-4">
+                                        {q.options.map((opt, oIdx) => {
+                                            const isCorrectAnswer = oIdx === q.correctAnswerIndex;
+                                            const isUserChoice = userAnswer === oIdx;
 
-                                        return (
-                                            <div key={oIdx} className={`p-3 rounded-lg border text-sm flex items-start gap-3 ${style}`}>
-                                                <div className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-[12px] opacity-70 shrink-0 mt-0.5">{['A','B','C','D'][oIdx]}</div>
-                                                <div className="flex-1">
-                                                    <span className={`tex2jax_process whitespace-pre-wrap ${getFont(opt)}`}>{opt}</span>
-                                                    {q.optionsImages?.[oIdx] && <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded object-contain" />}
+                                            let optionStyle = "";
+                                            let iconStyle = "";
+
+                                            if (isCorrectAnswer) {
+                                                optionStyle = "bg-emerald-50 border-emerald-250 text-emerald-700 dark:bg-emerald-950/15 dark:border-emerald-500/30 dark:text-emerald-400 font-medium";
+                                                iconStyle = "bg-emerald-500 border-emerald-400 text-white";
+                                            } else if (isUserChoice) {
+                                                optionStyle = "bg-red-50 border-red-253 text-red-700 dark:bg-red-950/15 dark:border-red-500/30 dark:text-red-400 font-medium";
+                                                iconStyle = "bg-red-500 border-red-400 text-white";
+                                            } else {
+                                                if (userAnswer !== null) {
+                                                    optionStyle = "bg-slate-50/40 border-slate-100/40 opacity-40 grayscale text-slate-400 dark:bg-zinc-900/10 dark:border-zinc-800/20";
+                                                    iconStyle = "bg-white border-slate-205 text-slate-405 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500";
+                                                } else {
+                                                    optionStyle = "bg-slate-50 border-slate-100 text-slate-705 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300";
+                                                    iconStyle = "bg-white border-slate-202 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500";
+                                                }
+                                            }
+
+                                            return (
+                                                <div 
+                                                    key={oIdx} 
+                                                    className={`w-full p-2.5 text-left flex items-center justify-between transition-all rounded-xl border outline-none ${optionStyle}`}
+                                                >
+                                                    <div className="flex items-center gap-3 w-full min-w-0">
+                                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[12px] shrink-0 transition-all border select-none ${iconStyle}`}>
+                                                            {['ক','খ','গ','ঘ'][oIdx] || String.fromCharCode(65 + oIdx)}
+                                                        </div>
+                                                        <div className="flex-1 text-left min-w-0 pr-2">
+                                                            {opt && <span className={`text-[14px] md:text-[15px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
+                                                            {q.optionsImages?.[oIdx] && <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-100 bg-white dark:border-gray-755 shadow-sm" />}
+                                                        </div>
+                                                    </div>
+                                                    {isCorrectAnswer && (
+                                                        <div className="shrink-0 ml-2">
+                                                            <div className="w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center">
+                                                                <Check size={12} strokeWidth={4}/>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {!isCorrectAnswer && isUserChoice && (
+                                                        <div className="shrink-0 ml-2">
+                                                            <div className="w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center">
+                                                                <X size={12} strokeWidth={4}/>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {oIdx === q.correctAnswerIndex && <CheckCircle size={16} className="ml-auto mt-0.5"/>}
-                                                {userAnswer === oIdx && userAnswer !== q.correctAnswerIndex && <XCircle size={16} className="ml-auto mt-0.5"/>}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-
-                                {q.explanation && (
-                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl text-sm text-gray-700 dark:text-gray-300 border-l-4 border-gray-300 dark:border-gray-600 overflow-hidden break-words max-w-full">
-                                        <p className="font-bold mb-1 flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500"><BookOpen size={12}/> ব্যাখ্যা</p>
-                                        <p className={`whitespace-pre-wrap tex2jax_process ${getFont(q.explanation)}`}>{q.explanation}</p>
-                                        {q.explanationImage && <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-40 rounded object-contain border border-gray-200 dark:border-gray-700" />}
+                                            )
+                                        })}
                                     </div>
-                                )}
-                            </div>
-                        </React.Fragment>
-                    )
-                })}
+
+                                    {q.explanation && (
+                                        <div className="mt-5 p-5 md:p-6 bg-amber-50/40 dark:bg-amber-950/10 rounded-2xl border border-amber-100 dark:border-amber-900/30">
+                                            <div className="flex items-center gap-2 mb-3 font-extrabold text-amber-650 dark:text-amber-400 text-[11px] uppercase tracking-widest">
+                                                <BookOpen size={14}/> ব্যাখ্যা
+                                            </div>
+                                            <p className={`text-[14px] md:text-[15px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(q.explanation)}`}>
+                                                {q.explanation}
+                                            </p>
+                                            {q.explanationImage && (
+                                                <div className="mt-3 rounded-xl overflow-hidden border border-amber-100/50 dark:border-amber-900/20 bg-white dark:bg-black/20 p-1.5 max-w-md">
+                                                    <img src={q.explanationImage} alt="Explanation" className="max-h-56 rounded-lg object-contain mx-auto" referrerPolicy="no-referrer" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </React.Fragment>
+                        )
+                    })}
                 </div>
             </div>
         </div>

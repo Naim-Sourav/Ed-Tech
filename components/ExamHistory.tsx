@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
 import { deleteExamResultAPI } from '../services/api';
+import { collection, query, where, getDocs, doc, deleteDoc, addDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import { 
   Trash2, Loader2, FileQuestion
 } from 'lucide-react';
@@ -25,22 +27,128 @@ const ExamHistory: React.FC = () => {
 
   // Load past exams (attempts)
   useEffect(() => {
+    let active = true;
+    
+    // Instantly load local data to make UI load immediately
+    const localAttemptsKey = `porikkhangon_attempts_${currentUser?.uid}`;
+    let initialLocal: any[] = [];
     if (currentUser) {
-      setLoadingAttempts(true);
-      const localAttemptsKey = `porikkhangon_attempts_${currentUser.uid}`;
-      const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
-      const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
-      const sortedAttempts = localAttempts.sort((a: any, b: any) => {
-        return (b.timestamp || 0) - (a.timestamp || 0);
-      });
-      setAttempts(sortedAttempts);
-      setLoadingAttempts(false);
-    } else {
-      setLoadingAttempts(false);
+      try {
+        const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+        const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+        const sortedLocal = localAttempts.sort((a: any, b: any) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        
+        const deduplicatedLocal: any[] = [];
+        for (const item of sortedLocal) {
+          const isDup = deduplicatedLocal.some(existing => 
+            existing.examId === item.examId && 
+            Math.abs(Number(existing.timestamp || 0) - Number(item.timestamp || 0)) < 60000
+          );
+          if (!isDup) {
+            deduplicatedLocal.push(item);
+          }
+        }
+        initialLocal = deduplicatedLocal;
+        setAttempts(deduplicatedLocal);
+      } catch (err) {
+        console.error("Failed to load initial local attempts:", err);
+      }
     }
+
+    // Only show full loading spinner if we have no local cache
+    setLoadingAttempts(initialLocal.length === 0);
+
+    const fetchAndSync = async () => {
+      if (!currentUser) {
+        if (active) setLoadingAttempts(false);
+        return;
+      }
+      try {
+        // 1. Fetch from Firestore asynchronously
+        const attemptsCol = collection(db, 'attempts');
+        const q = query(attemptsCol, where('userId', '==', currentUser.uid));
+        const snapshot = await getDocs(q);
+        const firestoreAttempts: any[] = [];
+        snapshot.forEach((docSnapshot) => {
+          firestoreAttempts.push({ id: docSnapshot.id, ...docSnapshot.data() });
+        });
+
+        // 2. Load latest from localStorage again in case it was updated
+        const currentLocalRaw = localStorage.getItem(localAttemptsKey);
+        const currentLocal = currentLocalRaw ? JSON.parse(currentLocalRaw) : [];
+
+        // 3. Parallel upload of unsynced items to Firestore
+        const syncedKeys = new Set(firestoreAttempts.map(a => `${a.examId}_${Number(a.timestamp || 0)}`));
+        const uploadPromises: Promise<any>[] = [];
+        
+        for (const localAttempt of currentLocal) {
+          const matchKey = `${localAttempt.examId}_${Number(localAttempt.timestamp || 0)}`;
+          if (!syncedKeys.has(matchKey)) {
+            const uploadPayload = {
+              ...localAttempt,
+              userId: currentUser.uid,
+              questions: Array.isArray(localAttempt.questions)
+                ? localAttempt.questions.map((q: any) => ({
+                    _id: q._id || q.id || '',
+                    subject: q.subject || '',
+                    chapter: q.chapter || '',
+                    correctAnswerIndex: q.correctAnswerIndex ?? q.correctAnswer ?? 0
+                  }))
+                : []
+            };
+            delete uploadPayload.id;
+            uploadPromises.push(
+              addDoc(collection(db, 'attempts'), uploadPayload)
+                .then(docRef => ({ id: docRef.id, ...uploadPayload }))
+                .catch(e => {
+                  console.error("Local attempt sync failed for item:", e);
+                  return null;
+                })
+            );
+          }
+        }
+
+        const uploadedResults = await Promise.all(uploadPromises);
+        const cleanUploaded = uploadedResults.filter(Boolean);
+
+        const combined = [...firestoreAttempts, ...cleanUploaded];
+
+        // 4. Sort compiled list and filter out duplicates with very close timestamps (e.g., within 1 minute)
+        const sorted = combined.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        const deduplicated: any[] = [];
+        for (const item of sorted) {
+          const isDup = deduplicated.some(existing => 
+            existing.examId === item.examId && 
+            Math.abs(Number(existing.timestamp || 0) - Number(item.timestamp || 0)) < 60000
+          );
+          if (!isDup) {
+            deduplicated.push(item);
+          }
+        }
+
+        // 5. Update localStorage with final merged records
+        localStorage.setItem(localAttemptsKey, JSON.stringify(deduplicated));
+
+        if (active) {
+          setAttempts(deduplicated);
+        }
+      } catch (err) {
+        console.error("Failed to sync attempts with Firestore:", err);
+      } finally {
+        if (active) {
+          setLoadingAttempts(false);
+        }
+      }
+    };
+
+    fetchAndSync();
+
+    return () => {
+      active = false;
+    };
   }, [currentUser]);
 
-  const handleDeleteAttempt = async (examId: string) => {
+  const handleDeleteAttempt = async (examId: string, attemptDocId?: string) => {
     if (!currentUser) return;
     if (!window.confirm("আপনি কি নিশ্চিত যে এই পরীক্ষাটি আপনার ইতিহাস থেকে মুছে ফেলতে চান?")) {
       return;
@@ -48,8 +156,35 @@ const ExamHistory: React.FC = () => {
     
     setDeletingAttemptId(examId);
     try {
+      // 1. Delete from external API (MongoDB node server)
       await deleteExamResultAPI(currentUser.uid, examId);
       
+      // 2. Delete from Firebase Firestore
+      if (attemptDocId) {
+        try {
+          await deleteDoc(doc(db, 'attempts', attemptDocId));
+        } catch (fErr) {
+          console.error("Failed to delete from Firestore:", fErr);
+        }
+      } else {
+        try {
+          const q = query(
+            collection(db, 'attempts'), 
+            where('userId', '==', currentUser.uid),
+            where('examId', '==', examId)
+          );
+          const snap = await getDocs(q);
+          const promises: Promise<void>[] = [];
+          snap.forEach((d) => {
+            promises.push(deleteDoc(doc(db, 'attempts', d.id)));
+          });
+          await Promise.all(promises);
+        } catch (fErr) {
+          console.error("Failed to delete from Firestore via query:", fErr);
+        }
+      }
+
+      // 3. Delete from localStorage
       const localAttemptsKey = `porikkhangon_attempts_${currentUser.uid}`;
       const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
       const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
@@ -97,7 +232,7 @@ const ExamHistory: React.FC = () => {
                 : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200'
             }`}
           >
-            পূর্বের ভুল
+            ভুলের খাতা
             {activeTab === 'WRONG' && (
               <motion.div
                 layoutId="activeTabUnderline"
@@ -177,7 +312,7 @@ const ExamHistory: React.FC = () => {
 
                       return (
                         <motion.div 
-                          key={attempt.examId}
+                          key={attempt.id || `${attempt.examId}_${attempt.timestamp || 0}`}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-gray-150/80 dark:border-zinc-800 shadow-sm relative overflow-hidden"
@@ -246,7 +381,7 @@ const ExamHistory: React.FC = () => {
                                 ফলাফল দেখুন
                               </button>
                               <button 
-                                onClick={() => handleDeleteAttempt(attempt.examId)} 
+                                onClick={() => handleDeleteAttempt(attempt.examId, attempt.id)} 
                                 disabled={deletingAttemptId === attempt.examId}
                                 className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90"
                                 title="ভুক্তি মুছুন"

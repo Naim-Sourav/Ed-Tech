@@ -89,7 +89,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ initialSeed, onSave, onCa
             <div className="grid grid-cols-4 gap-2">
                 <button
                     onClick={() => updateOption(key, undefined)} // Random/Default
-                    className={`aspect-square rounded-xl border-2 flex items-center justify-center text-xs font-bold text-gray-400 ${!options[key] ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-gray-700'}`}
+                    className={`aspect-square rounded-xl border-2 flex items-center justify-center text-xs font-bold text-gray-400 ${!options[key] ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-zinc-800'}`}
                 >
                     Auto
                 </button>
@@ -97,7 +97,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ initialSeed, onSave, onCa
                     <button
                         key={asset}
                         onClick={() => updateOption(key, [asset])}
-                        className={`aspect-square rounded-xl border-2 overflow-hidden transition-all ${options[key]?.[0] === asset ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                        className={`aspect-square rounded-xl border-2 overflow-hidden transition-all ${options[key]?.[0] === asset ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 dark:border-zinc-800 hover:border-gray-300'}`}
                     >
                         {/* We render a mini avatar to show the asset */}
                         <img 
@@ -119,12 +119,12 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ initialSeed, onSave, onCa
     return (
         <div className="flex flex-col h-full max-h-[600px]">
             {/* Preview Area */}
-            <div className="flex-shrink-0 bg-gray-50 dark:bg-gray-800/50 p-6 flex flex-col items-center justify-center border-b border-gray-100 dark:border-gray-800 relative">
-                <div className="w-40 h-40 rounded-full border-4 border-white dark:border-gray-700 shadow-xl overflow-hidden bg-white relative group">
+            <div className="flex-shrink-0 bg-gray-50 dark:bg-zinc-900/50 p-6 flex flex-col items-center justify-center border-b border-gray-100 dark:border-zinc-800 relative">
+                <div className="w-40 h-40 rounded-full border-4 border-white dark:border-zinc-800 shadow-xl overflow-hidden bg-white relative group">
                     <img src={avatarSvg} alt="Avatar Preview" className="w-full h-full object-cover" />
                     <button 
                         onClick={handleRandomize}
-                        className="absolute bottom-2 right-2 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:scale-110 transition-transform text-gray-600 dark:text-gray-300"
+                        className="absolute bottom-2 right-2 p-2 bg-white dark:bg-zinc-900 rounded-full shadow-lg border border-gray-200 dark:border-zinc-800 hover:scale-110 transition-transform text-gray-600 dark:text-gray-300"
                         title="Randomize"
                     >
                         <Shuffle size={16} />
@@ -135,7 +135,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ initialSeed, onSave, onCa
             {/* Controls Area */}
             <div className="flex-1 flex flex-col min-h-0">
                 {/* Tabs */}
-                <div className="flex border-b border-gray-100 dark:border-gray-800 overflow-x-auto">
+                <div className="flex border-b border-gray-100 dark:border-zinc-800 overflow-x-auto">
                     <button 
                         onClick={() => setActiveCategory('base')}
                         className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-b-2 transition-colors ${activeCategory === 'base' ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
@@ -195,7 +195,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ initialSeed, onSave, onCa
             </div>
 
             {/* Footer Actions */}
-            <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex gap-3">
+            <div className="p-4 border-t border-gray-100 dark:border-zinc-800 flex gap-3">
                 {onCancel && (
                     <button 
                         onClick={onCancel}

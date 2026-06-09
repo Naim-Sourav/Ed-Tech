@@ -277,14 +277,20 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
   };
 
   return (
-    <div className={`${embedded ? 'bg-transparent text-slate-900 pb-4 dark:text-zinc-100' : 'min-h-screen bg-white text-slate-900 pb-20 dark:bg-black dark:text-zinc-100'} font-sans`}>
+    <div className={`${embedded ? 'bg-transparent text-slate-900 pb-4 dark:text-zinc-100' : 'min-h-screen bg-white text-slate-900 pb-24 dark:bg-black dark:text-zinc-100'} font-sans`}>
       {/* Header */}
       {!embedded && (
         <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 dark:bg-black/80 dark:border-zinc-800">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button 
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                  if (window.history.length > 1) {
+                    navigate(-1);
+                  } else {
+                    navigate('/dashboard', { replace: true });
+                  }
+                }}
                 className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all"
               >
                 <ChevronLeft size={20} />
@@ -380,7 +386,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
                         filterChapter === 'ALL' 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-100 dark:shadow-none' 
-                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-850'
+                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-800'
                       }`}
                     >
                       সব অধ্যায় ({subjectCounts[filterSubject] || 0})
@@ -394,7 +400,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
                             filterChapter === chapter 
                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-100 dark:shadow-none' 
-                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-850'
+                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 dark:bg-zinc-900/40 dark:text-zinc-400 dark:border-zinc-800'
                           }`}
                         >
                           {chapter} ({count})
@@ -496,7 +502,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
               placeholder="সংগ্রহশালায় খুঁজুন..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-850 rounded-xl text-sm focus:ring-2 focus:ring-slate-100 dark:focus:ring-zinc-800 outline-none transition-all dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm focus:ring-2 focus:ring-slate-100 dark:focus:ring-zinc-800 outline-none transition-all dark:text-white"
             />
           </div>
           <button 
@@ -504,7 +510,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
             className={`px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-bold cursor-pointer select-none ${
               showAllAnswers 
               ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-105 dark:shadow-none' 
-              : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-805 hover:border-slate-300 dark:hover:border-zinc-700'
+              : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
             }`}
             title={showAllAnswers ? "সব উত্তর লুকান" : "সব উত্তর দেখুন"}
           >
@@ -559,8 +565,8 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                     animate={{ opacity: 1, y: 0 }}
                     key={item._id}
                     onClick={() => isSelectionMode && toggleSelect(item._id)}
-                    className={`bg-white px-4 pt-5 pb-4 md:px-5 rounded-2xl border transition-all relative overflow-hidden dark:bg-zinc-950 dark:border-zinc-850/80 ${
-                      selectedIds.has(item._id) ? 'border-slate-900 ring-2 ring-slate-900/5 dark:border-zinc-100' : 'border-slate-205/60 dark:border-zinc-850 shadow-sm'
+                    className={`bg-white px-4 pt-5 pb-4 md:px-5 rounded-2xl border transition-all relative overflow-hidden dark:bg-zinc-950 dark:border-zinc-800/80 ${
+                      selectedIds.has(item._id) ? 'border-slate-900 ring-2 ring-slate-900/5 dark:border-zinc-100' : 'border-slate-200/60 dark:border-zinc-800 shadow-sm'
                     } ${isSelectionMode ? 'cursor-pointer' : ''}`}
                   >
                     {isSelectionMode && (
@@ -659,7 +665,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                     </div>
 
                     {q.explanation && (
-                      <div className="border-t border-slate-100 dark:border-gray-800 pt-2 mt-3 block">
+                      <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 mt-3 block">
                         <button 
                           onClick={() => toggleExplanation(item._id)}
                           className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all ml-0 md:ml-10"
@@ -675,8 +681,8 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div id={`explanation-${item._id}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm">
-                                <div className="text-sm text-slate-800 dark:text-gray-200 leading-relaxed font-tiro whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                              <div id={`explanation-${item._id}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
+                                <div className="text-sm text-slate-800 dark:text-gray-200 leading-relaxed font-tiro whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                                 {q.explanationImage && (
                                   <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
                                 )}
@@ -716,10 +722,10 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                         </motion.div>
                       )}
                     </AnimatePresence>
-                    <div className="mt-3 pt-3 border-t border-slate-55 dark:border-gray-800 flex items-center justify-between">
+                    <div className="mt-3 pt-3 border-t border-slate-55 dark:border-zinc-800 flex items-center justify-between">
                       <div className="flex flex-wrap gap-2">
                         {q.subject && (
-                          <span className="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-gray-800 text-slate-500 dark:text-gray-400 rounded-lg uppercase tracking-tight">
+                          <span className="text-[9px] font-black px-2 py-1 bg-slate-100 dark:bg-zinc-900 text-slate-500 dark:text-gray-400 rounded-lg uppercase tracking-tight">
                             {q.subject}
                           </span>
                         )}

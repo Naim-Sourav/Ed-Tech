@@ -466,9 +466,9 @@ const StudyTracker: React.FC = () => {
   }
 
   return (
-    <div className="min-h-full pb-32 bg-gray-50 dark:bg-gray-900 relative">
+    <div className="min-h-full pb-32 bg-gray-50 dark:bg-black relative">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200 dark:border-gray-700 mb-6 sticky top-0 z-10">
+      <div className="bg-white dark:bg-zinc-900 p-6 rounded-b-[2.5rem] shadow-sm border-b border-gray-200 dark:border-zinc-800 mb-6 sticky top-0 z-10">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-3">
              <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-700 text-gray-600 dark:text-gray-300">
@@ -520,7 +520,7 @@ const StudyTracker: React.FC = () => {
 
             <div className="space-y-3">
               {tasks.filter(t => !t.completed).length === 0 ? (
-                <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
+                <div className="text-center py-10 bg-white dark:bg-zinc-900 rounded-3xl border border-dashed border-gray-300 dark:border-zinc-800">
                   <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
                     <CheckCircle size={32} className="text-green-500" />
                   </div>
@@ -534,7 +534,7 @@ const StudyTracker: React.FC = () => {
                 </div>
               ) : (
                 tasks.filter(t => !t.completed).slice(0, 5).map(task => (
-                  <div key={task.id} className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 group active:scale-[0.98] transition-transform">
+                  <div key={task.id} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 flex items-center gap-4 group active:scale-[0.98] transition-transform">
                     <button onClick={() => toggleTaskComplete(task.id)} className="text-gray-300 hover:text-green-500 transition-colors">
                       <Circle size={24} />
                     </button>
@@ -575,7 +575,7 @@ const StudyTracker: React.FC = () => {
               <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-2">Pending Tasks</h3>
               <div className="space-y-3">
                 {tasks.filter(t => !t.completed).map(task => (
-                  <div key={task.id} className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                  <div key={task.id} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 flex items-center gap-4">
                     <button onClick={() => toggleTaskComplete(task.id)} className="text-gray-300 hover:text-green-500 transition-colors">
                       <Circle size={24} />
                     </button>
@@ -602,7 +602,7 @@ const StudyTracker: React.FC = () => {
                 <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-2">Completed</h3>
                 <div className="space-y-3 opacity-60">
                   {tasks.filter(t => t.completed).map(task => (
-                    <div key={task.id} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center gap-4">
+                    <div key={task.id} className="bg-gray-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 flex items-center gap-4">
                       <button onClick={() => toggleTaskComplete(task.id)} className="text-green-500">
                         <CheckCircle size={24} fill="currentColor" className="text-white dark:text-gray-900" />
                       </button>
@@ -623,17 +623,17 @@ const StudyTracker: React.FC = () => {
         {view === 'ANALYTICS' && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+              <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-gray-100 dark:border-zinc-800">
                 <p className="text-xs text-gray-500 uppercase">Today</p>
                 <p className="text-2xl font-black text-gray-900 dark:text-white">{Math.floor(getTodayStudyTime() / 60)} <span className="text-sm font-normal text-gray-400">mins</span></p>
               </div>
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+              <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-gray-100 dark:border-zinc-800">
                 <p className="text-xs text-gray-500 uppercase">Sessions</p>
                 <p className="text-2xl font-black text-gray-900 dark:text-white">{getTodaySessions().length}</p>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+            <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm">
               <h3 className="font-bold text-gray-800 dark:text-white mb-6">Subject Distribution</h3>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -665,7 +665,7 @@ const StudyTracker: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+            <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm">
               <h3 className="font-bold text-gray-800 dark:text-white mb-6">Weekly Progress</h3>
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -682,7 +682,7 @@ const StudyTracker: React.FC = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pb-safe-area z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 z-50">
         <div className="flex justify-around items-center h-16 px-2 relative">
           
           <button 
@@ -732,7 +732,7 @@ const StudyTracker: React.FC = () => {
       {/* Add Task Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-[2rem] p-6 shadow-2xl animate-in slide-in-from-bottom-10">
+          <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2rem] p-6 shadow-2xl animate-in slide-in-from-bottom-10">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">New Task</h3>
               <button onClick={() => setShowAddModal(false)} className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
@@ -748,7 +748,7 @@ const StudyTracker: React.FC = () => {
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   placeholder="What do you want to study?"
-                  className="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-primary font-bold text-gray-900 dark:text-white"
+                  className="w-full p-4 rounded-xl bg-gray-50 dark:bg-black border-none focus:ring-2 focus:ring-primary font-bold text-gray-900 dark:text-white"
                 />
               </div>
 
@@ -779,7 +779,7 @@ const StudyTracker: React.FC = () => {
                   <select
                     value={newTaskSubject}
                     onChange={(e) => setNewTaskSubject(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-primary font-bold text-sm"
+                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black border-none focus:ring-2 focus:ring-primary font-bold text-sm"
                   >
                     {SUBJECTS.map(s => (
                       <option key={s.name} value={s.name}>{s.name}</option>
@@ -795,7 +795,7 @@ const StudyTracker: React.FC = () => {
                     <select
                       value={newTaskHours}
                       onChange={(e) => setNewTaskHours(parseInt(e.target.value))}
-                      className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-primary font-bold text-sm"
+                      className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black border-none focus:ring-2 focus:ring-primary font-bold text-sm"
                     >
                       {[0, 1, 2, 3, 4, 5, 6].map(h => (
                         <option key={h} value={h}>{h} Hours</option>
@@ -806,7 +806,7 @@ const StudyTracker: React.FC = () => {
                     <select
                       value={newTaskMinutes}
                       onChange={(e) => setNewTaskMinutes(parseInt(e.target.value))}
-                      className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-primary font-bold text-sm"
+                      className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black border-none focus:ring-2 focus:ring-primary font-bold text-sm"
                     >
                       {[0, 15, 30, 45].map(m => (
                         <option key={m} value={m}>{m} Mins</option>
@@ -840,7 +840,7 @@ const StudyTracker: React.FC = () => {
       {/* Settings Modal */}
       {showSettingsModal && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h3>
               <button onClick={() => setShowSettingsModal(false)} className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
@@ -851,17 +851,17 @@ const StudyTracker: React.FC = () => {
             <div className="space-y-6">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase mb-3 block">Daily Study Goal</label>
-                <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-4 rounded-xl">
+                <div className="flex items-center justify-between bg-gray-50 dark:bg-black p-4 rounded-xl">
                   <button 
                     onClick={() => setDailyGoal(prev => ({ ...prev, hours: Math.max(1, prev.hours - 1) }))}
-                    className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-10 h-10 bg-white dark:bg-zinc-900 rounded-full shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     -
                   </button>
                   <span className="text-2xl font-black text-primary">{dailyGoal.hours}h</span>
                   <button 
                     onClick={() => setDailyGoal(prev => ({ ...prev, hours: Math.min(16, prev.hours + 1) }))}
-                    className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-10 h-10 bg-white dark:bg-zinc-900 rounded-full shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     +
                   </button>

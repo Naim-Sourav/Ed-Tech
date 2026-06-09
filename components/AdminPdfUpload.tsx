@@ -260,11 +260,11 @@ const AdminPdfUpload: React.FC = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 animate-in fade-in">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 animate-in fade-in">
             <div className="max-w-6xl mx-auto space-y-8">
                 
                 {/* Header */}
-                <div className="text-center border-b border-gray-100 dark:border-gray-700 pb-6">
+                <div className="text-center border-b border-gray-100 dark:border-zinc-800 pb-6">
                     <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm rotate-3">
                         <FileText size={32} />
                     </div>
@@ -276,14 +276,14 @@ const AdminPdfUpload: React.FC = () => {
                     
                     {/* Left: Controls */}
                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-5">
+                        <div className="bg-gray-50 dark:bg-black/50 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 space-y-5">
                             
                             {/* Subject Select */}
                             <div className="relative">
                                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Subject</label>
                                 <button 
                                     onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
-                                    className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-600 flex items-center justify-between bg-white dark:text-white shadow-sm"
+                                    className="w-full p-3 rounded-xl border dark:bg-zinc-900 dark:border-gray-600 flex items-center justify-between bg-white dark:text-white shadow-sm"
                                 >
                                     <div className="flex items-center gap-2">
                                         {subject ? getSubjectIcon(subject) : <Layers size={18} className="text-gray-400"/>}
@@ -295,7 +295,7 @@ const AdminPdfUpload: React.FC = () => {
                                 </button>
                                 
                                 {isSubjectDropdownOpen && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border dark:border-gray-600 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
                                         {subjects.map(s => (
                                             <button
                                                 key={s}
@@ -305,7 +305,7 @@ const AdminPdfUpload: React.FC = () => {
                                                     setTopic('');
                                                     setIsSubjectDropdownOpen(false);
                                                 }}
-                                                className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
+                                                className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors border-b border-gray-100 dark:border-zinc-800 last:border-0"
                                             >
                                                 {getSubjectIcon(s)}
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{s.split('(')[0]}</span>
@@ -322,7 +322,7 @@ const AdminPdfUpload: React.FC = () => {
                                     value={chapter} 
                                     onChange={(e) => { setChapter(e.target.value); setTopic(''); }} 
                                     disabled={!subject} 
-                                    className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-600 text-sm font-bold shadow-sm outline-none focus:ring-2 ring-primary/20"
+                                    className="w-full p-3 rounded-xl border dark:bg-zinc-900 dark:border-gray-600 text-sm font-bold shadow-sm outline-none focus:ring-2 ring-primary/20"
                                 >
                                     <option value="">Select Chapter...</option>
                                     {chapters.map(c => <option key={c} value={c}>{c}</option>)}
@@ -336,7 +336,7 @@ const AdminPdfUpload: React.FC = () => {
                                     <select 
                                         value={topic} 
                                         onChange={(e) => setTopic(e.target.value)} 
-                                        className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-600 text-sm font-bold shadow-sm outline-none focus:ring-2 ring-primary/20"
+                                        className="w-full p-3 rounded-xl border dark:bg-zinc-900 dark:border-gray-600 text-sm font-bold shadow-sm outline-none focus:ring-2 ring-primary/20"
                                     >
                                         <option value="">General / All Topics</option>
                                         {flatTopics.map((t, idx) => <option key={idx} value={t}>{t}</option>)}
@@ -352,7 +352,7 @@ const AdminPdfUpload: React.FC = () => {
                                     value={examRef}
                                     onChange={(e) => setExamRef(e.target.value)}
                                     placeholder="e.g., DU_2023, MAT_2022"
-                                    className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-600 text-sm font-bold shadow-sm outline-none focus:ring-2 ring-primary/20"
+                                    className="w-full p-3 rounded-xl border dark:bg-zinc-900 dark:border-gray-600 text-sm font-bold shadow-sm outline-none focus:ring-2 ring-primary/20"
                                 />
                             </div>
 
@@ -363,7 +363,7 @@ const AdminPdfUpload: React.FC = () => {
                     <div className="lg:col-span-2 space-y-6">
                         
                         {/* Upload Area */}
-                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors bg-white dark:bg-gray-800">
+                        <div className="border-2 border-dashed border-gray-300 dark:border-zinc-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors bg-white dark:bg-zinc-900">
                             <input 
                                 type="file" 
                                 accept=".pdf" 
@@ -419,7 +419,7 @@ const AdminPdfUpload: React.FC = () => {
 
                         {/* Preview Area */}
                         {processedQuestions.length > 0 && (
-                            <div className="bg-gray-50 dark:bg-gray-900/30 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 animate-in slide-in-from-bottom-5">
+                            <div className="bg-gray-50 dark:bg-black/30 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 animate-in slide-in-from-bottom-5">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="font-bold text-lg flex items-center gap-2">
                                         <CheckCircle className="text-green-500"/> 
@@ -437,7 +437,7 @@ const AdminPdfUpload: React.FC = () => {
 
                                 <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                     {processedQuestions.map((q, idx) => (
-                                        <div key={idx} className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 relative group">
+                                        <div key={idx} className="bg-white dark:bg-zinc-900 p-5 rounded-xl border border-gray-200 dark:border-zinc-800 relative group">
                                             <button 
                                                 onClick={() => handleDelete(idx)}
                                                 className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors"
@@ -454,7 +454,7 @@ const AdminPdfUpload: React.FC = () => {
                                             
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                                                 {q.options.map((opt, i) => (
-                                                    <div key={i} className={`p-2 rounded-lg text-xs border flex items-center gap-2 ${i === Number(q.correctAnswerIndex) ? 'bg-green-50 border-green-300 text-green-700 font-bold' : 'border-gray-200 dark:border-gray-700 text-gray-600'}`}>
+                                                    <div key={i} className={`p-2 rounded-lg text-xs border flex items-center gap-2 ${i === Number(q.correctAnswerIndex) ? 'bg-green-50 border-green-300 text-green-700 font-bold' : 'border-gray-200 dark:border-zinc-800 text-gray-600'}`}>
                                                         <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[12px]">{String.fromCharCode(65+i)}</span>
                                                         {opt}
                                                     </div>
@@ -462,7 +462,7 @@ const AdminPdfUpload: React.FC = () => {
                                             </div>
                                             
                                             {q.explanation && (
-                                                <p className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border-l-2 border-gray-300">
+                                                <p className="text-xs text-gray-500 bg-gray-50 dark:bg-black p-3 rounded-lg border-l-2 border-gray-300">
                                                     <span className="font-bold">Explanation:</span> {q.explanation}
                                                 </p>
                                             )}

@@ -1,327 +1,176 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Clock, ArrowRight, Settings, Archive, Swords, 
-  Atom, Beaker, Calculator, Dna, Brain, ChevronRight, Flame 
+    PenTool, 
+    Layers, 
+    Swords, 
+    BookOpen, 
+    RotateCcw,
+    ChevronRight,
+    Users,
+    GraduationCap,
+    FlaskConical,
+    Activity,
+    BookMarked
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
-const SUBJECTS = [
-    { name: 'Physics', group: 'Physics', icon: Atom, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
-    { name: 'Chemistry', group: 'Chemistry', icon: Beaker, color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
-    { name: 'Math', group: 'Higher Math', icon: Calculator, color: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
-    { name: 'Biology', group: 'Biology', icon: Dna, color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
-    { name: 'ICT', group: 'ICT', icon:  Brain, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
+import { SHARED_COURSES } from '../data/courses';
+
+const EXAM_FEATURES = [
+    { id: 'mock', title: 'মক টেস্ট', desc: 'পূর্ণাঙ্গ প্রস্তুতি', icon: PenTool, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10', path: '/mock-test' },
+    { id: 'flashcard', title: 'ফ্ল্যাশ কার্ড', desc: 'দ্রুত রিভিশন', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10', path: '/flashcards' },
+    { id: 'battle', title: 'কুইজ ব্যাটল', desc: 'বন্ধুদের সাথে', icon: Swords, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10', path: '/battle' },
+    { id: 'qbank', title: 'প্রশ্নব্যাংক', desc: 'বিগত সালের প্রশ্ন', icon: BookOpen, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10', path: '/qbank' },
+    { id: 'retake', title: 'রিটেক', desc: 'ভুলগুলো শুধরে', icon: RotateCcw, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-500/10', path: '/wrong-questions' },
 ];
 
-import questions from '../data/gst_a_23_24_questions.json';
+const EXAM_BATCHES = SHARED_COURSES.filter(course => course.isExamBatch);
 
 const ExamHub: React.FC = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<'features' | 'batches'>('features');
 
-  const startLiveExam = () => {
-      const examId = `live_exam_${Date.now()}`;
-      const liveExamConfig = {
-          title: "মেডিকেল ভর্তি পরীক্ষা ২০২৫-২৬",
-          timeLimit: 60,
-          negativeMarking: 0.25,
-          mode: 'ALL_AT_ONCE',
-          type: 'PAST_PAPER',
-          examRef: 'medical_25_26',
-          isPracticeMode: false
-      };
-      
-      localStorage.setItem(`exam_config_${examId}`, JSON.stringify(liveExamConfig));
-      navigate(`/exam/${examId}`);
-  };
-
-  const startSubjectPractice = (groupName: string) => {
-      navigate('/quiz', { state: { subject: groupName } }); 
-  };
-
-  const startFreeModelTest = (testId: string, title: string, subjectFilter: string, questionCount: number = 25, time: number = 20) => {
-      const examId = `fmt_${testId}_${Date.now()}`;
-      
-      // Filter questions based on subject
-      let filteredQuestions = questions.filter(q => q.subject.includes(subjectFilter));
-      
-      // If not enough questions, take what we have, or fallback to all
-      if (filteredQuestions.length < questionCount) {
-          filteredQuestions = questions;
-      }
-      
-      // Shuffle and slice with stimulus awareness
-      const grouped: Record<string, any[]> = {};
-      const singles: any[] = [];
-      const shuffledRaw = [...filteredQuestions].sort(() => 0.5 - Math.random());
-      
-      shuffledRaw.forEach((q: any) => {
-          const key = q.contextText || q.contextImage || null;
-          if (key) {
-              if (!grouped[key]) grouped[key] = [];
-              grouped[key].push(q);
-          } else {
-              singles.push(q);
-          }
-      });
-
-      const selectedQuestions: any[] = [];
-      const groups = Object.values(grouped).sort(() => 0.5 - Math.random());
-      const singlesShuffled = singles.sort(() => 0.5 - Math.random());
-
-      groups.forEach(group => {
-          if (selectedQuestions.length + group.length <= questionCount) {
-              selectedQuestions.push(...group);
-          }
-      });
-
-      singlesShuffled.forEach(q => {
-          if (selectedQuestions.length < questionCount) {
-              selectedQuestions.push(q);
-          }
-      });
-
-      // Fallback if needed
-      if (selectedQuestions.length < questionCount) {
-          groups.forEach(group => {
-              if (selectedQuestions.length < questionCount) {
-                  const needed = questionCount - selectedQuestions.length;
-                  const alreadyIn = group.every(gq => selectedQuestions.some(sq => sq.question === gq.question));
-                  if (!alreadyIn) {
-                      selectedQuestions.push(...group.slice(0, needed));
-                  }
-              }
-          });
-      }
-
-      const config = {
-          title: title,
-          timeLimit: time,
-          negativeMarking: 0.25,
-          mode: 'ALL_AT_ONCE',
-          questions: selectedQuestions,
-          isPracticeMode: false
-      };
-      
-      localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
-      navigate(`/exam/${examId}`);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors pb-20 relative overflow-hidden">
-      {/* Ambient Background Glows */}
-      <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[120px]"></div>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 pt-6 space-y-8 relative z-10">
-        
-        {/* Header Title */}
-        <div className="flex items-center justify-between">
-            <h1 className="text-xl md:text-4xl font-black text-gray-800 dark:text-white tracking-tight">
-                এক্সাম <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">জোন</span>
-            </h1>
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-white/20 dark:border-white/10 flex items-center justify-center shadow-lg">
-                <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-orange-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(255,82,0,0.5)]"></div>
-            </div>
-        </div>
-
-        {/* 1. Live Exam Banner (Cyberpunk Card) */}
-        <div 
-            onClick={startLiveExam}
-            className="w-full relative bg-[#0f172a] dark:bg-black rounded-[1.8rem] md:rounded-[2.5rem] p-5 md:p-10 text-white overflow-hidden shadow-2xl shadow-orange-900/20 cursor-pointer group border border-white/10"
-        >
-            {/* Abstract Background Shapes */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/20 rounded-full blur-[80px] -mr-10 -mt-10 animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-600/20 rounded-full blur-[60px] -ml-5 -mb-5"></div>
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-
-            <div className="relative z-10 flex flex-col gap-3 md:gap-6">
-                <div className="flex justify-between items-start">
-                    <span className="px-2.5 py-1 bg-red-500/20 backdrop-blur-md rounded-full text-[9px] md:text-xs font-bold border border-red-500/30 flex items-center gap-1.5 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Live Now
-                    </span>
-                    <Clock size={18} className="text-gray-400 group-hover:text-white transition-colors md:w-5 md:h-5"/>
-                </div>
-                <div>
-                    <h2 className="text-xl md:text-4xl font-black mb-1.5 md:mb-2 tracking-tight">মেডিকেল ভর্তি পরীক্ষা</h2>
-                    <p className="text-[12px] md:text-sm text-gray-400 font-medium">মডেল টেস্ট - ০৫ | পূর্ণমান: ১০০ | সময়: ১ ঘণ্টা</p>
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-[11px] md:text-sm font-bold text-white/90 group-hover:gap-3 transition-all">
-                    পরীক্ষা শুরু করুন <ArrowRight size={14} className="text-orange-400 md:w-4 md:h-4"/>
-                </div>
-            </div>
-        </div>
-
-        {/* 2. Quick Access Grid */}
-        <div>
-            <h3 className="text-[11px] md:text-base font-black text-gray-500 dark:text-gray-400 mb-3 px-1 uppercase tracking-wider">কুইক অ্যাক্সেস</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                {/* Flash Cards */}
-                <div 
-                    onClick={() => navigate('/quiz', { state: { mode: 'RAPID_FIRE' } })}
-                    className="bg-white/60 dark:bg-gray-800/40 backdrop-blur-xl p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden"
-                >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
-                        <Flame size={50} />
-                    </div>
-                    <div className="w-9 h-9 md:w-12 md:h-12 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-2.5 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
-                        <Flame size={18} fill="currentColor" className="md:w-6 md:h-6" />
-                    </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg">ফ্ল্যাশ কার্ড</h4>
-                    <p className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">দ্রুত রিভিশন দিন</p>
-                </div>
-
-                {/* Custom Quiz */}
-                <div 
-                    onClick={() => navigate('/quiz')}
-                    className="bg-white/60 dark:bg-gray-800/40 backdrop-blur-xl p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
-                >
-                    <div className="w-9 h-9 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-2.5 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
-                        <Settings size={18} className="md:w-6 md:h-6" />
-                    </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg">কাস্টম কুইজ</h4>
-                    <p className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">নিজের মতো এক্সাম সাজান</p>
-                </div>
-
-                {/* Question Bank */}
-                <div 
-                    onClick={() => navigate('/qbank')}
-                    className="bg-white/60 dark:bg-gray-800/40 backdrop-blur-xl p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
-                >
-                    <div className="w-9 h-9 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-500/20 text-primary dark:text-orange-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-2.5 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
-                        <Archive size={18} className="md:w-6 md:h-6" />
-                    </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg">প্রশ্ন ব্যাংক</h4>
-                    <p className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">বিগত বছরের প্রশ্ন</p>
-                </div>
-
-                {/* Battle */}
-                <div 
-                    onClick={() => navigate('/battle')}
-                    className="bg-white/60 dark:bg-gray-800/40 backdrop-blur-xl p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
-                >
-                    <div className="w-9 h-9 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl md:rounded-2xl flex items-center justify-center mb-2.5 md:mb-4 group-hover:scale-110 transition-transform shadow-sm">
-                        <Swords size={18} className="md:w-6 md:h-6" />
-                    </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg">কুইজ ব্যাটল</h4>
-                    <p className="text-[9px] md:text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">বন্ধুদের চ্যালেঞ্জ করুন</p>
-                </div>
-            </div>
-        </div>
-
-        {/* 3. Free Model Tests */}
-        <div>
-            <h3 className="text-[11px] md:text-base font-black text-gray-500 dark:text-gray-400 mb-3 px-1 uppercase tracking-wider">ফ্রী মডেল টেস্ট</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                <div 
-                    onClick={() => startFreeModelTest('01', 'ফ্রী মডেল টেস্ট - ০১ (Physics)', 'Physics')}
-                    className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-sm hover:border-orange-400 dark:hover:border-orange-500/50 transition-all cursor-pointer group"
-                >
-                    <div className="flex justify-between items-start mb-2.5 md:mb-3">
-                        <div className="w-9 h-9 md:w-10 md:h-10 bg-orange-50 dark:bg-orange-500/20 text-primary dark:text-orange-400 rounded-xl flex items-center justify-center shadow-sm">
-                            <Atom size={18} className="md:w-5 md:h-5" />
-                        </div>
-                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[12px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
-                    </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base mb-0.5 md:mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Physics: ভেক্টর ও গতিবিদ্যা</h4>
-                    <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
-                </div>
-
-                <div 
-                    onClick={() => startFreeModelTest('02', 'ফ্রী মডেল টেস্ট - ০২ (Chemistry)', 'Chemistry')}
-                    className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-sm hover:border-orange-400 dark:hover:border-orange-500/50 transition-all cursor-pointer group"
-                >
-                    <div className="flex justify-between items-start mb-2.5 md:mb-3">
-                        <div className="w-9 h-9 md:w-10 md:h-10 bg-orange-50 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center shadow-sm">
-                            <Beaker size={18} className="md:w-5 md:h-5" />
-                        </div>
-                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[12px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
-                    </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base mb-0.5 md:mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Chemistry: গুণগত রসায়ন</h4>
-                    <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
-                </div>
-
-                <div 
-                    onClick={() => startFreeModelTest('03', 'ফ্রী মডেল টেস্ট - ০৩ (Math)', 'Math')}
-                    className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-sm hover:border-red-400 dark:hover:border-red-500/50 transition-all cursor-pointer group"
-                >
-                    <div className="flex justify-between items-start mb-2.5 md:mb-3">
-                        <div className="w-9 h-9 md:w-10 md:h-10 bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center shadow-sm">
-                            <Calculator size={18} className="md:w-5 md:h-5" />
-                        </div>
-                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-[9px] md:text-[12px] font-bold rounded text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600">20 min</span>
-                    </div>
-                    <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-base mb-0.5 md:mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">Math: ম্যাট্রিক্স ও নির্ণায়ক</h4>
-                    <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২৫টি প্রশ্ন | ২৫ মার্কস</p>
-                </div>
-            </div>
-        </div>
-
-        {/* 4. Featured Exams */}
-        <div>
-            <h3 className="text-[11px] md:text-base font-black text-gray-500 dark:text-gray-400 mb-3 px-1 uppercase tracking-wider">জনপ্রিয় প্রশ্ন ব্যাংক</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                <div 
-                    onClick={() => {
-                        const examId = `medical_25_26_${Date.now()}`;
-                        const config = {
-                            title: "মেডিকেল ভর্তি পরীক্ষা ২০২৫-২৬",
-                            timeLimit: 60,
-                            negativeMarking: 0.25,
-                            mode: 'ALL_AT_ONCE',
-                            type: 'PAST_PAPER',
-                            examRef: 'medical_25_26',
-                            isPracticeMode: true
-                        };
-                        localStorage.setItem(`exam_config_${examId}`, JSON.stringify(config));
-                        navigate(`/exam/${examId}`);
-                    }}
-                    className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 shadow-sm hover:border-red-500/50 transition-all cursor-pointer flex items-center justify-between group"
-                >
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-red-50 dark:bg-red-500/20 rounded-2xl flex items-center justify-center text-red-600 dark:text-red-400 shadow-sm">
-                            <Archive size={20} className="md:w-6 md:h-6" />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-gray-800 dark:text-white text-[13px] md:text-lg group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">মেডিকেল ভর্তি পরীক্ষা</h4>
-                            <p className="text-[12px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">২০২৫-২৬ সেশন | ১০০ প্রশ্ন</p>
-                        </div>
-                    </div>
-                    <div className="p-1.5 md:p-2 bg-gray-50 dark:bg-gray-700/50 rounded-full group-hover:bg-red-500 group-hover:text-white transition-all">
-                        <ChevronRight size={16} className="md:w-5 md:h-5" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* 5. Subject Horizontal Scroll */}
-        <div>
-            <div className="flex justify-between items-center mb-4 px-1">
-                <h3 className="text-sm md:text-base font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">বিষয়ভিত্তিক অনুশীলন</h3>
-                <button onClick={() => navigate('/quiz')} className="text-xs font-bold text-primary dark:text-orange-400 flex items-center gap-1 hover:underline">সব দেখুন <ChevronRight size={12}/></button>
-            </div>
-            
-            <div className="flex md:grid md:grid-cols-5 gap-3 md:gap-4 overflow-x-auto md:overflow-visible pb-4 md:pb-0 no-scrollbar">
-                {SUBJECTS.map((sub, idx) => (
-                    <div 
-                        key={idx} 
-                        onClick={() => startSubjectPractice(sub.group)}
-                        className="min-w-[100px] md:min-w-0 bg-white/70 dark:bg-gray-800/60 backdrop-blur-md p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/40 dark:border-white/5 flex flex-col items-center gap-3 cursor-pointer hover:border-gray-300 dark:hover:border-white/20 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
+    return (
+        <div className="min-h-screen bg-[#F8FAFC] dark:bg-black text-gray-900 dark:text-gray-100 pb-24 overflow-x-hidden font-sans">
+            <div className="max-w-2xl mx-auto px-4 pt-2 md:pt-4 w-full flex flex-col gap-4 md:gap-6">
+                {/* Header Tabs */}
+                <div className="flex items-center justify-center gap-8 border-b border-gray-200 dark:border-zinc-800 pb-2">
+                    <button 
+                        onClick={() => setActiveTab('features')}
+                        className={`text-[17px] md:text-[19px] font-bold pb-2 relative transition-colors ${activeTab === 'features' ? 'text-gray-900 dark:text-white' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                     >
-                        <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-sm ${sub.color}`}>
-                            <sub.icon size={20} className="md:w-7 md:h-7" />
-                        </div>
-                        <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200 text-center">{sub.name}</span>
-                    </div>
-                ))}
+                        এক্সাম ফিচার্স
+                        {activeTab === 'features' && (
+                            <motion.div 
+                                layoutId="exam-tab-indicator"
+                                className="absolute bottom-[-9px] left-0 right-0 h-[3px] bg-primary rounded-t-full"
+                            />
+                        )}
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('batches')}
+                        className={`text-[17px] md:text-[19px] font-bold pb-2 relative transition-colors ${activeTab === 'batches' ? 'text-gray-900 dark:text-white' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                    >
+                        এক্সাম ব্যাচ
+                        {activeTab === 'batches' && (
+                            <motion.div 
+                                layoutId="exam-tab-indicator"
+                                className="absolute bottom-[-9px] left-0 right-0 h-[3px] bg-primary rounded-t-full"
+                            />
+                        )}
+                    </button>
+                </div>
+
+                {/* Content Area */}
+                <div className="pt-2">
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'features' ? (
+                            <motion.div 
+                                key="features"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4"
+                            >
+                                {EXAM_FEATURES.map((feat) => (
+                                    <motion.div 
+                                        whileHover={{ scale: 1.03 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        key={feat.id}
+                                        onClick={() => navigate(feat.path)}
+                                        className="aspect-square bg-white dark:bg-[#121212] p-4 rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer hover:shadow-md transition-all flex flex-col items-center justify-center gap-3 md:gap-4 group"
+                                    >
+                                        <div className={`w-14 h-14 md:w-16 md:h-16 rounded-[20px] flex items-center justify-center ${feat.bg} text-gray-800 dark:text-white group-hover:scale-110 transition-transform shadow-sm`}>
+                                            <feat.icon size={28} strokeWidth={2.5} className={feat.color} />
+                                        </div>
+                                        <div className="flex flex-col items-center text-center">
+                                            <span className="font-bold text-[15px] md:text-[17px] text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">
+                                                {feat.title}
+                                            </span>
+                                            <span className="text-[11px] md:text-sm text-gray-500 dark:text-gray-400 font-medium mt-0.5">
+                                                {feat.desc}
+                                            </span>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        ) : (
+                            <motion.div 
+                                key="batches"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex flex-col gap-3.5 md:gap-4"
+                            >
+                                {SHARED_COURSES.map((batch) => (
+                                    <motion.div 
+                                        whileHover={{ y: -2 }}
+                                        key={batch.id}
+                                        onClick={() => navigate(`/exam-batch/${batch.id}`)}
+                                        className="w-full bg-white dark:bg-[#121212] p-4 md:p-5 rounded-[2rem] border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer hover:shadow-md hover:border-gray-200 dark:hover:border-white/10 transition-all group overflow-hidden relative flex flex-col"
+                                    >
+                                        {/* Gradient Blob */}
+                                        <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${batch.color} opacity-5 blur-2xl -mr-10 -mt-10 rounded-full group-hover:opacity-10 transition-opacity duration-500`}></div>
+
+                                        {batch.image && (
+                                            <div className="w-full aspect-[2/1] md:aspect-[2.5/1] rounded-2xl mb-5 overflow-hidden relative border border-gray-100 dark:border-white/5 shrink-0 bg-gray-100 dark:bg-zinc-900">
+                                                <img src={batch.image} alt={batch.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                                <div className="absolute inset-0 border border-black/5 dark:border-white/5 rounded-2xl pointer-events-none"></div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-start gap-4 relative z-10 flex-col md:flex-row">
+                                            {!batch.image && (
+                                                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br ${batch.color} text-white shadow-md group-hover:scale-105 transition-transform`}>
+                                                    <batch.icon size={24} strokeWidth={2} className="opacity-95 md:w-8 md:h-8" />
+                                                </div>
+                                            )}
+                                            
+                                            {/* Content */}
+                                            <div className="flex flex-col flex-1 min-w-0 pt-0.5">
+                                                <h4 className="text-[18px] md:text-[20px] font-bold text-gray-900 dark:text-gray-100 leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1">
+                                                    {batch.title}
+                                                </h4>
+                                                <p className="text-[14px] md:text-[15px] text-gray-500 dark:text-gray-400 font-medium tracking-wide mb-4">
+                                                    {batch.subtitle}
+                                                </p>
+                                                
+                                                {/* Tags */}
+                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                    {batch.tags?.map(tag => (
+                                                        <span key={tag} className="px-2.5 py-1 bg-gray-50 dark:bg-zinc-900 text-gray-600 dark:text-gray-300 text-[11px] md:text-[12px] font-bold rounded-[8px] whitespace-nowrap border border-gray-100 dark:border-zinc-800/50">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                {/* Bottom Stats */}
+                                                <div className="flex items-center gap-4 text-gray-500 dark:text-gray-400">
+                                                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-900/50 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-zinc-800">
+                                                        <Users size={15} className="text-gray-400 dark:text-gray-500" />
+                                                        <span className="text-[12px] md:text-[13px] font-bold">{batch.students} ভর্তি</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-900/50 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-zinc-800">
+                                                        <BookMarked size={15} className="text-gray-400 dark:text-gray-500" />
+                                                        <span className="text-[12px] md:text-[13px] font-bold">{batch.exams} এক্সাম</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
             </div>
         </div>
-
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ExamHub;
+

@@ -109,7 +109,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen flex bg-white dark:bg-black transition-colors">
       {/* Left Side - Visual */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
@@ -163,7 +163,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
            <button
              onClick={handleGoogleLogin}
              disabled={loading}
-             className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-3 relative disabled:opacity-70 disabled:cursor-not-allowed"
+             className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-3 relative disabled:opacity-70 disabled:cursor-not-allowed"
            >
              <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -176,10 +176,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
 
            <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                <div className="w-full border-t border-gray-200 dark:border-zinc-800"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">{t('auth_or')}</span>
+                <span className="px-2 bg-white dark:bg-black text-gray-500">{t('auth_or')}</span>
               </div>
            </div>
 
@@ -195,7 +195,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
                         placeholder={t('auth_name')}
                         />
                     </div>
@@ -209,7 +209,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                         required
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
                         placeholder="01XXXXXXXXX"
                         />
                     </div>
@@ -226,7 +226,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
                     placeholder="name@example.com"
                   />
                 </div>
@@ -241,7 +241,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
                     placeholder="••••••••"
                   />
                 </div>

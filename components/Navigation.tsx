@@ -255,7 +255,7 @@ const Navigation: React.FC<NavigationProps> = ({
               }}
               className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-black border-r border-gray-200 dark:border-white/[0.05] z-[150] flex flex-col shadow-2xl md:hidden h-full"
             >
-              <div className="p-5 pt-safe-area border-b border-gray-100 dark:border-white/[0.05] flex items-center justify-between relative">
+              <div className="p-5 border-b border-gray-100 dark:border-white/[0.05] flex items-center justify-between relative">
                 <div className="flex items-center gap-1.5">
                   <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain logo-dark-mode" />
                   <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain logo-dark-mode" />
@@ -366,7 +366,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   )}
                 </nav>
 
-                <div className="p-4 pb-safe-area border-t border-gray-100 dark:border-white/[0.05] space-y-3 bg-white dark:bg-black">
+                <div className="p-4 border-t border-gray-100 dark:border-white/[0.05] space-y-3 bg-white dark:bg-black">
                   <motion.div
                     variants={{
                       hidden: { opacity: 0, y: 10 },
@@ -418,7 +418,7 @@ const Navigation: React.FC<NavigationProps> = ({
               }}
               className="fixed inset-y-0 right-0 w-80 md:w-96 bg-white dark:bg-black z-[170] shadow-2xl border-l border-gray-200 dark:border-white/[0.05] flex flex-col"
             >
-               <div className="p-4 pt-safe-area bg-white dark:bg-black border-b border-gray-100 dark:border-white/[0.05] flex justify-between items-center">
+               <div className="p-4 bg-white dark:bg-black border-b border-gray-100 dark:border-white/[0.05] flex justify-between items-center">
                    <h4 className="text-base font-bold text-gray-800 dark:text-zinc-100 flex items-center gap-2">
                        নোটিফিকেশন <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">{unreadCount}</span>
                    </h4>
@@ -651,7 +651,7 @@ const Navigation: React.FC<NavigationProps> = ({
       </div>
 
       {/* Native-like Fixed Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-100 dark:border-white/[0.05] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-safe-area">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-100 dark:border-white/[0.05] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         <div className="flex items-center justify-around h-16 px-1 relative">
           {mobileNavItems.map((item, idx) => {
             const active = item.path ? isActive(item.path) : false;

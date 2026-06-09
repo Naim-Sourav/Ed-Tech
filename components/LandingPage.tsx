@@ -10,7 +10,7 @@ const LazyLottieLoader = ({ importFunc }: { importFunc: () => Promise<any> }) =>
   useEffect(() => {
     importFunc().then(m => setData(m.default));
   }, [importFunc]);
-  if (!data) return <div className="w-full h-full animate-pulse bg-gray-200 dark:bg-gray-800 rounded-[20%]"></div>;
+  if (!data) return <div className="w-full h-full animate-pulse bg-gray-200 dark:bg-zinc-900 rounded-[20%]"></div>;
   return <Lottie animationData={data} loop={true} />;
 };
 
@@ -44,7 +44,7 @@ const AnimatedCounter = ({ end, duration = 2000, suffix = "" }: { end: number, d
 const UniversityMarquee = () => {
   const unis = ["BUET", "DMC", "Dhaka University", "RUET", "KUET", "CUET", "SUST", "Jahangirnagar", "Rajshahi University", "Chittagong University", "GST", "AFMC"];
   return (
-    <div className="w-full overflow-hidden bg-gray-50/50 dark:bg-gray-900/50 py-4 border-y border-gray-100 dark:border-gray-800">
+    <div className="w-full overflow-hidden bg-gray-50/50 dark:bg-black/50 py-4 border-y border-gray-100 dark:border-zinc-800">
       <div className="flex w-[200%] animate-marquee whitespace-nowrap">
         {unis.concat(unis).map((uni, i) => (
           <div key={i} className="mx-8 flex items-center gap-2 text-gray-400 font-bold text-lg uppercase tracking-wider opacity-60 hover:opacity-100 transition-opacity cursor-default">
@@ -63,7 +63,7 @@ const UniversityMarquee = () => {
 const QuestionPaperCard = ({ title, sub, icon, color }: any) => (
   <div className="mx-3 relative group w-64 h-32 flex-shrink-0 cursor-pointer">
       <div className={`absolute inset-0 bg-gradient-to-r ${color} rounded-2xl opacity-10 group-hover:opacity-20 transition-opacity`}></div>
-      <div className="absolute inset-0 border border-gray-100 dark:border-gray-700 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 flex flex-col justify-between transition-transform group-hover:-translate-y-1 duration-300">
+      <div className="absolute inset-0 border border-gray-100 dark:border-zinc-800 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm p-4 flex flex-col justify-between transition-transform group-hover:-translate-y-1 duration-300">
           <div className="flex justify-between items-start">
               <div className={`p-2 rounded-lg bg-gray-50 dark:bg-gray-700 ${color.replace('from-', 'text-').split(' ')[0]}`}>
                   {icon}
@@ -133,7 +133,7 @@ const Leaf = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" 
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
   return (
-    <main className="h-screen w-full overflow-y-auto bg-white dark:bg-gray-900 font-sans text-gray-900 dark:text-white transition-colors scroll-smooth selection:bg-primary/30">
+    <main className="h-screen w-full overflow-y-auto bg-white dark:bg-black font-sans text-gray-900 dark:text-white transition-colors scroll-smooth selection:bg-primary/30">
       <Helmet>
         <title>Porikkhangon | HSC & Admission AI Tutor - Bangladesh's best Prep Platform</title>
         <meta name="description" content="Porikkhangon (পরীক্ষাঙ্গন) - HSC একাডেমিক এবং এডমিশন প্রস্তুতির জন্য বাংলাদেশের সেরা AI-চালিত লার্নিং প্ল্যাটফর্ম। AI টিউটর, কুইজ ব্যাটল এবং স্মার্ট ট্র্যাকিং এর মাধ্যমে নিজেকে প্রস্তুত করো।" />
@@ -145,7 +145,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       </Helmet>
       
       {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 transition-all">
+      <header className="sticky top-0 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800 transition-all">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 md:h-20 flex items-center justify-between">
           
           {/* Left Side - Brand Logo */}
@@ -206,7 +206,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                 </button>
                 <button 
                   onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group text-base md:text-lg"
+                  className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-zinc-800 font-bold rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 group text-base md:text-lg"
                 >
                   <Play size={18} className="group-hover:text-primary transition-colors md:w-5 md:h-5" /> ডেমো দেখুন
                 </button>
@@ -223,21 +223,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           </div>
 
           {/* Animated Stats */}
-          <div className="mt-12 md:mt-24 p-5 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
+          <div className="mt-12 md:mt-24 p-5 md:p-8 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                   <div className="text-center">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={20000} suffix="+" /></p>
                       <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">প্রশ্ন সম্ভার</p>
                   </div>
-                  <div className="text-center border-l border-gray-200 dark:border-gray-700">
+                  <div className="text-center border-l border-gray-200 dark:border-zinc-800">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={24} suffix="/7" /></p>
                       <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">AI সাপোর্ট</p>
                   </div>
-                  <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-gray-700 pt-3 md:pt-0 border-t md:border-t-0">
+                  <div className="text-center border-l-0 md:border-l border-gray-200 dark:border-zinc-800 pt-3 md:pt-0 border-t md:border-t-0">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={10} suffix="+" /></p>
                       <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">বছরের প্রশ্ন</p>
                   </div>
-                  <div className="text-center border-l border-gray-200 dark:border-gray-700 pt-3 md:pt-0 border-t md:border-t-0">
+                  <div className="text-center border-l border-gray-200 dark:border-zinc-800 pt-3 md:pt-0 border-t md:border-t-0">
                       <p className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-0.5 md:mb-1"><AnimatedCounter end={4} suffix="টি" /></p>
                       <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider flex items-center justify-center gap-1">মেজর টার্গেট</p>
                   </div>
@@ -347,7 +347,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       </section>
 
       {/* AI Bot Feature Section - Redesigned */}
-      <section className="py-10 md:py-32 px-4 md:px-6 bg-gray-50 dark:bg-gray-800/20 overflow-hidden">
+      <section className="py-10 md:py-32 px-4 md:px-6 bg-gray-50 dark:bg-zinc-900/20 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-8 lg:gap-24">
             
@@ -368,7 +368,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                 <div className="h-1.5 w-32 bg-gradient-to-r from-primary to-orange-400 rounded-full mx-auto md:mx-0"></div>
               </div>
               
-              <hr className="border-gray-200 dark:border-gray-700 w-full hidden md:block" />
+              <hr className="border-gray-200 dark:border-zinc-800 w-full hidden md:block" />
               
               <div className="space-y-6">
                 <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -405,7 +405,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       </section>
 
       {/* Study Planner Section - NEW */}
-      <section className="py-10 md:py-32 px-4 md:px-6 bg-white dark:bg-gray-900 overflow-hidden">
+      <section className="py-10 md:py-32 px-4 md:px-6 bg-white dark:bg-black overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row-reverse items-center gap-8 lg:gap-24">
             
@@ -426,7 +426,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                 <div className="h-1.5 w-32 bg-gradient-to-r from-primary to-orange-400 rounded-full mx-auto md:mx-0"></div>
               </div>
               
-              <hr className="border-gray-200 dark:border-gray-700 w-full hidden md:block" />
+              <hr className="border-gray-200 dark:border-zinc-800 w-full hidden md:block" />
               
               <div className="space-y-6">
                 <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -560,7 +560,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       </section>
 
       {/* Question Bank Section (Revised with Marquee) */}
-      <section className="py-16 md:py-24 px-4 md:px-6 bg-white dark:bg-gray-900 overflow-hidden">
+      <section className="py-16 md:py-24 px-4 md:px-6 bg-white dark:bg-black overflow-hidden">
          <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-end mb-10 md:mb-14">
                <div className="space-y-3 w-full md:w-auto">
@@ -574,7 +574,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                       টাকা খরচ করে মডেল টেস্ট নয়। পরীক্ষাঙ্গনে মেডিকেল, ইঞ্জিনিয়ারিং ও ভার্সিটির বিগত বছরের সকল প্রশ্ন সলভ করো সম্পূর্ণ ফ্রিতে।
                   </p>
                </div>
-               <button onClick={onLoginClick} className="text-gray-900 dark:text-white font-bold hover:text-primary mt-6 md:mt-0 flex items-center gap-2 group border-b-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-all text-sm md:text-base pb-1">
+               <button onClick={onLoginClick} className="text-gray-900 dark:text-white font-bold hover:text-primary mt-6 md:mt-0 flex items-center gap-2 group border-b-2 border-gray-200 dark:border-zinc-800 hover:border-primary transition-all text-sm md:text-base pb-1">
                   প্রশ্ন ব্যাংক এক্সপ্লোর করুন <ArrowRight size={16} className="md:w-[18px] md:h-[18px] group-hover:translate-x-1 transition-transform"/>
                </button>
             </div>
@@ -586,7 +586,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       </section>
 
       {/* Additional Features Section */}
-      <section className="py-16 md:py-24 px-4 md:px-6 bg-gray-50 dark:bg-gray-800/30">
+      <section className="py-16 md:py-24 px-4 md:px-6 bg-gray-50 dark:bg-zinc-900/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">সব ফিচার এক নজরে</h2>
@@ -602,7 +602,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               { icon: <Swords className="text-orange-500" />, title: "লাইভ কুইজ ব্যাটল", desc: "বন্ধুদের সাথে রিয়েল-টাইম লড়াইয়ে মেতে ওঠো এবং নিজের মেধা যাচাই করো।" },
               { icon: <Activity className="text-red-400" />, title: "স্মার্ট প্রোগ্রেস ট্র্যাকিং", desc: "গ্রাফ এবং চার্টের মাধ্যমে তোমার উন্নতির গ্রাফ দেখো প্রতিদিন।" }
             ].map((feature, i) => (
-              <div key={i} className="p-6 md:p-8 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all group">
+              <div key={i} className="p-6 md:p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800 hover:shadow-xl transition-all group">
                 <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   {feature.icon}
                 </div>
@@ -629,7 +629,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
               { q: "AI টিউটর কিভাবে কাজ করে?", a: "যেকোনো প্রশ্নের ছবি তুলে বা টেক্সট লিখে পাঠালে আমাদের AI টিউটর মুহূর্তেই তার ব্যাখ্যাসহ সমাধান দিয়ে দেয়।" },
               { q: "কুইজ ব্যাটল কি?", a: "কুইজ ব্যাটল হলো একটি রিয়েল-টাইম মাল্টিপ্লেয়ার গেম যেখানে আপনি অন্য শিক্ষার্থীদের সাথে সরাসরি প্রতিযোগিতায় অংশ নিতে পারেন।" }
             ].map((faq, i) => (
-              <details key={i} className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+              <details key={i} className="group bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden">
                 <summary className="flex items-center justify-between p-6 cursor-pointer font-bold text-gray-900 dark:text-white list-none">
                   {faq.q}
                   <span className="transition-transform group-open:rotate-180">
@@ -669,7 +669,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 md:py-12 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-center">
+      <footer className="py-8 md:py-12 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-black text-center">
         <div className="flex items-center justify-center mb-4 md:mb-6 opacity-80 gap-1.5">
            <img src="./Pshape.svg" alt="Porikkhangon - HSC & Admission Preparation Logo" className="h-10 md:h-12 w-auto object-contain logo-dark-mode" />
            <img src="./letterlogo.svg" alt="Porikkhangon Typography" className="h-6 md:h-7 w-auto object-contain logo-dark-mode" />

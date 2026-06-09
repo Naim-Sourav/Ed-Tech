@@ -51,7 +51,7 @@ const QuestWidget: React.FC<QuestWidgetProps> = ({ quests, onQuestUpdate }) => {
   if (!quests || quests.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm mb-6 relative overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-200 dark:border-zinc-800 shadow-sm mb-6 relative overflow-hidden">
         {showConfetti && <Confetti />}
         
         <div className="flex items-center justify-between mb-4">
@@ -67,7 +67,7 @@ const QuestWidget: React.FC<QuestWidgetProps> = ({ quests, onQuestUpdate }) => {
                 const isReady = quest.completed && !quest.claimed;
                 
                 return (
-                    <div key={quest.id} className={`p-3 rounded-xl border transition-all ${quest.claimed ? 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-60' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-primary/30'}`}>
+                    <div key={quest.id} className={`p-3 rounded-xl border transition-all ${quest.claimed ? 'bg-gray-50 dark:bg-black border-gray-100 dark:border-zinc-800 opacity-60' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 hover:border-primary/30'}`}>
                         <div className="flex justify-between items-start mb-2">
                             <div className="flex gap-3">
                                 <div className={`p-2 rounded-lg bg-gray-50 dark:bg-gray-700`}>

@@ -17,8 +17,8 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-gray-900 rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-800 shadow-sm max-w-md mx-auto my-6 animate-page-enter ${className}`}>
-      <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-full mb-4">
+    <div className={`flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-black rounded-[2rem] border border-dashed border-gray-200 dark:border-zinc-800 shadow-sm max-w-md mx-auto my-6 animate-page-enter ${className}`}>
+      <div className="p-4 bg-gray-50 dark:bg-zinc-900/50 rounded-full mb-4">
         {icon}
       </div>
       <p className="text-sm font-bold text-gray-500 dark:text-zinc-400 mb-4 font-tiro leading-relaxed">

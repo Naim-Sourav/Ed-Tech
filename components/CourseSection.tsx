@@ -5,35 +5,9 @@ import { BookOpen, CheckCircle, Users, ArrowRight, FileText, Lock, ChevronLeft, 
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
-interface ContentItem {
-  id: string;
-  title: string;
-  duration: string;
-  type: 'LIVE' | 'EXAM' | 'NOTE';
-  isLocked: boolean;
-}
+import { SHARED_COURSES, Course, Module, ContentItem } from '../data/courses';
 
-interface Module {
-  title: string;
-  items: ContentItem[];
-}
-
-interface Course {
-  id: string;
-  title: string;
-  subtitle: string;
-  price: number;
-  originalPrice: number;
-  features: string[];
-  theme: 'blue' | 'purple' | 'emerald' | 'orange';
-  badge?: string;
-  students: number;
-  syllabus?: Module[];
-}
-
-// --- MOCK DATA ---
-
-const COURSES: Course[] = [];
+const COURSES: Course[] = SHARED_COURSES;
 
 const CourseSection: React.FC = () => {
   const { t } = useLanguage();
@@ -62,11 +36,7 @@ const CourseSection: React.FC = () => {
   };
 
   const handleViewDetails = (courseId: string) => {
-      if (courseId === 'gst-super-focus') {
-          navigate('/gst-special');
-      } else {
-          console.log("Details for", courseId);
-      }
+      navigate(`/exam-batch/${courseId}`);
   };
 
   const openPlayer = (course: Course) => {
@@ -121,9 +91,14 @@ const CourseSection: React.FC = () => {
   const renderCourseCard = (course: Course, isOwned: boolean) => {
       const themeStyles = getThemeStyles(course.theme);
       return (
-        <div key={course.id} className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/40 dark:border-white/10 shadow-xl shadow-orange-500/5 overflow-hidden flex flex-col hover:shadow-2xl hover:shadow-orange-500/10 transition-all group active-scale">
+        <div key={course.id} className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/40 dark:border-white/10 shadow-xl shadow-orange-500/5 overflow-hidden flex flex-col hover:shadow-2xl hover:shadow-orange-500/10 transition-all group active-scale">
             <div className={`p-5 md:p-6 border-b border-white/20 dark:border-white/5 ${themeStyles.bg} relative overflow-hidden`}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                {course.image && (
+                    <div className="w-full aspect-[2/1] md:aspect-[2.5/1] rounded-2xl mb-4 overflow-hidden relative border border-white/20 dark:border-white/5 shadow-sm">
+                        <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    </div>
+                )}
                 <div className="flex justify-between items-start mb-3 md:mb-4 relative z-10">
                     <span className={`px-2.5 py-0.5 rounded-full text-[12px] md:text-xs font-bold uppercase tracking-wider shadow-sm ${themeStyles.badge}`}>
                         {course.badge}
@@ -149,12 +124,12 @@ const CourseSection: React.FC = () => {
                 {/* View Details Button */}
                 <button
                     onClick={() => handleViewDetails(course.id)}
-                    className="w-full mb-3 md:mb-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-xs md:text-sm hover:bg-white dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 group shadow-sm"
+                    className="w-full mb-3 md:mb-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-200 font-bold text-xs md:text-sm hover:bg-white dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 group shadow-sm"
                 >
                     <Info size={14} className="group-hover:text-primary transition-colors md:w-4 md:h-4"/> বিস্তারিত জানুন
                 </button>
 
-                <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+                <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-200/50 dark:border-zinc-800/50">
                     <div>
                         {isOwned ? (
                             <span className="text-green-600 font-bold text-xs md:text-sm flex items-center gap-1"><CheckCircle size={12} className="md:w-3.5 md:h-3.5"/> {t('course_active')}</span>
@@ -195,9 +170,9 @@ const CourseSection: React.FC = () => {
     const activeItem = activeCourse.syllabus?.flatMap(m => m.items).find(i => i.id === activeContentId);
 
     return (
-      <div className="h-full flex flex-col bg-gray-100 dark:bg-gray-900 overflow-hidden">
+      <div className="h-full flex flex-col bg-gray-100 dark:bg-black overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 md:py-3 flex items-center justify-between shadow-sm z-20">
+        <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-2.5 md:py-3 flex items-center justify-between shadow-sm z-20">
            <div className="flex items-center gap-2 md:gap-3">
              <button 
                onClick={closePlayer} 
@@ -234,10 +209,10 @@ const CourseSection: React.FC = () => {
             </div>
 
             {/* Sidebar Syllabus */}
-            <div className="w-full md:w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <div className="w-full md:w-80 bg-white dark:bg-zinc-900 border-l border-gray-200 dark:border-zinc-800 overflow-y-auto">
                 {activeCourse.syllabus?.map((module, idx) => (
-                    <div key={idx} className="border-b border-gray-100 dark:border-gray-700">
-                        <div className="p-3 bg-gray-50 dark:bg-gray-900/50 font-bold text-xs text-gray-700 dark:text-gray-300 sticky top-0">
+                    <div key={idx} className="border-b border-gray-100 dark:border-zinc-800">
+                        <div className="p-3 bg-gray-50 dark:bg-black/50 font-bold text-xs text-gray-700 dark:text-gray-300 sticky top-0">
                             {module.title}
                         </div>
                         <div>
@@ -269,7 +244,7 @@ const CourseSection: React.FC = () => {
 
   // --- RENDER: LIST VIEW ---
   return (
-    <div className="flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors min-h-full relative overflow-hidden">
+    <div className="flex flex-col bg-gray-50 dark:bg-black transition-colors min-h-full relative overflow-hidden pb-24">
         {/* Ambient Background Glows */}
         <div className="fixed inset-0 pointer-events-none z-0">
             <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[120px]"></div>
@@ -289,7 +264,7 @@ const CourseSection: React.FC = () => {
                         {myCourses.map(course => renderCourseCard(course, true))}
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 text-center border border-dashed border-gray-300 dark:border-gray-700">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 md:p-8 text-center border border-dashed border-gray-300 dark:border-zinc-800">
                         <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 text-gray-400">
                             <BookOpen size={24} className="md:w-8 md:h-8"/>
                         </div>

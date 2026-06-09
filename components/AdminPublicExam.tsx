@@ -296,7 +296,7 @@ const AdminPublicExam = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 animate-in fade-in">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 animate-in fade-in">
       <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
         <LinkIcon size={24} className="text-primary"/> Create Public Exam Link
       </h2>
@@ -309,7 +309,7 @@ const AdminPublicExam = () => {
           <h3 className="text-lg font-bold text-green-800 dark:text-green-300 mb-2">Exam Link Ready!</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Share this link on social media.</p>
           
-          <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
+          <div className="flex items-center gap-2 bg-white dark:bg-black p-3 rounded-lg border border-gray-200 dark:border-zinc-800 mb-4">
             <input 
               readOnly 
               value={examLink} 
@@ -337,7 +337,7 @@ const AdminPublicExam = () => {
                 type="text" 
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700"
+                className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-black dark:border-zinc-800"
                 placeholder="e.g. GST Special Model Test 01"
               />
             </div>
@@ -348,7 +348,7 @@ const AdminPublicExam = () => {
                   type="number" 
                   value={duration}
                   onChange={e => setDuration(Number(e.target.value))}
-                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700"
+                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-black dark:border-zinc-800"
                 />
               </div>
               <div>
@@ -357,7 +357,7 @@ const AdminPublicExam = () => {
                   type="number" 
                   value={totalMarks}
                   onChange={e => setTotalMarks(Number(e.target.value))}
-                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700"
+                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-black dark:border-zinc-800"
                 />
               </div>
               <div>
@@ -367,13 +367,13 @@ const AdminPublicExam = () => {
                   step="0.05"
                   value={negativeMarking}
                   onChange={e => setNegativeMarking(Number(e.target.value))}
-                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-900 dark:border-gray-700"
+                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-black dark:border-zinc-800"
                 />
               </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <div className="border-t border-gray-200 dark:border-zinc-800 pt-6">
             <h3 className="font-bold text-gray-800 dark:text-white mb-4">Add Questions ({questions.length})</h3>
             
             <div className="grid lg:grid-cols-2 gap-6 mb-6">
@@ -386,7 +386,7 @@ const AdminPublicExam = () => {
                   <select 
                     value={aiSubject} 
                     onChange={e => { setAiSubject(e.target.value); setAiChapter(''); }}
-                    className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-600"
+                    className="w-full p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-gray-600"
                   >
                     <option value="">Select Subject</option>
                     {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -396,7 +396,7 @@ const AdminPublicExam = () => {
                     value={aiChapter} 
                     onChange={e => setAiChapter(e.target.value)}
                     disabled={!aiSubject}
-                    className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-600"
+                    className="w-full p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-gray-600"
                   >
                     <option value="">Select Chapter</option>
                     {chapters.map(c => <option key={c} value={c}>{c}</option>)}
@@ -406,7 +406,7 @@ const AdminPublicExam = () => {
                     value={aiTopic} 
                     onChange={e => setAiTopic(e.target.value)}
                     disabled={!aiChapter}
-                    className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-600"
+                    className="w-full p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-gray-600"
                   >
                     <option value="">Select Topic</option>
                     {topics.map((t: any) => (
@@ -421,7 +421,7 @@ const AdminPublicExam = () => {
                       type="number" 
                       value={aiCount}
                       onChange={e => setAiCount(Number(e.target.value))}
-                      className="w-20 p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-600"
+                      className="w-20 p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-gray-600"
                       min="1" max="20"
                     />
                     <button 
@@ -455,14 +455,14 @@ const AdminPublicExam = () => {
             </div>
 
             {/* Manual Entry */}
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
+            <div className="bg-gray-50 dark:bg-black p-4 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-3">
               <h4 className="font-bold text-gray-700 dark:text-gray-300 text-sm">Manual Entry</h4>
               <input 
                 type="text" 
                 value={currentQ.question}
                 onChange={e => setCurrentQ({...currentQ, question: e.target.value})}
                 placeholder="Question Text"
-                className="w-full p-2 rounded-lg border dark:border-gray-600 dark:bg-gray-800"
+                className="w-full p-2 rounded-lg border dark:border-gray-600 dark:bg-zinc-900"
               />
               <div className="grid grid-cols-2 gap-2">
                 {currentQ.options.map((opt, idx) => (
@@ -482,7 +482,7 @@ const AdminPublicExam = () => {
                         setCurrentQ({...currentQ, options: newOpts});
                       }}
                       placeholder={`Option ${idx + 1}`}
-                      className="flex-1 p-2 rounded-lg border dark:border-gray-600 dark:bg-gray-800 text-sm"
+                      className="flex-1 p-2 rounded-lg border dark:border-gray-600 dark:bg-zinc-900 text-sm"
                     />
                   </div>
                 ))}
@@ -498,7 +498,7 @@ const AdminPublicExam = () => {
             {/* Question List Preview */}
             <div className="mt-4 space-y-2 max-h-60 overflow-y-auto">
               {questions.map((q, i) => (
-                <div key={i} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 flex justify-between items-start">
+                <div key={i} className="p-3 bg-white dark:bg-zinc-900 rounded-lg border border-gray-100 dark:border-zinc-800 flex justify-between items-start">
                   <div>
                     <p className="text-sm font-bold text-gray-800 dark:text-white line-clamp-1">{i + 1}. {q.question}</p>
                     <p className="text-xs text-gray-500">{q.options.length} options • Correct: {String.fromCharCode(65 + (q.correctAnswerIndex ?? q.correctAnswer ?? 0))}</p>

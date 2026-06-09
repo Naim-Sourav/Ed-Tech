@@ -902,7 +902,7 @@ const AdminQuestionGenerator: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 animate-in fade-in">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 animate-in fade-in">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center">
           <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
@@ -937,14 +937,14 @@ const AdminQuestionGenerator: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left: Topic Selection */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-5">
+            <div className="bg-gray-50 dark:bg-black/50 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 space-y-5">
               <div className="relative">
                 <label className="block text-sm font-bold mb-2">বিষয়</label>
                 <button
                   onClick={() =>
                     setIsSubjectDropdownOpen(!isSubjectDropdownOpen)
                   }
-                  className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-600 flex items-center justify-between bg-white dark:text-white"
+                  className="w-full p-3 rounded-xl border dark:bg-zinc-900 dark:border-gray-600 flex items-center justify-between bg-white dark:text-white"
                 >
                   <div className="flex items-center gap-2">
                     {subject ? (
@@ -966,12 +966,12 @@ const AdminQuestionGenerator: React.FC = () => {
                 </button>
 
                 {isSubjectDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border dark:border-gray-600 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
                     {subjects.map((s) => (
                       <button
                         key={s}
                         onClick={() => handleSubjectSelection(s)}
-                        className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0"
+                        className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors border-b border-gray-100 dark:border-zinc-800 last:border-0"
                       >
                         {getSubjectIcon(s)}
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -989,7 +989,7 @@ const AdminQuestionGenerator: React.FC = () => {
                   value={chapter}
                   onChange={handleChapterChange}
                   disabled={!subject}
-                  className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-600"
+                  className="w-full p-3 rounded-xl border dark:bg-zinc-900 dark:border-gray-600"
                 >
                   <option value="">নির্বাচন করুন...</option>
                   {chapters.map((c) => (
@@ -1020,7 +1020,7 @@ const AdminQuestionGenerator: React.FC = () => {
                           <button
                             key={idx}
                             onClick={() => toggleTopic(t)}
-                            className={`text-left p-3 rounded-xl text-xs font-medium border transition-all ${selectedTopics.includes(t) ? "bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-orange-300"}`}
+                            className={`text-left p-3 rounded-xl text-xs font-medium border transition-all ${selectedTopics.includes(t) ? "bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 hover:border-orange-300"}`}
                           >
                             {t}
                           </button>
@@ -1035,11 +1035,11 @@ const AdminQuestionGenerator: React.FC = () => {
                         return (
                           <div
                             key={idx}
-                            className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800"
+                            className="border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900"
                           >
                             <div
                               onClick={() => toggleGroup(t)}
-                              className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${isSelected ? "bg-orange-50 dark:bg-orange-900/20" : "bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                              className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${isSelected ? "bg-orange-50 dark:bg-orange-900/20" : "bg-gray-50 dark:bg-black/50 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
                             >
                               <span
                                 className={`text-xs font-bold ${isSelected ? "text-orange-700 dark:text-orange-300" : "text-gray-700 dark:text-gray-300"}`}
@@ -1052,7 +1052,7 @@ const AdminQuestionGenerator: React.FC = () => {
                                 {selectedCount}/{t.subTopics.length}
                               </span>
                             </div>
-                            <div className="p-2 space-y-1 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+                            <div className="p-2 space-y-1 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800">
                               {t.subTopics.map((sub, sIdx) => (
                                 <button
                                   key={sIdx}
@@ -1086,7 +1086,7 @@ const AdminQuestionGenerator: React.FC = () => {
           {/* Right: Distribution & Generate OR Smart Upload */}
           <div className="lg:col-span-2 space-y-6">
             {mode === "AI" ? (
-              <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-black/50 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-bold flex items-center gap-2">
                     <PieChart size={18} /> প্রশ্ন বন্টন (প্রতি টপিক)
@@ -1134,7 +1134,7 @@ const AdminQuestionGenerator: React.FC = () => {
                       onChange={(e) =>
                         setStandard(e.target.value as ExamStandard)
                       }
-                      className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-600 text-sm"
+                      className="w-full p-3 rounded-xl border dark:bg-zinc-900 dark:border-gray-600 text-sm"
                     >
                       {Object.values(ExamStandard).map((s) => (
                         <option key={s} value={s}>
@@ -1164,7 +1164,7 @@ const AdminQuestionGenerator: React.FC = () => {
               </div>
             ) : (
               // MANUAL MODE
-              <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-6">
+              <div className="bg-gray-50 dark:bg-black/50 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold flex items-center gap-2">
                     <Upload size={18} /> Smart Upload (Paste Text/JSON or Upload
@@ -1217,7 +1217,7 @@ const AdminQuestionGenerator: React.FC = () => {
                     <button
                       key={cat}
                       onClick={() => setUploadCategory(cat)}
-                      className={`p-2 rounded-lg text-xs font-bold border truncate transition-all ${uploadCategory === cat ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600"}`}
+                      className={`p-2 rounded-lg text-xs font-bold border truncate transition-all ${uploadCategory === cat ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-600"}`}
                     >
                       {cat === "ACADEMIC"
                         ? "Academic"
@@ -1247,7 +1247,7 @@ const AdminQuestionGenerator: React.FC = () => {
                               setUploadBoard(e.target.value);
                               setUploadCollege("");
                             }}
-                            className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700"
+                            className="w-full p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-zinc-800"
                           >
                             <option value="">কোন বোর্ড নয়</option>
                             <option value="AB">AB (সকল বোর্ড)</option>
@@ -1276,7 +1276,7 @@ const AdminQuestionGenerator: React.FC = () => {
                               setUploadCollege(e.target.value);
                               setUploadBoard("");
                             }}
-                            className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700"
+                            className="w-full p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-zinc-800"
                           >
                             <option value="">কোন কলেজ নয়</option>
                             {COLLEGES.map((c) => (
@@ -1296,7 +1296,7 @@ const AdminQuestionGenerator: React.FC = () => {
                           value={uploadYear}
                           onChange={(e) => setUploadYear(e.target.value)}
                           placeholder="e.g. 2022"
-                          className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700"
+                          className="w-full p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-zinc-800"
                         />
                       </div>
                     </>
@@ -1311,7 +1311,7 @@ const AdminQuestionGenerator: React.FC = () => {
                         <select
                           value={uploadTarget}
                           onChange={(e) => setUploadTarget(e.target.value)}
-                          className="w-full p-2 rounded-lg border text-sm font-mono dark:bg-gray-800 dark:border-gray-700"
+                          className="w-full p-2 rounded-lg border text-sm font-mono dark:bg-zinc-900 dark:border-zinc-800"
                         >
                           {TARGETS.map((t) => (
                             <option key={t} value={t}>
@@ -1327,7 +1327,7 @@ const AdminQuestionGenerator: React.FC = () => {
                         <select
                           value={uploadSession}
                           onChange={(e) => setUploadSession(e.target.value)}
-                          className="w-full p-2 rounded-lg border text-sm dark:bg-gray-800 dark:border-gray-700"
+                          className="w-full p-2 rounded-lg border text-sm dark:bg-zinc-900 dark:border-zinc-800"
                         >
                           {Array.from({ length: 16 }, (_, i) => {
                             const startYear = 2025 - i;
@@ -1353,7 +1353,7 @@ const AdminQuestionGenerator: React.FC = () => {
                 <textarea
                   value={manualInput}
                   onChange={(e) => setManualInput(e.target.value)}
-                  className="w-full h-[300px] p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 font-mono text-xs focus:ring-2 focus:ring-orange-500 outline-none resize-none"
+                  className="w-full h-[300px] p-4 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-mono text-xs focus:ring-2 focus:ring-orange-500 outline-none resize-none"
                   placeholder={`Paste your questions here (JSON or Object format)...
 Example:
 [
@@ -1398,7 +1398,7 @@ Example:
 
         {/* Results Preview */}
         {generatedQuestions.length > 0 && (
-          <div className="pt-8 border-t border-gray-200 dark:border-gray-700 animate-in slide-in-from-bottom-5">
+          <div className="pt-8 border-t border-gray-200 dark:border-zinc-800 animate-in slide-in-from-bottom-5">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-xl flex items-center gap-2">
                 <CheckCircle className="text-green-500" /> জেনারেটেড প্রশ্ন (
@@ -1435,7 +1435,7 @@ Example:
                   {bulkSummary.map(({ level, tags, count, questionCount }) => (
                     <div
                       key={level}
-                      className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-blue-100/40 dark:border-gray-700 shadow-sm"
+                      className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-blue-100/40 dark:border-zinc-800 shadow-sm"
                     >
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <span className="text-xs font-extrabold text-blue-800 dark:text-blue-200 bg-blue-100/60 dark:bg-blue-900/40 px-2.5 py-1 rounded-lg">
@@ -1485,7 +1485,7 @@ Example:
                 .map((q, idx) => (
                   <div
                     key={idx}
-                    className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 relative group"
+                    className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 relative group"
                   >
                     <button
                       onClick={() =>
@@ -1514,7 +1514,7 @@ Example:
                         </div>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-900 p-2 rounded">
+                    <p className="text-xs text-gray-500 bg-gray-50 dark:bg-black p-2 rounded">
                       Note: {q.explanation}
                     </p>
                   </div>

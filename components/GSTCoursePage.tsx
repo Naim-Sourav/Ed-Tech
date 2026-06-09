@@ -116,7 +116,7 @@ Discipline • Dedication • Domination
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black transition-colors">
       <Helmet>
         <title>GST সুপার ফোকাস চ্যালেঞ্জ - Porikkhangon | GST Admission Preparation</title>
         <meta name="description" content="GST গুচ্ছ ভর্তি পরীক্ষার জন্য ৪৫ দিনের স্পেশাল চ্যালেঞ্জ। চ্যাপ্টার ওয়াইজ মিশন, পেপার ফাইনাল এবং পূর্ণাঙ্গ মডেল টেস্টের মাধ্যমে নিশ্চিত করো তোমার চান্স।" />
@@ -154,7 +154,7 @@ Discipline • Dedication • Domination
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-12 pb-32">
         
         {/* 2. The Routine (Visual Timeline) */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 border border-gray-200 dark:border-zinc-800 shadow-sm">
             <div className="text-center mb-10">
                 <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">আপনার প্রতিদিনের রুটিন</h2>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">আগামী ৪৫ দিন এই রুটিনই আপনার জীবন।</p>
@@ -171,7 +171,7 @@ Discipline • Dedication • Domination
                         <p className="text-sm font-bold text-gray-800 dark:text-white">টাস্ক ড্রপ (Task Drop)</p>
                         <p className="text-xs text-gray-500">গ্রুপে এবং অ্যাপে আজকের পড়ার টপিক দেওয়া হবে।</p>
                     </div>
-                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-gray-800 border-4 border-primary rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
+                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-primary rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
                     <div className="md:w-1/2 md:pl-12 hidden md:block">
                         <Target className="text-primary opacity-50" size={32}/>
                     </div>
@@ -182,7 +182,7 @@ Discipline • Dedication • Domination
                     <div className="md:w-1/2 md:pr-12 hidden md:flex justify-end">
                         <BookOpen className="text-orange-500 opacity-50" size={32}/>
                     </div>
-                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-gray-800 border-4 border-orange-500 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
+                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-orange-500 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
                     <div className="md:w-1/2 md:pl-12 text-left pl-6">
                         <h4 className="text-lg font-bold text-orange-500">সারাদিন</h4>
                         <p className="text-sm font-bold text-gray-800 dark:text-white">সেলফ স্টাডি (Study Time)</p>
@@ -197,7 +197,7 @@ Discipline • Dedication • Domination
                         <p className="text-sm font-bold text-gray-800 dark:text-white">টাস্ক সাবমিশন (Deadline)</p>
                         <p className="text-xs text-gray-500">নোট বা ম্যাথ সলভের ছবি অ্যাপে আপলোড করতে হবে।</p>
                     </div>
-                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-gray-800 border-4 border-purple-600 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
+                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-purple-600 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
                     <div className="md:w-1/2 md:pl-12 hidden md:block">
                         <Upload className="text-purple-600 opacity-50" size={32}/>
                     </div>
@@ -208,7 +208,7 @@ Discipline • Dedication • Domination
                     <div className="md:w-1/2 md:pr-12 hidden md:flex justify-end">
                         <FileText className="text-red-500 opacity-50" size={32}/>
                     </div>
-                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-gray-800 border-4 border-red-500 rounded-full -ml-[14px] md:-ml-[12px] z-10 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-red-500 rounded-full -ml-[14px] md:-ml-[12px] z-10 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
                     <div className="md:w-1/2 md:pl-12 text-left pl-6">
                         <h4 className="text-lg font-bold text-red-500 flex items-center gap-2"><Clock size={16}/> রাত ০৮:৩০</h4>
                         <p className="text-sm font-bold text-gray-800 dark:text-white">ডেইলি এক্সাম (Exam Time)</p>
@@ -223,7 +223,7 @@ Discipline • Dedication • Domination
                         <p className="text-sm font-bold text-gray-800 dark:text-white">রেজাল্ট ও মেরিট লিস্ট</p>
                         <p className="text-xs text-gray-500">সলভ শিট এবং নিজের পজিশন চেক করুন।</p>
                     </div>
-                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-gray-800 border-4 border-green-500 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
+                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-green-500 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
                     <div className="md:w-1/2 md:pl-12 hidden md:block">
                         <Trophy className="text-green-500 opacity-50" size={32}/>
                     </div>
@@ -275,15 +275,15 @@ Discipline • Dedication • Domination
         </div>
 
         {/* 4. Detailed Routine Table Section (New) */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="p-6 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center cursor-pointer" onClick={() => setShowFullRoutine(!showFullRoutine)}>
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden border border-gray-200 dark:border-zinc-800 shadow-lg">
+            <div className="p-6 bg-gray-50 dark:bg-black/50 flex justify-between items-center cursor-pointer" onClick={() => setShowFullRoutine(!showFullRoutine)}>
                 <div>
                     <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
                         <Calendar className="text-primary"/> বিস্তারিত রুটিন (Syllabus)
                     </h2>
                     <p className="text-xs text-gray-500 dark:text-gray-400">কোন দিন কী পড়বেন তার পূর্ণাঙ্গ তালিকা</p>
                 </div>
-                <button className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm">
+                <button className="p-2 bg-white dark:bg-zinc-900 rounded-full shadow-sm">
                     {showFullRoutine ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
                 </button>
             </div>

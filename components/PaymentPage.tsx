@@ -119,8 +119,8 @@ const PaymentPage: React.FC = () => {
   // --- Success View ---
   if (isSuccess) {
       return (
-          <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full text-center shadow-xl border border-gray-100 dark:border-gray-700 animate-in zoom-in duration-300 my-auto">
+          <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black flex items-center justify-center p-4">
+              <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full text-center shadow-xl border border-gray-100 dark:border-zinc-800 animate-in zoom-in duration-300 my-auto">
                   <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                       <CheckCircle size={48} className="text-green-600 dark:text-green-400" strokeWidth={3} />
                   </div>
@@ -144,12 +144,21 @@ const PaymentPage: React.FC = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors pb-20">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black transition-colors pb-20">
       
       {/* Navbar Simple */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 sticky top-0 z-30 shadow-sm">
+      <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-4 sticky top-0 z-30 shadow-sm">
           <div className="max-w-5xl mx-auto flex items-center gap-4">
-              <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <button 
+                  onClick={() => {
+                      if (window.history.length > 1) {
+                          navigate(-1);
+                      } else {
+                          navigate('/dashboard', { replace: true });
+                      }
+                  }} 
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
                   <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300"/>
               </button>
               <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -163,7 +172,7 @@ const PaymentPage: React.FC = () => {
               
               {/* Left Column: Order Summary */}
               <div className="lg:col-span-1 order-2 lg:order-1">
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm sticky top-24">
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-200 dark:border-zinc-800 shadow-sm sticky top-24">
                       <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">অর্ডার সামারি</h3>
                       
                       <div className="flex gap-4 mb-6">
@@ -211,7 +220,7 @@ const PaymentPage: React.FC = () => {
                       </div>
                       )}
 
-                      <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-2">
+                      <div className="border-t border-gray-100 dark:border-zinc-800 pt-4 space-y-2">
                           <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                               <span>কোর্স ফি</span>
                               <span>{item.price === 0 ? 'FREE' : `৳${item.price}`}</span>
@@ -222,7 +231,7 @@ const PaymentPage: React.FC = () => {
                                   <span>-৳{discount}</span>
                               </div>
                           )}
-                          <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-100 dark:border-gray-700">
+                          <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-100 dark:border-zinc-800">
                               <span className="font-bold text-gray-800 dark:text-white">মোট প্রদেয়</span>
                               <span className="text-xl font-black text-primary dark:text-orange-400">
                                   {finalAmount === 0 ? 'FREE' : `৳${finalAmount}`}
@@ -243,7 +252,7 @@ const PaymentPage: React.FC = () => {
                   {!isFree && (
                   <>
                   {/* Step 1: Method Selection */}
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-200 dark:border-zinc-800 shadow-sm">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <span className="w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center text-xs">১</span>
                           পেমেন্ট মেথড নির্বাচন করুন
@@ -251,14 +260,14 @@ const PaymentPage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-4 max-w-md mx-auto md:mx-0">
                           <button 
                               onClick={() => setPaymentMethod('BKASH')}
-                              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'BKASH' ? 'border-[#e2136e] bg-[#e2136e]/5 shadow-sm' : 'border-gray-100 dark:border-gray-700 hover:border-gray-300'}`}
+                              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'BKASH' ? 'border-[#e2136e] bg-[#e2136e]/5 shadow-sm' : 'border-gray-100 dark:border-zinc-800 hover:border-gray-300'}`}
                           >
                               <img src="https://freelogopng.com/images/all_img/1656227518bkash-logo-png.png" alt="bKash" className="h-10 object-contain"/>
                               <span className={`text-xs font-bold ${paymentMethod === 'BKASH' ? 'text-[#e2136e]' : 'text-gray-500'}`}>bKash</span>
                           </button>
                           <button 
                               onClick={() => setPaymentMethod('NAGAD')}
-                              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'NAGAD' ? 'border-[#ec1c24] bg-[#ec1c24]/5 shadow-sm' : 'border-gray-100 dark:border-gray-700 hover:border-gray-300'}`}
+                              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'NAGAD' ? 'border-[#ec1c24] bg-[#ec1c24]/5 shadow-sm' : 'border-gray-100 dark:border-zinc-800 hover:border-gray-300'}`}
                           >
                               <img src="https://freelogopng.com/images/all_img/1679248787nagad-logo.png" alt="Nagad" className="h-10 object-contain"/>
                               <span className={`text-xs font-bold ${paymentMethod === 'NAGAD' ? 'text-[#ec1c24]' : 'text-gray-500'}`}>Nagad</span>
@@ -267,7 +276,7 @@ const PaymentPage: React.FC = () => {
                   </div>
 
                   {/* Step 2: Payment Instructions */}
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
                       <div className={`absolute top-0 left-0 w-1 h-full ${paymentMethod === 'BKASH' ? 'bg-[#e2136e]' : 'bg-[#ec1c24]'}`}></div>
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <span className="w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center text-xs">২</span>
@@ -275,12 +284,12 @@ const PaymentPage: React.FC = () => {
                       </h3>
                       
                       <div className="space-y-4">
-                          <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center justify-between bg-gray-50 dark:bg-black p-4 rounded-xl border border-gray-200 dark:border-zinc-800">
                               <div>
                                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">মার্চেন্ট নাম্বার ({paymentMethod})</p>
                                   <p className="text-xl font-mono font-bold text-gray-800 dark:text-white tracking-wider">{MERCHANT_NUMBER}</p>
                               </div>
-                              <button onClick={handleCopyNumber} className={`p-2.5 rounded-lg transition-colors ${copied ? 'bg-green-100 text-green-600' : 'bg-white dark:bg-gray-800 text-gray-500 hover:text-primary shadow-sm border border-gray-200 dark:border-gray-700'}`}>
+                              <button onClick={handleCopyNumber} className={`p-2.5 rounded-lg transition-colors ${copied ? 'bg-green-100 text-green-600' : 'bg-white dark:bg-zinc-900 text-gray-500 hover:text-primary shadow-sm border border-gray-200 dark:border-zinc-800'}`}>
                                   {copied ? <Check size={20}/> : <Copy size={20}/>}
                               </button>
                           </div>
@@ -298,7 +307,7 @@ const PaymentPage: React.FC = () => {
                   )}
 
                   {/* Step 3: Verification Form / Confirmation */}
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-200 dark:border-zinc-800 shadow-sm">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <span className="w-6 h-6 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center text-xs">{isFree ? '১' : '৩'}</span>
                           {isFree ? 'কনফার্মেশন' : 'তথ্য দিন'}
@@ -317,7 +326,7 @@ const PaymentPage: React.FC = () => {
                                       placeholder="01XXXXXXXXX"
                                       value={senderNumber}
                                       onChange={(e) => setSenderNumber(e.target.value)}
-                                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium"
+                                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-black border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-medium"
                                   />
                               </div>
                           </div>
@@ -331,7 +340,7 @@ const PaymentPage: React.FC = () => {
                                       placeholder="Example: 9H7XXXXX"
                                       value={trxId}
                                       onChange={(e) => setTrxId(e.target.value.toUpperCase())}
-                                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-mono uppercase"
+                                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-black border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-mono uppercase"
                                   />
                               </div>
                           </div>

@@ -21,7 +21,7 @@ declare global {
 const QuestionCardSkeleton = () => (
   <div className="space-y-4 animate-pulse">
       {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 h-48"></div>
+          <div key={i} className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 h-48"></div>
       ))}
   </div>
 );
@@ -42,7 +42,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ confirmAction, se
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 text-center relative overflow-hidden animate-in zoom-in-95">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-zinc-800 text-center relative overflow-hidden animate-in zoom-in-95">
                 <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isApprove ? 'bg-green-100 text-green-600' : isReject ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
                     {isApprove && <Check size={32} strokeWidth={3}/>}
                     {isReject && <X size={32} strokeWidth={3}/>}
@@ -169,7 +169,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                     const year = parts[parts.length - 1].length === 2 ? parts[parts.length - 1] : '';
                                     if (board) onChange({...data, examRef: `${board} ${year}`.trim(), level: 'ACADEMIC'});
                                 }}
-                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs font-tiro"
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-zinc-900 text-xs font-tiro"
                             >
                                 <option value="">বোর্ড সিলেক্ট করুন</option>
                                 {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
@@ -184,7 +184,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                     const board = BOARDS.find(b => currentRef.includes(b)) || 'বোর্ড';
                                     if (bengaliYear) onChange({...data, examRef: `${board} ${bengaliYear}`, level: 'ACADEMIC'});
                                 }}
-                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs"
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-zinc-900 text-xs"
                             >
                                 <option value="">সাল সিলেক্ট করুন</option>
                                 {YEARS.map(y => <option key={y.english} value={y.bengaliSuffix}>{y.english} ({y.bengaliSuffix})</option>)}
@@ -204,7 +204,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                     const type = e.target.value;
                                     if (type) onChange({...data, examRef: type, level: 'ADMISSION'});
                                 }}
-                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs"
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-zinc-900 text-xs"
                             >
                                 <option value="">সিলেক্ট করুন</option>
                                 <option value="GST (গুচ্ছ)">GST (গুচ্ছ)</option>
@@ -227,20 +227,20 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                     const currentRef = data.examRef || '';
                                     if (year) onChange({...data, examRef: `${currentRef} ${year}`.trim(), level: 'ADMISSION'});
                                 }}
-                                className="w-full p-2 rounded-lg border bg-white dark:bg-gray-800 text-xs"
+                                className="w-full p-2 rounded-lg border bg-white dark:bg-zinc-900 text-xs"
                             />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-2xl border border-gray-200 dark:border-gray-700">
+            <div className="p-4 bg-gray-50 dark:bg-black/40 rounded-2xl border border-gray-200 dark:border-zinc-800">
                 <label className="block text-[12px] font-bold text-gray-400 mb-2">ফাইনাল ট্যাগ (Exam Ref)</label>
                 <input 
                     type="text" 
                     value={data.examRef || ''}
                     onChange={e => onChange({...data, examRef: e.target.value})}
-                    className="w-full p-3 rounded-xl border bg-white dark:bg-gray-800 font-tiro text-sm font-bold text-primary shadow-inner"
+                    className="w-full p-3 rounded-xl border bg-white dark:bg-zinc-900 font-tiro text-sm font-bold text-primary shadow-inner"
                     placeholder="যেমন: ঢাকা বোর্ড ২০ বা গুচ্ছ ২৪-২৫"
                 />
             </div>
@@ -264,12 +264,12 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                 type="text"
                                 value={data.contextImage || ''}
                                 onChange={e => onChange({...data, contextImage: e.target.value})}
-                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-800 text-xs"
                                 placeholder="উদ্দীপক ইমেজ URL (যদি থাকে)"
                             />
                         </div>
                         {data.contextImage && (
-                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800">
+                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-zinc-900">
                                 <img src={data.contextImage} alt="Context" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                             </div>
                         )}
@@ -294,12 +294,12 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                 type="text" 
                                 value={data.questionImage || ''}
                                 onChange={e => onChange({...data, questionImage: e.target.value})}
-                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-800 text-xs"
                                 placeholder="প্রশ্ন ইমেজ URL"
                             />
                         </div>
                         {data.questionImage && (
-                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800">
+                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-zinc-900">
                                 <img src={data.questionImage} alt="Question" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                             </div>
                         )}
@@ -320,12 +320,12 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                 type="text" 
                                 value={data.explanationImage || ''}
                                 onChange={e => onChange({...data, explanationImage: e.target.value})}
-                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 text-xs"
+                                className="flex-1 p-2 rounded-lg border bg-white dark:bg-zinc-900 dark:border-zinc-800 text-xs"
                                 placeholder="ব্যাখ্যা ইমেজ URL"
                             />
                         </div>
                         {data.explanationImage && (
-                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-gray-800">
+                            <div className="mt-2 w-32 h-20 rounded-lg border overflow-hidden bg-gray-100 dark:bg-zinc-900">
                                 <img src={data.explanationImage} alt="Explanation" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                             </div>
                         )}
@@ -337,7 +337,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                             type="text" 
                             value={data.slug || ''}
                             onChange={e => onChange({...data, slug: e.target.value})}
-                            className="w-full p-2.5 rounded-xl border bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-xs font-mono"
+                            className="w-full p-2.5 rounded-xl border bg-gray-50 dark:bg-zinc-900 dark:border-zinc-800 text-xs font-mono"
                             placeholder="unique-question-slug"
                         />
                     </div>
@@ -348,7 +348,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                     <label className="block text-xs font-bold text-gray-500">Options & Correct Answer</label>
                     <div className="space-y-3">
                         {[0, 1, 2, 3].map(idx => (
-                            <div key={idx} className="flex gap-3 items-start p-3 rounded-2xl bg-gray-50/50 dark:bg-gray-900/30 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
+                            <div key={idx} className="flex gap-3 items-start p-3 rounded-2xl bg-gray-50/50 dark:bg-black/30 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
                                 <div className="flex flex-col items-center gap-2 mt-1">
                                     <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-[12px]">
                                         {String.fromCharCode(65 + idx)}
@@ -366,7 +366,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                         type="text" 
                                         value={data.options?.[idx] || ''}
                                         onChange={e => handleOptionChange(idx, e.target.value)}
-                                        className={`w-full p-2 rounded-lg border text-sm font-tiro bg-white dark:bg-gray-800 dark:border-gray-700 focus:ring-1 ring-primary outline-none`}
+                                        className={`w-full p-2 rounded-lg border text-sm font-tiro bg-white dark:bg-zinc-900 dark:border-zinc-800 focus:ring-1 ring-primary outline-none`}
                                         placeholder={`Option ${idx + 1}`}
                                     />
                                     <div className="flex items-center gap-2">
@@ -375,7 +375,7 @@ const QuestionForm: React.FC<{ data: any, onChange: (newData: any) => void }> = 
                                             type="text" 
                                             value={data.optionsImages?.[idx] || ''}
                                             onChange={e => handleOptionImageChange(idx, e.target.value)}
-                                            className="flex-1 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-[12px]"
+                                            className="flex-1 p-1.5 rounded-lg border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[12px]"
                                             placeholder="Option Image URL"
                                         />
                                     </div>
@@ -394,8 +394,8 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-white dark:bg-gray-800 w-full max-w-5xl rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh] animate-in zoom-in-95">
-                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-5xl rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-zinc-800 flex flex-col max-h-[90vh] animate-in zoom-in-95">
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-zinc-800">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Edit2 size={20} className="text-primary"/> 
                         {isEdit ? 'প্রশ্ন সম্পাদনা (Edit Question)' : 'নতুন প্রশ্ন যোগ করুন (Add Question)'}
@@ -407,7 +407,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
                     <QuestionForm data={editingQuestion} onChange={setEditingQuestion} />
                 </div>
 
-                <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 mt-4">
+                <div className="pt-4 border-t border-gray-100 dark:border-zinc-800 flex justify-end gap-3 mt-4">
                     <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">বাতিল</button>
                     <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-lg flex items-center gap-2">
                         {isEdit ? <Save size={18}/> : <Check size={18}/>} 
@@ -705,8 +705,8 @@ const AdminPage: React.FC = () => {
   // --- ACCESS DENIED VIEW ---
   if (!isAdmin) {
       return (
-          <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl text-center border border-red-200 dark:border-red-900">
+          <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-black">
+              <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-xl text-center border border-red-200 dark:border-red-900">
                   <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Lock size={40} className="text-red-500" />
                   </div>
@@ -719,11 +719,11 @@ const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-8 transition-colors">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-black p-4 md:p-8 transition-colors">
       <div className="max-w-7xl mx-auto space-y-8 pb-20">
         
         {/* Header & Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden">
            <div className="p-6 pb-0 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                <div>
                   <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
@@ -770,28 +770,28 @@ const AdminPage: React.FC = () => {
         {activeTab === 'DASHBOARD' && (
            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Users size={64}/></div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">মোট ইউজার</p>
                     <p className="text-3xl font-bold text-gray-800 dark:text-white">{stats.activeUsers}</p>
                     <div className="flex items-center gap-1 mt-2 text-xs text-green-500 font-bold"><TrendingUp size={12}/> Registered</div>
                  </div>
 
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><DollarSign size={64}/></div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">মোট আয়</p>
                     <p className="text-3xl font-bold text-green-600 dark:text-green-400">৳{stats.totalRevenue.toLocaleString()}</p>
                     <p className="text-xs text-gray-400 mt-2">Verified Revenue</p>
                  </div>
 
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><FileText size={64}/></div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">মোট এক্সাম</p>
                     <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalExams}</p>
                     <p className="text-xs text-gray-400 mt-2">Quizzes Taken</p>
                  </div>
 
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><AlertCircle size={64}/></div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">পেন্ডিং রিকোয়েস্ট</p>
                     <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pendingRequests}</p>
@@ -802,7 +802,7 @@ const AdminPage: React.FC = () => {
               {/* System Stats & Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm">
                     <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                         <Activity size={20} className="text-primary"/> সিস্টেম স্ট্যাটাস
                     </h3>
@@ -829,11 +829,11 @@ const AdminPage: React.FC = () => {
                     </div>
                  </div>
                  
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm">
                     <h3 className="font-bold text-gray-800 dark:text-white mb-4">রিসেন্ট পেমেন্টস</h3>
                     <div className="space-y-3">
                        {paymentRequests.length === 0 ? <p className="text-gray-400 text-sm">কোনো পেমেন্ট নেই</p> : paymentRequests.slice(0, 4).map(req => (
-                          <div key={req.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
+                          <div key={req.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-black/50 rounded-xl border border-gray-100 dark:border-zinc-800">
                              <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${req.status === 'APPROVED' ? 'bg-green-100 text-green-600' : req.status === 'REJECTED' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}>
                                    {req.status[0]}
@@ -857,9 +857,9 @@ const AdminPage: React.FC = () => {
 
         {/* --- TAB: PAYMENTS --- */}
         {activeTab === 'PAYMENTS' && (
-           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2">
                {/* Controls */}
-               <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between gap-4 bg-gray-50 dark:bg-gray-900/50">
+               <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between gap-4 bg-gray-50 dark:bg-black/50">
                    <div className="relative">
                        <Search size={18} className="absolute left-3 top-3 text-gray-400" />
                        <input 
@@ -867,10 +867,10 @@ const AdminPage: React.FC = () => {
                          placeholder="অনুসন্ধান করুন..." 
                          value={searchTerm}
                          onChange={(e) => setSearchTerm(e.target.value)}
-                         className="w-full sm:w-64 pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white text-sm"
+                         className="w-full sm:w-64 pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white text-sm"
                        />
                    </div>
-                   <div className="flex bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-600">
+                   <div className="flex bg-white dark:bg-zinc-900 p-1 rounded-lg border border-gray-200 dark:border-gray-600">
                        {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map(f => (
                          <button
                            key={f}
@@ -886,7 +886,7 @@ const AdminPage: React.FC = () => {
                {/* Table */}
                <div className="overflow-x-auto">
                    <table className="w-full text-left">
-                     <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                     <thead className="bg-gray-50 dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800">
                        <tr>
                          <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ব্যবহারকারী</th>
                          <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">কোর্স</th>
@@ -984,9 +984,9 @@ const AdminPage: React.FC = () => {
 
         {/* --- TAB: DATABASE VIEWER (UPDATED TO MANAGER) --- */}
         {activeTab === 'DATABASE' && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden animate-in fade-in">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden animate-in fade-in">
                 {/* Manager Header & Filters */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col xl:flex-row gap-4 items-center justify-between">
+                <div className="p-4 border-b border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-black/50 flex flex-col xl:flex-row gap-4 items-center justify-between">
                     <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
                         <div className="relative flex-1 sm:w-64">
                             <Search size={16} className="absolute left-3 top-3 text-gray-400"/>
@@ -995,13 +995,13 @@ const AdminPage: React.FC = () => {
                                 placeholder="Search questions..." 
                                 value={qSearch}
                                 onChange={e => { setQSearch(e.target.value); setQPage(1); }}
-                                className="w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none"
+                                className="w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm bg-white dark:bg-zinc-900 dark:border-gray-600 focus:ring-2 ring-primary outline-none"
                             />
                         </div>
                         <select 
                             value={qSubject} 
                             onChange={e => { setQSubject(e.target.value); setQChapter(''); setQPage(1); }}
-                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-zinc-900 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
                         >
                             <option value="">All Subjects</option>
                             {Object.keys(SYLLABUS_DB).map(s => <option key={s} value={s}>{s.split('(')[0]}</option>)}
@@ -1010,7 +1010,7 @@ const AdminPage: React.FC = () => {
                             value={qChapter} 
                             onChange={e => { setQChapter(e.target.value); setQPage(1); }}
                             disabled={!qSubject}
-                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-zinc-900 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
                         >
                             <option value="">All Chapters</option>
                             {qSubject && Object.keys(SYLLABUS_DB[qSubject] || {}).map(c => <option key={c} value={c}>{c}</option>)}
@@ -1019,7 +1019,7 @@ const AdminPage: React.FC = () => {
                             value={qTopic} 
                             onChange={e => { setQTopic(e.target.value); setQPage(1); }}
                             disabled={!qChapter}
-                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-zinc-900 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
                         >
                             <option value="">All Topics</option>
                             {qSubject && qChapter && (SYLLABUS_DB[qSubject]?.[qChapter] || []).map((t: any) => {
@@ -1032,7 +1032,7 @@ const AdminPage: React.FC = () => {
                             placeholder="Exam Ref..." 
                             value={qExamRef}
                             onChange={e => { setQExamRef(e.target.value); setQPage(1); }}
-                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
+                            className="p-2.5 rounded-xl border text-sm bg-white dark:bg-zinc-900 dark:border-gray-600 focus:ring-2 ring-primary outline-none min-w-[150px]"
                         />
                     </div>
                     <div className="flex items-center gap-3">
@@ -1054,14 +1054,14 @@ const AdminPage: React.FC = () => {
                         >
                             Generate Slugs (SEO)
                         </button>
-                        <div className="text-sm font-bold text-gray-500 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm whitespace-nowrap">
+                        <div className="text-sm font-bold text-gray-500 bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm whitespace-nowrap">
                             Total: {totalQuestions}
                         </div>
                     </div>
                 </div>
 
                 {/* Professional Question List (Cards) */}
-                <div className="overflow-y-auto min-h-[400px] p-4 space-y-4 bg-gray-50/50 dark:bg-gray-900/30">
+                <div className="overflow-y-auto min-h-[400px] p-4 space-y-4 bg-gray-50/50 dark:bg-black/30">
                     {loadingQuestions ? (
                         <div className="p-4"><QuestionCardSkeleton /></div>
                     ) : questions.length === 0 ? (
@@ -1090,10 +1090,10 @@ const AdminPage: React.FC = () => {
                             }
 
                             return (
-                                <div key={q._id} className={`bg-white dark:bg-gray-800 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all group relative ${isRepeatStimulus ? 'border-dashed border-t-0 rounded-t-none -mt-4 border-gray-200 dark:border-gray-700' : 'border-gray-200 dark:border-gray-700'}`}>
+                                <div key={q._id} className={`bg-white dark:bg-zinc-900 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all group relative ${isRepeatStimulus ? 'border-dashed border-t-0 rounded-t-none -mt-4 border-gray-200 dark:border-zinc-800' : 'border-gray-200 dark:border-zinc-800'}`}>
                                     {/* Stimulus Instruction Header */}
                                     {stimulusRange && (
-                                        <div className="mb-4 text-center border-y border-gray-100 dark:border-gray-700 py-2 bg-gray-50/50 dark:bg-gray-900/30">
+                                        <div className="mb-4 text-center border-y border-gray-100 dark:border-zinc-800 py-2 bg-gray-50/50 dark:bg-black/30">
                                             <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 font-tiro">
                                                 নিচের উদ্দীপকের আলোকে {toBengaliNumber(stimulusRange.start)} ও {toBengaliNumber(stimulusRange.end)} নং প্রশ্নের উত্তর দাও:
                                             </p>
@@ -1154,7 +1154,7 @@ const AdminPage: React.FC = () => {
                                         dangerouslySetInnerHTML={{ __html: q.question }}
                                     ></h3>
                                     {q.questionImage && (
-                                        <img src={q.questionImage} alt="Question" className="max-h-48 rounded-lg object-contain border border-gray-100 dark:border-gray-700" referrerPolicy="no-referrer" />
+                                        <img src={q.questionImage} alt="Question" className="max-h-48 rounded-lg object-contain border border-gray-100 dark:border-zinc-800" referrerPolicy="no-referrer" />
                                     )}
                                 </div>
 
@@ -1163,10 +1163,10 @@ const AdminPage: React.FC = () => {
                                     {q.options.map((opt: string, idx: number) => (
                                         <div 
                                             key={idx} 
-                                            className={`p-2.5 rounded-lg border text-sm flex flex-col gap-2 ${idx === Number(q.correctAnswerIndex) ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300' : 'bg-gray-50/50 dark:bg-gray-700/30 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400'}`}
+                                            className={`p-2.5 rounded-lg border text-sm flex flex-col gap-2 ${idx === Number(q.correctAnswerIndex) ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300' : 'bg-gray-50/50 dark:bg-gray-700/30 border-gray-100 dark:border-zinc-800 text-gray-600 dark:text-gray-400'}`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[12px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-gray-800' : 'border-gray-300 bg-white dark:bg-gray-800'}`}>
+                                                <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[12px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-zinc-900' : 'border-gray-300 bg-white dark:bg-zinc-900'}`}>
                                                     {String.fromCharCode(65 + idx)}
                                                 </span>
                                                 <span className="font-tiro whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: opt }}></span>
@@ -1181,11 +1181,11 @@ const AdminPage: React.FC = () => {
 
                                 {/* Explanation */}
                                 {q.explanation && (
-                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-xl border-l-4 border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                                    <div className="bg-gray-50 dark:bg-black/50 p-3 rounded-xl border-l-4 border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap overflow-hidden">
                                         <span className="font-bold text-xs uppercase tracking-wider text-gray-400 mb-1 block">Explanation</span>
-                                        <div className="font-tiro leading-relaxed" dangerouslySetInnerHTML={{ __html: q.explanation }}></div>
+                                        <div className="font-tiro leading-relaxed overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }}></div>
                                         {q.explanationImage && (
-                                            <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-32 rounded-lg object-contain border border-gray-100 dark:border-gray-700" referrerPolicy="no-referrer" />
+                                            <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-32 rounded-lg object-contain border border-gray-100 dark:border-zinc-800" referrerPolicy="no-referrer" />
                                         )}
                                     </div>
                                 )}
@@ -1196,7 +1196,7 @@ const AdminPage: React.FC = () => {
             </div>
 
                 {/* Pagination */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
+                <div className="p-4 border-t border-gray-200 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900">
                     <span className="text-xs text-gray-500 font-medium">Showing page {qPage}</span>
                     <div className="flex gap-2">
                         <button 
@@ -1238,7 +1238,7 @@ const AdminPage: React.FC = () => {
 
         {/* --- TAB: NOTIFICATIONS --- */}
         {activeTab === 'NOTIFICATIONS' && (
-           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 md:p-10 animate-in fade-in slide-in-from-bottom-2">
+           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 md:p-10 animate-in fade-in slide-in-from-bottom-2">
                <div className="max-w-2xl mx-auto">
                    <div className="text-center mb-8">
                       <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1256,7 +1256,7 @@ const AdminPage: React.FC = () => {
                            type="text" 
                            value={notifTitle}
                            onChange={e => setNotifTitle(e.target.value)}
-                           className="w-full p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                           className="w-full p-4 bg-gray-50 dark:bg-black border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
                            placeholder="যেমন: নতুন কুইজ আপলোড হয়েছে!"
                          />
                       </div>
@@ -1268,7 +1268,7 @@ const AdminPage: React.FC = () => {
                            rows={4}
                            value={notifMsg}
                            onChange={e => setNotifMsg(e.target.value)}
-                           className="w-full p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                           className="w-full p-4 bg-gray-50 dark:bg-black border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
                            placeholder="বিস্তারিত লিখুন..."
                          />
                       </div>
@@ -1281,7 +1281,7 @@ const AdminPage: React.FC = () => {
                                  key={type}
                                  type="button"
                                  onClick={() => setNotifType(type)}
-                                 className={`flex-1 py-3 rounded-xl border-2 text-sm font-bold transition-all ${notifType === type ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}
+                                 className={`flex-1 py-3 rounded-xl border-2 text-sm font-bold transition-all ${notifType === type ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-zinc-800 text-gray-500'}`}
                                >
                                   {type}
                                </button>
@@ -1290,7 +1290,7 @@ const AdminPage: React.FC = () => {
                       </div>
 
                       <div className="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800 cursor-pointer" onClick={() => setSendPush(!sendPush)}>
-                         <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${sendPush ? 'bg-primary border-primary text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'}`}>
+                         <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${sendPush ? 'bg-primary border-primary text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900'}`}>
                             {sendPush && <Check size={16} strokeWidth={3}/>}
                          </div>
                          <div>
@@ -1308,7 +1308,7 @@ const AdminPage: React.FC = () => {
                       </button>
                    </form>
 
-                   <div className="mt-12 border-t border-gray-100 dark:border-gray-700 pt-8">
+                   <div className="mt-12 border-t border-gray-100 dark:border-zinc-800 pt-8">
                        <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Sent Notifications</h3>
                        {loadingNotifs ? (
                            <div className="text-center py-4 text-gray-500">Loading...</div>
@@ -1317,7 +1317,7 @@ const AdminPage: React.FC = () => {
                        ) : (
                            <div className="space-y-3">
                                {notifications.map(n => (
-                                   <div key={n.id || n._id} className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-start">
+                                   <div key={n.id || n._id} className="p-4 bg-gray-50 dark:bg-black rounded-xl border border-gray-200 dark:border-zinc-800 flex justify-between items-start">
                                        <div>
                                            <div className="flex items-center gap-2 mb-1">
                                                <span className={`px-2 py-0.5 text-[12px] font-bold rounded uppercase ${

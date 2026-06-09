@@ -37,7 +37,7 @@ const AdmissionSearch: React.FC = () => {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+    <div className="h-full flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-800 transition-colors">
        <div className="p-6 md:p-8 bg-gradient-to-br from-gray-900 to-gray-800 dark:from-black dark:to-gray-900 text-white rounded-t-2xl">
          <div className="flex items-center gap-3 mb-3">
            <div className="p-1.5 bg-white/10 rounded-lg">
@@ -53,7 +53,7 @@ const AdmissionSearch: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="কি জানতে চান? (যেমন: বুয়েট পরীক্ষার তারিখ)"
-            className="w-full pl-4 pr-12 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-500 focus:outline-none shadow-lg dark:bg-gray-800 dark:text-white"
+            className="w-full pl-4 pr-12 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-500 focus:outline-none shadow-lg dark:bg-zinc-900 dark:text-white"
            />
            <button 
             type="submit" 
@@ -79,18 +79,18 @@ const AdmissionSearch: React.FC = () => {
          )}
        </div>
 
-       <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900 transition-colors">
+       <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-black transition-colors">
          {result && (
            <div className="max-w-4xl mx-auto space-y-4">
-             <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-               <h3 className="text-base font-bold text-gray-800 dark:text-white mb-3 pb-2 border-b dark:border-gray-700">ফলাফল</h3>
+             <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+               <h3 className="text-base font-bold text-gray-800 dark:text-white mb-3 pb-2 border-b dark:border-zinc-800">ফলাফল</h3>
                <div className="prose prose-sm prose-green dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed font-sans">
                  <ReactMarkdown>{result.text}</ReactMarkdown>
                </div>
              </div>
 
              {result.sources.length > 0 && (
-               <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+               <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm">
                  <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">তথ্যসূত্র (Sources)</h3>
                  <div className="grid gap-2 sm:grid-cols-2">
                    {result.sources.map((source, idx) => (
@@ -99,7 +99,7 @@ const AdmissionSearch: React.FC = () => {
                       href={source.uri} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-start gap-2 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-green-200 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
+                      className="flex items-start gap-2 p-3 rounded-lg border border-gray-100 dark:border-zinc-800 hover:border-green-200 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
                      >
                        <div className="mt-0.5 min-w-[14px]">
                          <ExternalLink size={14} className="text-gray-400 group-hover:text-primary dark:text-gray-500 dark:group-hover:text-green-400" />
