@@ -143,7 +143,7 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
 
   } catch (error: any) {
     // 3. Fallback Mechanism
-    if (fallback !== null && fallback !== undefined) {
+    if (fallback !== undefined) {
         // Log as info instead of warn to reduce noise for expected 404s
         console.info(`[API Fallback] ${endpoint}: ${error.message}`);
         return fallback;
@@ -251,6 +251,14 @@ export const fetchUserMistakesAPI = async (userId: string) => {
 export const deleteUserMistakeAPI = async (userId: string, mistakeId: string) => {
   return fetchWithFallback(`/users/${userId}/mistakes/${mistakeId}`, {
     method: 'DELETE'
+  }, { success: true });
+};
+
+export const updateUserMistakeCategoryAPI = async (userId: string, mistakeId: string, category: string | null) => {
+  return fetchWithFallback(`/users/${userId}/mistakes/${mistakeId}/category`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category })
   }, { success: true });
 };
 
