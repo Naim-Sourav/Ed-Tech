@@ -20,9 +20,9 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      # ১. এই ধাপটি প্রজেক্টে সরাসরি অ্যান্ড্রয়েড প্যাকেজ ইন্সটল করবে
-      - name: Install Capacitor Android Package
-        run: npm install @capacitor/android --legacy-peer-deps
+      # এখানে core এবং android দুটি প্যাকেজই একসাথে ইন্সটল করা হচ্ছে
+      - name: Install Capacitor Core and Android Packages
+        run: npm install @capacitor/core @capacitor/android --legacy-peer-deps
 
       - name: Build Web Project
         run: npm run build 
@@ -33,7 +33,6 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      # ২. যদি কনফিগারেশন ফাইল না থাকে, তবে এটি অটোমেটিক appId ও webDir সেট করে ফাইল বানিয়ে নেবে
       - name: Create Capacitor Config if missing
         run: |
           if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
