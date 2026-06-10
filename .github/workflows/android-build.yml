@@ -35,7 +35,7 @@ jobs:
             has_cap_config=true
           fi
 
-          if node -e "const p=require('./package.json'); process.exit((p.dependencies && p.dependencies['@capacitor/core']) || (p.devDependencies && p.devDependencies['@capacitor/core']) ? 0 : 1)"; then
+          if grep -q '"@capacitor/core"' package.json; then
             has_cap_dep=true
           fi
 
@@ -61,7 +61,7 @@ jobs:
         run: |
           npx @capacitor/cli sync
 
-      # এখানে সর্বোচ্চ ১টি ওয়ার্কার এবং নো-প্যারালাল মোড সেট করা হয়েছে জ্যাম এড়াতে
+      # Keep Gradle resource usage conservative to reduce CI instability.
       - name: Build Android APK
         if: steps.android_prereq.outputs.enabled == 'true'
         run: |
