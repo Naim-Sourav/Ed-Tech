@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ] # আপনার মেইন ব্রাঞ্চের নাম 'master' হলে এখানে master লিখবেন
+    branches: [ main ] 
 
 jobs:
   build:
@@ -15,55 +15,37 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18 # আপনার প্রজেক্টের নোড ভার্সন অনুযায়ী পরিবর্তন করতে পারেন
+          node-version: 18 
 
       - name: Install Dependencies
-        # TODO: Remove --legacy-peer-deps after upgrading to React 19 or pinning @react-three/* to React 18-compatible versions.
         run: npm install --legacy-peer-deps
 
       - name: Build Web Project
-        run: npm run build # আপনার ওয়েব অ্যাপের বিল্ড কমান্ড (যেমন: Vite বা Next.js বিল্ড)
-
-      - name: Detect Capacitor Android setup
-        id: capacitor_check
-        run: |
-          HAS_ANDROID_DIR=false
-          HAS_CAP_CONFIG=false
-          HAS_CAP_CORE=false
-
-          [ -d android ] && HAS_ANDROID_DIR=true
-          ([ -f capacitor.config.ts ] || [ -f capacitor.config.json ]) && HAS_CAP_CONFIG=true
-          if [ -f package.json ] && node -e "const p=require('./package.json');process.exit((p.dependencies&&p.dependencies['@capacitor/core'])||(p.devDependencies&&p.devDependencies['@capacitor/core'])?0:1)"; then
-            HAS_CAP_CORE=true
-          fi
-
-          if [ "$HAS_ANDROID_DIR" = true ] && [ "$HAS_CAP_CONFIG" = true ] && [ "$HAS_CAP_CORE" = true ]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Capacitor Android setup not found. Skipping Android build steps."
-          fi
+        run: npm run build 
 
       - name: Set up JDK 17
-        if: steps.capacitor_check.outputs.enabled == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Sync Capacitor
-        if: steps.capacitor_check.outputs.enabled == 'true'
+      # যদি রেপোজিটোরিতে android ফোল্ডার না থাকে, তবে এই ধাপটি তা অটোমেটিক তৈরি করবে
+      - name: Add Android Platform if missing
         run: |
-          npx cap sync
+          if [ ! -d "android" ]; then
+            npx @capacitor/cli add android
+          fi
+
+      - name: Sync Capacitor
+        run: |
+          npx @capacitor/cli sync
 
       - name: Build Android APK
-        if: steps.capacitor_check.outputs.enabled == 'true'
         run: |
           cd android
           ./gradlew assembleDebug
 
       - name: Upload APK Artifact
-        if: steps.capacitor_check.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: my-web-app-apk
