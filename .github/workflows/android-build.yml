@@ -24,22 +24,46 @@ jobs:
       - name: Build Web Project
         run: npm run build # আপনার ওয়েব অ্যাপের বিল্ড কমান্ড (যেমন: Vite বা Next.js বিল্ড)
 
+      - name: Detect Capacitor Android setup
+        id: capacitor_check
+        run: |
+          HAS_ANDROID_DIR=false
+          HAS_CAP_CONFIG=false
+          HAS_CAP_CORE=false
+
+          [ -d android ] && HAS_ANDROID_DIR=true
+          ([ -f capacitor.config.ts ] || [ -f capacitor.config.json ]) && HAS_CAP_CONFIG=true
+          if [ -f package.json ] && node -e "const p=require('./package.json');process.exit((p.dependencies&&p.dependencies['@capacitor/core'])||(p.devDependencies&&p.devDependencies['@capacitor/core'])?0:1)"; then
+            HAS_CAP_CORE=true
+          fi
+
+          if [ "$HAS_ANDROID_DIR" = true ] && [ "$HAS_CAP_CONFIG" = true ] && [ "$HAS_CAP_CORE" = true ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Capacitor Android setup not found. Skipping Android build steps."
+          fi
+
       - name: Set up JDK 17
+        if: steps.capacitor_check.outputs.enabled == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Sync Capacitor
+        if: steps.capacitor_check.outputs.enabled == 'true'
         run: |
           npx cap sync
 
       - name: Build Android APK
+        if: steps.capacitor_check.outputs.enabled == 'true'
         run: |
           cd android
           ./gradlew assembleDebug
 
       - name: Upload APK Artifact
+        if: steps.capacitor_check.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: my-web-app-apk
