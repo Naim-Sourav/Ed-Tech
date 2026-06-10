@@ -23,7 +23,7 @@
   ],
   "start_url": "./",
   "display": "standalone",
-  "theme_color": "#ffffff",
+  "theme_color": "#F9FAFB",
   "background_color": "#ffffff",
   "orientation": "portrait",
   "id": "porikkhangon-app"
