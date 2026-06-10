@@ -18,6 +18,7 @@ jobs:
           node-version: 18 # আপনার প্রজেক্টের নোড ভার্সন অনুযায়ী পরিবর্তন করতে পারেন
 
       - name: Install Dependencies
+        # TODO: Remove --legacy-peer-deps after upgrading to React 19 or pinning @react-three/* to React 18-compatible versions.
         run: npm install --legacy-peer-deps
 
       - name: Build Web Project
