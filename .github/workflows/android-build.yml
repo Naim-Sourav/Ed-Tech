@@ -24,22 +24,36 @@ jobs:
       - name: Build Web Project
         run: npm run build # আপনার ওয়েব অ্যাপের বিল্ড কমান্ড (যেমন: Vite বা Next.js বিল্ড)
 
+      - name: Detect Capacitor Android setup
+        id: capacitor_check
+        run: |
+          if [ -d android ] && [ -f capacitor.config.ts -o -f capacitor.config.json ] && [ -f package.json ] && grep -q '"@capacitor/core"' package.json; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Capacitor Android setup not found. Skipping Android build steps."
+          fi
+
       - name: Set up JDK 17
+        if: steps.capacitor_check.outputs.enabled == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Sync Capacitor
+        if: steps.capacitor_check.outputs.enabled == 'true'
         run: |
           npx cap sync
 
       - name: Build Android APK
+        if: steps.capacitor_check.outputs.enabled == 'true'
         run: |
           cd android
           ./gradlew assembleDebug
 
       - name: Upload APK Artifact
+        if: steps.capacitor_check.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: my-web-app-apk
