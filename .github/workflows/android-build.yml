@@ -26,7 +26,6 @@ jobs:
       - name: Build Web Project
         run: npm run build 
 
-      # এখানে জাবানি ডিস্ট্রিবিউশন 'temurin' করা হয়েছে যা বেশি স্ট্যাবল
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -49,11 +48,11 @@ jobs:
         run: |
           npx @capacitor/cli sync
 
-      # এখানে --no-daemon যুক্ত করা হয়েছে যাতে কনকারেন্সি এরর না আসে
+      # এখানে সর্বোচ্চ ১টি ওয়ার্কার এবং নো-প্যারালাল মোড সেট করা হয়েছে জ্যাম এড়াতে
       - name: Build Android APK
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --max-workers=1 --no-parallel
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
