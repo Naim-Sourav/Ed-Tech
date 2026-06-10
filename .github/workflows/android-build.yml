@@ -27,7 +27,7 @@ jobs:
       - name: Detect Capacitor Android setup
         id: capacitor_check
         run: |
-          if [ -d android ] && [ -f capacitor.config.ts -o -f capacitor.config.json ] && [ -f package.json ] && grep -q '"@capacitor/core"' package.json; then
+          if [ -d android ] && ([ -f capacitor.config.ts ] || [ -f capacitor.config.json ]) && [ -f package.json ] && grep -q '@capacitor/core' package.json; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
