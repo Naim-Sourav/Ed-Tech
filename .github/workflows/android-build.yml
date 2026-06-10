@@ -20,41 +20,56 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Install Capacitor Core and Android Packages
-        run: npm install @capacitor/core @capacitor/android --legacy-peer-deps
+      - name: Detect Android build prerequisites
+        id: android_prereq
+        run: |
+          has_android_dir=false
+          has_cap_config=false
+          has_cap_dep=false
+
+          if [ -d "android" ]; then
+            has_android_dir=true
+          fi
+
+          if [ -f "capacitor.config.json" ] || [ -f "capacitor.config.ts" ]; then
+            has_cap_config=true
+          fi
+
+          if grep -q '"@capacitor/core"' package.json; then
+            has_cap_dep=true
+          fi
+
+          if [ "$has_android_dir" = "true" ] && [ "$has_cap_config" = "true" ] && [ "$has_cap_dep" = "true" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping Android build because Android/Capacitor setup is not present in the repository."
+          fi
 
       - name: Build Web Project
         run: npm run build 
 
       - name: Set up JDK 17
+        if: steps.android_prereq.outputs.enabled == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Create Capacitor Config if missing
-        run: |
-          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
-            echo '{"appId": "com.porikkhangon.app", "appName": "Porikkhangon", "webDir": "dist"}' > capacitor.config.json
-          fi
-
-      - name: Add Android Platform if missing
-        run: |
-          if [ ! -d "android" ]; then
-            npx @capacitor/cli add android
-          fi
-
       - name: Sync Capacitor
+        if: steps.android_prereq.outputs.enabled == 'true'
         run: |
           npx @capacitor/cli sync
 
-      # এখানে সর্বোচ্চ ১টি ওয়ার্কার এবং নো-প্যারালাল মোড সেট করা হয়েছে জ্যাম এড়াতে
+      # Keep Gradle resource usage conservative to reduce CI instability.
       - name: Build Android APK
+        if: steps.android_prereq.outputs.enabled == 'true'
         run: |
           cd android
           ./gradlew assembleDebug --no-daemon --max-workers=1 --no-parallel
 
       - name: Upload APK Artifact
+        if: steps.android_prereq.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: my-web-app-apk
