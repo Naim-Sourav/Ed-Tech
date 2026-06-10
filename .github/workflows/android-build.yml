@@ -56,20 +56,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Create Capacitor Config if missing
-        if: steps.android_prereq.outputs.enabled == 'true'
-        run: |
-          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
-            echo '{"appId": "com.porikkhangon.app", "appName": "Porikkhangon", "webDir": "dist"}' > capacitor.config.json
-          fi
-
-      - name: Add Android Platform if missing
-        if: steps.android_prereq.outputs.enabled == 'true'
-        run: |
-          if [ ! -d "android" ]; then
-            npx @capacitor/cli add android
-          fi
-
       - name: Sync Capacitor
         if: steps.android_prereq.outputs.enabled == 'true'
         run: |
