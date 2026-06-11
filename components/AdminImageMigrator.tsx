@@ -36,21 +36,29 @@ export default function AdminImageMigrator() {
             let imageBase64: string | null = null;
 
             // Fetch the image and convert to base64 to completely wipe metadata and original URL
+            const fetchAsBase64 = async (url: string) => {
+                const imgRes = await fetch(url);
+                if (!imgRes.ok) throw new Error('Not ok');
+                const blob = await imgRes.blob();
+                const base64Str = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+                return base64Str.split(',')[1];
+            };
+
             try {
-                const imgRes = await fetch(imageUrl);
-                if (imgRes.ok) {
-                    const blob = await imgRes.blob();
-                    const base64Str = await new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result as string);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(blob);
-                    });
-                    // Extract the base64 part, removing the data scheme prefix
-                    imageBase64 = base64Str.split(',')[1];
-                }
+                imageBase64 = await fetchAsBase64(imageUrl);
             } catch (e) {
-                console.warn('Failed to fetch image as blob/base64 (CORS?), falling back to URL upload', e);
+                console.warn('Direct fetch failed (CORS?), trying proxy...', e);
+                try {
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
+                    imageBase64 = await fetchAsBase64(proxyUrl);
+                } catch (proxyErr) {
+                    console.warn('Proxy fetch also failed, falling back to URL upload', proxyErr);
+                }
             }
 
             const formData = new FormData();
@@ -74,7 +82,24 @@ export default function AdminImageMigrator() {
                 if (delayMs > 0) {
                     await new Promise(resolve => setTimeout(resolve, delayMs));
                 }
-                return data.data.url;
+                
+                // ImgBB ignores the filename path segment, so we can rename the URL directly
+                // This ensures folder paths or original names are completely wiped out
+                const originalUrl = data.data.url;
+                const urlParts = originalUrl.split('/');
+                const oldFilename = urlParts.pop() || 'image.png';
+                const extension = oldFilename.includes('.') ? oldFilename.split('.').pop() : 'png';
+                
+                const finalName = `${randomName}.${extension}`;
+                urlParts.push(finalName);
+                const randomizedUrl = urlParts.join('/');
+                
+                // Log the rename so admin can verify it works
+                let shortOriginal = imageUrl.split('/').pop()?.split('?')[0] || 'unknown';
+                if (shortOriginal.length > 30) shortOriginal = shortOriginal.substring(0, 30) + '...';
+                addLog(`✓ Uploaded: ${shortOriginal} -> ${finalName}`);
+                
+                return randomizedUrl;
             } else {
                 throw new Error(data.error?.message || 'Upload failed');
             }
