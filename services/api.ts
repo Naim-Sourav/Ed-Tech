@@ -403,6 +403,16 @@ export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai')
     }
 };
 
+export const fetchQuestionsForMigrator = async (page: number, limit: number) => {
+  let url = `${API_BASE}/admin/questions?page=${page}&limit=${limit}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`HTTP ${response.status}: ${err}`);
+  }
+  return response.json();
+};
+
 export const fetchQuestionsFromBankAPI = async (
   page: number, 
   limit: number, 
