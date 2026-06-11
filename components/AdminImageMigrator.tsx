@@ -4,11 +4,12 @@ import { fetchQuestionsFromBankAPI, updateQuestionInBankAPI, fetchQuestionsForMi
 import { useToast } from './Toast';
 
 export default function AdminImageMigrator() {
-    const [apiKey, setApiKey] = useState('6a2ce7475ae07c3a11d6d15f022a2965');
+    const [apiKey, setApiKey] = useState('5ca781792ba2e2fbb41bee82f5765e0e');
     const [isMigrating, setIsMigrating] = useState(false);
     const [shouldStop, setShouldStop] = useState(false);
     const [progress, setProgress] = useState({ total: 0, current: 0, updated: 0, failed: 0 });
     const [forceReupload, setForceReupload] = useState(false);
+    const [delayMs, setDelayMs] = useState(300); // 300ms default delay between uploads to avoid rate limits
     const [logs, setLogs] = useState<string[]>([]);
     const { showToast } = useToast();
     
@@ -70,6 +71,9 @@ export default function AdminImageMigrator() {
 
             const data = await response.json();
             if (data.success && data.data && data.data.url) {
+                if (delayMs > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+                }
                 return data.data.url;
             } else {
                 throw new Error(data.error?.message || 'Upload failed');
@@ -248,6 +252,18 @@ export default function AdminImageMigrator() {
                             />
                             Force re-upload existing ImgBB images (Randomize image names)
                         </label>
+                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <span>Upload Delay:</span>
+                            <input 
+                                type="number" 
+                                min="0" 
+                                max="10000"
+                                value={delayMs} 
+                                onChange={e => setDelayMs(Math.max(0, parseInt(e.target.value) || 0))}
+                                className="w-20 px-2 py-1 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-800 text-xs text-center"
+                            />
+                            <span>ms (helps prevent hitting API speed limits)</span>
+                        </div>
                     </div>
                     <div className="flex gap-2 items-start">
                         <button
