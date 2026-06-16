@@ -156,11 +156,6 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    match /admin_settings/{settingId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
     // Catch-all rule for other collections/documents
     match /{document=**} {
       allow read: if request.auth != null;
