@@ -62,14 +62,8 @@ mjx-container[jax="CHTML"] {
 
 @layer base {
   html {
-    font-size: 14px;
+    font-size: 15.75px;
     scroll-behavior: smooth;
-  }
-  
-  @media (min-width: 768px) {
-    html {
-      font-size: 16px;
-    }
   }
 
   * {
@@ -77,7 +71,9 @@ mjx-container[jax="CHTML"] {
   }
   body {
     @apply bg-background text-foreground;
-    font-size: 1rem;
+    font-size: 15.75px;
+    line-height: 26.775px;
+    font-weight: 400;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;

@@ -16,6 +16,14 @@ export default {
         tiro: ['Kalpurush', 'sans-serif'],
         display: ['Outfit', 'Inter', 'sans-serif'],
       },
+      fontSize: {
+        xs: '12.25px',
+        sm: '14px',
+        base: ['15.75px', { lineHeight: '26.775px', fontWeight: '400' }],
+        md: '15.75px',
+        lg: '17.5px',
+        xl: '21px',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
