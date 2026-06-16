@@ -57,8 +57,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Derive profile completion status
   const isProfileComplete = React.useMemo(() => {
       if (!currentUser) return false;
-      // We only consider the profile complete if the user has a display name
-      return !!currentUser.displayName;
+      // If profile is still loading, we can't determine completion yet, assume false but handled by UI
+      if (!extendedProfile) return false;
+      return !!(extendedProfile.target && extendedProfile.college && extendedProfile.hscBatch);
   }, [currentUser, extendedProfile]);
 
   useEffect(() => {
