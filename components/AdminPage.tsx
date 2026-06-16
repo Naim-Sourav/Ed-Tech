@@ -5,7 +5,6 @@ import { Check, X, Search, Trash2, User, Phone, CreditCard, ShieldCheck, Users, 
 import AdminJsonUpload from './AdminJsonUpload';
 import AdminPublicExam from './AdminPublicExam';
 import AdminBulkMapper from './AdminBulkMapper';
-import AdminImageMigrator from './AdminImageMigrator';
 import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, createQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, refineQuestionsAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
@@ -422,7 +421,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM' | 'MAPPER' | 'MIGRATOR'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM' | 'MAPPER'>('DASHBOARD');
   const { showToast } = useToast();
   const navigate = useNavigate();
   
@@ -752,9 +751,6 @@ const AdminPage: React.FC = () => {
                    <button onClick={() => setActiveTab('DATABASE')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'DATABASE' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Layers size={16} /> Manager
                    </button>
-                   <button onClick={() => setActiveTab('MIGRATOR')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'MIGRATOR' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                      <ImageIcon size={16} /> Image Migrator
-                   </button>
                    <button onClick={() => setActiveTab('NOTIFICATIONS')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'NOTIFICATIONS' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Bell size={16} /> নোটিফিকেশন
                    </button>
@@ -985,11 +981,6 @@ const AdminPage: React.FC = () => {
             <AdminBulkMapper />
         )}
 
-
-        {/* --- TAB: MIGRATOR --- */}
-        {activeTab === 'MIGRATOR' && (
-            <AdminImageMigrator />
-        )}
 
         {/* --- TAB: DATABASE VIEWER (UPDATED TO MANAGER) --- */}
         {activeTab === 'DATABASE' && (

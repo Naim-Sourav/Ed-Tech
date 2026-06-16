@@ -19,9 +19,6 @@ import {
   ChevronRight,
   Settings as SettingsIcon,
   Check,
-  Shield,
-  FileText,
-  RefreshCcw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
@@ -42,7 +39,7 @@ const HomeDashboard: React.FC<{
   toggleTheme?: () => void;
 }> = ({ themeMode = "system", toggleTheme }) => {
   const navigate = useNavigate();
-  const { currentUser, userAvatar, logout } = useAuth();
+  const { currentUser, userAvatar } = useAuth();
   const { getCache, setCache } = useCache();
 
   const cacheKey = `dashboard_${currentUser?.uid}`;
@@ -987,12 +984,11 @@ const HomeDashboard: React.FC<{
                   {themeMode === "dark" ||
                   (themeMode === "system" &&
                     window.matchMedia("(prefers-color-scheme: dark)").matches)
-                    ? "লাইট মোড"
-                    : "ডার্ক মোড"}
+                    ? "লাইট মোড চালু করুন"
+                    : "ডার্ক মোড চালু করুন"}
                 </span>
               </button>
             )}
-            
             <button
               onClick={() => {
                 setShowProfileMenu(false);
@@ -1008,69 +1004,18 @@ const HomeDashboard: React.FC<{
               </span>
               <ChevronRight size={18} className="text-gray-400" />
             </button>
-
             <button
               onClick={() => {
                 setShowProfileMenu(false);
-                navigate("/privacy");
+                navigate("/settings");
               }}
               className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group text-left"
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-gray-400">
-                <Shield size={20} strokeWidth={2.5} />
-              </div>
-              <span className="font-bold text-gray-800 dark:text-gray-200 flex-1">
-                প্রাইভেসি পলিসি
-              </span>
-              <ChevronRight size={18} className="text-gray-400" />
-            </button>
-            
-            <button
-              onClick={() => {
-                setShowProfileMenu(false);
-                navigate("/terms");
-              }}
-              className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group text-left"
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-gray-400">
-                <FileText size={20} strokeWidth={2.5} />
-              </div>
-              <span className="font-bold text-gray-800 dark:text-gray-200 flex-1">
-                ব্যবহারের শর্তাবলী
-              </span>
-              <ChevronRight size={18} className="text-gray-400" />
-            </button>
-            
-            <button
-              onClick={() => {
-                setShowProfileMenu(false);
-                navigate("/refund");
-              }}
-              className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group text-left"
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-gray-400">
-                <RefreshCcw size={20} strokeWidth={2.5} />
-              </div>
-              <span className="font-bold text-gray-800 dark:text-gray-200 flex-1">
-                রিফান্ড পলিসি
-              </span>
-              <ChevronRight size={18} className="text-gray-400" />
-            </button>
-
-            <div className="h-px w-full bg-gray-100 dark:bg-zinc-900 my-4" />
-
-            <button
-              onClick={async () => {
-                setShowProfileMenu(false);
-                await logout();
-              }}
-              className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group text-left"
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 bg-red-50 dark:bg-red-500/10 text-red-500">
                 <LogOut size={20} strokeWidth={2.5} />
               </div>
               <span className="font-bold text-red-500 flex-1">
-                লগআউট করুন
+                লগআউট করতে চান?
               </span>
               <ChevronRight size={18} className="text-red-300" />
             </button>

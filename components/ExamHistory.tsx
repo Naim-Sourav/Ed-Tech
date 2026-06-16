@@ -7,7 +7,7 @@ import { deleteExamResultAPI } from '../services/api';
 import { collection, query, where, getDocs, doc, deleteDoc, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { 
-  Trash2, Loader2, FileQuestion, ChevronLeft, ChevronRight
+  Trash2, Loader2, FileQuestion
 } from 'lucide-react';
 import SavedQuestions from './SavedQuestions';
 import WrongQuestions from './WrongQuestions';
@@ -25,15 +25,38 @@ const ExamHistory: React.FC = () => {
   const [loadingAttempts, setLoadingAttempts] = useState(true);
   const [deletingAttemptId, setDeletingAttemptId] = useState<string | null>(null);
 
-  // Pagination for exams history
-  const [currentHistoryPage, setCurrentHistoryPage] = useState(1);
-  const itemsPerHistoryPage = 10;
-
   // Load past exams (attempts)
   useEffect(() => {
     let active = true;
     
-    setLoadingAttempts(true);
+    // Instantly load local data to make UI load immediately
+    const localAttemptsKey = `porikkhangon_attempts_${currentUser?.uid}`;
+    let initialLocal: any[] = [];
+    if (currentUser) {
+      try {
+        const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+        const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+        const sortedLocal = localAttempts.sort((a: any, b: any) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        
+        const deduplicatedLocal: any[] = [];
+        for (const item of sortedLocal) {
+          const isDup = deduplicatedLocal.some(existing => 
+            existing.examId === item.examId && 
+            Math.abs(Number(existing.timestamp || 0) - Number(item.timestamp || 0)) < 60000
+          );
+          if (!isDup) {
+            deduplicatedLocal.push(item);
+          }
+        }
+        initialLocal = deduplicatedLocal;
+        setAttempts(deduplicatedLocal);
+      } catch (err) {
+        console.error("Failed to load initial local attempts:", err);
+      }
+    }
+
+    // Only show full loading spinner if we have no local cache
+    setLoadingAttempts(initialLocal.length === 0);
 
     const fetchAndSync = async () => {
       if (!currentUser) {
@@ -50,15 +73,61 @@ const ExamHistory: React.FC = () => {
           firestoreAttempts.push({ id: docSnapshot.id, ...docSnapshot.data() });
         });
 
-        const sorted = firestoreAttempts.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        // 2. Load latest from localStorage again in case it was updated
+        const currentLocalRaw = localStorage.getItem(localAttemptsKey);
+        const currentLocal = currentLocalRaw ? JSON.parse(currentLocalRaw) : [];
+
+        // 3. Parallel upload of unsynced items to Firestore
+        const syncedKeys = new Set(firestoreAttempts.map(a => `${a.examId}_${Number(a.timestamp || 0)}`));
+        const uploadPromises: Promise<any>[] = [];
+        
+        for (const localAttempt of currentLocal) {
+          const matchKey = `${localAttempt.examId}_${Number(localAttempt.timestamp || 0)}`;
+          if (!syncedKeys.has(matchKey)) {
+            const uploadPayload = {
+              ...localAttempt,
+              userId: currentUser.uid,
+              questions: Array.isArray(localAttempt.questions)
+                ? localAttempt.questions.map((q: any) => ({
+                    _id: q._id || q.id || '',
+                    subject: q.subject || '',
+                    chapter: q.chapter || '',
+                    correctAnswerIndex: q.correctAnswerIndex ?? q.correctAnswer ?? 0
+                  }))
+                : []
+            };
+            delete uploadPayload.id;
+            uploadPromises.push(
+              addDoc(collection(db, 'attempts'), uploadPayload)
+                .then(docRef => ({ id: docRef.id, ...uploadPayload }))
+                .catch(e => {
+                  console.error("Local attempt sync failed for item:", e);
+                  return null;
+                })
+            );
+          }
+        }
+
+        const uploadedResults = await Promise.all(uploadPromises);
+        const cleanUploaded = uploadedResults.filter(Boolean);
+
+        const combined = [...firestoreAttempts, ...cleanUploaded];
+
+        // 4. Sort compiled list and filter out duplicates with very close timestamps (e.g., within 1 minute)
+        const sorted = combined.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
         const deduplicated: any[] = [];
         for (const item of sorted) {
           const isDup = deduplicated.some(existing => 
             existing.examId === item.examId && 
             Math.abs(Number(existing.timestamp || 0) - Number(item.timestamp || 0)) < 60000
           );
-          if (!isDup) deduplicated.push(item);
+          if (!isDup) {
+            deduplicated.push(item);
+          }
         }
+
+        // 5. Update localStorage with final merged records
+        localStorage.setItem(localAttemptsKey, JSON.stringify(deduplicated));
 
         if (active) {
           setAttempts(deduplicated);
@@ -115,8 +184,12 @@ const ExamHistory: React.FC = () => {
         }
       }
 
-      // 3. Update state
-      const updatedAttempts = attempts.filter((a: any) => a.examId !== examId);
+      // 3. Delete from localStorage
+      const localAttemptsKey = `porikkhangon_attempts_${currentUser.uid}`;
+      const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+      const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+      const updatedAttempts = localAttempts.filter((a: any) => a.examId !== examId);
+      localStorage.setItem(localAttemptsKey, JSON.stringify(updatedAttempts));
       
       setAttempts(updatedAttempts.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0)));
       showToast("পরীক্ষাটি ইতিহাস থেকে মুছে ফেলা হয়েছে", "success");
@@ -222,9 +295,7 @@ const ExamHistory: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {attempts
-                      .slice((currentHistoryPage - 1) * itemsPerHistoryPage, currentHistoryPage * itemsPerHistoryPage)
-                      .map((attempt, idx) => {
+                    {attempts.map((attempt) => {
                       const totalQ = attempt.totalQuestions || 20;
                       const correct = attempt.correct || 0;
                       const percent = Math.min(100, Math.round((correct / totalQ) * 100));
@@ -235,9 +306,6 @@ const ExamHistory: React.FC = () => {
                       const chapterName = attempt.config?.chapter || null;
                       const examTitle = attempt.config?.title || (attempt.examId?.replace(/_/g, ' ') || 'নামহীন পরীক্ষা');
 
-                      const serialNumber = idx + 1 + (currentHistoryPage - 1) * itemsPerHistoryPage;
-                      const bnSerial = serialNumber.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)]);
-
                       const examDate = attempt.timestamp 
                         ? new Date(attempt.timestamp).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })
                         : '-';
@@ -247,122 +315,88 @@ const ExamHistory: React.FC = () => {
                           key={attempt.id || `${attempt.examId}_${attempt.timestamp || 0}`}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-gray-150/80 dark:border-zinc-800 shadow-sm relative overflow-hidden flex gap-4"
+                          className="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-gray-150/80 dark:border-zinc-800 shadow-sm relative overflow-hidden"
                         >
-                          {/* Serial Number Bubble */}
-                          <div className="shrink-0 pt-1">
-                              <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 flex items-center justify-center text-sm font-bold text-gray-500 dark:text-zinc-400">
-                                  {bnSerial}
-                              </div>
+                          {/* Top row */}
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="space-y-1">
+                              <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                                {subjectName}
+                              </h3>
+                              {paperName && (
+                                <p className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
+                                  {paperName}
+                                </p>
+                              )}
+                              {chapterName ? (
+                                <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
+                                  {chapterName}
+                                </p>
+                              ) : (
+                                examTitle !== subjectName && (
+                                  <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
+                                    {examTitle}
+                                  </p>
+                                )
+                              )}
+                            </div>
+                            <span className="text-xs text-gray-400 dark:text-zinc-500 font-bold whitespace-nowrap">
+                              {examDate}
+                            </span>
                           </div>
 
-                          <div className="flex-1 min-w-0">
-                            {/* Top row */}
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="space-y-1">
-                                <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                                  {subjectName}
-                                </h3>
-                                {paperName && (
-                                  <p className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
-                                    {paperName}
-                                  </p>
-                                )}
-                                {chapterName ? (
-                                  <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
-                                    {chapterName}
-                                  </p>
-                                ) : (
-                                  examTitle !== subjectName && (
-                                    <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
-                                      {examTitle}
-                                    </p>
-                                  )
-                                )}
+                          {/* Progress slider bar */}
+                          <div className="relative pt-4 pb-5 my-2">
+                            <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-800 rounded-full relative">
+                              <div 
+                                className="h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-300" 
+                                style={{ width: `${percent}%` }}
+                              />
+                              <div 
+                                className="absolute top-1/2 flex items-center justify-center bg-white dark:bg-zinc-950 border-2 border-emerald-500 dark:border-emerald-400 text-[10px] font-bold tracking-tight text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full shadow-sm select-none"
+                                style={{ left: `${percentClamped}%`, transform: 'translate(-50%, -50%)' }}
+                              >
+                                {correct}/{totalQ}
                               </div>
-                              <span className="text-xs text-gray-400 dark:text-zinc-500 font-bold whitespace-nowrap pl-2 text-right">
-                                {examDate}
+                            </div>
+                          </div>
+
+                          {/* Botton Controls */}
+                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-zinc-800/30">
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
+                                {attempt.config?.examType || 'HSC'}
                               </span>
-                            </div>
-
-                            {/* Progress slider bar */}
-                            <div className="relative pt-4 pb-5 my-2">
-                              <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-800 rounded-full relative">
-                                <div 
-                                  className="h-1.5 bg-primary rounded-full transition-all duration-300" 
-                                  style={{ width: `${percent}%` }}
-                                />
-                                <div 
-                                  className="absolute top-1/2 flex items-center justify-center bg-white dark:bg-zinc-950 border-2 border-primary text-[10px] font-bold tracking-tight text-primary px-2 py-0.5 rounded-full shadow-sm select-none"
-                                  style={{ left: `${percentClamped}%`, transform: 'translate(-50%, -50%)' }}
-                                >
-                                  {correct}/{totalQ}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Bottom Controls */}
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-zinc-800/30">
-                              <div className="flex items-center gap-1.5">
+                              {attempt.config?.duration && (
                                 <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
-                                  {attempt.config?.examType || 'HSC'}
+                                  {attempt.config.duration} মি.
                                 </span>
-                                {attempt.config?.duration && (
-                                  <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
-                                    {attempt.config.duration} মি.
-                                  </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => navigate(`/exam/${attempt.examId}`)}
+                                className="px-4 py-1.5 bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-50 text-white dark:text-gray-900 rounded-xl text-xs font-bold transition-colors shadow-sm active:scale-95 whitespace-nowrap"
+                              >
+                                ফলাফল দেখুন
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteAttempt(attempt.examId, attempt.id)} 
+                                disabled={deletingAttemptId === attempt.examId}
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90"
+                                title="ভুক্তি মুছুন"
+                              >
+                                {deletingAttemptId === attempt.examId ? (
+                                  <Loader2 size={14} className="animate-spin text-red-500" />
+                                ) : (
+                                  <Trash2 size={14} />
                                 )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button 
-                                  onClick={() => navigate(`/exam/${attempt.examId}`)}
-                                  className="px-4 py-1.5 bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-50 text-white dark:text-gray-900 rounded-xl text-xs font-bold transition-colors shadow-sm active:scale-95 whitespace-nowrap"
-                                >
-                                  ফলাফল দেখুন
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteAttempt(attempt.examId, attempt.id)} 
-                                  disabled={deletingAttemptId === attempt.examId}
-                                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90"
-                                  title="ভুক্তি মুছুন"
-                                >
-                                  {deletingAttemptId === attempt.examId ? (
-                                    <Loader2 size={14} className="animate-spin text-red-500" />
-                                  ) : (
-                                    <Trash2 size={14} />
-                                  )}
-                                </button>
-                              </div>
+                              </button>
                             </div>
                           </div>
                         </motion.div>
                       );
                     })}
-
-                    {/* Pagination Controls */}
-                    {Math.ceil(attempts.length / itemsPerHistoryPage) > 1 && (
-                        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-                            <button
-                                onClick={() => setCurrentHistoryPage(prev => Math.max(1, prev - 1))}
-                                disabled={currentHistoryPage === 1}
-                                className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-                            <span className="text-sm font-bold text-gray-600 dark:text-zinc-400 px-3">
-                                {currentHistoryPage.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])} 
-                                / 
-                                {Math.ceil(attempts.length / itemsPerHistoryPage).toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])}
-                            </span>
-                            <button
-                                onClick={() => setCurrentHistoryPage(prev => Math.min(Math.ceil(attempts.length / itemsPerHistoryPage), prev + 1))}
-                                disabled={currentHistoryPage === Math.ceil(attempts.length / itemsPerHistoryPage)}
-                                className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
-                    )}
                   </div>
                 )}
               </motion.div>

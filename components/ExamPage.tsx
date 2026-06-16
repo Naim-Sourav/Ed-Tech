@@ -665,6 +665,33 @@ const ExamPage: React.FC = () => {
                 console.error("Failed to store attempt in Firebase Firestore:", err);
             }
 
+            // Save copy locally for offline and detailed client-side statistics
+            try {
+                const localAttemptsKey = `porikkhangon_attempts_${currentUser.uid}`;
+                const existingAttemptsRaw = localStorage.getItem(localAttemptsKey);
+                const existingAttempts = existingAttemptsRaw ? JSON.parse(existingAttemptsRaw) : [];
+                if (!existingAttempts.some((a: any) => a.examId === examId && Math.abs((a.timestamp || 0) - submissionTimestamp) < 30000)) {
+                    existingAttempts.push({
+                        examId: examId,
+                        subject: questions[0]?.subject || 'General',
+                        totalQuestions: questions.length,
+                        correct: correctCount,
+                        wrong: wrongCount,
+                        skipped: skippedCount,
+                        score: finalScore,
+                        topicStats,
+                        mistakes,
+                        userAnswers,
+                        questions,
+                        config,
+                        timestamp: submissionTimestamp
+                    });
+                    localStorage.setItem(localAttemptsKey, JSON.stringify(existingAttempts));
+                }
+            } catch (err) {
+                console.warn("Failed to store local attempt copy:", err);
+            }
+
             // If Public Exam, also save to public leaderboard
             if (config?.type === 'PUBLIC_EXAM') {
                 const answersMap: Record<number, number> = {};
@@ -1090,7 +1117,7 @@ const ExamPage: React.FC = () => {
                                             </div>
                                         )}
                                         {currentQ.contextText && (
-                                            <div className={`text-base md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 tex2jax_process whitespace-pre-wrap ${getFont(currentQ.contextText)}`} dangerouslySetInnerHTML={{ __html: currentQ.contextText }} />
+                                            <div className={`text-sm md:text-base text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 tex2jax_process whitespace-pre-wrap ${getFont(currentQ.contextText)}`} dangerouslySetInnerHTML={{ __html: currentQ.contextText }} />
                                         )}
                                         {currentQ.contextImage && (
                                             <div className="mb-4 rounded-xl overflow-hidden border border-white dark:border-sky-800/50 bg-white dark:bg-black/20 p-1 shadow-sm">
@@ -1122,7 +1149,7 @@ const ExamPage: React.FC = () => {
                                     </div>
 
                                     {/* Question Text (the biggest thing on screen, text-xl to text-2xl) */}
-                                    <h2 className={`text-[22px] md:text-3xl font-black text-gray-905 dark:text-gray-50 leading-snug tex2jax_process whitespace-pre-wrap ${getFont(currentQ.question)}`}>
+                                    <h2 className={`text-xl md:text-2xl font-black text-gray-905 dark:text-gray-50 leading-snug tex2jax_process whitespace-pre-wrap ${getFont(currentQ.question)}`}>
                                         <div dangerouslySetInnerHTML={{ __html: currentQ.question }} />
                                     </h2>
 
@@ -1193,7 +1220,7 @@ const ExamPage: React.FC = () => {
                                                     {['ক','খ','গ','ঘ'][idx] || String.fromCharCode(65 + idx)}
                                                 </div>
                                                 <div className="flex-1 text-left min-w-0 pr-2">
-                                                    {opt && <span className={`text-[15px] md:text-[17px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
+                                                    {opt && <span className={`text-[14px] md:text-[15px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
                                                     {optImage && <img src={optImage} alt={`Option ${idx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-100 bg-white dark:border-gray-755" />}
                                                 </div>
                                             </div>
@@ -1215,7 +1242,7 @@ const ExamPage: React.FC = () => {
                                     <div className="flex items-center gap-2 mb-4 font-black text-amber-600 dark:text-amber-400 text-xs uppercase tracking-widest">
                                         <BookOpen size={16}/> Explanation
                                     </div>
-                                    <p className={`text-base md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(questions[currentQIndex].explanation)}`}>
+                                    <p className={`text-sm md:text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(questions[currentQIndex].explanation)}`}>
                                         {questions[currentQIndex].explanation || "অফিসিয়াল ব্যাখ্যা পাওয়া যায়নি।"}
                                     </p>
                                     {questions[currentQIndex].explanationImage && (
@@ -1259,7 +1286,7 @@ const ExamPage: React.FC = () => {
                                                         <div className="flex items-start gap-3 w-full">
                                                             <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
                                                             <div className="flex-1 min-w-0 pt-0.5">
-                                                                <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-[17px] md:text-[19px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
+                                                                <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-base md:text-[17px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
                                                                     <span dangerouslySetInnerHTML={{ __html: q.question }} />
                                                                 </h3>
                                                                 {q.questionImage && (
@@ -1320,7 +1347,7 @@ const ExamPage: React.FC = () => {
                                                                             {['ক','খ','গ','ঘ'][oIdx] || String.fromCharCode(65 + oIdx)}
                                                                         </div>
                                                                         <div className="flex-1 text-left min-w-0 pr-2">
-                                                                            {opt && <span className={`text-[15px] md:text-[17px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
+                                                                            {opt && <span className={`text-[14px] md:text-[15px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
                                                                             {optImage && <img src={optImage} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-100 bg-white dark:border-gray-755" />}
                                                                         </div>
                                                                     </div>
@@ -1857,7 +1884,7 @@ const ExamPage: React.FC = () => {
                                         <div className="flex items-start gap-3 w-full">
                                             <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
                                             <div className="flex-1 min-w-0 pt-0.5">
-                                                <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-[17px] md:text-[19px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
+                                                <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-base md:text-[17px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
                                                     <span dangerouslySetInnerHTML={{ __html: q.question }} />
                                                 </h3>
                                                 {q.questionImage && (
@@ -1922,7 +1949,7 @@ const ExamPage: React.FC = () => {
                                                             {['ক','খ','গ','ঘ'][oIdx] || String.fromCharCode(65 + oIdx)}
                                                         </div>
                                                         <div className="flex-1 text-left min-w-0 pr-2">
-                                                            {opt && <span className={`text-[15px] md:text-[17px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
+                                                            {opt && <span className={`text-[14px] md:text-[15px] font-normal leading-relaxed tex2jax_process ${getFont(opt)}`}>{opt}</span>}
                                                             {q.optionsImages?.[oIdx] && <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="mt-2 max-h-20 rounded-lg object-contain border border-gray-100 bg-white dark:border-gray-755 shadow-sm" />}
                                                         </div>
                                                     </div>
@@ -1950,7 +1977,7 @@ const ExamPage: React.FC = () => {
                                             <div className="flex items-center gap-2 mb-3 font-extrabold text-amber-650 dark:text-amber-400 text-[11px] uppercase tracking-widest">
                                                 <BookOpen size={14}/> ব্যাখ্যা
                                             </div>
-                                            <p className={`text-[15px] md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(q.explanation)}`}>
+                                            <p className={`text-[14px] md:text-[15px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(q.explanation)}`}>
                                                 {q.explanation}
                                             </p>
                                             {q.explanationImage && (

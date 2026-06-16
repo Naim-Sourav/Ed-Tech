@@ -3,42 +3,24 @@ import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 're
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI, fetchSyllabusStatsAPI } from '../services/api';
+import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
-import { normalizeBangla, uniqueByNormalization, normalizeForComparison } from '../utils/normalization';
+import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart as ReChartsPieChart, Pie, Cell } from 'recharts';
 
 
 import { db } from '../services/firebase';
-import { collection, query, where, getDocs, deleteDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 const AVATARS: string[] = [];
 
 const ITEMS_PER_PAGE = 10; // Limits items per page to prevent full-page PDF saves
 
 // Helper to dynamically aggregate client-side and server-side stats
-const VALID_SUBJECTS: Record<string, string> = {
-  "Biology 1st Paper": "জীববিজ্ঞান ১ম পত্র",
-  "Biology 2nd Paper": "জীববিজ্ঞান ২য় পত্র",
-  "Physics 1st Paper": "পদার্থবিজ্ঞান ১ম পত্র",
-  "Physics 2nd Paper": "পদার্থবিজ্ঞান ২য় পত্র",
-  "Chemistry 1st Paper": "রসায়ন ১ম পত্র",
-  "Chemistry 2nd Paper": "রসায়ন ২য় পত্র",
-  "Higher Math 1st Paper": "উচ্চতর গণিত ১ম পত্র",
-  "Higher Math 2nd Paper": "উচ্চতর গণিত ২য় পত্র",
-  "Bangla 1st Paper": "বাংলা ১ম পত্র",
-  "Bangla 2nd Paper": "বাংলা ২য় পত্র",
-  "English": "ইংরেজি",
-  "English 1st Paper": "ইংরেজি ১ম পত্র",
-  "English 2nd Paper": "ইংরেজি ২য় পত্র",
-  "ICT": "তথ্য ও যোগাযোগ প্রযুক্তি",
-  "General Knowledge": "সাধারণ জ্ঞান"
-};
-
 const aggregateStatsFromAttempts = (attempts: any[], serverStats: any) => {
   const stats = {
       points: serverStats?.points || 0,
@@ -77,7 +59,7 @@ const aggregateStatsFromAttempts = (attempts: any[], serverStats: any) => {
               subject: sub.subject,
               correct: correct,
               total: total,
-              wrong: sub.wrong !== undefined ? sub.wrong : Math.max(0, total - correct - (sub.skipped !== undefined ? sub.skipped : 0)),
+              wrong: sub.wrong !== undefined ? sub.wrong : Math.max(0, total - correct),
               skipped: sub.skipped !== undefined ? sub.skipped : 0,
               accuracy: sub.accuracy !== undefined ? Math.round(sub.accuracy) : (total > 0 ? Math.round((correct / total) * 100) : 0),
               chapters: {} as Record<string, any>
@@ -145,15 +127,13 @@ const aggregateStatsFromAttempts = (attempts: any[], serverStats: any) => {
   });
 
   // Calculate accuracies, remove tracking references, and sort
-  stats.subjectBreakdown = Object.values(subjectsMap)
-      .filter((sub: any) => VALID_SUBJECTS[sub.subject])
-      .map((sub: any) => {
-          if (sub.localQuestionsTracked) {
-              delete sub.localQuestionsTracked;
-          }
-          sub.accuracy = sub.total > 0 ? Math.round((sub.correct / sub.total) * 100) : sub.accuracy || 0;
-          return sub;
-      }).sort((a: any, b: any) => b.accuracy - a.accuracy);
+  stats.subjectBreakdown = Object.values(subjectsMap).map((sub: any) => {
+      if (sub.localQuestionsTracked) {
+          delete sub.localQuestionsTracked;
+      }
+      sub.accuracy = sub.total > 0 ? Math.round((sub.correct / sub.total) * 100) : sub.accuracy || 0;
+      return sub;
+  }).sort((a: any, b: any) => b.accuracy - a.accuracy);
 
   // Sync global stats numbers to match aggregated correct/wrong counts
   if (attempts.length > 0) {
@@ -206,39 +186,27 @@ const ProfilePage: React.FC = () => {
   const [attempts, setAttempts] = useState<any[]>([]);
   const [deletingAttemptId, setDeletingAttemptId] = useState<string | null>(null);
 
-  // Load attempts from Firestore
+  // Load local attempts
   useEffect(() => {
     if (viewingUserId) {
-      const fetchAttempts = async () => {
-          const attemptsRef = collection(db, 'attempts');
-          const q = query(attemptsRef, where('userId', '==', viewingUserId));
-          try {
-              const snap = await getDocs(q);
-              const fetchedAttempts: any[] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              
-              // Sort descending by timestamp and deduplicate extremely close timestamp duplicates (e.g. within 1 minute)
-              const sortedAttempts = fetchedAttempts.sort((a: any, b: any) => {
-                  const aTime = a.timestamp?.seconds ? a.timestamp.seconds * 1000 : (a.timestamp || 0);
-                  const bTime = b.timestamp?.seconds ? b.timestamp.seconds * 1000 : (b.timestamp || 0);
-                  return bTime - aTime;
-              });
-              const deduplicated: any[] = [];
-              for (const item of sortedAttempts) {
-                  const itemTime = item.timestamp?.seconds ? item.timestamp.seconds * 1000 : (item.timestamp || 0);
-                  const isDup = deduplicated.some(existing => {
-                      const existingTime = existing.timestamp?.seconds ? existing.timestamp.seconds * 1000 : (existing.timestamp || 0);
-                      return existing.examId === item.examId && Math.abs(existingTime - itemTime) < 60000;
-                  });
-                  if (!isDup) {
-                      deduplicated.push(item);
-                  }
-              }
-              setAttempts(deduplicated);
-          } catch (err) {
-              console.error('Failed to load attempts from Firebase', err);
-          }
-      };
-      fetchAttempts();
+      const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+      const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+      const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+      // Sort descending by timestamp and deduplicate extremely close timestamp duplicates (e.g. within 1 minute)
+      const sortedAttempts = localAttempts.sort((a: any, b: any) => {
+        return (b.timestamp || 0) - (a.timestamp || 0);
+      });
+      const deduplicated: any[] = [];
+      for (const item of sortedAttempts) {
+        const isDup = deduplicated.some(existing => 
+          existing.examId === item.examId && 
+          Math.abs((existing.timestamp || 0) - (item.timestamp || 0)) < 60000
+        );
+        if (!isDup) {
+          deduplicated.push(item);
+        }
+      }
+      setAttempts(deduplicated);
     }
   }, [viewingUserId]);
   
@@ -253,7 +221,6 @@ const ProfilePage: React.FC = () => {
       target: 'Medical',
       stats: null
   });
-  const [syllabusStats, setSyllabusStats] = useState<any>({});
 
   // Profile Edit State
   const [isEditing, setIsEditing] = useState(false);
@@ -284,12 +251,13 @@ const ProfilePage: React.FC = () => {
         }
       }
       
-      const updatedAttempts = attempts.filter((a: any) => a.examId !== examId);
-      setAttempts(updatedAttempts.sort((a: any, b: any) => {
-          const aTime = a.timestamp?.seconds ? a.timestamp.seconds * 1000 : (a.timestamp || 0);
-          const bTime = b.timestamp?.seconds ? b.timestamp.seconds * 1000 : (b.timestamp || 0);
-          return bTime - aTime;
-      }));
+      const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+      const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+      const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+      const updatedAttempts = localAttempts.filter((a: any) => a.examId !== examId);
+      localStorage.setItem(localAttemptsKey, JSON.stringify(updatedAttempts));
+      
+      setAttempts(updatedAttempts.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0)));
       
       setProfileData((prev: any) => {
         if (!prev || !prev.stats) return prev;
@@ -340,9 +308,9 @@ const ProfilePage: React.FC = () => {
       }
       
       return [
-          { name: 'সঠিক উত্তর', value: correct, color: '#ff5200' }, 
-          { name: 'ভুল উত্তর', value: wrong, color: '#fdba74' }, 
-          { name: 'উত্তরিহীন', value: skipped, color: '#d1d5db' }
+          { name: 'সঠিক উত্তর', value: correct, color: '#10B981' }, 
+          { name: 'ভুল উত্তর', value: wrong, color: '#EF4444' }, 
+          { name: 'উত্তরিহীন', value: skipped, color: '#9CA3AF' }
       ].filter(item => item.value > 0);
   }, [profileData?.stats]);
 
@@ -353,58 +321,13 @@ const ProfilePage: React.FC = () => {
           const total = sub.total || 0;
           const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
           return {
-              name: VALID_SUBJECTS[sub.subject] || sub.subject,
+              name: sub.subject,
               'অ্যাকুরেসি (%)': accuracy,
               'মোট প্রশ্ন': total,
               'সঠিক': correct
           };
       });
   }, [profileData?.stats]);
-
-  const motherSubjects = useMemo(() => {
-      if (!profileData?.stats?.subjectBreakdown) return [];
-      
-      const getMotherSubject = (subjectName: string) => {
-          return subjectName.replace(/\s*(১ম|২য়)\s*পত্র/g, '').trim();
-      }
-
-      const map = new Map();
-      profileData.stats.subjectBreakdown.forEach((sub: any) => {
-          const motherSubjectName = getMotherSubject(VALID_SUBJECTS[sub.subject] || sub.subject);
-          if (!map.has(motherSubjectName)) {
-              map.set(motherSubjectName, {
-                 name: motherSubjectName,
-                 total: 0,
-                 correct: 0,
-                 wrong: 0,
-                 skipped: 0,
-                 available: 0,
-                 papers: []
-              });
-          }
-          const mother = map.get(motherSubjectName);
-          mother.total += sub.total || 0;
-          mother.correct += sub.correct || 0;
-          const skipped = sub.skipped !== undefined ? sub.skipped : 0;
-          mother.skipped += skipped;
-          const wrong = sub.wrong !== undefined ? sub.wrong : Math.max(0, (sub.total || 0) - (sub.correct || 0) - skipped);
-          mother.wrong += wrong;
-          mother.papers.push(sub);
-      });
-      
-      Array.from(map.values()).forEach((mother: any) => {
-         let available = 0;
-         Object.keys(syllabusStats || {}).forEach(sKey => {
-             const motherName = getMotherSubject(VALID_SUBJECTS[sKey] || sKey);
-             if (motherName === mother.name) {
-                 available += syllabusStats[sKey]?.total || 0;
-             }
-         });
-         mother.available = available > 0 ? available : Math.max(mother.total, 1);
-      });
-      
-      return Array.from(map.values());
-  }, [profileData?.stats, syllabusStats]);
 
   // Saved Questions State
   const [savedQuestions, setSavedQuestions] = useState<any[]>(cachedData.savedQuestions || []);
@@ -454,12 +377,7 @@ const ProfilePage: React.FC = () => {
   // Exam Config Modal
   const [showExamConfig, setShowExamConfig] = useState(false);
   const [examTimeLimit, setExamTimeLimit] = useState(0);
-  const [selectedDeepAnalysisSubject, setSelectedDeepAnalysisSubject] = useState<string | null>(null);
   const [examViewMode, _setExamViewMode] = useState<'SINGLE' | 'LIST'>('SINGLE');
-
-  // History Pagination
-  const [currentHistoryPage, setCurrentHistoryPage] = useState(1);
-  const itemsPerHistoryPage = 10;
 
   // Scroll Restoration
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -510,10 +428,6 @@ const ProfilePage: React.FC = () => {
         }
 
         try {
-            fetchSyllabusStatsAPI().then(stats => {
-                if (stats) setSyllabusStats(stats);
-            }).catch(console.error);
-
             if (isOwnProfile) {
                 // Initialize edit fields
                 setNewName(currentUser?.displayName || '');
@@ -526,31 +440,10 @@ const ProfilePage: React.FC = () => {
                 // If we don't have stats or want to refresh
                 if (!profileData.stats) {
                     const data = await fetchUserStatsAPI(viewingUserId);
-                    let currentAttempts = attempts;
-                    if (currentAttempts.length === 0) {
-                        try {
-                            const attemptsRef = collection(db, 'attempts');
-                            const q = query(attemptsRef, where('userId', '==', viewingUserId));
-                            const snap = await getDocs(q);
-                            const fetchedAttempts: any[] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            const sortedAttempts = fetchedAttempts.sort((a: any, b: any) => {
-                                const aTime = a.timestamp?.seconds ? a.timestamp.seconds * 1000 : (a.timestamp || 0);
-                                const bTime = b.timestamp?.seconds ? b.timestamp.seconds * 1000 : (b.timestamp || 0);
-                                return bTime - aTime;
-                            });
-                            const deduplicated: any[] = [];
-                            for (const item of sortedAttempts) {
-                                const itemTime = item.timestamp?.seconds ? item.timestamp.seconds * 1000 : (item.timestamp || 0);
-                                const isDup = deduplicated.some(existing => {
-                                    const existingTime = existing.timestamp?.seconds ? existing.timestamp.seconds * 1000 : (existing.timestamp || 0);
-                                    return existing.examId === item.examId && Math.abs(existingTime - itemTime) < 60000;
-                                });
-                                if (!isDup) deduplicated.push(item);
-                            }
-                            currentAttempts = deduplicated;
-                        } catch(e) {}
-                    }
-                    const aggregatedStats = aggregateStatsFromAttempts(currentAttempts, data);
+                    const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+                    const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+                    const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+                    const aggregatedStats = aggregateStatsFromAttempts(localAttempts, data);
 
                     setProfileData((prev: any) => ({ 
                         ...prev, 
@@ -567,31 +460,10 @@ const ProfilePage: React.FC = () => {
             } else {
                 const data = await fetchUserStatsAPI(viewingUserId);
                 if (data) {
-                    let currentAttempts = attempts;
-                    if (currentAttempts.length === 0) {
-                        try {
-                            const attemptsRef = collection(db, 'attempts');
-                            const q = query(attemptsRef, where('userId', '==', viewingUserId));
-                            const snap = await getDocs(q);
-                            const fetchedAttempts: any[] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            const sortedAttempts = fetchedAttempts.sort((a: any, b: any) => {
-                                const aTime = a.timestamp?.seconds ? a.timestamp.seconds * 1000 : (a.timestamp || 0);
-                                const bTime = b.timestamp?.seconds ? b.timestamp.seconds * 1000 : (b.timestamp || 0);
-                                return bTime - aTime;
-                            });
-                            const deduplicated: any[] = [];
-                            for (const item of sortedAttempts) {
-                                const itemTime = item.timestamp?.seconds ? item.timestamp.seconds * 1000 : (item.timestamp || 0);
-                                const isDup = deduplicated.some(existing => {
-                                    const existingTime = existing.timestamp?.seconds ? existing.timestamp.seconds * 1000 : (existing.timestamp || 0);
-                                    return existing.examId === item.examId && Math.abs(existingTime - itemTime) < 60000;
-                                });
-                                if (!isDup) deduplicated.push(item);
-                            }
-                            currentAttempts = deduplicated;
-                        } catch(e) {}
-                    }
-                    const aggregatedStats = aggregateStatsFromAttempts(currentAttempts, data);
+                    const localAttemptsKey = `porikkhangon_attempts_${viewingUserId}`;
+                    const localAttemptsRaw = localStorage.getItem(localAttemptsKey);
+                    const localAttempts = localAttemptsRaw ? JSON.parse(localAttemptsRaw) : [];
+                    const aggregatedStats = aggregateStatsFromAttempts(localAttempts, data);
 
                     setProfileData({
                         displayName: data.user?.displayName || 'Unknown User',
@@ -1000,11 +872,11 @@ const ProfilePage: React.FC = () => {
         {/* Header Section - Native App Style */}
         <div className="bg-white dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 border border-gray-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
           {/* Enhanced Background Pattern */}
-          <div className="absolute inset-0 opacity-60 dark:opacity-30 pointer-events-none overflow-hidden rounded-[2.5rem]">
-            <div className="absolute -top-32 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-[80px]"></div>
-            <div className="absolute top-10 -right-20 w-[30rem] h-[30rem] bg-orange-400/20 rounded-full blur-[100px]"></div>
-            <div className="absolute -bottom-40 left-20 w-[25rem] h-[25rem] bg-orange-500/10 rounded-full blur-[100px]"></div>
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+          <div className="absolute top-0 left-0 w-full h-full opacity-40 dark:opacity-20 pointer-events-none">
+            <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-br from-primary/30 via-orange-500/20 to-transparent"></div>
+            <div className="absolute top-10 right-10 w-64 h-64 bg-primary/20 rounded-full blur-[100px]"></div>
+            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px]"></div>
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
           </div>
           
           {/* Top Corner Edit Button - Native Style */}
@@ -1021,12 +893,12 @@ const ProfilePage: React.FC = () => {
              )}
           </div>
 
-          <div className="relative flex flex-col items-center gap-6 md:gap-8 mt-4 md:mt-8">
+          <div className="relative flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10 mt-4 md:mt-8">
             {/* Avatar & User Info */}
             <div className="relative">
                <motion.div 
                   whileHover={{ scale: 1.02 }}
-                  className="w-28 h-28 md:w-40 md:h-40 rounded-full border-[6px] border-white dark:border-zinc-900 shadow-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 flex items-center justify-center relative z-10"
+                  className="w-28 h-28 md:w-40 md:h-40 rounded-[2.5rem] border-4 border-white dark:border-zinc-800 shadow-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 flex items-center justify-center relative z-10"
                >
                   {renderProfileAvatar()}
                </motion.div>
@@ -1035,7 +907,7 @@ const ProfilePage: React.FC = () => {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-                    className="absolute bottom-0 right-0 p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full hover:scale-110 transition-transform shadow-xl z-20 border-[3px] border-white dark:border-zinc-900"
+                    className="absolute -bottom-2 -right-2 p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl hover:scale-110 transition-transform shadow-xl z-20 border-2 border-white dark:border-zinc-800"
                  >
                     <Camera size={18} />
                  </motion.button>
@@ -1044,9 +916,9 @@ const ProfilePage: React.FC = () => {
                    <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white dark:bg-zinc-900 p-5 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 z-50 w-72 backdrop-blur-xl"
+                    className="absolute top-full left-0 mt-4 bg-white dark:bg-zinc-900 p-5 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 z-50 w-72 backdrop-blur-xl"
                    >
-                       <p className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 text-center">প্রোফাইল ছবি</p>
+                       <p className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4">প্রোফাইল ছবি</p>
 
                        <label className="flex items-center justify-center gap-3 w-full py-4 bg-gray-50 dark:bg-zinc-900/50 rounded-2xl text-sm font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors border border-dashed border-gray-200 dark:border-white/10">
                            <Upload size={18} className="text-primary"/> ছবি আপলোড করুন
@@ -1056,9 +928,9 @@ const ProfilePage: React.FC = () => {
                )}
             </div>
 
-            <div className="flex-1 text-center space-y-4 w-full flex flex-col items-center">
+            <div className="flex-1 text-center md:text-left space-y-3 w-full">
                {isEditing && isOwnProfile ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl bg-gray-50/50 dark:bg-zinc-900/30 p-5 rounded-3xl border border-gray-100 dark:border-white/5 text-left">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full bg-gray-50/50 dark:bg-zinc-900/30 p-5 rounded-3xl border border-gray-100 dark:border-white/5">
                     <div className="space-y-1.5">
                       <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{t('auth_name')}</label>
                       <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
@@ -1081,8 +953,8 @@ const ProfilePage: React.FC = () => {
                     </div>
                  </div>
                ) : (
-                 <div className="space-y-4 w-full">
-                    <div className="flex flex-col items-center justify-center">
+                 <div className="space-y-4">
+                    <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 justify-center md:justify-start">
                         <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">{profileData.displayName}</h1>
                     </div>
 
@@ -1092,17 +964,17 @@ const ProfilePage: React.FC = () => {
                          </div>
                      */}
 
-                    <div className="flex flex-wrap justify-center gap-2 md:gap-3 text-[11px] md:text-sm text-gray-600 dark:text-gray-300">
-                       {profileData.college && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><GraduationCap size={16} className="text-primary"/> {profileData.college}</div>}
-                       {profileData.hscBatch && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><Calendar size={16} className="text-orange-500"/> Batch: {profileData.hscBatch}</div>}
-                       {profileData.department && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><Briefcase size={16} className="text-orange-500"/> {profileData.department}</div>}
-                       {profileData.target && <div className="flex items-center justify-center gap-2 bg-orange-100/50 dark:bg-white/5 text-orange-600 dark:text-orange-400 px-4 py-2 rounded-2xl font-black border border-orange-200 dark:border-white/5 shadow-sm"><Target size={16}/> {profileData.target} Aspirant</div>}
+                    <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-3 text-[11px] md:text-sm text-gray-600 dark:text-gray-300 mt-2">
+                       {profileData.college && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><GraduationCap size={16} className="text-primary"/> {profileData.college}</div>}
+                       {profileData.hscBatch && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><Calendar size={16} className="text-orange-500"/> Batch: {profileData.hscBatch}</div>}
+                       {profileData.department && <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200/50 dark:border-white/5 font-bold"><Briefcase size={16} className="text-orange-500"/> {profileData.department}</div>}
+                       {profileData.target && <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-xl font-black border border-primary/20"><Target size={16}/> {profileData.target} Aspirant</div>}
                     </div>
                  </div>
                )}
             </div>
 
-            <div className="w-full flex justify-center mt-2">
+            <div className="w-full md:w-auto self-center md:self-end">
                {isOwnProfile ? (
                    isEditing && (
                      <div className="flex gap-3 flex-col md:flex-row w-full">
@@ -1170,11 +1042,42 @@ const ProfilePage: React.FC = () => {
 
                 {/* Performance Visualization Dashboard */}
                 {profileData.stats && profileData.stats.subjectBreakdown && profileData.stats.subjectBreakdown.length > 0 && (
-                    <div className="flex animate-in fade-in duration-300">
-                        {/* Pie Chart: Answer Breakdown */}
-                        <div className="w-full lg:w-3/5 mx-auto bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm min-h-[360px] flex flex-col">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-300">
+                        {/* Bar Chart: Subject Comparison (Spans 7 Cols) */}
+                        <div className="lg:col-span-7 bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm min-h-[360px] flex flex-col">
                             <div className="mb-4">
-                                <h4 className="text-sm font-extrabold text-gray-950 dark:text-zinc-100 flex items-center justify-center gap-2.5">
+                                <h4 className="text-sm font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5">
+                                    <BarChart3 size={18} className="text-orange-500"/> বিষয়ভিত্তিক নির্ভুলতা
+                                </h4>
+                            </div>
+                            
+                            <div className="flex-1 w-full min-h-[250px] mt-2 select-none">
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <BarChart data={subjectChartData} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
+                                        <XAxis dataKey="name" stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} />
+                                        <Tooltip 
+                                            contentStyle={{ background: '#1F2937', border: 'none', borderRadius: '16px', color: '#FFF', fontSize: '11px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                            formatter={(value) => [`${value}%`, 'অ্যাকুরেসি']}
+                                        />
+                                        <Bar dataKey="অ্যাকুরেসি (%)" fill="#F97316" radius={[10, 10, 0, 0]}>
+                                            {subjectChartData.map((entry: any, index: number) => {
+                                                let barColor = "#EF4444"; 
+                                                if (entry['অ্যাকুরেসি (%)'] >= 80) barColor = "#10B981"; 
+                                                else if (entry['অ্যাকুরেসি (%)'] >= 60) barColor = "#F97316"; 
+                                                else if (entry['অ্যাকুরেসি (%)'] >= 45) barColor = "#EAB308"; 
+                                                return <Cell key={`cell-${index}`} fill={barColor} />;
+                                            })}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Pie Chart: Answer Breakdown (Spans 5 Cols) */}
+                        <div className="lg:col-span-5 bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm min-h-[360px] flex flex-col">
+                            <div className="mb-4">
+                                <h4 className="text-sm font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5">
                                     <PieChart size={18} className="text-orange-500"/> সামগ্রিক প্রগ্রেস
                                 </h4>
                             </div>
@@ -1222,107 +1125,197 @@ const ProfilePage: React.FC = () => {
                     </div>
                 )}
 
-                {/* Subject Performance Detailed - Loose Layout */}
-                <div className="mt-8">
-                    <div className="flex items-center justify-between mb-6 px-2">
+                {/* Subject Performance Detailed - Ultra Minimalist Bento Board */}
+                <div className="bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm overflow-hidden mt-6">
+                    <div className="flex items-center justify-between mb-6">
                         <h3 className="font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5 text-base md:text-lg tracking-tight">
                             <BarChart3 size={20} className="text-orange-500"/> বিষয়ভিত্তিক বিশ্লেষণ
                         </h3>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {motherSubjects.map((mother: any, idx: number) => {
-                                const isExpanded = expandedSubjectStats.has(mother.name);
-                                
-                                const correct = mother.correct || 0;
-                                const total = mother.total || 0;
-                                const skipped = mother.skipped || 0;
-                                const wrong = mother.wrong || 0;
-                                const available = mother.available || Math.max(total, 1);
-                                const completionPercent = Math.round(Math.min((total / available) * 100, 100));
+                        {profileData.stats.subjectBreakdown?.map((sub: any, idx: number) => {
+                            const isExpanded = expandedSubjectStats.has(sub.subject);
+                            
+                            const correct = sub.correct || 0;
+                            const total = sub.total || 0;
+                            const wrong = sub.wrong !== undefined ? sub.wrong : (total - correct > 0 ? total - correct : 0);
+                            const skipped = sub.skipped !== undefined ? sub.skipped : 0;
+                            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-                                return (
-                                    <motion.div 
-                                        key={idx} 
-                                        layout
-                                        className="border border-gray-150 dark:border-zinc-850 rounded-[1.8rem] overflow-hidden transition-all shadow-sm bg-white dark:bg-zinc-950 flex flex-col justify-between"
+                            const subjectMistakesCount = mistakes.filter(m => 
+                                m.questionId && normalizeBangla(m.questionId.subject) === normalizeBangla(sub.subject)
+                            ).length;
+
+                            return (
+                                <motion.div 
+                                    key={idx} 
+                                    layout
+                                    className="border border-gray-150 dark:border-zinc-850 rounded-[1.8rem] overflow-hidden transition-all bg-gray-50/10 dark:bg-zinc-900/10 flex flex-col justify-between"
+                                >
+                                    {/* Subject Main Body Row */}
+                                    <div 
+                                        className="p-4 cursor-pointer bg-white dark:bg-zinc-950 flex flex-col gap-3 group"
+                                        onClick={() => toggleSubjectStats(sub.subject)}
                                     >
-                                        <div 
-                                            className="p-4 cursor-pointer flex flex-col gap-3 group"
-                                            onClick={() => toggleSubjectStats(mother.name)}
-                                        >
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    <h4 className="font-extrabold text-gray-900 dark:text-zinc-100 text-sm md:text-base tracking-tight leading-none truncate" title={mother.name}>
-                                                        {mother.name}
-                                                    </h4>
-                                                </div>
-                                                
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    <span className={`text-sm md:text-base font-black ${
-                                                        completionPercent >= 80 ? 'text-primary' : completionPercent >= 60 ? 'text-orange-400' : 'text-gray-400 dark:text-zinc-500'
-                                                    }`}>
-                                                        {completionPercent}%
-                                                    </span>
-                                                    <div className={`p-1 text-gray-400 dark:text-zinc-600 transition-all ${isExpanded ? 'rotate-180 text-orange-500 dark:text-orange-400' : ''}`}>
-                                                        <ChevronDown size={14} />
-                                                    </div>
+                                        {/* Top Line: Title & Percentage */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                                    accuracy >= 80 ? 'bg-emerald-500' : accuracy >= 60 ? 'bg-amber-500' : 'bg-rose-500'
+                                                }`} />
+                                                <h4 className="font-extrabold text-gray-900 dark:text-zinc-100 text-sm md:text-base tracking-tight leading-none truncate" title={sub.subject}>
+                                                    {sub.subject}
+                                                </h4>
+                                                <span className="text-[11px] font-bold text-gray-400 dark:text-zinc-650 shrink-0">
+                                                    ({total})
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <span className={`text-sm md:text-base font-black ${
+                                                    accuracy >= 80 ? 'text-emerald-500' : accuracy >= 60 ? 'text-amber-500' : 'text-rose-500'
+                                                }`}>
+                                                    {accuracy}%
+                                                </span>
+                                                <div className={`p-1 text-gray-400 dark:text-zinc-600 transition-all ${isExpanded ? 'rotate-180 text-orange-500 dark:text-orange-400' : ''}`}>
+                                                    <ChevronDown size={14} />
                                                 </div>
                                             </div>
-
-                                            <AnimatePresence>
-                                                {isExpanded && (
-                                                    <motion.div
-                                                        initial={{ height: 0, opacity: 0 }}
-                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                        exit={{ height: 0, opacity: 0 }}
-                                                        className="flex flex-col gap-3 mt-1 overflow-hidden"
-                                                    >
-                                                        <div className="w-full mt-1">
-                                                            <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-855 rounded-full overflow-hidden">
-                                                                <div className="h-full flex transition-all duration-500 w-full">
-                                                                    {correct > 0 && <div title={`সঠিক: ${correct}`} style={{ width: `${(correct / Math.max(total, available)) * 100}%` }} className="bg-primary h-full rounded-l-full" />}
-                                                                    {wrong > 0 && <div title={`ভুল: ${wrong}`} style={{ width: `${(wrong / Math.max(total, available)) * 100}%` }} className="bg-orange-300 dark:bg-orange-800 h-full" />}
-                                                                    {skipped > 0 && <div title={`বাদ দেওয়া: ${skipped}`} style={{ width: `${(skipped / Math.max(total, available)) * 100}%` }} className="bg-gray-300 dark:bg-zinc-600 h-full rounded-r-full" />}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex items-center justify-between mt-1">
-                                                            <div className="text-[11px] font-medium text-gray-500 dark:text-zinc-400 flex items-center flex-wrap gap-2.5">
-                                                                <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary" /><span>{correct} সঠিক</span></div>
-                                                                <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-300 dark:bg-orange-800" /><span>{wrong} ভুল</span></div>
-                                                                {skipped > 0 && <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600" /><span>{skipped} স্কিপ</span></div>}
-                                                                {(available - total) > 0 && <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-zinc-700" /><span>{(available - total)} বাকি</span></div>}
-                                                            </div>
-
-                                                            <button 
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setSelectedDeepAnalysisSubject(mother.name);
-                                                                }}
-                                                                className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-900/50 dark:hover:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-300 rounded-lg transition-all border border-gray-200 dark:border-zinc-800 flex items-center justify-center gap-1.5 shrink-0 active:scale-95"
-                                                            >
-                                                                <img src="/analysis-icon.png" alt="analysis" className="w-5 h-5 object-contain mix-blend-multiply dark:invert dark:mix-blend-screen" />
-                                                                Deep Analysis
-                                                            </button>
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
                                         </div>
-                                    </motion.div>
-                                )
-                            })}
-                            
-                            {(!motherSubjects || motherSubjects.length === 0) && (
-                                 <div className="text-center py-16 bg-gray-50/50 dark:bg-zinc-900/30 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-white/5 col-span-1 md:col-span-2">
-                                     <BarChart3 size={48} className="mx-auto text-gray-300 dark:text-zinc-700 mb-4"/>
-                                     <p className="text-gray-500 dark:text-zinc-500 font-black text-sm uppercase tracking-widest">কোনো এনালাইসিস ডাটা নেই</p>
-                                     <p className="text-xs text-gray-400 dark:text-zinc-600 mt-2">কুইজ বা এক্সাম দিলে এখানে বিস্তারিত দেখা যাবে</p>
-                                 </div>
-                            )}
-                        </div>
+
+                                        {/* Colored Progress Line Segment */}
+                                        <div className="w-full">
+                                            <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-855 rounded-full overflow-hidden flex">
+                                                {correct > 0 && (
+                                                    <div 
+                                                        title={`সঠিক: ${correct}`}
+                                                        style={{ width: `${(correct / total) * 100}%` }} 
+                                                        className="bg-emerald-500 h-full rounded-l-full" 
+                                                    />
+                                                )}
+                                                {wrong > 0 && (
+                                                    <div 
+                                                        title={`ভুল: ${wrong}`}
+                                                        style={{ width: `${(wrong / total) * 100}%` }} 
+                                                        className="bg-rose-500 h-full" 
+                                                    />
+                                                )}
+                                                {skipped > 0 && (
+                                                    <div 
+                                                        title={`বাদ দেওয়া: ${skipped}`}
+                                                        style={{ width: `${(skipped / total) * 100}%` }} 
+                                                        className="bg-gray-350 dark:bg-zinc-600 h-full rounded-r-full" 
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Bottom Action Row */}
+                                        <div className="flex items-center justify-between gap-2 mt-0.5">
+                                            <div className="text-[11px] font-medium text-gray-400 dark:text-zinc-500">
+                                                {correct} সঠিক • {wrong} ভুল
+                                            </div>
+                                            
+                                            <div>
+                                                {subjectMistakesCount > 0 ? (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveTab('MISTAKES');
+                                                            setMistakeFilterSubject(sub.subject);
+                                                            setMistakeFilterChapter('ALL');
+                                                        }}
+                                                        className="flex items-center gap-1.5 px-3 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/45 text-red-600 dark:text-red-400 text-[11px] font-bold rounded-xl border border-red-105 dark:border-red-900/10 transition-all active:scale-95 cursor-pointer shadow-sm"
+                                                    >
+                                                        <AlertCircle size={11} className="stroke-[2.5px]" />
+                                                        <span>{subjectMistakesCount}টি ভুল দেখুন</span>
+                                                    </button>
+                                                ) : (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/10 px-2 py-0.5 rounded-lg border border-emerald-100/10">
+                                                        <Check size={11} className="stroke-[3px]" />
+                                                        <span>সব শেষ</span>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Expanded Chapters */}
+                                    <AnimatePresence>
+                                        {isExpanded && (
+                                            <motion.div 
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="overflow-hidden bg-gray-50/50 dark:bg-zinc-900/10 border-t border-gray-150 dark:border-zinc-850 mt-auto rounded-b-[1.8rem] p-4"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <h5 className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
+                                                    <List size={11}/> অধ্যায়সমূহ
+                                                </h5>
+                                                
+                                                {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
+                                                    <div className="space-y-2.5">
+                                                        {Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
+                                                            const cTotal = chapData.total || 0;
+                                                            const cCorrect = chapData.correct || 0;
+                                                            const cWrong = chapData.wrong !== undefined ? chapData.wrong : (cTotal - cCorrect);
+                                                            const cAccuracy = cTotal > 0 ? Math.round((cCorrect / cTotal) * 100) : 0;
+                                                            
+                                                            let cColor = "text-rose-500";
+                                                            let cBg = "bg-rose-500";
+                                                            if (cAccuracy >= 80) {
+                                                                cColor = "text-emerald-500";
+                                                                cBg = "bg-emerald-500";
+                                                            } else if (cAccuracy >= 60) {
+                                                                cColor = "text-amber-500";
+                                                                cBg = "bg-amber-500";
+                                                            } else if (cAccuracy >= 40) {
+                                                                cColor = "text-yellow-500";
+                                                                cBg = "bg-yellow-500";
+                                                            }
+
+                                                            return (
+                                                                <div key={cIdx} className="space-y-1.5 bg-white dark:bg-zinc-950 p-3 rounded-xl border border-gray-100 dark:border-zinc-900 shadow-sm">
+                                                                    <div className="flex items-center justify-between gap-2">
+                                                                        <span className="text-xs font-bold text-gray-700 dark:text-zinc-300 truncate" title={chapName}>
+                                                                            {chapName}
+                                                                        </span>
+                                                                        <span className={`text-[11px] font-black ${cColor}`}>
+                                                                            {cAccuracy}%
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="h-1 w-full bg-gray-100 dark:bg-zinc-850 rounded-full overflow-hidden">
+                                                                        <motion.div initial={{ width: 0 }} animate={{ width: `${cAccuracy}%` }} className={`h-full ${cBg} rounded-full`} />
+                                                                    </div>
+                                                                    <div className="text-[10px] font-medium text-gray-400 dark:text-zinc-550">
+                                                                        {cCorrect} সঠিক • {cWrong} ভুল
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-4 text-[10px] text-gray-400 dark:text-zinc-500 italic font-medium">
+                                                        কোনো অধ্যায়ভিত্তিক ডাটা পাওয়া যায়নি
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            )
+                        })}
+                        
+                        {(!profileData.stats.subjectBreakdown || profileData.stats.subjectBreakdown.length === 0) && (
+                             <div className="text-center py-16 bg-gray-50/50 dark:bg-zinc-900/30 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-white/5 col-span-1 md:col-span-2">
+                                 <BarChart3 size={48} className="mx-auto text-gray-300 dark:text-zinc-700 mb-4"/>
+                                 <p className="text-gray-500 dark:text-zinc-500 font-black text-sm uppercase tracking-widest">কোনো এনালাইসিস ডাটা নেই</p>
+                                 <p className="text-xs text-gray-400 dark:text-zinc-600 mt-2">কুইজ বা এক্সাম দিলে এখানে বিস্তারিত দেখা যাবে</p>
+                             </div>
+                        )}
+                    </div>
                 </div>
             </div>
         )}
@@ -1741,314 +1734,117 @@ const ProfilePage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {attempts
-                            .slice((currentHistoryPage - 1) * itemsPerHistoryPage, currentHistoryPage * itemsPerHistoryPage)
-                            .map((attempt, idx) => {
-                            if (!attempt) return null;
+                        {attempts.map((attempt) => {
                             const totalQ = attempt.totalQuestions || 20;
                             const correct = attempt.correct || 0;
-                            const percent = totalQ > 0 ? Math.min(100, Math.round((correct / totalQ) * 100)) : 0;
+                            const percent = Math.min(100, Math.round((correct / totalQ) * 100));
                             const percentClamped = Math.max(8, Math.min(92, percent));
-
-                            // Safe strings to prevent crashes (.includes or .replace on non-strings)
-                            const safeExamId = String(attempt.examId || '');
-                            const safeTitle = String(attempt.config?.title || '');
 
                             // Determine subject name
                             const subjectName = attempt.subject || attempt.config?.subject || 'সাধারণ';
-                            const paperName = attempt.config?.paper || (safeTitle.includes('1st') || safeExamId.includes('1st') ? '১ম পত্র' : safeTitle.includes('2nd') || safeExamId.includes('2nd') ? '২য় পত্র' : null);
+                            const paperName = attempt.config?.paper || (attempt.config?.title?.includes('1st') || attempt.examId?.includes('1st') ? '১ম পত্র' : attempt.config?.title?.includes('2nd') || attempt.examId?.includes('2nd') ? '২য় পত্র' : null);
                             const chapterName = attempt.config?.chapter || null;
-                            const examTitle = attempt.config?.title || (safeExamId.replace(/_/g, ' ') || 'নামহীন পরীক্ষা');
+                            const examTitle = attempt.config?.title || (attempt.examId?.replace(/_/g, ' ') || 'নামহীন পরীক্ষা');
 
-                            // Serial numbering
-                            const serialNumber = idx + 1 + (currentHistoryPage - 1) * itemsPerHistoryPage;
-                            const bnSerial = serialNumber.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)]);
-
-                            // Safe date parsing
-                            let examDate = '-';
-                            try {
-                                if (attempt.timestamp) {
-                                    const d = attempt.timestamp?.toDate ? attempt.timestamp.toDate() : new Date(
-                                        typeof attempt.timestamp === 'object' && attempt.timestamp.seconds 
-                                            ? attempt.timestamp.seconds * 1000 
-                                            : attempt.timestamp
-                                    );
-                                    if (!isNaN(d.getTime())) {
-                                        examDate = d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
-                                    }
-                                }
-                            } catch (e) {}
+                            // Human-readable date string
+                            const examDate = attempt.timestamp 
+                                ? new Date(attempt.timestamp).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })
+                                : '-';
 
                             return (
                                 <motion.div 
-                                    key={attempt.examId || `history-${idx}`}
+                                    key={attempt.examId}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-gray-150/80 dark:border-zinc-800 shadow-sm relative overflow-hidden flex gap-4"
+                                    className="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-gray-150/80 dark:border-zinc-800 shadow-sm relative overflow-hidden"
                                 >
-                                    {/* Serial Number Bubble */}
-                                    <div className="shrink-0 pt-1">
-                                        <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 flex items-center justify-center text-sm font-bold text-gray-500 dark:text-zinc-400">
-                                            {bnSerial}
+                                    {/* Minimal Header (Subject, Paper, Chapter & Date) */}
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="space-y-1">
+                                            <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                                                {subjectName}
+                                            </h3>
+                                            {paperName && (
+                                                <p className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
+                                                    {paperName}
+                                                </p>
+                                            )}
+                                            {chapterName ? (
+                                                <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
+                                                    {chapterName}
+                                                </p>
+                                            ) : (
+                                                examTitle !== subjectName && (
+                                                    <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
+                                                        {examTitle}
+                                                    </p>
+                                                )
+                                            )}
+                                        </div>
+                                        <span className="text-xs text-gray-400 dark:text-zinc-500 font-bold whitespace-nowrap">
+                                            {examDate}
+                                        </span>
+                                    </div>
+
+                                    {/* Minimalist Progress Meter with score overlay */}
+                                    <div className="relative pt-4 pb-5 my-2">
+                                        <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-800 rounded-full relative">
+                                            <div 
+                                                className="h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-300" 
+                                                style={{ width: `${percent}%` }}
+                                            />
+                                            {/* Floating Pill Over Progress Bar */}
+                                            <div 
+                                                className="absolute top-1/2 flex items-center justify-center bg-white dark:bg-zinc-950 border-2 border-emerald-500 dark:border-emerald-400 text-[10px] font-bold tracking-tight text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full shadow-sm select-none"
+                                                style={{ left: `${percentClamped}%`, transform: 'translate(-50%, -50%)' }}
+                                            >
+                                                {correct}/{totalQ}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 min-w-0">
-                                        {/* Minimal Header (Subject, Paper, Chapter & Date) */}
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="space-y-1">
-                                                <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                                                    {subjectName}
-                                                </h3>
-                                                {paperName && (
-                                                    <p className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
-                                                        {paperName}
-                                                    </p>
-                                                )}
-                                                {chapterName ? (
-                                                    <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
-                                                        {chapterName}
-                                                    </p>
-                                                ) : (
-                                                    examTitle !== subjectName && (
-                                                        <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
-                                                            {examTitle}
-                                                        </p>
-                                                    )
-                                                )}
-                                            </div>
-                                            <span className="text-xs text-gray-400 dark:text-zinc-500 font-bold whitespace-nowrap pl-2 text-right">
-                                                {examDate}
+                                    {/* Action row at bottom */}
+                                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-zinc-800/30">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
+                                                {attempt.config?.examType || 'HSC'}
                                             </span>
-                                        </div>
-
-                                        {/* Minimalist Progress Meter with score overlay */}
-                                        <div className="relative pt-4 pb-5 my-2">
-                                            <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-800 rounded-full relative">
-                                                <div 
-                                                    className="h-1.5 bg-primary rounded-full transition-all duration-300" 
-                                                    style={{ width: `${percent}%` }}
-                                                />
-                                                {/* Floating Pill Over Progress Bar */}
-                                                <div 
-                                                    className="absolute top-1/2 flex items-center justify-center bg-white dark:bg-zinc-950 border-2 border-primary text-[10px] font-bold tracking-tight text-primary px-2 py-0.5 rounded-full shadow-sm select-none"
-                                                    style={{ left: `${percentClamped}%`, transform: 'translate(-50%, -50%)' }}
-                                                >
-                                                    {correct}/{totalQ}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Action row at bottom */}
-                                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-zinc-800/30">
-                                            <div className="flex items-center gap-1.5">
+                                            {attempt.config?.duration && (
                                                 <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
-                                                    {attempt.config?.examType || 'HSC'}
+                                                    {attempt.config.duration} মি.
                                                 </span>
-                                                {attempt.config?.duration && (
-                                                    <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
-                                                        {attempt.config.duration} মি.
-                                                    </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => navigate(`/exam/${attempt.examId}`)}
+                                                className="px-4 py-1.5 bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-50 text-white dark:text-gray-900 rounded-xl text-xs font-bold transition-colors shadow-sm active:scale-95 whitespace-nowrap"
+                                            >
+                                                ফলাফল দেখুন
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteAttempt(attempt.examId)} 
+                                                disabled={deletingAttemptId === attempt.examId}
+                                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90"
+                                                title="ভুক্তি মুছুন"
+                                            >
+                                                {deletingAttemptId === attempt.examId ? (
+                                                    <Loader2 size={14} className="animate-spin text-red-500" />
+                                                ) : (
+                                                    <Trash2 size={14} />
                                                 )}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <button 
-                                                    onClick={() => navigate(`/exam/${attempt.examId}`)}
-                                                    className="px-4 py-1.5 bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-50 text-white dark:text-gray-900 rounded-xl text-xs font-bold transition-colors shadow-sm active:scale-95 whitespace-nowrap"
-                                                >
-                                                    ফলাফল দেখুন
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDeleteAttempt(attempt.examId)} 
-                                                    disabled={deletingAttemptId === attempt.examId}
-                                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90"
-                                                    title="ভুক্তি মুছুন"
-                                                >
-                                                    {deletingAttemptId === attempt.examId ? (
-                                                        <Loader2 size={14} className="animate-spin text-red-500" />
-                                                    ) : (
-                                                        <Trash2 size={14} />
-                                                    )}
-                                                </button>
-                                            </div>
+                                            </button>
                                         </div>
                                     </div>
                                 </motion.div>
                             );
                         })}
-
-                        {/* Pagination Controls */}
-                        {Math.ceil(attempts.length / itemsPerHistoryPage) > 1 && (
-                            <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-                                <button
-                                    onClick={() => setCurrentHistoryPage(prev => Math.max(1, prev - 1))}
-                                    disabled={currentHistoryPage === 1}
-                                    className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <span className="text-sm font-bold text-gray-600 dark:text-zinc-400 px-3">
-                                    {currentHistoryPage.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])} 
-                                    / 
-                                    {Math.ceil(attempts.length / itemsPerHistoryPage).toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])}
-                                </span>
-                                <button
-                                    onClick={() => setCurrentHistoryPage(prev => Math.min(Math.ceil(attempts.length / itemsPerHistoryPage), prev + 1))}
-                                    disabled={currentHistoryPage === Math.ceil(attempts.length / itemsPerHistoryPage)}
-                                    className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        )}
                     </div>
                 )}
             </motion.div>
         )}
 
       </div>
-
-      {/* Deep Analysis Modal */}
-      <AnimatePresence>
-          {selectedDeepAnalysisSubject && (
-              <div className="fixed inset-0 z-[100] bg-black/20 dark:bg-black/60 backdrop-blur-sm overflow-hidden flex flex-col items-center">
-                  <motion.div
-                      initial={{ y: "100%" }}
-                      animate={{ y: 0 }}
-                      exit={{ y: "100%" }}
-                      transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                      className="w-full h-full md:h-[90vh] md:max-w-4xl md:mt-auto bg-white dark:bg-zinc-950 md:rounded-t-[2.5rem] shadow-2xl flex flex-col border-t border-gray-200/50 dark:border-zinc-800/50 overflow-hidden"
-                  >
-                      {/* Header */}
-                      <div className="shrink-0 bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-900 px-4 py-4 md:px-6 md:py-6 flex items-center gap-4">
-                          <button 
-                              onClick={() => setSelectedDeepAnalysisSubject(null)}
-                              className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shadow-sm cursor-pointer border border-gray-200 dark:border-zinc-800 active:scale-95"
-                          >
-                              <ChevronLeft size={20} />
-                          </button>
-                          <div>
-                              <h2 className="text-lg md:text-xl font-black text-gray-900 dark:text-white leading-none mb-1">
-                                  {selectedDeepAnalysisSubject}
-                              </h2>
-                              <p className="text-[11px] md:text-xs font-bold uppercase tracking-widest text-primary">Deep Analysis Report</p>
-                          </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 overflow-y-auto w-full bg-gray-50/50 dark:bg-zinc-900/10">
-                          <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-                              {(() => {
-                                  const mother = motherSubjects.find((m: any) => m.name === selectedDeepAnalysisSubject);
-                                  if (!mother) return null;
-                                  return mother.papers.map((sub: any, idx: number) => {
-                                      const total = sub.total || 0;
-                                      const correct = sub.correct || 0;
-                                      const skipped = sub.skipped !== undefined ? sub.skipped : 0;
-                                      const wrong = sub.wrong !== undefined ? sub.wrong : Math.max(0, total - correct - skipped);
-                                      const available = syllabusStats[sub.subject]?.total || Math.max(total, 1);
-                                      const completionPercent = Math.round(Math.min((total / available) * 100, 100));
-                                      
-                                      return (
-                                          <div key={idx} className="bg-white dark:bg-zinc-950 rounded-[2rem] border border-gray-150 dark:border-zinc-850 p-4 md:p-5 shadow-sm">
-                                              <div className="flex items-center justify-between gap-2 mb-4">
-                                                  <div className="flex items-center gap-2 min-w-0">
-                                                      <h4 className="font-extrabold text-gray-900 dark:text-zinc-100 text-sm md:text-base tracking-tight leading-none truncate" title={VALID_SUBJECTS[sub.subject] || sub.subject}>
-                                                          {VALID_SUBJECTS[sub.subject] || sub.subject}
-                                                      </h4>
-                                                  </div>
-                                                  <div className="flex items-center gap-2 shrink-0">
-                                                      <span className={`text-sm md:text-base font-black ${
-                                                          completionPercent >= 80 ? 'text-primary' : completionPercent >= 60 ? 'text-orange-400' : 'text-gray-400 dark:text-zinc-500'
-                                                      }`}>
-                                                          {total}/{available}
-                                                      </span>
-                                                  </div>
-                                              </div>
-                                              <div className="w-full mb-3">
-                                                  <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-855 rounded-full overflow-hidden">
-                                                      <div className="h-full flex transition-all w-full">
-                                                          {correct > 0 && <div title={`সঠিক: ${correct}`} style={{ width: `${(correct / available) * 100}%` }} className="bg-primary h-full rounded-l-full" />}
-                                                          {wrong > 0 && <div title={`ভুল: ${wrong}`} style={{ width: `${(wrong / available) * 100}%` }} className="bg-orange-300 dark:bg-orange-800 h-full" />}
-                                                          {skipped > 0 && <div title={`বাদ দেওয়া: ${skipped}`} style={{ width: `${(skipped / available) * 100}%` }} className="bg-gray-300 dark:bg-zinc-600 h-full rounded-r-full" />}
-                                                      </div>
-                                                  </div>
-                                              </div>
-                                              <div className="text-[11px] font-medium text-gray-500 dark:text-zinc-400 flex items-center flex-wrap gap-2.5 mb-5 pb-5 border-b border-gray-100 dark:border-zinc-850">
-                                                  <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary" /><span>{correct} সঠিক</span></div>
-                                                  <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-300 dark:bg-orange-800" /><span>{wrong} ভুল</span></div>
-                                                  {skipped > 0 && <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600" /><span>{skipped} স্কিপ</span></div>}
-                                                  {(available - total) > 0 && <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-zinc-700" /><span>{(available - total)} বাকি</span></div>}
-                                              </div>
-
-                                              <div>
-                                                  <h5 className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-1.5 leading-none">
-                                                      অধ্যায়ভিত্তিক ডাটা
-                                                  </h5>
-                                                  
-                                                  {sub.chapters && Object.keys(sub.chapters).length > 0 ? (
-                                                      <div className="space-y-4">
-                                                          {Object.entries(sub.chapters).map(([chapName, chapData]: [string, any], cIdx: number) => {
-                                                              const cTotal = chapData.total || 0;
-                                                              const cCorrect = chapData.correct || 0;
-                                                              const cSkipped = chapData.skipped || 0;
-                                                              const cWrong = chapData.wrong !== undefined ? chapData.wrong : Math.max(0, cTotal - cCorrect - cSkipped);
-                                                              const matchingChapterKey = syllabusStats[sub.subject]?.chapters ? Object.keys(syllabusStats[sub.subject].chapters).find(k => {
-                                                                  const normK = normalizeForComparison(k);
-                                                                  const normC = normalizeForComparison(chapName);
-                                                                  const stripChap = (s: string) => s.replace(/^(অধ্যায়|অধ্যায়|অধ্যা|অধ্যায়া)[০-৯0-9]*/, '');
-                                                                  return stripChap(normK) === stripChap(normC) || normK.includes(normC) || normC.includes(normK);
-                                                              }) || chapName : chapName;
-                                                              
-                                                              const cAvailable = syllabusStats[sub.subject]?.chapters?.[matchingChapterKey]?.total || Math.max(cTotal, 1);
-                                                              const cCompletion = Math.round(cAvailable > 0 ? Math.min((cTotal / cAvailable) * 100, 100) : 0);
-                                                              
-                                                              let cColor = "text-gray-400 dark:text-zinc-500";
-                                                              if (cCompletion >= 80) { cColor = "text-primary"; } 
-                                                              else if (cCompletion >= 60) { cColor = "text-orange-400"; } 
-                                                              else if (cCompletion >= 40) { cColor = "text-orange-300 dark:text-orange-600"; }
-
-                                                              return (
-                                                                  <div key={cIdx} className="space-y-2 bg-gray-50 dark:bg-zinc-900/30 p-3 rounded-xl border border-gray-100 dark:border-zinc-900">
-                                                                      <div className="flex items-center justify-between gap-2">
-                                                                          <span className="text-[12px] font-bold text-gray-700 dark:text-zinc-300 truncate" title={chapName}>
-                                                                              {chapName}
-                                                                          </span>
-                                                                          <span className={`text-[11px] font-black ${cColor}`}>
-                                                                              {cTotal}/{cAvailable}
-                                                                          </span>
-                                                                      </div>
-                                                                      <div className="h-1.5 w-full bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                                                          <div className="h-full flex transition-all w-full">
-                                                                              {cCorrect > 0 && <div title={`সঠিক: ${cCorrect}`} style={{ width: `${(cCorrect / cAvailable) * 100}%` }} className="bg-primary h-full rounded-l-full" />}
-                                                                              {cWrong > 0 && <div title={`ভুল: ${cWrong}`} style={{ width: `${(cWrong / cAvailable) * 100}%` }} className="bg-orange-300 dark:bg-orange-800 h-full" />}
-                                                                              {cSkipped > 0 && <div title={`বাদ দেওয়া: ${cSkipped}`} style={{ width: `${(cSkipped / cAvailable) * 100}%` }} className="bg-gray-300 dark:bg-zinc-600 h-full rounded-r-full" />}
-                                                                          </div>
-                                                                      </div>
-                                                                      <div className="text-[10px] font-medium text-gray-500 dark:text-zinc-500 flex items-center flex-wrap gap-2.5 mt-1">
-                                                                          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary" /><span>{cCorrect} সঠিক</span></div>
-                                                                          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-300 dark:bg-orange-800" /><span>{cWrong} ভুল</span></div>
-                                                                          {cSkipped > 0 && <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600" /><span>{cSkipped} স্কিপ</span></div>}
-                                                                          {(cAvailable - cTotal) > 0 && <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-zinc-700" /><span>{(cAvailable - cTotal)} বাকি</span></div>}
-                                                                      </div>
-                                                                  </div>
-                                                              )
-                                                          })}
-                                                      </div>
-                                                  ) : (
-                                                      <div className="text-center py-4 text-[10px] text-gray-400 dark:text-zinc-500 italic font-medium">কোনো ডাটা পাওয়া যায়নি</div>
-                                                  )}
-                                              </div>
-                                          </div>
-                                      );
-                                  });
-                              })()}
-                          </div>
-                      </div>
-                  </motion.div>
-              </div>
-          )}
-      </AnimatePresence>
 
       {/* Exam Config Modal */}
       <AnimatePresence>
@@ -2086,14 +1882,14 @@ const ProfilePage: React.FC = () => {
 
                     <div className="space-y-8">
                         {/* Mistake Clearance Tip */}
-                        <div className="bg-orange-50 dark:bg-orange-900/20 p-5 rounded-[2rem] border border-orange-100 dark:border-orange-800/50 flex gap-4 relative overflow-hidden group">
-                             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-primary/10 transition-colors"></div>
-                             <div className="p-3 bg-orange-100 dark:bg-orange-800 rounded-2xl h-fit text-primary dark:text-orange-400 shadow-sm">
+                        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-[2rem] border border-emerald-100 dark:border-emerald-800/50 flex gap-4 relative overflow-hidden group">
+                             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-emerald-500/10 transition-colors"></div>
+                             <div className="p-3 bg-emerald-100 dark:bg-emerald-800 rounded-2xl h-fit text-emerald-600 dark:text-emerald-400 shadow-sm">
                                 <Sparkles size={20} />
                              </div>
                              <div className="relative z-10">
-                                <h4 className="font-black text-orange-800 dark:text-orange-300 text-sm md:text-base mb-1">ভুল শুধরানোর সুযোগ!</h4>
-                                <p className="text-xs text-orange-700/80 dark:text-orange-400/80 leading-relaxed font-medium">
+                                <h4 className="font-black text-emerald-800 dark:text-emerald-300 text-sm md:text-base mb-1">ভুল শুধরানোর সুযোগ!</h4>
+                                <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80 leading-relaxed font-medium">
                                    সঠিক উত্তর দিলে সেগুলো অটোমেটিকলি আপনার 'ভুল' তালিকা থেকে মুছে যাবে।
                                 </p>
                              </div>
