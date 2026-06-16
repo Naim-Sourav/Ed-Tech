@@ -424,30 +424,22 @@ export const fetchQuestionsFromBankAPI = async (
   level?: string,
   board?: string,
   college?: string,
-  randomise?: boolean,
-  admissionTags?: string
+  randomise?: boolean
 ) => {
-  const payload: any = { page, limit };
-  if (subject && subject !== 'ALL') payload.subject = normalizeBangla(subject);
-  if (chapter && chapter !== 'ALL') payload.chapter = normalizeBangla(chapter);
-  if (topic && topic !== 'ALL') payload.topic = normalizeBangla(topic);
-  if (examRef && examRef !== 'ALL') payload.examRef = examRef;
-  if (level && level !== 'ALL') payload.level = level;
-  if (board && board !== 'ALL') payload.board = board;
-  if (college && college !== 'ALL') payload.college = college;
-  if (randomise) payload.randomise = true;
-  if (admissionTags && admissionTags !== 'ALL') payload.admissionTags = admissionTags;
-  if (search) payload.search = normalizeBangla(search);
+  let url = `/admin/questions?page=${page}&limit=${limit}`;
+  if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(normalizeBangla(subject))}`;
+  if (chapter && chapter !== 'ALL') url += `&chapter=${encodeURIComponent(normalizeBangla(chapter))}`;
+  if (topic && topic !== 'ALL') url += `&topic=${encodeURIComponent(normalizeBangla(topic))}`;
+  if (examRef && examRef !== 'ALL') url += `&examRef=${encodeURIComponent(examRef)}`;
+  if (level && level !== 'ALL') url += `&level=${encodeURIComponent(level)}`;
+  if (board && board !== 'ALL') url += `&board=${encodeURIComponent(board)}`;
+  if (college && college !== 'ALL') url += `&college=${encodeURIComponent(college)}`;
+  if (randomise) url += `&randomise=true`;
   
-  return fetchWithFallback('/admin/questions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  }, { questions: [], total: 0 });
-};
-
-export const fetchAdminTagsAPI = async () => {
-    return fetchWithFallback('/admin/tags', {}, { refs: [], targets: [], tags: [] });
+  if (search) {
+    url += `&search=${encodeURIComponent(normalizeBangla(search))}`;
+  }
+  return fetchWithFallback(url, {}, { questions: [], total: 0 });
 };
 
 export const createQuestionInBankAPI = async (questionData: any) => {
