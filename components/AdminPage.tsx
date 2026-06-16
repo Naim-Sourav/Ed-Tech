@@ -6,6 +6,7 @@ import AdminJsonUpload from './AdminJsonUpload';
 import AdminPublicExam from './AdminPublicExam';
 import AdminBulkMapper from './AdminBulkMapper';
 import AdminImageMigrator from './AdminImageMigrator';
+import AdminTagManager from './AdminTagManager';
 import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, createQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, refineQuestionsAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
@@ -422,7 +423,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM' | 'MAPPER' | 'MIGRATOR'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM' | 'MAPPER' | 'MIGRATOR' | 'TAG_MANAGER'>('DASHBOARD');
   const { showToast } = useToast();
   const navigate = useNavigate();
   
@@ -755,6 +756,9 @@ const AdminPage: React.FC = () => {
                    <button onClick={() => setActiveTab('MIGRATOR')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'MIGRATOR' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <ImageIcon size={16} /> Image Migrator
                    </button>
+                   <button onClick={() => setActiveTab('TAG_MANAGER')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'TAG_MANAGER' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <Bookmark size={16} /> Tag Manager
+                   </button>
                    <button onClick={() => setActiveTab('NOTIFICATIONS')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'NOTIFICATIONS' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Bell size={16} /> নোটিফিকেশন
                    </button>
@@ -989,6 +993,11 @@ const AdminPage: React.FC = () => {
         {/* --- TAB: MIGRATOR --- */}
         {activeTab === 'MIGRATOR' && (
             <AdminImageMigrator />
+        )}
+
+        {/* --- TAB: TAG MANAGER --- */}
+        {activeTab === 'TAG_MANAGER' && (
+            <AdminTagManager />
         )}
 
         {/* --- TAB: DATABASE VIEWER (UPDATED TO MANAGER) --- */}
