@@ -11,7 +11,6 @@ import { AdminProvider } from './contexts/AdminContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import PorikkhangonAI from './components/PorikkhangonAI';
 import OnboardingModal from './components/OnboardingModal';
-import TelegramModal from './components/TelegramModal'; // ADDED Import
 import { fetchNotificationsAPI } from './services/api';
 import { Notification } from './types';
 import { subscribeToPushNotifications, onForegroundMessage, checkSubscription } from './services/notificationService';
@@ -60,9 +59,6 @@ const DailyChallengePage = lazyWithRetry(() => import('./components/DailyChallen
 const ExamHub = lazyWithRetry(() => import('./components/ExamHub'));
 const ExamBatchPage = lazyWithRetry(() => import('./components/ExamBatchPage'));
 const PaymentPage = lazyWithRetry(() => import('./components/PaymentPage'));
-const PrivacyPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.PrivacyPolicy })));
-const TermsOfService = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.TermsOfService })));
-const RefundPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.RefundPolicy })));
 
 const PageLoader = () => (
     <div className="w-full min-h-[75vh] flex flex-col items-center justify-center bg-transparent text-gray-400">
@@ -288,7 +284,6 @@ const MainLayout: React.FC<{
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-black font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
       {!profileLoading && !isProfileComplete && !location.pathname.startsWith('/exam/') && <OnboardingModal />}
-      <TelegramModal />
 
       {!hideNav && (
         <Navigation 
@@ -438,19 +433,16 @@ const AppRoutes: React.FC<{
                       <Route path="/planner" element={<ExamHistory />} />
                       <Route path="/history" element={<ExamHistory />} />
                       <Route path="/admission" element={<AdmissionSearch />} />
-                      <Route path="/profile" element={<ProfilePage key={location.pathname} />} />
-                      <Route path="/profile/:userId" element={<ProfilePage key={location.pathname} />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/profile/:userId" element={<ProfilePage />} />
                       <Route path="/saved-questions" element={<SavedQuestions />} />
                       <Route path="/wrong-questions" element={<WrongQuestions />} />
-                      <Route path="/settings" element={<ProfilePage key={location.pathname} />} />
+                      <Route path="/settings" element={<ProfilePage />} />
                       <Route path="/admin" element={<AdminPage />} />
                       <Route path="/challenges" element={<DailyChallengePage openBot={() => {}} />} />
                       <Route path="/bot" element={<PorikkhangonAI />} />
                       <Route path="/exam-batch/:courseId" element={<ExamBatchPage />} />
                       <Route path="/payment" element={<PaymentPage />} />
-                      <Route path="/privacy" element={<PrivacyPolicy />} />
-                      <Route path="/terms" element={<TermsOfService />} />
-                      <Route path="/refund" element={<RefundPolicy />} />
                       <Route path="*" element={<Navigate to="/dashboard" />} />
                     </Routes>
                 </MainLayout>
