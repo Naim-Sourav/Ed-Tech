@@ -423,7 +423,9 @@ export const fetchQuestionsFromBankAPI = async (
   search?: string, 
   level?: string,
   board?: string,
-  college?: string
+  college?: string,
+  randomise?: boolean,
+  admissionTags?: string
 ) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
   if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(normalizeBangla(subject))}`;
@@ -433,11 +435,17 @@ export const fetchQuestionsFromBankAPI = async (
   if (level && level !== 'ALL') url += `&level=${encodeURIComponent(level)}`;
   if (board && board !== 'ALL') url += `&board=${encodeURIComponent(board)}`;
   if (college && college !== 'ALL') url += `&college=${encodeURIComponent(college)}`;
+  if (randomise) url += `&randomise=true`;
+  if (admissionTags && admissionTags !== 'ALL') url += `&admissionTags=${encodeURIComponent(admissionTags)}`;
   
   if (search) {
     url += `&search=${encodeURIComponent(normalizeBangla(search))}`;
   }
   return fetchWithFallback(url, {}, { questions: [], total: 0 });
+};
+
+export const fetchAdminTagsAPI = async () => {
+    return fetchWithFallback('/admin/tags', {}, { refs: [], targets: [], tags: [] });
 };
 
 export const createQuestionInBankAPI = async (questionData: any) => {
