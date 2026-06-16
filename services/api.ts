@@ -403,16 +403,6 @@ export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai')
     }
 };
 
-export const fetchQuestionsForMigrator = async (page: number, limit: number) => {
-  let url = `${API_BASE}/admin/questions?page=${page}&limit=${limit}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`HTTP ${response.status}: ${err}`);
-  }
-  return response.json();
-};
-
 export const fetchQuestionsFromBankAPI = async (
   page: number, 
   limit: number, 
@@ -423,8 +413,7 @@ export const fetchQuestionsFromBankAPI = async (
   search?: string, 
   level?: string,
   board?: string,
-  college?: string,
-  randomise?: boolean
+  college?: string
 ) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
   if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(normalizeBangla(subject))}`;
@@ -434,7 +423,6 @@ export const fetchQuestionsFromBankAPI = async (
   if (level && level !== 'ALL') url += `&level=${encodeURIComponent(level)}`;
   if (board && board !== 'ALL') url += `&board=${encodeURIComponent(board)}`;
   if (college && college !== 'ALL') url += `&college=${encodeURIComponent(college)}`;
-  if (randomise) url += `&randomise=true`;
   
   if (search) {
     url += `&search=${encodeURIComponent(normalizeBangla(search))}`;
