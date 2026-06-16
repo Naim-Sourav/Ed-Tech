@@ -7,8 +7,6 @@ import React, {
 } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../services/firebase";
 import {
   saveQuestionAPI,
   unsaveQuestionAPI,
@@ -650,7 +648,6 @@ const QuestionBank: React.FC = () => {
     | "ADMISSION"
     | "MAINBOOK"
     | null;
-  const selectedAdmissionGroup = searchParams.get("admissionGroup"); // medical | varsityKa | engineering
   const selectedSubject = searchParams.get("subject"); // Exact DB key
   const selectedChapter = searchParams.get("chapter");
   const selectedInstitution = searchParams.get("institution");
@@ -663,9 +660,6 @@ const QuestionBank: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [syllabusStats, setSyllabusStats] = useState<any>(null);
-  
-  // Admission Tags Group
-  const [admissionGroupsSettings, setAdmissionGroupsSettings] = useState<any>(null);
 
   // Design Layout state (Compact vs Detailed)
   const [layoutMode, setLayoutMode] = useState<"compact" | "detailed">(
@@ -740,22 +734,6 @@ const QuestionBank: React.FC = () => {
       }
     };
     loadStats();
-    
-    // Load Admission Tags Groups
-    if (selectedLevel === "ADMISSION") {
-       const loadAdmissionTags = async () => {
-           try {
-               const docRef = doc(db, 'admin_settings', 'admission_tags');
-               const snap = await getDoc(docRef);
-               if (snap.exists()) {
-                   setAdmissionGroupsSettings(snap.data());
-               }
-           } catch (error) {
-               console.error("Failed to load admission tags", error);
-           }
-       };
-       loadAdmissionTags();
-    }
   }, [selectedLevel]);
 
   // Fetch Questions when filters, search, or page change
@@ -786,16 +764,6 @@ const QuestionBank: React.FC = () => {
             total: Array.isArray(data) ? data.length : data.total || 0,
           };
         } else {
-          let admTagsStr = undefined;
-          if (selectedLevel === "ADMISSION" && selectedAdmissionGroup && admissionGroupsSettings) {
-             const tags = admissionGroupsSettings[selectedAdmissionGroup];
-             if (tags && tags.length > 0) {
-                 admTagsStr = tags.join(",");
-             } else {
-                 admTagsStr = "NO_TAGS_MAPPED"; // to prevent fetching everything
-             }
-          }
-
           res = await fetchQuestionsFromBankAPI(
             page,
             25,
@@ -807,8 +775,6 @@ const QuestionBank: React.FC = () => {
             selectedLevel ?? undefined, // level
             academicFilterType === "board" ? (selectedBoardTag || "ANY") : undefined,
             academicFilterType === "college" ? (selectedCollegeTag || "ANY") : undefined,
-            undefined, // randomise
-            admTagsStr
           );
         }
 
@@ -857,8 +823,6 @@ const QuestionBank: React.FC = () => {
     academicFilterType,
     selectedBoardTag,
     selectedCollegeTag,
-    selectedAdmissionGroup,
-    admissionGroupsSettings,
     showToast,
   ]);
 
@@ -882,7 +846,6 @@ const QuestionBank: React.FC = () => {
 
   const currentParams = {
     level: selectedLevel || "",
-    admissionGroup: selectedAdmissionGroup || "",
     subject: selectedSubject || "",
     chapter: selectedChapter || "",
     topic: "",
@@ -895,7 +858,6 @@ const QuestionBank: React.FC = () => {
 
   const isFilterDirty =
     lastFetchParams.current.level !== currentParams.level ||
-    (lastFetchParams.current as any).admissionGroup !== currentParams.admissionGroup ||
     lastFetchParams.current.subject !== currentParams.subject ||
     lastFetchParams.current.chapter !== currentParams.chapter ||
     (lastFetchParams.current as any).examRef !== currentParams.examRef ||
@@ -1005,22 +967,22 @@ const QuestionBank: React.FC = () => {
   };
 
   const handleSubjectSelect = (subject: string) => {
-    const params: any = { level: selectedLevel || "", subject };
-    if (selectedAdmissionGroup) params.admissionGroup = selectedAdmissionGroup;
-    setSearchParams(params, { replace: true });
+    setSearchParams({ level: selectedLevel || "", subject }, { replace: true });
   };
 
   const handleChapterSelect = (chapter: string) => {
-    const params: any = {
+    if (selectedChapter === chapter) {
+      setSearchParams({
         level: selectedLevel || "",
-        subject: selectedSubject || ""
-    };
-    if (selectedAdmissionGroup) params.admissionGroup = selectedAdmissionGroup;
-    
-    if (selectedChapter !== chapter) {
-        params.chapter = chapter;
+        subject: selectedSubject || "",
+      }, { replace: true });
+    } else {
+      setSearchParams({
+        level: selectedLevel || "",
+        subject: selectedSubject || "",
+        chapter,
+      }, { replace: true });
     }
-    setSearchParams(params, { replace: true });
   };
 
   const _handleInstitutionSelect = (instId: string) => {
@@ -1099,14 +1061,11 @@ const QuestionBank: React.FC = () => {
     } else if (selectedInstitution) {
       setSearchParams({ level: "ADMISSION" }, { replace: true });
     } else if (selectedChapter) {
-      const params: any = { level: selectedLevel || "", subject: selectedSubject || "" };
-      if (selectedAdmissionGroup) params.admissionGroup = selectedAdmissionGroup;
-      setSearchParams(params, { replace: true });
+      setSearchParams({
+        level: selectedLevel || "",
+        subject: selectedSubject || "",
+      }, { replace: true });
     } else if (selectedSubject) {
-      const params: any = { level: selectedLevel || "" };
-      if (selectedAdmissionGroup) params.admissionGroup = selectedAdmissionGroup;
-      setSearchParams(params, { replace: true });
-    } else if (selectedAdmissionGroup) {
       setSearchParams({ level: selectedLevel || "" }, { replace: true });
     } else if (selectedLevel) {
       setSearchParams({}, { replace: true });
@@ -1314,7 +1273,7 @@ const QuestionBank: React.FC = () => {
               <div>
                 <span className="text-[12px] font-black tracking-widest text-primary uppercase pb-0.5 block font-sans">
                   {selectedLevel === "ADMISSION"
-                    ? selectedAdmissionGroup === "medical" ? "মেডিকেল ভর্তি পরীক্ষা" : selectedAdmissionGroup === "varsityKa" ? "ভার্সিটি ‘ক’ ভর্তি পরীক্ষা" : selectedAdmissionGroup === "engineering" ? "ইঞ্জিনিয়ারিং ভর্তি পরীক্ষা" : "ভর্তি পরীক্ষা (ADMISSION)"
+                    ? "ভর্তি পরীক্ষা (ADMISSION)"
                     : selectedLevel === "ACADEMIC"
                       ? "এইচএসসি পরীক্ষা (ACADEMIC)"
                       : selectedLevel === "MAINBOOK"
@@ -1365,46 +1324,42 @@ const QuestionBank: React.FC = () => {
           ) : !selectedSubject && !selectedInstitution && !selectedExamRef ? (
             /* LEVEL 2: COMPACT OR CHOOSE SUBJECT/INSTITUTION */
             <div className="space-y-8 animate-in fade-in duration-300">
-              
-              {selectedLevel === "ADMISSION" && !selectedAdmissionGroup ? (
+              {/* selectedLevel === "ADMISSION" && (
                 <section>
-                  <div className="flex items-center gap-2 mb-4 px-2">
-                    <span className="w-1 h-5 bg-orange-500 rounded-full" />
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="w-1 h-5 bg-blue-500 rounded-full" />
                     <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest font-sans">
-                      সেকশন নির্বাচন করুন
+                      প্রতিষ্ঠান অনুযায়ী প্রশ্নপত্র
                     </h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                      {[
-                        { id: "medical", title: "মেডিকেল", icon: Stethoscope, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-500/10" },
-                        { id: "varsityKa", title: "ভার্সিটি ‘ক’", icon: BookOpen, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-500/10" },
-                        { id: "engineering", title: "ইঞ্জিনিয়ারিং", icon: Layers, color: "text-red-500", bg: "bg-red-50 dark:bg-red-500/10" }
-                      ].map(item => (
-                        <motion.div
-                          key={item.id}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => {
-                              setSearchParams({ level: selectedLevel || "", admissionGroup: item.id }, { replace: true });
-                          }}
-                          className="bg-white dark:bg-[#121212] p-5 md:p-6 rounded-[24px] border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer hover:shadow-md transition-all flex flex-row md:flex-col items-center md:justify-center gap-4 group"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                    {ADMISSION_INSTITUTIONS.map((inst, idx) => (
+                      <motion.button
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        key={idx}
+                        onClick={() => handleInstitutionSelect(inst.id)}
+                        className="bg-white dark:bg-black p-5 rounded-2xl border border-gray-150 dark:border-zinc-800 text-left hover:border-blue-500 transition-all duration-300 group flex items-start gap-4 shadow-sm"
+                        id={`btn-inst-${inst.id}`}
+                      >
+                        <div
+                          className={`w-11 h-11 rounded-xl ${inst.color} flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-300`}
                         >
-                          <div className={`w-12 h-12 md:w-16 md:h-16 rounded-[16px] md:rounded-[20px] flex items-center justify-center ${item.bg} text-gray-800 dark:text-white group-hover:scale-110 transition-transform shadow-sm`}>
-                            <item.icon size={26} strokeWidth={2.5} className={item.color} />
-                          </div>
-                          <div className="flex flex-col items-start md:items-center text-left md:text-center mt-1">
-                            <span className="font-bold text-[16px] md:text-[18px] text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors font-sans">
-                              {item.title}
-                            </span>
-                            <span className="text-[12px] md:text-[13px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">
-                              {admissionGroupsSettings ? `${(admissionGroupsSettings[item.id] || []).length} টি ট্যাগ যুক্ত আছে` : "লোড হচ্ছে..."}
-                            </span>
-                          </div>
-                        </motion.div>
-                      ))}
+                          <inst.icon size={20} />
+                        </div>
+                        <div className="flex-1 min-w-0 pr-1">
+                          <h3 className="text-sm md:text-base font-extrabold text-gray-950 dark:text-white mb-0.5 truncate font-tiro">
+                            {inst.name}
+                          </h3>
+                          <p className="text-[11px] text-gray-500">
+                            বিগত বছরের সব ইউনিট
+                          </p>
+                        </div>
+                      </motion.button>
+                    ))}
                   </div>
                 </section>
-              ) : (
+              ) */}
+
               <section>
                 <div className="flex items-center gap-2 mb-4 px-2">
                   <span className="w-1 h-5 bg-orange-500 rounded-full" />
@@ -1443,7 +1398,6 @@ const QuestionBank: React.FC = () => {
                   )}
                 </div>
               </section>
-              )}
             </div>
           ) : selectedInstitution && !selectedUnit && !selectedExamRef ? (
             /* LEVEL 2.1: CHOOSE UNIT */
@@ -1548,7 +1502,7 @@ const QuestionBank: React.FC = () => {
                   </h2>
                   <span className="text-[14px] font-bold text-gray-500 dark:text-gray-400">
                     {selectedLevel === "ADMISSION"
-                      ? selectedAdmissionGroup === "medical" ? "মেডিকেল ভর্তি পরীক্ষা" : selectedAdmissionGroup === "varsityKa" ? "ভার্সিটি ‘ক’ ভর্তি পরীক্ষা" : selectedAdmissionGroup === "engineering" ? "ইঞ্জিনিয়ারিং ভর্তি পরীক্ষা" : "ভর্তি পরীক্ষা (ADMISSION)"
+                      ? "ভর্তি পরীক্ষা (ADMISSION)"
                       : selectedLevel === "ACADEMIC"
                         ? "এইচএসসি পরীক্ষা (ACADEMIC)"
                         : selectedLevel === "MAINBOOK"
@@ -1874,28 +1828,15 @@ const QuestionBank: React.FC = () => {
                               </div>
                             )}
 
-                            <div className="mt-3 pt-3 border-t border-slate-50 dark:border-zinc-800 flex items-center justify-between">
+                            <div className="mt-3 pt-3 border-t border-slate-55 dark:border-zinc-800 flex items-center justify-between">
                               <div className="flex flex-wrap gap-2">
                                 {q.examRef && (
                                   <span className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
                                     {q.examRef}
                                   </span>
                                 )}
-                                {q.target && q.target !== q.examRef && (
-                                  <span className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
-                                    {q.target}
-                                  </span>
-                                )}
-                                {q.tags && Array.isArray(q.tags) && q.tags.map((tag: string, tid: number) => {
-                                  if (tag === q.examRef || tag === q.target) return null;
-                                  return (
-                                    <span key={tid} className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
-                                      {tag}
-                                    </span>
-                                  );
-                                })}
                                 {!selectedChapter && q.chapter && (
-                                  <span className="px-2 py-1 bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 rounded-lg text-[9px] font-bold tracking-tight border border-blue-500/10 font-sans">
+                                  <span className="text-[9px] font-black px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 rounded-lg">
                                     {q.chapter}
                                   </span>
                                 )}
