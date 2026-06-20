@@ -582,7 +582,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                     {(q.contextText || q.contextImage) && (
                       <div className="mb-4 p-4 bg-sky-50/50 dark:bg-sky-900/10 rounded-2xl border border-sky-100/50 dark:border-sky-800/30">
                         <span className="text-[9px] font-black text-sky-600/50 dark:text-sky-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
-                        {q.contextText && <div className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                        {q.contextText && <div className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
                         {q.contextImage && (
                           <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                         )}
@@ -594,7 +594,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                             {toBanglaDigits(itemIndexInTotal)}.
                         </span>
                         <div className="flex-1">
-                            <div className={`text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
+                            <div className={`text-base md:text-[18px] font-medium text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
                               <div dangerouslySetInnerHTML={{ __html: q.question }} />
                               {q.questionImage && (
                                 <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
@@ -654,7 +654,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                               {getBanglaOptionChar(i)}
                             </span>
                             <div className="flex flex-col gap-1 flex-1">
-                              <div className={`text-sm font-normal whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                              <div className={`text-[15px] md:text-[16px] font-normal whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
                               {q.optionsImages?.[i] && (
                                 <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded self-start bg-transparent mix-blend-multiply dark:mix-blend-normal" referrerPolicy="no-referrer" />
                               )}
@@ -682,7 +682,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                               className="overflow-hidden"
                             >
                               <div id={`explanation-${item._id}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
-                                <div className="text-sm text-slate-800 dark:text-gray-200 leading-relaxed font-tiro whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                <div className="text-[15px] md:text-[16px] text-slate-800 dark:text-gray-200 leading-relaxed font-tiro whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                                 {q.explanationImage && (
                                   <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
                                 )}

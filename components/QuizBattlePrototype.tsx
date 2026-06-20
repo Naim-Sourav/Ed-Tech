@@ -1319,7 +1319,7 @@ const QuizBattlePrototype: React.FC = () => {
                         </div>
                     )}
                     
-                    <h2 className={`text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-relaxed text-center whitespace-pre-wrap ${getFont(question.question)}`}>
+                    <h2 className={`text-2xl md:text-3xl font-black text-gray-900 dark:text-white leading-relaxed text-center whitespace-pre-wrap ${getFont(question.question)}`}>
                         <div dangerouslySetInnerHTML={{ __html: question.question }} />
                     </h2>
                     
@@ -1371,7 +1371,7 @@ const QuizBattlePrototype: React.FC = () => {
                                             {String.fromCharCode(65 + idx)}
                                         </div>
                                         <div className={`flex flex-col gap-2`}>
-                                            <span className={`whitespace-pre-wrap ${getFont(opt)}`}><div dangerouslySetInnerHTML={{ __html: opt }} /></span>
+                                            <span className={`text-[15px] md:text-base whitespace-pre-wrap ${getFont(opt)}`}><div dangerouslySetInnerHTML={{ __html: opt }} /></span>
                                             {question.optionsImages?.[idx] && (
                                                 <img src={question.optionsImages[idx]} alt={`Option ${idx}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
                                             )}

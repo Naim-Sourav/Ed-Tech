@@ -188,7 +188,7 @@ const RevisionQuestionCard = React.memo(
               )}
               {q.contextText && (
                 <div
-                  className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap"
+                  className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{ __html: q.contextText }}
                 />
               )}
@@ -211,7 +211,7 @@ const RevisionQuestionCard = React.memo(
             </span>
             <div className="flex-1 min-w-0">
               <h3
-                className="text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap"
+                className="text-base md:text-[18px] font-medium text-slate-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap"
                 id={`q-title-${idx}`}
               >
                 <div dangerouslySetInnerHTML={{ __html: q.question }} />
@@ -229,7 +229,7 @@ const RevisionQuestionCard = React.memo(
 
               {/* Tags list */}
               <div className="flex flex-wrap gap-1.5 items-center mt-2">
-                {q.examRef && (
+                {q.examRef && (!q.subject || !q.examRef.toLowerCase().includes(q.subject.toLowerCase())) && (
                   <span className="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg border border-blue-100/50 dark:border-blue-800/30">
                     {q.examRef}
                   </span>
@@ -244,7 +244,7 @@ const RevisionQuestionCard = React.memo(
                     </span>
                   ))}
                 {showChapter && q.chapter && (
-                  <span className="text-[10px] font-semibold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-lg border border-purple-100/50 dark:border-purple-800/30">
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border ${q.subject && SUBJECT_DEFINITIONS[q.subject] ? `${SUBJECT_DEFINITIONS[q.subject].bg} ${SUBJECT_DEFINITIONS[q.subject].color} border-current/10` : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-100/50 dark:border-purple-800/30'}`}>
                     {q.chapter}
                   </span>
                 )}
@@ -310,7 +310,7 @@ const RevisionQuestionCard = React.memo(
                 </span>
                 <div className="flex flex-col gap-1 flex-1">
                   <span
-                    className="text-sm font-normal whitespace-pre-wrap leading-relaxed"
+                    className="text-[15px] md:text-base font-normal whitespace-pre-wrap leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: option }}
                   ></span>
                   {q.optionsImages?.[oIdx] && (
@@ -364,7 +364,7 @@ const RevisionQuestionCard = React.memo(
                     ব্যাখ্যা ও তথ্যাবলী
                   </h4>
                 </div>
-                <div className="text-sm text-gray-800 dark:text-gray-200 leading-loose font-tiro whitespace-pre-wrap pl-1 overflow-hidden">
+                <div className="text-[15px] md:text-base text-gray-800 dark:text-gray-200 leading-loose font-tiro whitespace-pre-wrap pl-1 overflow-hidden">
                   <div className="overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                   {q.explanationImage && (
                     <div className="mt-3 rounded-lg overflow-hidden border border-orange-200/20 p-1 max-w-sm bg-white dark:bg-black/20 self-start">
@@ -636,6 +636,14 @@ const ADMISSION_INSTITUTIONS = NEW_ADMISSION_TAGS.map((tag) => ({
   ],
 }));
 
+const MAIN_CATEGORIES = [
+    { id: 'medical', name: 'মেডিকেল ও ডেন্টাল' },
+    { id: 'varsity', name: 'বিশ্ববিদ্যালয়' },
+    { id: 'engineering', name: 'ইঞ্জিনিয়ারিং' },
+    { id: 'krishi', name: 'কৃষি গুচ্ছ' },
+    { id: 'others', name: 'অন্যান্য' }
+];
+
 const QuestionBank: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -653,6 +661,7 @@ const QuestionBank: React.FC = () => {
   const selectedInstitution = searchParams.get("institution");
   const selectedUnit = searchParams.get("unit");
   const selectedExamRef = searchParams.get("examRef");
+  const selectedAdmissionCategory = searchParams.get("admissionCategory");
 
   // Question State
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -775,6 +784,8 @@ const QuestionBank: React.FC = () => {
             selectedLevel ?? undefined, // level
             academicFilterType === "board" ? (selectedBoardTag || "ANY") : undefined,
             academicFilterType === "college" ? (selectedCollegeTag || "ANY") : undefined,
+            false, // randomise
+            selectedAdmissionCategory ?? undefined // admissionCategory
           );
         }
 
@@ -823,6 +834,7 @@ const QuestionBank: React.FC = () => {
     academicFilterType,
     selectedBoardTag,
     selectedCollegeTag,
+    selectedAdmissionCategory,
     showToast,
   ]);
 
@@ -851,6 +863,7 @@ const QuestionBank: React.FC = () => {
     topic: "",
     examRef: selectedExamRef || "",
     search: debouncedSearch,
+    academicFilterType: academicFilterType,
     board: academicFilterType === "board" ? (selectedBoardTag || "") : "",
     college: academicFilterType === "college" ? (selectedCollegeTag || "") : "",
   };
@@ -861,6 +874,7 @@ const QuestionBank: React.FC = () => {
     lastFetchParams.current.chapter !== currentParams.chapter ||
     (lastFetchParams.current as any).examRef !== currentParams.examRef ||
     lastFetchParams.current.search !== currentParams.search ||
+    (lastFetchParams.current as any).academicFilterType !== currentParams.academicFilterType ||
     (lastFetchParams.current as any).board !== currentParams.board ||
     (lastFetchParams.current as any).college !== currentParams.college;
 
@@ -965,21 +979,24 @@ const QuestionBank: React.FC = () => {
   };
 
   const handleSubjectSelect = (subject: string) => {
-    setSearchParams({ level: selectedLevel || "", subject }, { replace: true });
+    const params: Record<string, string> = { level: selectedLevel || "", subject };
+    if (selectedAdmissionCategory) params.admissionCategory = selectedAdmissionCategory;
+    setSearchParams(params, { replace: true });
   };
 
   const handleChapterSelect = (chapter: string) => {
     if (selectedChapter === chapter) {
-      setSearchParams({
-        level: selectedLevel || "",
-        subject: selectedSubject || "",
-      }, { replace: true });
+      const params: Record<string, string> = { level: selectedLevel || "", subject: selectedSubject || "" };
+      if (selectedAdmissionCategory) params.admissionCategory = selectedAdmissionCategory;
+      setSearchParams(params, { replace: true });
     } else {
-      setSearchParams({
+      const params: Record<string, string> = {
         level: selectedLevel || "",
         subject: selectedSubject || "",
         chapter,
-      }, { replace: true });
+      };
+      if (selectedAdmissionCategory) params.admissionCategory = selectedAdmissionCategory;
+      setSearchParams(params, { replace: true });
     }
   };
 
@@ -1038,33 +1055,38 @@ const QuestionBank: React.FC = () => {
   };
 
   const handleBack = () => {
+    const keepCategory = (base: Record<string, string>) => {
+      if (selectedAdmissionCategory) base.admissionCategory = selectedAdmissionCategory;
+      return base;
+    };
+
     if (selectedExamRef) {
-      setSearchParams({
+      setSearchParams(keepCategory({
         level: "ADMISSION",
         institution: selectedInstitution || "",
         unit: selectedUnit || "",
-      }, { replace: true });
+      }), { replace: true });
     } else if (selectedUnit) {
       const inst = ADMISSION_INSTITUTIONS.find(
         (i) => i.id === selectedInstitution,
       );
       if (inst && inst.units.length === 1) {
-        setSearchParams({ level: "ADMISSION" }, { replace: true });
+        setSearchParams(keepCategory({ level: "ADMISSION" }), { replace: true });
       } else {
-        setSearchParams({
+        setSearchParams(keepCategory({
           level: "ADMISSION",
           institution: selectedInstitution || "",
-        }, { replace: true });
+        }), { replace: true });
       }
     } else if (selectedInstitution) {
-      setSearchParams({ level: "ADMISSION" }, { replace: true });
+      setSearchParams(keepCategory({ level: "ADMISSION" }), { replace: true });
     } else if (selectedChapter) {
-      setSearchParams({
+      setSearchParams(keepCategory({
         level: selectedLevel || "",
         subject: selectedSubject || "",
-      }, { replace: true });
+      }), { replace: true });
     } else if (selectedSubject) {
-      setSearchParams({ level: selectedLevel || "" }, { replace: true });
+      setSearchParams(keepCategory({ level: selectedLevel || "" }), { replace: true });
     } else if (selectedLevel) {
       setSearchParams({}, { replace: true });
     } else {
@@ -1109,36 +1131,23 @@ const QuestionBank: React.FC = () => {
             examQuestions = res.questions;
           }
         } else {
-          // Fetch pages until we have at least numQuestions * 2 or run out of pages
-          const requiredCount = numQuestions * 2;
-          let currentPage = 1;
-          let allFetched: any[] = [];
+          // Fetch randomly from the entire matching pool
+          res = await fetchQuestionsFromBankAPI(
+            1,
+            numQuestions * 2, // Fetch enough to shuffle and pick
+            selectedSubject ?? undefined,
+            selectedChapter ?? undefined,
+            undefined, // topic
+            undefined, // examRef
+            debouncedSearch,
+            selectedLevel ?? undefined,
+            academicFilterType === "board" ? (selectedBoardTag || "ANY") : undefined,
+            academicFilterType === "college" ? (selectedCollegeTag || "ANY") : undefined,
+            true // randomise = true
+          );
           
-          while (allFetched.length < requiredCount) {
-             res = await fetchQuestionsFromBankAPI(
-                currentPage,
-                50, // Fetch in chunks of 50
-                selectedSubject ?? undefined,
-                selectedChapter ?? undefined,
-                undefined, // topic
-                undefined, // examRef
-                debouncedSearch,
-                selectedLevel ?? undefined,
-                academicFilterType === "board" ? (selectedBoardTag || "ANY") : undefined,
-                academicFilterType === "college" ? (selectedCollegeTag || "ANY") : undefined
-              );
-              
-              const newQuestions = res?.questions || [];
-              if (newQuestions.length === 0) break;
-              
-              allFetched = [...allFetched, ...newQuestions];
-              if (newQuestions.length < 50) break; // No more pages
-              
-              currentPage++;
-          }
-          
-          if (allFetched.length > 0) {
-             examQuestions = allFetched;
+          if (res?.questions && res.questions.length > 0) {
+             examQuestions = res.questions;
           }
         }
       } catch (err) {
@@ -1646,6 +1655,37 @@ const QuestionBank: React.FC = () => {
                 </div>
               )}
 
+              {/* LEVEL-SPECIFIC ADMISSION CATEGORY FILTERS */}
+              {selectedLevel === "ADMISSION" && (
+                <div className="pt-2 border-t border-gray-100 dark:border-[#222]">
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                       <button
+                         onClick={() => setSearchParams(p => { p.delete('admissionCategory'); return p; }, {replace: true})}
+                         className={`px-4 py-2 rounded-2xl text-[13px] font-bold transition-all whitespace-nowrap border ${
+                           !selectedAdmissionCategory 
+                             ? "bg-orange-500 border-orange-500 text-white shadow-sm" 
+                             : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1A1A1A]"
+                         }`}
+                       >
+                         সব ক্যাটাগরি
+                       </button>
+                       {MAIN_CATEGORIES.map(cat => (
+                           <button
+                             key={cat.id}
+                             onClick={() => setSearchParams(p => { p.set('admissionCategory', cat.id); return p; }, {replace: true})}
+                             className={`px-4 py-2 rounded-2xl text-[13px] font-bold transition-all whitespace-nowrap border ${
+                               selectedAdmissionCategory === cat.id 
+                                 ? "bg-orange-500 border-orange-500 text-white shadow-sm" 
+                                 : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1A1A1A]"
+                             }`}
+                           >
+                               {cat.name}
+                           </button>
+                       ))}
+                  </div>
+                </div>
+              )}
+
 
 
               {/* MAIN QUESTIONS CONTAINER */}
@@ -1713,7 +1753,7 @@ const QuestionBank: React.FC = () => {
                             {(q.contextText || q.contextImage) && (
                               <div className="mb-4 p-4 bg-sky-50/50 dark:bg-sky-900/10 rounded-2xl border border-sky-100/50 dark:border-sky-800/30 mr-12">
                                 <span className="text-[9px] font-black text-sky-600/50 dark:text-sky-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
-                                {q.contextText && <div className="text-sm md:text-[15px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                                {q.contextText && <div className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
                                 {q.contextImage && (
                                   <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                                 )}
@@ -1725,7 +1765,7 @@ const QuestionBank: React.FC = () => {
                                     {toBengaliNumber(itemIndexInTotal)}.
                                 </span>
                                 <div className="flex-1">
-                                    <div className={`text-sm md:text-base font-normal text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
+                                    <div className={`text-base md:text-[18px] font-medium text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
                                       <div dangerouslySetInnerHTML={{ __html: q.question }} />
                                       {q.questionImage && (
                                         <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
@@ -1800,7 +1840,7 @@ const QuestionBank: React.FC = () => {
                                       {['ক', 'খ', 'গ', 'ঘ'][i] || String.fromCharCode(65 + i)}
                                     </span>
                                     <div className="flex flex-col gap-1 flex-1">
-                                      <div className={`text-sm font-normal whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                                      <div className={`text-[15px] md:text-base font-normal whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
                                       {q.optionsImages?.[i] && (
                                         <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded self-start bg-transparent mix-blend-multiply dark:mix-blend-normal" referrerPolicy="no-referrer" />
                                       )}
@@ -1828,7 +1868,7 @@ const QuestionBank: React.FC = () => {
                                       className="overflow-hidden"
                                     >
                                       <div id={`explanation-${itemId}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
-                                        <div className="text-sm text-slate-800 dark:text-gray-200 leading-relaxed font-tiro whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                        <div className="text-[15px] md:text-base text-slate-800 dark:text-gray-200 leading-relaxed font-tiro whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
                                         {q.explanationImage && (
                                           <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
                                         )}
@@ -1841,13 +1881,13 @@ const QuestionBank: React.FC = () => {
 
                             <div className="mt-3 pt-3 border-t border-slate-55 dark:border-zinc-800 flex items-center justify-between">
                               <div className="flex flex-wrap gap-2">
-                                {q.examRef && (
+                                {q.examRef && (!q.subject || !q.examRef.toLowerCase().includes(q.subject.toLowerCase())) && (
                                   <span className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
                                     {q.examRef}
                                   </span>
                                 )}
                                 {!selectedChapter && q.chapter && (
-                                  <span className="text-[9px] font-black px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 rounded-lg">
+                                  <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${q.subject && SUBJECT_DEFINITIONS[q.subject] ? `${SUBJECT_DEFINITIONS[q.subject].bg} ${SUBJECT_DEFINITIONS[q.subject].color}` : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400'}`}>
                                     {q.chapter}
                                   </span>
                                 )}
@@ -2105,7 +2145,7 @@ const QuestionBank: React.FC = () => {
                       min={1}
                       value={examConfigState.timeLimit}
                       onChange={(e) => {
-                         let val = parseInt(e.target.value) || 0;
+                         const val = parseInt(e.target.value) || 0;
                          setExamConfigState(s => ({...s, timeLimit: val}))
                       }}
                       className="w-16 md:w-24 bg-gray-100 dark:bg-zinc-900/80 border-none rounded-xl text-center text-[15px] font-bold text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-primary/50 outline-none"

@@ -6,6 +6,8 @@ import AdminJsonUpload from './AdminJsonUpload';
 import AdminPublicExam from './AdminPublicExam';
 import AdminBulkMapper from './AdminBulkMapper';
 import AdminImageMigrator from './AdminImageMigrator';
+import AdminAdmissionTagMapper from './AdminAdmissionTagMapper';
+import AdminDuplicateFinder from './AdminDuplicateFinder';
 import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, createQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, refineQuestionsAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
@@ -422,7 +424,8 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
 
 const AdminPage: React.FC = () => {
   const { paymentRequests, stats, approvePayment, rejectPayment, deletePaymentRequest, sendNotification, refreshRequests, isAdmin } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM' | 'MAPPER' | 'MIGRATOR'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'PAYMENTS' | 'NOTIFICATIONS' | 'DATABASE' | 'JSON_UPLOAD' | 'PUBLIC_EXAM' | 'MAPPER' | 'MIGRATOR' | 'TAG_MAPPER'>('DASHBOARD');
+  const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
   
@@ -752,6 +755,9 @@ const AdminPage: React.FC = () => {
                    <button onClick={() => setActiveTab('DATABASE')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'DATABASE' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <Layers size={16} /> Manager
                    </button>
+                   <button onClick={() => setActiveTab('TAG_MAPPER')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'TAG_MAPPER' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <Layers size={16} /> Admission Tag Mapper
+                   </button>
                    <button onClick={() => setActiveTab('MIGRATOR')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'MIGRATOR' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                       <ImageIcon size={16} /> Image Migrator
                    </button>
@@ -991,6 +997,11 @@ const AdminPage: React.FC = () => {
             <AdminImageMigrator />
         )}
 
+        {/* --- TAB: TAG MAPPER --- */}
+        {activeTab === 'TAG_MAPPER' && (
+            <AdminAdmissionTagMapper />
+        )}
+
         {/* --- TAB: DATABASE VIEWER (UPDATED TO MANAGER) --- */}
         {activeTab === 'DATABASE' && (
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden animate-in fade-in">
@@ -1058,6 +1069,12 @@ const AdminPage: React.FC = () => {
                             <ShieldCheck size={14}/> Refine Data
                         </button>
                         <button 
+                            onClick={() => setShowDuplicateFinder(!showDuplicateFinder)}
+                            className={`text-sm font-bold text-white px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap transition-colors flex items-center gap-2 ${showDuplicateFinder ? 'bg-red-600 hover:bg-red-700' : 'bg-yellow-600 hover:bg-yellow-700'}`}
+                        >
+                            <AlertCircle size={14}/> {showDuplicateFinder ? 'Close Duplicates' : 'Find Duplicates'}
+                        </button>
+                        <button 
                             onClick={generateSlugs}
                             className="text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap transition-colors"
                         >
@@ -1069,9 +1086,21 @@ const AdminPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Professional Question List (Cards) */}
-                <div className="overflow-y-auto min-h-[400px] p-4 space-y-4 bg-gray-50/50 dark:bg-black/30">
-                    {loadingQuestions ? (
+                {showDuplicateFinder ? (
+                    <div className="p-4 border-t border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                        <AdminDuplicateFinder 
+                            qSubject={qSubject} 
+                            qChapter={qChapter} 
+                            qTopic={qTopic} 
+                            qExamRef={qExamRef} 
+                            qSearch={qSearch} 
+                        />
+                    </div>
+                ) : (
+                    <>
+                        {/* Professional Question List (Cards) */}
+                        <div className="overflow-y-auto min-h-[400px] p-4 space-y-4 bg-gray-50/50 dark:bg-black/30">
+                            {loadingQuestions ? (
                         <div className="p-4"><QuestionCardSkeleton /></div>
                     ) : questions.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-64 text-gray-400">
@@ -1224,6 +1253,8 @@ const AdminPage: React.FC = () => {
                         </button>
                     </div>
                 </div>
+                </>
+                )}
                 
                 {/* Modal Render */}
                 {editingQuestion && (
