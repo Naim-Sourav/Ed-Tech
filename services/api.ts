@@ -389,6 +389,32 @@ export const refineQuestionsAPI = async () => {
     }
 };
 
+export const fetchAdmissionTagsAPI = async () => {
+    try {
+        const response = await fetch(`${API_BASE}/admin/tags/admission`);
+        if (!response.ok) throw new Error('Failed to fetch tags');
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching tags:", error);
+        throw error;
+    }
+};
+
+export const mapTagsToCategoryAPI = async (category: string, tags: string[]) => {
+    try {
+        const response = await fetch(`${API_BASE}/admin/tags/map`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category, tags })
+        });
+        if (!response.ok) throw new Error('Failed to map tags');
+        return await response.json();
+    } catch (error) {
+        console.error("Error mapping tags:", error);
+        throw error;
+    }
+};
+
 export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai') => {
     try {
         const response = await fetch(`${API_BASE}/admin/questions/cleanup?type=${type}`, {
@@ -404,7 +430,7 @@ export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai')
 };
 
 export const fetchQuestionsForMigrator = async (page: number, limit: number) => {
-  let url = `${API_BASE}/admin/questions?page=${page}&limit=${limit}`;
+  const url = `${API_BASE}/admin/questions?page=${page}&limit=${limit}`;
   const response = await fetch(url);
   if (!response.ok) {
     const err = await response.text();
@@ -423,7 +449,9 @@ export const fetchQuestionsFromBankAPI = async (
   search?: string, 
   level?: string,
   board?: string,
-  college?: string
+  college?: string,
+  randomise?: boolean,
+  admissionCategory?: string
 ) => {
   let url = `/admin/questions?page=${page}&limit=${limit}`;
   if (subject && subject !== 'ALL') url += `&subject=${encodeURIComponent(normalizeBangla(subject))}`;
@@ -433,11 +461,25 @@ export const fetchQuestionsFromBankAPI = async (
   if (level && level !== 'ALL') url += `&level=${encodeURIComponent(level)}`;
   if (board && board !== 'ALL') url += `&board=${encodeURIComponent(board)}`;
   if (college && college !== 'ALL') url += `&college=${encodeURIComponent(college)}`;
+  if (admissionCategory && admissionCategory !== 'ALL') url += `&admissionCategory=${encodeURIComponent(admissionCategory)}`;
+  if (randomise) url += `&randomise=true`;
   
   if (search) {
     url += `&search=${encodeURIComponent(normalizeBangla(search))}`;
   }
   return fetchWithFallback(url, {}, { questions: [], total: 0 });
+};
+
+export const autoScanDuplicatesAPI = async () => {
+  return fetchWithFallback('/admin/auto-duplicates/scan', {}, { success: false, duplicateGroupsCount: 0, totalDuplicatesToMerge: 0, totalQuestions: 0 });
+};
+
+export const autoMergeDuplicatesAPI = async () => {
+  return fetchWithFallback('/admin/auto-duplicates/merge', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  });
 };
 
 export const createQuestionInBankAPI = async (questionData: any) => {
