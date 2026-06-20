@@ -19,7 +19,7 @@ jobs:
         # cache: 'npm' - Removed to fix missing lockfile error
 
     - name: Install dependencies
-      run: npm install --legacy-peer-deps
+      run: npm install
 
     - name: Build
       run: npm run build
