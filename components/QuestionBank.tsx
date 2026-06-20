@@ -229,11 +229,6 @@ const RevisionQuestionCard = React.memo(
 
               {/* Tags list */}
               <div className="flex flex-wrap gap-1.5 items-center mt-2">
-                {q.examRef && (!q.subject || !q.examRef.toLowerCase().includes(q.subject.toLowerCase())) && (
-                  <span className="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg border border-blue-100/50 dark:border-blue-800/30">
-                    {q.examRef}
-                  </span>
-                )}
                 {q.tags &&
                   q.tags.map((tag) => (
                     <span
@@ -1881,11 +1876,11 @@ const QuestionBank: React.FC = () => {
 
                             <div className="mt-3 pt-3 border-t border-slate-55 dark:border-zinc-800 flex items-center justify-between">
                               <div className="flex flex-wrap gap-2">
-                                {q.examRef && (!q.subject || !q.examRef.toLowerCase().includes(q.subject.toLowerCase())) && (
-                                  <span className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
-                                    {q.examRef}
+                                {q.tags && q.tags.length > 0 && q.tags.map((tag) => (
+                                  <span key={tag} className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
+                                    {tag}
                                   </span>
-                                )}
+                                ))}
                                 {!selectedChapter && q.chapter && (
                                   <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${q.subject && SUBJECT_DEFINITIONS[q.subject] ? `${SUBJECT_DEFINITIONS[q.subject].bg} ${SUBJECT_DEFINITIONS[q.subject].color}` : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400'}`}>
                                     {q.chapter}
