@@ -19,6 +19,10 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
     const [hasScanned, setHasScanned] = useState(false);
     const [mergingId, setMergingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     // Auto Merge States
     const [autoScanData, setAutoScanData] = useState<any>(null);
@@ -184,6 +188,7 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
                 .sort((a, b) => b.count - a.count);
 
             setDuplicates(dups);
+            setCurrentPage(1);
             setHasScanned(true);
         } catch (e) {
             showToast("Failed to scan duplicates", "error");
@@ -514,6 +519,10 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
         );
     }
 
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedDuplicates = duplicates.slice(startIndex, startIndex + itemsPerPage);
+    const totalPages = Math.ceil(duplicates.length / itemsPerPage);
+
     return (
         <div className="space-y-6 animate-in slide-in-from-bottom-4">
             {renderAutoMergeSection()}
@@ -548,7 +557,7 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
             </div>
 
             <div className="space-y-6">
-                {duplicates.map((group, idx) => (
+                {paginatedDuplicates.map((group, idx) => (
                     <div key={idx} className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
                         <div className="bg-gray-50 dark:bg-zinc-800/50 p-4 border-b border-gray-100 dark:border-zinc-800">
                             <div className="flex gap-2 items-start">
@@ -637,6 +646,30 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
                     </div>
                 ))}
             </div>
+            
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 py-4">
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-gray-300 rounded-lg disabled:opacity-50 font-bold transition hover:bg-gray-200 dark:hover:bg-zinc-700"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-gray-300 rounded-lg disabled:opacity-50 font-bold transition hover:bg-gray-200 dark:hover:bg-zinc-700"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
             
             {/* Custom Confirm Modal */}
             {confirmAction && confirmAction.isOpen && (
