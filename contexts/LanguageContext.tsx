@@ -21,22 +21,21 @@ export const useLanguage = () => {
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Hardcode language to 'bn' (Bengali)
-  const [language] = useState<Language>('bn');
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('app_language');
+      return (saved as Language) || 'bn';
+    }
+    return 'bn';
+  });
 
-  // Dummy setLanguage function that does nothing, effectively disabling switching
-  const setLanguage = (_lang: Language) => {
-    console.log("Language fixed to Bengali");
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('app_language', lang);
   };
 
-  useEffect(() => {
-    // Ensure local storage is synced to 'bn' if needed by other parts, though strictly not necessary now
-    localStorage.setItem('app_language', 'bn');
-  }, []);
-
   const t = (key: keyof typeof translations['en']) => {
-    // Always fetch from 'bn' keys
-    return translations['bn'][key] || key;
+    return translations[language][key] || key;
   };
 
   return (
