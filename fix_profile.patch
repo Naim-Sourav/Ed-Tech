@@ -1,0 +1,41 @@
+--- components/ProfilePage.tsx
++++ components/ProfilePage.tsx
+@@ -1881,6 +1881,38 @@
+                                         </div>
+                                     </div>
+                                 </motion.div>
++                            );
++                        })}
++
++                        {/* Pagination Controls */}
++                        {Math.ceil(attempts.length / itemsPerHistoryPage) > 1 && (
++                            <div className="flex items-center justify-center gap-2 mt-8 mb-4">
++                                <button
++                                    onClick={() => setCurrentHistoryPage(prev => Math.max(1, prev - 1))}
++                                    disabled={currentHistoryPage === 1}
++                                    className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
++                                >
++                                    <ChevronLeft size={16} />
++                                </button>
++                                <span className="text-sm font-bold text-gray-600 dark:text-zinc-400 px-3">
++                                    {currentHistoryPage.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])} 
++                                    / 
++                                    {Math.ceil(attempts.length / itemsPerHistoryPage).toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])}
++                                </span>
++                                <button
++                                    onClick={() => setCurrentHistoryPage(prev => Math.min(Math.ceil(attempts.length / itemsPerHistoryPage), prev + 1))}
++                                    disabled={currentHistoryPage === Math.ceil(attempts.length / itemsPerHistoryPage)}
++                                    className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
++                                >
++                                    <ChevronRight size={16} />
++                                </button>
++                            </div>
++                        )}
++                    </div>
++                )}
++            </motion.div>
++        )}
++
+         {/* SETTINGS TAB */}
+         {activeTab === 'SETTINGS' && (
+             <motion.div 

@@ -9,6 +9,7 @@ import { Menu, ArrowLeft, Bell } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { PreferencesProvider } from './contexts/PreferencesContext';
 import PorikkhangonAI from './components/PorikkhangonAI';
 import OnboardingModal from './components/OnboardingModal';
 import TelegramModal from './components/TelegramModal'; // ADDED Import
@@ -386,15 +387,17 @@ const App: React.FC = () => {
 
   return (
     <LanguageProvider>
-      <AdminProvider>
-        <HashRouter>
-          <ErrorBoundary>
-             <Suspense fallback={<PageLoader />}>
-                <AppRoutes themeMode={themeMode} toggleTheme={toggleTheme} currentUser={currentUser} />
-             </Suspense>
-          </ErrorBoundary>
-        </HashRouter>
-      </AdminProvider>
+      <PreferencesProvider>
+        <AdminProvider>
+          <HashRouter>
+            <ErrorBoundary>
+               <Suspense fallback={<PageLoader />}>
+                  <AppRoutes themeMode={themeMode} toggleTheme={toggleTheme} currentUser={currentUser} />
+               </Suspense>
+            </ErrorBoundary>
+          </HashRouter>
+        </AdminProvider>
+      </PreferencesProvider>
     </LanguageProvider>
   );
 };
@@ -438,11 +441,11 @@ const AppRoutes: React.FC<{
                       <Route path="/planner" element={<ExamHistory />} />
                       <Route path="/history" element={<ExamHistory />} />
                       <Route path="/admission" element={<AdmissionSearch />} />
-                      <Route path="/profile" element={<ProfilePage key={location.pathname} />} />
-                      <Route path="/profile/:userId" element={<ProfilePage key={location.pathname} />} />
+                      <Route path="/profile" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} />} />
+                      <Route path="/profile/:userId" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} />} />
                       <Route path="/saved-questions" element={<SavedQuestions />} />
                       <Route path="/wrong-questions" element={<WrongQuestions />} />
-                      <Route path="/settings" element={<ProfilePage key={location.pathname} />} />
+                      <Route path="/settings" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} />} />
                       <Route path="/admin" element={<AdminPage />} />
                       <Route path="/challenges" element={<DailyChallengePage openBot={() => {}} />} />
                       <Route path="/bot" element={<PorikkhangonAI />} />
