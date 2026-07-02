@@ -13,6 +13,7 @@ import {
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
+import { usePreferences } from '../contexts/PreferencesContext';
 import EmptyState from './EmptyState';
 
 const ITEMS_PER_PAGE = 10;
@@ -35,6 +36,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { showToast } = useToast();
+  const { questionFont, questionFontSize } = usePreferences();
   const { getCache, setCache } = useCache();
   
   const cacheKey = `wrong_questions_${currentUser?.uid}`;
@@ -232,7 +234,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
 
   const getFont = (text: string = '') => {
     const isBangla = /[\u0980-\u09FF]/.test(text);
-    return isBangla ? 'font-tiro' : 'font-sans';
+    return isBangla ? questionFont : 'font-sans';
   };
 
   return (
@@ -608,7 +610,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                         )}
                       </div>
                       <div className="flex-1">
-                        <div className={`text-base md:text-[18px] font-medium text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
+                        <div className={`${questionFontSize} font-medium text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
                           <div dangerouslySetInnerHTML={{ __html: q.question }} />
                           {q.questionImage && (
                             <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
@@ -646,7 +648,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                             }
                           }
                         }
-                        
+
                         return (
                           <div 
                             key={i}
@@ -668,7 +670,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                               {getBanglaOptionChar(i)}
                             </span>
                             <div className="flex flex-col gap-1 flex-1">
-                              <div className={`text-[15px] md:text-[16px] font-semibold whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                              <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} font-semibold whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
                               {q.optionsImages?.[i] && (
                                 <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
                               )}
@@ -687,6 +689,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                           <span>ব্যাখ্যা</span>
                           {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
+                        
                         <AnimatePresence>
                           {isExpanded && (
                             <motion.div 
@@ -696,7 +699,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                               className="overflow-hidden"
                             >
                               <div id={`explanation-${item._id}`} className="mt-2 p-3 bg-slate-50 dark:bg-zinc-900/40 rounded-xl border border-slate-150 dark:border-zinc-800/80 flex flex-col gap-2 shadow-sm overflow-hidden">
-                                <div className="text-[15px] md:text-[16px] text-slate-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-600 dark:text-zinc-300 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} dangerouslySetInnerHTML={{ __html: q.explanation }} />
                                 {q.explanationImage && (
                                   <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                                 )}

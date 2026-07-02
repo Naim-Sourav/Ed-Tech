@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
 import Confetti from './Confetti';
+import { usePreferences } from '../contexts/PreferencesContext';
 import { 
   createRTDBRoom, 
   joinRTDBRoom, 
@@ -64,6 +65,7 @@ const BATTLE_SUBJECTS = [
 const QuizBattlePrototype: React.FC = () => {
   const { currentUser, userAvatar } = useAuth();
   const { showToast } = useToast();
+  const { questionFont } = usePreferences();
   const location = useLocation();
   const opponentInfo = location.state?.opponent; 
   
@@ -136,9 +138,8 @@ const QuizBattlePrototype: React.FC = () => {
 
   // Helper function to determine font class based on language
   const getFont = (text: string = '') => {
-    // Check if text contains any Bengali characters (Unicode range U+0980 to U+09FF)
     const isBangla = /[\u0980-\u09FF]/.test(text);
-    return isBangla ? 'font-tiro' : 'font-sans';
+    return isBangla ? questionFont : 'font-sans';
   };
 
   // --- SYNC WITH SERVER ---

@@ -6,9 +6,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI, fetchSyllabusStatsAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle } from 'lucide-react';
+import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle, Settings, LogOut, Sun, Moon, Laptop, Type } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
+import { usePreferences } from '../contexts/PreferencesContext';
 import { normalizeBangla, uniqueByNormalization, normalizeForComparison } from '../utils/normalization';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart as ReChartsPieChart, Pie, Cell } from 'recharts';
 
@@ -178,12 +179,13 @@ const aggregateStatsFromAttempts = (attempts: any[], serverStats: any) => {
   return stats;
 };
 
-const ProfilePage: React.FC = () => {
+const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleTheme?: () => void }> = ({ themeMode, toggleTheme }) => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>(); // Get userID from URL params
   const [searchParams, setSearchParams] = useSearchParams();
-  const { currentUser, userAvatar, enrolledCourses, extendedProfile, updateUserProfile } = useAuth();
-  const { t } = useLanguage();
+  const { currentUser, userAvatar, enrolledCourses, extendedProfile, updateUserProfile, logout } = useAuth();
+  const { t, language, setLanguage } = useLanguage();
+  const { questionFont, setQuestionFont, questionFontSize, setQuestionFontSize } = usePreferences();
   const { showToast } = useToast();
   const { getCache, setCache } = useCache();
   
@@ -196,7 +198,7 @@ const ProfilePage: React.FC = () => {
   const cachedData = getCache(cacheKey) || {};
 
   // Tab State derived from URL
-  const activeTab = (searchParams.get('tab') as 'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES' | 'HISTORY') || 'INFO';
+  const activeTab = (searchParams.get('tab') as 'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES' | 'HISTORY' | 'SETTINGS') || (window.location.hash.includes('/settings') ? 'SETTINGS' : 'INFO');
   
   const setActiveTab = (tab: string) => {
       setSearchParams({ tab });
@@ -459,6 +461,7 @@ const ProfilePage: React.FC = () => {
 
   // History Pagination
   const [currentHistoryPage, setCurrentHistoryPage] = useState(1);
+  const [isQuestionDisplayExpanded, setIsQuestionDisplayExpanded] = useState(false);
   const itemsPerHistoryPage = 10;
 
   // Scroll Restoration
@@ -1131,6 +1134,9 @@ const ProfilePage: React.FC = () => {
                    </button>
                    <button onClick={() => setActiveTab('HISTORY')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'HISTORY' ? 'bg-orange-500 text-white shadow-xl shadow-orange-500/20' : 'text-gray-500 hover:text-orange-500'}`}>
                        <Calendar size={16}/> {t('profile_history')}
+                   </button>
+                   <button onClick={() => setActiveTab('SETTINGS')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'SETTINGS' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
+                       <Settings size={16}/> Settings
                    </button>
                </>
            ) : (
@@ -1908,8 +1914,193 @@ const ProfilePage: React.FC = () => {
             </motion.div>
         )}
 
-      </div>
+        {/* SETTINGS TAB */}
+        {activeTab === 'SETTINGS' && (
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6 max-w-2xl mx-auto"
+            >
+                <div className="relative">
+                     <div className="space-y-8">
+                         <div className="flex items-center gap-3 border-b border-gray-100 dark:border-zinc-800 pb-6">
+                            <div className="p-3 bg-gray-100 dark:bg-zinc-800 rounded-2xl text-gray-500 dark:text-zinc-400">
+                                <Settings size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight">Settings</h2>
+                                <p className="text-xs text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-widest mt-1">App Preferences</p>
+                            </div>
+                         </div>
+                         
+                         {/* Settings Options */}
+                         <div className="space-y-4">
+                             
+                             {/* Theme Mode */}
+                             {toggleTheme && (
+                                 <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl p-4 md:p-5 border border-blue-100 dark:border-blue-800/30 flex flex-col md:flex-row md:items-center justify-between gap-4 group transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center text-blue-500 dark:text-blue-400 shrink-0">
+                                            {themeMode === 'light' ? <Sun size={20}/> : themeMode === 'dark' ? <Moon size={20}/> : <Laptop size={20}/>}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm md:text-base font-bold text-gray-900 dark:text-white">Appearance</p>
+                                            <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Choose your visual theme</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={toggleTheme}
+                                        className="w-full md:w-auto px-5 py-2.5 bg-white dark:bg-blue-950 hover:bg-blue-50 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-300 font-bold text-xs md:text-sm rounded-xl transition-all shadow-sm border border-blue-100 dark:border-blue-800/50"
+                                    >
+                                        {themeMode === 'light' ? 'Light Mode' : themeMode === 'dark' ? 'Dark Mode' : 'System'}
+                                    </button>
+                                 </div>
+                             )}
 
+                             {/* Language Selection */}
+                             <div className="bg-emerald-50/50 dark:bg-emerald-900/10 rounded-2xl p-4 md:p-5 border border-emerald-100 dark:border-emerald-800/30 flex flex-col md:flex-row md:items-center justify-between gap-4 group transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-black text-lg shrink-0">
+                                        অ
+                                    </div>
+                                    <div>
+                                        <p className="text-sm md:text-base font-bold text-gray-900 dark:text-white">Language</p>
+                                        <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Select preferred language</p>
+                                    </div>
+                                </div>
+                                <div className="flex bg-white dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-800/50 rounded-xl p-1 shadow-inner w-full md:w-auto">
+                                    <button 
+                                         onClick={() => setLanguage('bn')}
+                                        className={`flex-1 md:flex-none px-6 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${language === 'bn' ? 'bg-emerald-100 dark:bg-emerald-800/60 text-emerald-700 dark:text-emerald-300 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-300'}`}
+                                    >
+                                        বাংলা
+                                    </button>
+                                    <button 
+                                         onClick={() => setLanguage('en')}
+                                        className={`flex-1 md:flex-none px-6 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${language === 'en' ? 'bg-emerald-100 dark:bg-emerald-800/60 text-emerald-700 dark:text-emerald-300 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-300'}`}
+                                    >
+                                        English
+                                    </button>
+                                </div>
+                             </div>
+
+                             {/* Question Card Font Settings */}
+                             <div className="bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-800/30 overflow-hidden transition-colors">
+                                <button 
+                                    onClick={() => setIsQuestionDisplayExpanded(!isQuestionDisplayExpanded)}
+                                    className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-purple-50 dark:hover:bg-purple-800/20 transition-colors"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center text-purple-600 dark:text-purple-400 transition-colors shrink-0">
+                                            <Type size={20} />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm md:text-base font-bold text-gray-900 dark:text-white">কোশ্চেন ডিসপ্লে</p>
+                                            <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Customize font style and size</p>
+                                        </div>
+                                    </div>
+                                    <div className={`p-2 rounded-xl bg-purple-100/50 dark:bg-purple-800/30 text-purple-500 transition-transform duration-300 ${isQuestionDisplayExpanded ? 'rotate-180' : ''}`}>
+                                        <ChevronDown size={18} />
+                                    </div>
+                                </button>
+                                
+                                {isQuestionDisplayExpanded && (
+                                    <div className="px-4 md:px-5 pb-5 pt-2 border-t border-purple-100 dark:border-purple-800/30">
+                                        <div className="space-y-6">
+                                            {/* Preview */}
+                                            <div className="bg-white dark:bg-zinc-950 p-5 md:p-6 rounded-2xl border border-purple-100 dark:border-purple-800/30 shadow-sm relative overflow-hidden pointer-events-none">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex items-start gap-3 w-full">
+                                                        <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">01.</span>
+                                                        <div className="flex-1 min-w-0 pt-0.5">
+                                                            <h3 className={`font-semibold text-slate-900 dark:text-gray-50 leading-relaxed transition-all duration-300 ease-out ${questionFontSize === 'text-xl' ? 'text-[20px] md:text-[22px]' : questionFontSize === 'text-lg' ? 'text-[18px] md:text-[20px]' : 'text-[17px] md:text-[19px]'} ${questionFont}`}>
+                                                                নিচের কোনটি সঠিক?
+                                                            </h3>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 shrink-0 ml-2">
+                                                        <button className="p-1.5 rounded-lg transition-colors text-gray-400">
+                                                            <Bookmark size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-0 md:pl-10 mt-6">
+                                                    <div className="p-3 md:p-4 rounded-xl border border-gray-200 dark:border-zinc-800 flex items-center gap-3 bg-gray-50 dark:bg-zinc-900/50">
+                                                        <div className="w-8 h-8 rounded-full border border-gray-300 dark:border-zinc-600 flex items-center justify-center text-sm font-bold shrink-0 text-gray-500 bg-white dark:bg-zinc-800">ক</div>
+                                                        <div className={`flex-1 text-gray-700 dark:text-gray-300 font-medium transition-all duration-300 ease-out ${questionFontSize === 'text-xl' ? 'text-[17px]' : questionFontSize === 'text-lg' ? 'text-[16px]' : 'text-[15px]'} ${questionFont}`}>প্রথম অপশনটি</div>
+                                                    </div>
+                                                    <div className="p-3 md:p-4 rounded-xl border border-gray-200 dark:border-zinc-800 flex items-center gap-3 bg-gray-50 dark:bg-zinc-900/50">
+                                                        <div className="w-8 h-8 rounded-full border border-gray-300 dark:border-zinc-600 flex items-center justify-center text-sm font-bold shrink-0 text-gray-500 bg-white dark:bg-zinc-800">খ</div>
+                                                        <div className={`flex-1 text-gray-700 dark:text-gray-300 font-medium transition-all duration-300 ease-out ${questionFontSize === 'text-xl' ? 'text-[17px]' : questionFontSize === 'text-lg' ? 'text-[16px]' : 'text-[15px]'} ${questionFont}`}>দ্বিতীয় অপশনটি</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* Font Style Selector */}
+                                            <div className="space-y-3 pt-2">
+                                                <p className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Font Style</p>
+                                                <div className="flex gap-3">
+                                                    {(['font-noto', 'font-tiro'] as const).map((fontOption) => (
+                                                        <button
+                                                            key={fontOption}
+                                                            onClick={() => setQuestionFont(fontOption)}
+                                                            className={`flex-1 py-3 px-2 flex flex-col items-center justify-center gap-1 rounded-xl transition-all border-2 ${questionFont === fontOption ? 'bg-purple-100 dark:bg-purple-900/40 border-purple-400 text-purple-700 dark:text-purple-300 shadow-sm' : 'bg-white dark:bg-zinc-800 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-zinc-300 shadow-sm hover:shadow border-gray-100 dark:border-zinc-700'}`}
+                                                        >
+                                                            <span className={`text-lg font-medium ${fontOption}`}>পরীক্ষাঙ্গন</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">
+                                                                {fontOption === 'font-noto' ? 'Modern' : 'Classic'}
+                                                            </span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {/* Size Selector */}
+                                            <div className="space-y-4 pt-2">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Text Size</p>
+                                                    <span className="text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800/50">
+                                                        {questionFontSize === 'text-sm' ? 'Small' : questionFontSize === 'text-base' ? 'Normal' : questionFontSize === 'text-lg' ? 'Large' : 'Extra Large'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-4 bg-white dark:bg-zinc-800/50 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30 shadow-sm">
+                                                    <span className="text-sm font-medium text-gray-400 select-none">A</span>
+                                                    <input 
+                                                        type="range" 
+                                                        min="0" max="3" 
+                                                        value={questionFontSize === 'text-sm' ? 0 : questionFontSize === 'text-base' ? 1 : questionFontSize === 'text-lg' ? 2 : 3}
+                                                        onChange={(e) => {
+                                                            const val = parseInt(e.target.value);
+                                                            setQuestionFontSize(val === 0 ? 'text-sm' : val === 1 ? 'text-base' : val === 2 ? 'text-lg' : 'text-xl');
+                                                        }}
+                                                        className="w-full h-1.5 bg-purple-200 dark:bg-purple-900/50 rounded-lg appearance-none cursor-pointer"
+                                                        style={{ accentColor: '#a855f7' }}
+                                                    />
+                                                    <span className="text-xl font-medium text-gray-400 select-none">A</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                             </div>
+
+                             {/* Logout */}
+                             <div className="pt-2">
+                                 <button 
+                                     onClick={async () => {
+                                         await logout();
+                                         navigate('/auth');
+                                     }}
+                                     className="w-full flex items-center justify-center gap-3 py-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 font-black text-sm rounded-2xl transition-colors"
+                                 >
+                                     <LogOut size={18} strokeWidth={2.5}/>
+                                     {t('nav_logout')}
+                                 </button>
+                             </div>
+                         </div>
+                     </div>
+                </div>
+            </motion.div>
+        )}
+      </div>
       {/* Deep Analysis Modal */}
       <AnimatePresence>
           {selectedDeepAnalysisSubject && (

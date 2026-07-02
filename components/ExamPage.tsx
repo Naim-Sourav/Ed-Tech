@@ -15,6 +15,7 @@ import { QuizQuestion } from '../types';
 import { useCache } from '../contexts/CacheContext';
 import { motion } from 'motion/react';
 import { toBengaliNumber } from '../utils/numberUtils';
+import { usePreferences } from '../contexts/PreferencesContext';
 import Confetti from './Confetti'; // Use existing confetti instead of Lottie to be safe
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
@@ -39,6 +40,7 @@ const ExamPage: React.FC = () => {
   const { examId } = useParams<{ examId: string }>();
   const { currentUser } = useAuth();
   const { showToast } = useToast();
+  const { questionFont, questionFontSize } = usePreferences();
   const { clearCache } = useCache(); 
 
   const uid = currentUser?.uid || 'guest';
@@ -91,7 +93,7 @@ const ExamPage: React.FC = () => {
 
   const getFont = (text: string = '') => {
     const isBangla = /[\u0980-\u09FF]/.test(text);
-    return isBangla ? 'font-tiro' : 'font-sans';
+    return isBangla ? questionFont : 'font-sans';
   };
 
   const renderStimulusBox = (q: QuizQuestion, idx: number, allQs: QuizQuestion[]) => {
