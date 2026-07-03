@@ -402,6 +402,8 @@ const App: React.FC = () => {
   );
 };
 
+import ThemeColorManager from './components/ThemeColorManager';
+
 const AppRoutes: React.FC<{
     themeMode: 'light' | 'dark' | 'system';
     toggleTheme: () => void;
@@ -419,6 +421,8 @@ const AppRoutes: React.FC<{
     }
 
     return (
+          <>
+          <ThemeColorManager themeMode={themeMode} />
           <Routes>
             <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => window.location.hash = '#/auth'} /> : <Navigate to="/dashboard" />} />
             <Route path="/auth" element={<AuthRoute><AuthPage onBack={() => window.location.hash = '#/'} /></AuthRoute>} />
@@ -462,6 +466,7 @@ const AppRoutes: React.FC<{
               )
             } />
           </Routes>
+          </>
     );
 }
 
