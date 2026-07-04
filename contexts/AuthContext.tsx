@@ -123,6 +123,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  // Online Presence Manager
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const name = currentUser.displayName || 'Anonymous';
+    const avatar = currentUser.photoURL || '';
+
+    let isSubscribed = true;
+    let intervalId: any = null;
+
+    import('../services/battleService').then(({ setUserOnline, setUserOffline }) => {
+      if (!isSubscribed) return;
+
+      setUserOnline(currentUser.uid, name, avatar).catch(err => {
+        console.error("Failed to set user online presence", err);
+      });
+      
+      intervalId = setInterval(() => {
+        setUserOnline(currentUser.uid, name, avatar).catch(() => {});
+      }, 45000);
+
+      // Listen to window focus to refresh online state instantly
+      const handleFocus = () => {
+        setUserOnline(currentUser.uid, name, avatar).catch(() => {});
+      };
+      window.addEventListener('focus', handleFocus);
+
+      return () => {
+        isSubscribed = false;
+        clearInterval(intervalId);
+        window.removeEventListener('focus', handleFocus);
+        setUserOffline(currentUser.uid).catch(() => {});
+      };
+    }).catch(err => {
+      console.error("Failed to load battleService", err);
+    });
+  }, [currentUser]);
+
   const loginWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
