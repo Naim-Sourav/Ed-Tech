@@ -26,7 +26,9 @@ import {
   listenToServerOffset,
   BattleRoom,
   BattlePlayer,
-  sendReactionRTDB
+  sendReactionRTDB,
+  listenToOnlineUsers,
+  sendBattleInvite
 } from '../services/battleService';
 import { generateQuizFromDB, sendNotificationAPI, fetchUserStatsAPI } from '../services/api'; 
 import { ref, update } from "firebase/database";
@@ -51,6 +53,18 @@ interface BattleStats {
 
 type Phase = 'MENU' | 'CREATE' | 'JOIN' | 'LOBBY' | 'GAME' | 'RESULT';
 
+const getActualSubjectKeys = (broadSubject: string): string[] => {
+  if (broadSubject === 'Physics') return ['Physics 1st Paper', 'Physics 2nd Paper'];
+  if (broadSubject === 'Chemistry') return ['Chemistry 1st Paper', 'Chemistry 2nd Paper'];
+  if (broadSubject === 'Math') return ['Higher Math 1st Paper', 'Higher Math 2nd Paper'];
+  if (broadSubject === 'Biology') return ['Biology 1st Paper', 'Biology 2nd Paper'];
+  if (broadSubject === 'Bangla') return ['Bangla 1st Paper', 'Bangla 2nd Paper'];
+  if (broadSubject === 'ICT') return ['ICT'];
+  if (broadSubject === 'English') return ['English'];
+  if (broadSubject === 'General Knowledge') return ['General Knowledge'];
+  return [broadSubject];
+};
+
 const BATTLE_SUBJECTS = [
     { id: 'Physics', label: 'পদার্থবিজ্ঞান', icon: Atom, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800' },
     { id: 'Chemistry', label: 'রসায়ন', icon: Beaker, color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20', border: 'border-teal-200 dark:border-teal-800' },
@@ -61,6 +75,109 @@ const BATTLE_SUBJECTS = [
     { id: 'Bangla', label: 'বাংলা', icon: Book, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800' },
     { id: 'General Knowledge', label: 'সাধারণ জ্ঞান', icon: Globe, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
 ];
+
+const OnlinePlayersInvitePanel: React.FC<{
+  roomId: string;
+  battleConfig: any;
+  currentUser: any;
+  userAvatar: string;
+  showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void;
+}> = ({ roomId, battleConfig, currentUser, userAvatar, showToast }) => {
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [invitedUids, setInvitedUids] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsubscribe = listenToOnlineUsers(currentUser.uid, (users) => {
+      setOnlineUsers(users);
+    });
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  const handleInvite = async (user: any) => {
+    if (!currentUser) return;
+    try {
+      const subject = (battleConfig && battleConfig.subjects && battleConfig.subjects[0]) || 'All';
+      const chapter = (battleConfig && battleConfig.chapters && battleConfig.chapters[0]) || 'Full Syllabus';
+      
+      await sendBattleInvite(
+        user.uid,
+        roomId,
+        { uid: currentUser.uid, name: currentUser.displayName || 'Anonymous', avatar: userAvatar },
+        subject,
+        chapter
+      );
+      
+      setInvitedUids(prev => ({ ...prev, [user.uid]: true }));
+      showToast(`${user.name}-কে চ্যালেঞ্জ পাঠানো হয়েছে!`, 'success');
+      
+      // Auto-enable invite button after 15 seconds
+      setTimeout(() => {
+        setInvitedUids(prev => ({ ...prev, [user.uid]: false }));
+      }, 15000);
+    } catch (err: any) {
+      console.error(err);
+      showToast("চ্যালেঞ্জ পাঠাতে ব্যর্থ হয়েছে।", "error");
+    }
+  };
+
+  return (
+    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800/40 shadow-xl space-y-4 max-w-md mx-auto w-full relative z-30">
+      <div className="flex items-center justify-between">
+        <h3 className="font-black text-gray-900 dark:text-white text-sm tracking-tight flex items-center gap-2">
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+          অনলাইন প্লেয়ার্স ({onlineUsers.length})
+        </h3>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+          বন্ধুদের আমন্ত্রণ জানান
+        </span>
+      </div>
+
+      {onlineUsers.length === 0 ? (
+        <div className="py-6 text-center text-gray-400 text-sm space-y-2">
+          <Loader2 className="animate-spin text-gray-300 mx-auto mb-1" size={20} />
+          <p className="font-bold">বর্তমানে কোনো প্লেয়ার অনলাইনে নেই...</p>
+          <p className="text-xs text-gray-400/80 font-medium">রুম কোডটি আপনার বন্ধুদের সাথে শেয়ার করুন!</p>
+        </div>
+      ) : (
+        <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-3 pr-1">
+          {onlineUsers.map(user => (
+            <div 
+              key={user.uid} 
+              className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-zinc-800/30 rounded-2xl border border-gray-100/50 dark:border-zinc-800/20 hover:border-orange-500/30 dark:hover:border-orange-500/20 transition-all group"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'} 
+                    className="w-10 h-10 rounded-xl object-cover border border-gray-200 dark:border-zinc-700" 
+                    alt={user.name}
+                  />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-zinc-900 rounded-full"></span>
+                </div>
+                <span className="font-black text-gray-800 dark:text-zinc-200 text-sm truncate max-w-[150px]">
+                  {user.name}
+                </span>
+              </div>
+
+              <button
+                disabled={invitedUids[user.uid]}
+                onClick={() => handleInvite(user)}
+                className={`px-4 py-2 rounded-xl text-xs font-black tracking-wide transition-all ${
+                  invitedUids[user.uid]
+                    ? 'bg-gray-100 dark:bg-zinc-800 text-gray-400 cursor-not-allowed'
+                    : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95 shadow-md shadow-orange-500/10'
+                }`}
+              >
+                {invitedUids[user.uid] ? 'আমন্ত্রিত' : 'ইনভাইট'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const QuizBattlePrototype: React.FC = () => {
   const { currentUser, userAvatar } = useAuth();
@@ -126,6 +243,40 @@ const QuizBattlePrototype: React.FC = () => {
     }
   };
 
+  // Helper function to generate questions for battle
+  const generateBattleQuestions = async (subjects: string[], chapters: string[], questionCount: number) => {
+    const broadSubject = subjects[0];
+    if (!broadSubject) return [];
+    const selectedChapter = chapters[0] || 'Full Syllabus';
+    
+    const actualKeys = getActualSubjectKeys(broadSubject);
+    let qResult: any[] = [];
+    
+    if (selectedChapter === 'Full Syllabus') {
+        const promises = actualKeys.map(subjKey => 
+            generateQuizFromDB({
+                subject: subjKey,
+                chapter: 'Full Syllabus',
+                topics: [],
+                count: questionCount
+            })
+        );
+        const results = await Promise.all(promises);
+        const combined = results.flat();
+        qResult = combined.sort(() => 0.5 - Math.random()).slice(0, questionCount);
+    } else {
+        const foundKey = actualKeys.find(key => SYLLABUS_DB[key] && SYLLABUS_DB[key][selectedChapter]);
+        const querySubject = foundKey || broadSubject;
+        qResult = await generateQuizFromDB({
+            subject: querySubject,
+            chapter: selectedChapter,
+            topics: [],
+            count: questionCount
+        });
+    }
+    return qResult;
+  };
+
   // Config
   const [config, setConfig] = useState<BattleConfig>({
     subjects: [], // Initially empty, user must select
@@ -175,6 +326,22 @@ const QuizBattlePrototype: React.FC = () => {
           loadStats();
       }
   }, [currentUser, phase]);
+
+  // Auto-join accepted invitations from localStorage or route state
+  useEffect(() => {
+    if (location.state?.directRoomId) {
+      setRoomId(location.state.directRoomId);
+      setPhase('LOBBY');
+      window.history.replaceState({}, document.title);
+    } else {
+      const pendingRoomId = localStorage.getItem('pending_battle_room_id');
+      if (pendingRoomId) {
+        localStorage.removeItem('pending_battle_room_id');
+        setRoomId(pendingRoomId);
+        setPhase('LOBBY');
+      }
+    }
+  }, [location.state]);
 
   // MathJax Effect - Optimized to be less aggressive
   useEffect(() => {
@@ -362,11 +529,11 @@ const QuizBattlePrototype: React.FC = () => {
     
     setLoading(true);
     try {
-        const qResult = await generateQuizFromDB({
-            subject: battleState.config.subjects[0],
-            chapter: battleState.config.chapters[0] || 'Full Syllabus',
-            topics: [], count: battleState.config.questionCount
-        });
+        const qResult = await generateBattleQuestions(
+            battleState.config.subjects,
+            battleState.config.chapters,
+            battleState.config.questionCount
+        );
         
         if (qResult.length === 0) {
             showToast("Failed to generate new questions", "error");
@@ -417,11 +584,11 @@ const QuizBattlePrototype: React.FC = () => {
     
     setLoading(true);
     try {
-      const qResult = await generateQuizFromDB({
-          subject: config.subjects[0],
-          chapter: config.chapters[0] || 'Full Syllabus',
-          topics: [], count: config.questionCount
-      });
+      const qResult = await generateBattleQuestions(
+          config.subjects,
+          config.chapters,
+          config.questionCount
+      );
       
       if (qResult.length === 0) {
           showToast("এই বিষয়ে পর্যাপ্ত প্রশ্ন নেই। অন্য বিষয় চেষ্টা করুন।", "warning");
@@ -924,9 +1091,9 @@ const QuizBattlePrototype: React.FC = () => {
   };
 
   const renderCreate = () => {
-    // Find chapters based on selected subject
-    const selectedSubjectKey = Object.keys(SYLLABUS_DB).find(key => key.includes(config.subjects[0]));
-    const chapters = selectedSubjectKey ? Object.keys(SYLLABUS_DB[selectedSubjectKey]) : [];
+    // Find chapters based on selected subject (supports multiple papers)
+    const actualKeys = config.subjects[0] ? getActualSubjectKeys(config.subjects[0]) : [];
+    const chapters = actualKeys.flatMap(key => SYLLABUS_DB[key] ? Object.keys(SYLLABUS_DB[key]) : []);
 
     return (
         <div className="space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
@@ -1197,8 +1364,18 @@ const QuizBattlePrototype: React.FC = () => {
             </button>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center px-6 relative z-10">
+        <div className="flex-1 overflow-y-auto px-6 relative z-10 py-4 space-y-6 custom-scrollbar">
             {renderLobbyPlayers()}
+
+            {battleState && battleState.hostId === currentUser?.uid && Object.keys(battleState.players).length < 2 && (
+                <OnlinePlayersInvitePanel 
+                    roomId={roomId} 
+                    battleConfig={battleState.config} 
+                    currentUser={currentUser} 
+                    userAvatar={userAvatar} 
+                    showToast={showToast} 
+                />
+            )}
         </div>
 
         <div className="p-6 pb-20 text-center space-y-6 relative z-10">
