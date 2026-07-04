@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Navigation from './components/Navigation';
 import AuthPage from './components/AuthPage';
 import LandingPage from './components/LandingPage';
-import { Menu, ArrowLeft, Bell } from 'lucide-react';
+import { Menu, ArrowLeft, Bell, Swords } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -16,6 +16,7 @@ import TelegramModal from './components/TelegramModal'; // ADDED Import
 import { fetchNotificationsAPI } from './services/api';
 import { Notification } from './types';
 import { subscribeToPushNotifications, onForegroundMessage, checkSubscription } from './services/notificationService';
+import { listenToInvites, deleteInvite, joinRTDBRoom } from './services/battleService';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -165,6 +166,97 @@ const MainLayout: React.FC<{
   const { currentUser, isProfileComplete, profileLoading } = useAuth(); 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
+
+  // Battle Invitations State and Handlers
+  const [activeInvite, setActiveInvite] = useState<any | null>(null);
+  const [inviteTimeLeft, setInviteTimeLeft] = useState(45);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribe = listenToInvites(currentUser.uid, (invites) => {
+      if (invites && invites.length > 0) {
+        const latestInvite = invites[invites.length - 1];
+        if (Date.now() - latestInvite.timestamp < 45000) {
+          setActiveInvite(latestInvite);
+        } else {
+          setActiveInvite(null);
+        }
+      } else {
+        setActiveInvite(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!activeInvite || !currentUser) return;
+    const currentUid = currentUser.uid;
+    const elapsed = Math.floor((Date.now() - activeInvite.timestamp) / 1000);
+    const initialLeft = Math.max(0, 45 - elapsed);
+    setInviteTimeLeft(initialLeft);
+
+    const interval = setInterval(() => {
+      setInviteTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setActiveInvite(null);
+          deleteInvite(currentUid, activeInvite.roomId).catch(() => {});
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeInvite, currentUser]);
+
+  const handleAcceptInvite = async () => {
+    if (!activeInvite || !currentUser) return;
+    try {
+      await joinRTDBRoom(activeInvite.roomId, {
+        uid: currentUser.uid,
+        name: currentUser.displayName || 'Guest',
+        avatar: currentUser.photoURL || ''
+      });
+      await deleteInvite(currentUser.uid, activeInvite.roomId);
+      const targetRoomId = activeInvite.roomId;
+      setActiveInvite(null);
+      
+      // Store in local storage as a fallback to ensure we load it
+      localStorage.setItem('pending_battle_room_id', targetRoomId);
+      navigate('/battle', { state: { directRoomId: targetRoomId } });
+    } catch (error: any) {
+      console.error("Failed to accept invite:", error);
+      alert("ব্যাটেল রুমে যোগ দেওয়া সম্ভব হয়নি। হয়তো রুমটি ইতিমধ্যে বন্ধ বা শুরু হয়ে গেছে।");
+      setActiveInvite(null);
+    }
+  };
+
+  const handleDeclineInvite = async () => {
+    if (!activeInvite || !currentUser) return;
+    try {
+      await deleteInvite(currentUser.uid, activeInvite.roomId);
+    } catch (error) {
+      console.error(error);
+    }
+    setActiveInvite(null);
+  };
+
+  const getSubjectBanglaName = (subject: string) => {
+    const map: Record<string, string> = {
+      'Physics': 'পদার্থবিজ্ঞান',
+      'Chemistry': 'রসায়ন',
+      'Math': 'উচ্চতর গণিত',
+      'Biology': 'জীববিজ্ঞান',
+      'ICT': 'আইসিটি',
+      'English': 'ইংরেজি',
+      'Bangla': 'বাংলা',
+      'General Knowledge': 'সাধারণ জ্ঞান'
+    };
+    return map[subject] || subject;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -319,6 +411,80 @@ const MainLayout: React.FC<{
           </Suspense>
         </main>
       </div>
+
+      {/* Global Battle Invite Popup */}
+      <AnimatePresence>
+        {activeInvite && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white dark:bg-zinc-900 border-2 border-orange-500 rounded-3xl shadow-2xl p-5 z-[9999] overflow-hidden"
+          >
+            {/* Ambient fire glow in background */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-xl pointer-events-none"></div>
+            
+            <div className="flex items-start gap-4">
+              <div className="relative">
+                <img 
+                  src={activeInvite.senderAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'} 
+                  className="w-12 h-12 rounded-2xl object-cover border-2 border-orange-500" 
+                  alt="Sender"
+                />
+                <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white p-1 rounded-lg">
+                  <Swords size={12} fill="currentColor"/>
+                </div>
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <h4 className="font-black text-gray-900 dark:text-white text-base truncate">
+                  {activeInvite.senderName}
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  আপনাকে একটি ব্যাটেল চ্যালেঞ্জ পাঠিয়েছেন!
+                </p>
+                
+                <div className="mt-3 bg-orange-500/5 dark:bg-orange-500/10 p-2.5 rounded-xl border border-orange-500/10 text-xs space-y-1">
+                  <p className="text-gray-700 dark:text-gray-300 font-bold flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                    বিষয়: {getSubjectBanglaName(activeInvite.subject)}
+                  </p>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium truncate flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                    অধ্যায়: {activeInvite.chapter}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Countdown / Time Limit indicator */}
+            <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-orange-500"
+                initial={{ width: '100%' }}
+                animate={{ width: `${(inviteTimeLeft / 45) * 100}%` }}
+                transition={{ duration: 1, ease: 'linear' }}
+              />
+            </div>
+            
+            <div className="flex items-center gap-2 mt-4">
+              <button
+                onClick={handleDeclineInvite}
+                className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 font-bold text-xs transition-colors"
+              >
+                বর্জন করুন
+              </button>
+              <button
+                onClick={handleAcceptInvite}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-black text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Swords size={14} fill="currentColor"/>
+                গ্রহণ করুন ({inviteTimeLeft}s)
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
