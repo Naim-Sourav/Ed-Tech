@@ -22,8 +22,8 @@ export default defineConfig(({ mode: _mode }) => {
     server: {
       host: true,
       cors: true,
-      port: 3000,
-      strictPort: true,
+      port: 5174,
+      strictPort: false,
       allowedHosts: true, 
       hmr: {
         clientPort: 443
