@@ -20,6 +20,7 @@ import {
   Settings as SettingsIcon,
   Check,
   Shield,
+  Star,
   FileText,
   RefreshCcw,
   Type,
@@ -180,6 +181,48 @@ const HomeDashboard: React.FC<{
 
   const currentStreak = stats?.currentStreak || 0;
 
+  const totalExams = stats?.totalExams || 0;
+  const totalCorrect = stats?.totalCorrect || 0;
+  const totalWrong = stats?.totalWrong || 0;
+  const points = stats?.points || stats?.user?.points || 0;
+  const totalAnswered = totalCorrect + totalWrong;
+  const accuracy =
+    totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+
+  const greetingText =
+    getGreeting() === "greeting_morning"
+      ? "শুভ সকাল"
+      : getGreeting() === "greeting_afternoon"
+      ? "শুভ দুপুর"
+      : "শুভ সন্ধ্যা";
+
+  const statCards = [
+    {
+      label: "পয়েন্ট",
+      value: toBengaliNumber(points),
+      icon: Star,
+      gradient: "from-amber-500 to-orange-500",
+    },
+    {
+      label: "মোট পরীক্ষা",
+      value: toBengaliNumber(totalExams),
+      icon: FileText,
+      gradient: "from-blue-500 to-indigo-500",
+    },
+    {
+      label: "নির্ভুলতা",
+      value: `${toBengaliNumber(accuracy)}%`,
+      icon: Target,
+      gradient: "from-emerald-500 to-teal-500",
+    },
+    {
+      label: "ধারাবাহিকতা",
+      value: toBengaliNumber(currentStreak),
+      icon: Flame,
+      gradient: "from-rose-500 to-red-500",
+    },
+  ];
+
   const topLearners = useMemo(() => {
     if (!leaderboard.length) return [];
     return leaderboard.slice(0, 5);
@@ -265,6 +308,45 @@ const HomeDashboard: React.FC<{
           >
             {renderHeaderAvatar()}
           </motion.div>
+        </div>
+
+        {/* --- GREETING + STATS OVERVIEW --- */}
+        <div className="space-y-4">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-sm font-bold text-primary dark:text-primary/90">
+                {greetingText}
+              </p>
+              <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight mt-0.5">
+                {currentUser?.displayName?.split(" ")[0] || "শিক্ষার্থী"}!
+              </h1>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {statCards.map((card) => (
+              <motion.div
+                key={card.label}
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="bg-white dark:bg-zinc-900 rounded-[1.5rem] p-4 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col gap-3 relative overflow-hidden group"
+              >
+                <div
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br ${card.gradient} text-white shadow-lg`}
+                >
+                  <card.icon size={20} />
+                </div>
+                <div>
+                  <div className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tabular-nums tracking-tight leading-none">
+                    {card.value}
+                  </div>
+                  <div className="text-[11px] font-bold text-gray-400 dark:text-zinc-500 mt-1.5 uppercase tracking-wide">
+                    {card.label}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {/* --- PROMO BANNER CAROUSEL --- */}
