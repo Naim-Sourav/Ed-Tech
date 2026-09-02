@@ -364,7 +364,7 @@ const HomeDashboard: React.FC<{
             >
               <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
                 <img
-                  src="/icons/qbank_bn.png"
+                  src="/icons/question-bank-icon.svg"
                   alt="QBank"
                   className="w-full h-full object-contain"
                   referrerPolicy="no-referrer"
