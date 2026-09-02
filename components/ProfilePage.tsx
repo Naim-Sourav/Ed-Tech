@@ -6,7 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI, fetchSyllabusStatsAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle, Settings, LogOut, Sun, Moon, Laptop, Type, Flame, TrendingUp, ArrowRight, CircleHelp } from 'lucide-react';
+import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle, Settings, LogOut, Sun, Moon, Laptop, Type, Flame, TrendingUp, ArrowRight, HelpCircle } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 import { usePreferences } from '../contexts/PreferencesContext';
@@ -1194,7 +1194,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                     </div>
                     <div className="relative mt-5 flex flex-col gap-2 sm:flex-row">
                         <button onClick={() => navigate('/qbank')} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-orange-600 shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0"><Play size={16} fill="currentColor"/> অনুশীলন শুরু করুন <ArrowRight size={16}/></button>
-                        {performanceSummary.weakestSubject && <button onClick={scrollToSubjectAnalysis} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-white/20"><CircleHelp size={16}/> দুর্বল বিষয় দেখুন</button>}
+                        {performanceSummary.weakestSubject && <button onClick={scrollToSubjectAnalysis} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-white/20"><HelpCircle size={16}/> দুর্বল বিষয় দেখুন</button>}
                     </div>
                 </section>
 
