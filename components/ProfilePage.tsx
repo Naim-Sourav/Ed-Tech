@@ -6,7 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI, fetchSyllabusStatsAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle, Settings, LogOut, Sun, Moon, Laptop, Type } from 'lucide-react';
+import { Camera, Edit2, X, BookOpen, Award, Calendar, Bookmark, Trash2, ChevronRight, LayoutGrid, List, BarChart3, Filter, GraduationCap, Briefcase, Target, PieChart, RefreshCw, AlertTriangle, Play, FolderPlus, Folder, MoveRight, Upload, Loader2, Lock, Swords, CheckCircle, ChevronDown, FileQuestion, ChevronLeft, Sparkles, Check, AlertCircle, Settings, LogOut, Sun, Moon, Laptop, Type, Flame, TrendingUp, ArrowRight, CircleHelp } from 'lucide-react';
 import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 import { usePreferences } from '../contexts/PreferencesContext';
@@ -407,6 +407,25 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
       
       return Array.from(map.values());
   }, [profileData?.stats, syllabusStats]);
+
+  // Keep the analysis useful at a glance: these values power the learning nudge
+  // and give learners a clear next action instead of presenting numbers alone.
+  const performanceSummary = useMemo(() => {
+      const stats = profileData?.stats;
+      const correct = stats?.totalCorrect || 0;
+      const wrong = stats?.totalWrong || 0;
+      const answered = correct + wrong;
+      const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+      const weakestSubject = [...motherSubjects]
+          .filter((subject: any) => subject.total > 0)
+          .sort((a: any, b: any) => (a.correct / a.total) - (b.correct / b.total))[0];
+
+      return { accuracy, answered, weakestSubject };
+  }, [profileData?.stats, motherSubjects]);
+
+  const scrollToSubjectAnalysis = () => {
+      document.getElementById('subject-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   // Saved Questions State
   const [savedQuestions, setSavedQuestions] = useState<any[]>(cachedData.savedQuestions || []);
@@ -1149,6 +1168,36 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
         {/* INFO TAB */}
         {activeTab === 'INFO' && profileData.stats && (
             <div className="space-y-4 md:space-y-6 animate-in fade-in">
+                {/* Learning pulse: turns the profile from a static report into a useful next step. */}
+                <section className="relative overflow-hidden rounded-[2rem] border border-orange-200/70 dark:border-orange-400/15 bg-gradient-to-br from-orange-500 via-primary to-orange-600 p-5 md:p-7 text-white shadow-xl shadow-orange-500/20">
+                    <div className="absolute -right-12 -top-14 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
+                    <div className="absolute -bottom-20 left-1/3 h-36 w-36 rounded-full bg-yellow-200/20 blur-2xl" />
+                    <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                        <div className="min-w-0">
+                            <div className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-orange-100">
+                                <TrendingUp size={16} /> আজকের লার্নিং পালস
+                            </div>
+                            <h2 className="text-xl font-black tracking-tight md:text-2xl">
+                                {performanceSummary.answered > 0 ? `${performanceSummary.accuracy}% নির্ভুলতায় এগিয়ে যাচ্ছেন` : 'প্রথম অনুশীলন শুরু করুন'}
+                            </h2>
+                            <p className="mt-1.5 text-sm font-medium leading-6 text-orange-50/90">
+                                {performanceSummary.weakestSubject
+                                    ? `${performanceSummary.weakestSubject.name} বিষয়ে আরেকটু চর্চা করলে ফল দ্রুত উন্নত হবে।`
+                                    : 'প্রতিদিন অল্প করে অনুশীলন করুন—আপনার প্রগ্রেস এখানে দেখা যাবে।'}
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-3 divide-x divide-white/20 rounded-2xl border border-white/20 bg-black/10 px-2 py-3 text-center backdrop-blur-sm md:min-w-[300px]">
+                            <div className="px-3"><p className="text-xl font-black">{performanceSummary.accuracy}%</p><p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-orange-100">নির্ভুলতা</p></div>
+                            <div className="px-3"><p className="text-xl font-black">{performanceSummary.answered}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-orange-100">উত্তর</p></div>
+                            <div className="px-3"><p className="text-xl font-black">{profileData.stats.currentStreak || 0}</p><p className="mt-1 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-100"><Flame size={11}/> দিন স্ট্রিক</p></div>
+                        </div>
+                    </div>
+                    <div className="relative mt-5 flex flex-col gap-2 sm:flex-row">
+                        <button onClick={() => navigate('/qbank')} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-orange-600 shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0"><Play size={16} fill="currentColor"/> অনুশীলন শুরু করুন <ArrowRight size={16}/></button>
+                        {performanceSummary.weakestSubject && <button onClick={scrollToSubjectAnalysis} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-white/20"><CircleHelp size={16}/> দুর্বল বিষয় দেখুন</button>}
+                    </div>
+                </section>
+
                 {/* Stats Grid - Redesigned for Native Feel */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                     {[
@@ -1229,7 +1278,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                 )}
 
                 {/* Subject Performance Detailed - Loose Layout */}
-                <div className="mt-8">
+                <div id="subject-analysis" className="mt-8 scroll-mt-6">
                     <div className="flex items-center justify-between mb-6 px-2">
                         <h3 className="font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5 text-base md:text-lg tracking-tight">
                             <BarChart3 size={20} className="text-orange-500"/> বিষয়ভিত্তিক বিশ্লেষণ
