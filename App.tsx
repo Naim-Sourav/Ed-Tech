@@ -153,8 +153,9 @@ const PageLoader = () => (
 const MainLayout: React.FC<{ 
   themeMode: 'light' | 'dark' | 'system', 
   toggleTheme: () => void,
+  setThemeMode?: (mode: 'light' | 'dark' | 'system') => void,
   children: React.ReactNode,
-}> = ({ themeMode, toggleTheme, children }) => {
+}> = ({ themeMode, toggleTheme, setThemeMode, children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   
@@ -558,7 +559,7 @@ const App: React.FC = () => {
           <HashRouter>
             <ErrorBoundary>
                <Suspense fallback={<PageLoader />}>
-                  <AppRoutes themeMode={themeMode} toggleTheme={toggleTheme} currentUser={currentUser} />
+                  <AppRoutes themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode} currentUser={currentUser} />
                </Suspense>
             </ErrorBoundary>
           </HashRouter>
@@ -573,8 +574,9 @@ import ThemeColorManager from './components/ThemeColorManager';
 const AppRoutes: React.FC<{
     themeMode: 'light' | 'dark' | 'system';
     toggleTheme: () => void;
+    setThemeMode?: (mode: 'light' | 'dark' | 'system') => void;
     currentUser: any;
-}> = ({ themeMode, toggleTheme, currentUser }) => {
+}> = ({ themeMode, toggleTheme, setThemeMode, currentUser }) => {
     const location = useLocation();
     const { profileLoading } = useAuth();
 
@@ -598,9 +600,9 @@ const AppRoutes: React.FC<{
 
             <Route path="/*" element={
               currentUser ? (
-                <MainLayout themeMode={themeMode} toggleTheme={toggleTheme}>
+                <MainLayout themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode}>
                     <Routes location={location}>
-                      <Route path="/dashboard" element={<HomeDashboard toggleTheme={toggleTheme} themeMode={themeMode} />} />
+                      <Route path="/dashboard" element={<HomeDashboard toggleTheme={toggleTheme} themeMode={themeMode} setThemeMode={setThemeMode} />} />
                       <Route path="/courses" element={<CourseSection />} />
                       <Route path="/qbank" element={<QuestionBank />} />
                       <Route path="/exams" element={<ExamHub />} />
@@ -611,11 +613,11 @@ const AppRoutes: React.FC<{
                       <Route path="/planner" element={<ExamHistory />} />
                       <Route path="/history" element={<ExamHistory />} />
                       <Route path="/admission" element={<AdmissionSearch />} />
-                      <Route path="/profile" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} />} />
-                      <Route path="/profile/:userId" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} />} />
+                      <Route path="/profile" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode} />} />
+                      <Route path="/profile/:userId" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode} />} />
                       <Route path="/saved-questions" element={<SavedQuestions />} />
                       <Route path="/wrong-questions" element={<WrongQuestions />} />
-                      <Route path="/settings" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} />} />
+                      <Route path="/settings" element={<ProfilePage key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode} />} />
                       <Route path="/admin" element={<AdminPage />} />
                       <Route path="/challenges" element={<DailyChallengePage openBot={() => {}} />} />
                       <Route path="/bot" element={<PorikkhangonAI />} />
