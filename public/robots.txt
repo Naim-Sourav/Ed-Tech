@@ -1,8 +1,16 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /api/
+Disallow: /auth
 
 # Static, crawlable content hubs
 Allow: /hsc-syllabus/
+Allow: /questions/
+Allow: /question/
+
+# Important for question SEO - allow all question URLs
+Allow: /questions/subject/
 
 Sitemap: https://www.porikkhangon.app/sitemap.xml
+Sitemap: https://www.porikkhangon.app/sitemap-questions.xml

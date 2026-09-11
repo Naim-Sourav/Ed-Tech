@@ -20,11 +20,30 @@
 <script>
   // GitHub Pages has no server-side rewrites: send known app routes back into
   // the SPA's hash router so shared deep links (e.g. /privacy) keep working.
+  // Also, if the path is a static SEO page (hsc-syllabus, questions) that actually exists as a file,
+  // we should NOT redirect — let the static file be served. This script only runs if the file is missing.
   (function () {
-    var known = ['auth','privacy','terms','refund','dashboard','courses','qbank','exams','quiz','battle','leaderboard','planner','history','admission','profile','saved-questions','wrong-questions','settings','challenges','bot','exam','exam-batch','payment'];
+    var known = ['auth','privacy','terms','refund','dashboard','courses','qbank','exams','quiz','battle','leaderboard','planner','history','admission','profile','saved-questions','wrong-questions','settings','challenges','bot','exam','exam-batch','payment','question','questions','q'];
     var path = location.pathname.replace(/\/+$/, '');
     var seg = path.split('/')[1] || '';
-    if (seg === 'hsc-syllabus') { location.replace('/hsc-syllabus/'); return; }
+    // If path starts with hsc-syllabus or questions and we are in 404, it means the static file wasn't found
+    // For questions, try to redirect to SPA version as fallback
+    if (seg === 'hsc-syllabus' || seg === 'questions' || seg === 'question' || seg === 'q') {
+      // If it's exactly /questions/ or /questions (hub) missing, go to SPA hub
+      if (path === '/questions' || path === '/questions/') {
+        location.replace('/#/questions');
+        return;
+      }
+      // If it's /questions/<slug> missing, try SPA detail page
+      var parts = path.split('/').filter(Boolean);
+      if (parts.length >= 2 && (parts[0] === 'questions' || parts[0] === 'question' || parts[0] === 'q')) {
+        var identifier = parts.slice(1).join('/');
+        location.replace('/#/questions/' + identifier);
+        return;
+      }
+      // Otherwise go to syllabus hub
+      if (seg === 'hsc-syllabus') { location.replace('/hsc-syllabus/'); return; }
+    }
     if (seg && known.indexOf(seg) !== -1) {
       location.replace('/#' + path + location.search);
       return;
@@ -41,6 +60,8 @@
     <a class="btn" href="/">হোমপেজে যান</a>
     <div>
       <a class="link" href="/hsc-syllabus/">HSC সিলেবাস গাইড</a>
+      <a class="link" href="/questions/">প্রশ্নব্যাংক</a>
+      <a class="link" href="/#/qbank">স্মার্ট প্রশ্নব্যাংক</a>
       <a class="link" href="/#/auth">লগইন / রেজিস্ট্রেশন</a>
       <a class="link" href="/#/privacy">প্রাইভেসি পলিসি</a>
     </div>

@@ -65,6 +65,8 @@ const PaymentPage = lazyWithRetry(() => import('./components/PaymentPage'));
 const PrivacyPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.TermsOfService })));
 const RefundPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.RefundPolicy })));
+const QuestionDetailPage = lazyWithRetry(() => import('./components/QuestionDetailPage'));
+const QuestionsHubPage = lazyWithRetry(() => import('./components/QuestionsHubPage'));
 
 const PageLoader = () => (
     <div className="w-full min-h-[75vh] flex flex-col items-center justify-center bg-transparent text-gray-400">
@@ -597,6 +599,15 @@ const AppRoutes: React.FC<{
             
             {/* Public Exam Route - Accessible to guests */}
             <Route path="/exam/:examId" element={<ExamPage />} />
+
+            {/* Public Question Routes - SEO optimized, accessible to guests & crawlers */}
+            {/* These are the URLs that will rank on Google like SattAcademy / Chorcha */}
+            <Route path="/questions" element={<QuestionsHubPage />} />
+            <Route path="/questions/" element={<QuestionsHubPage />} />
+            <Route path="/questions/subject/:subjectName" element={<QuestionsHubPage />} />
+            <Route path="/questions/:identifier" element={<QuestionDetailPage />} />
+            <Route path="/question/:identifier" element={<QuestionDetailPage />} />
+            <Route path="/q/:identifier" element={<QuestionDetailPage />} />
 
             <Route path="/*" element={
               currentUser ? (

@@ -1252,14 +1252,21 @@ const QuestionBank: React.FC = () => {
 
   const handleShare = useCallback(
     (question: QuizQuestion) => {
-      const url = `${window.location.origin}/#/question/${question.slug || question.id}`;
+      // New clean URL for SEO (like SattAcademy) + fallback hash URL
+      const slug = question.slug || question._id || question.id;
+      const cleanUrl = `https://www.porikkhangon.app/questions/${encodeURIComponent(slug as string)}/`;
+      const hashUrl = `${window.location.origin}/#/question/${slug}`;
+      // Prefer clean URL for sharing (better for SEO and social preview)
+      const url = cleanUrl;
       if (navigator.share) {
-        navigator.share({ title: question.question, url }).catch(console.error);
+        navigator.share({ title: question.question.replace(/<[^>]*>/g, ' ').slice(0,80), url }).catch(console.error);
       } else {
         navigator.clipboard
           .writeText(url)
-          .then(() => showToast("লিংক কপি করা হয়েছে!", "success"));
+          .then(() => showToast("লিংক কপি করা হয়েছে! (SEO friendly)", "success"));
       }
+      // Also log hash fallback for internal use
+      console.log('[share] clean:', cleanUrl, 'hash fallback:', hashUrl);
     },
     [showToast],
   );

@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && node scripts/generate-seo-pages.mjs --out dist",
+    "build": "tsc && vite build && node scripts/generate-seo-pages.mjs --out dist && node scripts/generate-question-pages.mjs --out dist --limit 2000",
     "seo:pages": "node scripts/generate-seo-pages.mjs --out dist",
+    "seo:questions": "node scripts/generate-question-pages.mjs --out dist --limit 2000",
+    "seo:all": "node scripts/generate-seo-pages.mjs --out dist && node scripts/generate-question-pages.mjs --out dist --limit 2000",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "npm run build",
