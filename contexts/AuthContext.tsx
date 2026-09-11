@@ -126,39 +126,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Online Presence Manager
   useEffect(() => {
     if (!currentUser) return;
-    
+
+    const uid = currentUser.uid;
     const name = currentUser.displayName || 'Anonymous';
     const avatar = currentUser.photoURL || '';
 
-    let isSubscribed = true;
+    let cancelled = false;
     let intervalId: any = null;
+    let unsubConnection: (() => void) | null = null;
+    let onlineFn: ((uid: string, name: string, avatar: string) => Promise<void>) | null = null;
+    let offlineFn: ((uid: string) => Promise<void>) | null = null;
 
-    import('../services/battleService').then(({ setUserOnline, setUserOffline }) => {
-      if (!isSubscribed) return;
+    const goOnline = () => {
+      if (onlineFn) onlineFn(uid, name, avatar).catch(() => {});
+    };
 
-      setUserOnline(currentUser.uid, name, avatar).catch(err => {
-        console.error("Failed to set user online presence", err);
+    // Refresh presence instantly when the tab regains focus
+    const handleFocus = () => goOnline();
+    window.addEventListener('focus', handleFocus);
+
+    import('../services/battleService').then(({ setUserOnline, setUserOffline, listenToConnectionState }) => {
+      // Effect was cleaned up before the dynamic import resolved
+      if (cancelled) {
+        setUserOffline(uid).catch(() => {});
+        return;
+      }
+      onlineFn = setUserOnline;
+      offlineFn = setUserOffline;
+
+      goOnline();
+      intervalId = setInterval(goOnline, 45000);
+
+      // Re-arm presence (and its onDisconnect hook) whenever the RTDB
+      // connection is restored after a drop
+      unsubConnection = listenToConnectionState((connected) => {
+        if (connected) goOnline();
       });
-      
-      intervalId = setInterval(() => {
-        setUserOnline(currentUser.uid, name, avatar).catch(() => {});
-      }, 45000);
-
-      // Listen to window focus to refresh online state instantly
-      const handleFocus = () => {
-        setUserOnline(currentUser.uid, name, avatar).catch(() => {});
-      };
-      window.addEventListener('focus', handleFocus);
-
-      return () => {
-        isSubscribed = false;
-        clearInterval(intervalId);
-        window.removeEventListener('focus', handleFocus);
-        setUserOffline(currentUser.uid).catch(() => {});
-      };
     }).catch(err => {
       console.error("Failed to load battleService", err);
     });
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+      unsubConnection?.();
+      if (offlineFn) offlineFn(uid).catch(() => {});
+      else {
+        // Import still pending — clean up once it resolves
+        import('../services/battleService').then(({ setUserOffline }) => setUserOffline(uid).catch(() => {}));
+      }
+    };
   }, [currentUser]);
 
   const loginWithGoogle = async () => {
