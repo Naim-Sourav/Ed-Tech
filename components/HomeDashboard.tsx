@@ -6,39 +6,26 @@ import {
   Flame,
   Crown,
   X,
-  LogOut,
-  Moon,
-  Sun,
   Share2,
   Sparkles,
   Clock,
   ChevronRight,
   Check,
-  ChevronDown,
-  Bookmark,
-  AlertCircle,
   Award,
   ClipboardList,
   Target,
-  Settings as SettingsIcon,
-  Laptop,
-  Type,
   Play,
   ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
-import { usePreferences } from "../contexts/PreferencesContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { fetchUserStatsAPI, fetchLeaderboardAPI } from "../services/api";
 import { useCache } from "../contexts/CacheContext";
 import { LeaderboardUser } from "../types";
 import { toBengaliNumber } from "../utils/numberUtils";
-import BottomSheet from "./BottomSheet";
 import Lottie from "lottie-react";
 import fireAnimation from "../assets/lottie/fire.json";
-
-type ThemeMode = "light" | "dark" | "system";
 
 // --- QUICK ACCESS CONFIG ---
 
@@ -51,15 +38,10 @@ const QUICK_LINKS = [
   { icon: "/icons/wrong-questions.svg", label: "ভুল প্রশ্ন", path: "/wrong-questions", tint: "bg-cyan-50 dark:bg-cyan-500/10 border-cyan-100 dark:border-cyan-500/20" },
 ];
 
-const HomeDashboard: React.FC<{
-  themeMode?: ThemeMode;
-  toggleTheme?: (mode?: ThemeMode) => void;
-  setThemeMode?: (mode: ThemeMode) => void;
-}> = ({ themeMode = "system", toggleTheme, setThemeMode }) => {
+const HomeDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser, userAvatar, logout } = useAuth();
   const { getCache, setCache } = useCache();
-  const { questionFont, setQuestionFont, questionFontSize, setQuestionFontSize } = usePreferences();
   const { language, setLanguage, t } = useLanguage();
   const [isQuestionDisplayExpanded, setIsQuestionDisplayExpanded] = useState(false);
 
@@ -115,7 +97,6 @@ const HomeDashboard: React.FC<{
     }
   };
 
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -258,7 +239,7 @@ const HomeDashboard: React.FC<{
           <motion.button
             whileTap={{ scale: 0.9 }}
             className="relative w-10 h-10 md:w-12 md:h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white dark:border-zinc-800 shadow-md ring-2 ring-primary/30 z-10 bg-white dark:bg-zinc-900"
-            onClick={() => setShowProfileMenu(true)}
+            onClick={() => navigate("/account")}
           >
             {renderHeaderAvatar()}
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-900" />
@@ -801,331 +782,7 @@ const HomeDashboard: React.FC<{
           document.body,
         )}
 
-      {/* --- ACCOUNT & SETTINGS BOTTOM SHEET --- */}
-      <BottomSheet
-        isOpen={showProfileMenu}
-        onClose={() => setShowProfileMenu(false)}
-        title="অ্যাকাউন্ট ও সেটিংস"
-      >
-        <div className="space-y-5 pb-6">
-          {/* User Info Header Section */}
-          <div className="flex items-center justify-between gap-4 p-1.5">
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="relative">
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-primary/20 dark:border-primary/40 shadow-sm shrink-0 bg-primary/5 flex items-center justify-center">
-                  {renderHeaderAvatar()}
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center">
-                  <div className="w-2.5 h-2.5 bg-emerald-100 dark:bg-emerald-300 rounded-full animate-pulse" />
-                </div>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-extrabold text-lg text-gray-900 dark:text-zinc-100 tracking-tight leading-tight">
-                  {currentUser?.displayName || "শিক্ষার্থী"}
-                </span>
-                <span className="text-xs text-gray-400 dark:text-zinc-500 truncate mt-0.5 font-medium">
-                  {currentUser?.email || ""}
-                </span>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200/50 dark:border-orange-900/30 px-2.5 py-0.5 rounded-full shadow-sm">
-                    <Flame size={12} className="fill-orange-500 text-orange-500" />
-                    {toBengaliNumber(currentStreak)} দিনের স্ট্রিক
-                  </span>
-                  {rank && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200/50 dark:border-blue-900/30 px-2.5 py-0.5 rounded-full shadow-sm">
-                      <Trophy size={12} />
-                      র‍্যাঙ্ক {toBengaliNumber(rank)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowProfileMenu(false);
-                navigate("/profile");
-              }}
-              className="shrink-0 px-3.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary dark:text-primary-400 text-xs font-black transition-all"
-            >
-              প্রোফাইল দেখুন
-            </button>
-          </div>
-
-          <div className="h-px bg-gray-100 dark:bg-zinc-800/80" />
-
-          {/* Core Menu Actions */}
-          <div className="space-y-0.5">
-            {[
-              {
-                icon: Bookmark,
-                label: "সেভ করা প্রশ্নসমূহ",
-                desc: "আপনার বুকমার্ক করা গুরুত্বপূর্ণ প্রশ্ন",
-                path: "/saved-questions",
-                color: "text-amber-500 bg-amber-50 dark:bg-amber-950/30",
-              },
-              {
-                icon: AlertCircle,
-                label: "ভুল প্রশ্নের তালিকা",
-                desc: "পুনরায় অনুশীলনের জন্য ভুল উত্তরসমূহ",
-                path: "/wrong-questions",
-                color: "text-rose-500 bg-rose-50 dark:bg-rose-950/30",
-              },
-              {
-                icon: Clock,
-                label: "পরীক্ষার ইতিহাস ও রেজাল্ট",
-                desc: "পূর্ববর্তী পরীক্ষার ফলাফল ও বিশ্লেষণ",
-                path: "/history",
-                color: "text-blue-500 bg-blue-50 dark:bg-blue-950/30",
-              },
-              {
-                icon: SettingsIcon,
-                label: "সেটিংস",
-                desc: "থিম, ভাষা ও প্রশ্ন ডিসপ্লে কাস্টমাইজ করুন",
-                path: "/settings",
-                color: "text-primary bg-primary/10 dark:bg-primary/20",
-              },
-            ].map((item, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  navigate(item.path);
-                }}
-                className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition-all text-left group"
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-transparent ${item.color}`}>
-                    <item.icon size={18} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-800 dark:text-zinc-200 group-hover:text-primary dark:group-hover:text-primary-400 transition-colors">
-                      {item.label}
-                    </p>
-                    <p className="text-[11px] text-gray-400 dark:text-zinc-500 truncate mt-0.5">
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-gray-300 dark:text-zinc-600 group-hover:text-gray-600 dark:group-hover:text-zinc-400 shrink-0 ml-2 transition-transform group-hover:translate-x-0.5" />
-              </button>
-            ))}
-          </div>
-
-          <div className="h-px bg-gray-100 dark:bg-zinc-800/80" />
-
-          {/* Preferences Group */}
-          <div className="space-y-4">
-            {/* Theme Selector */}
-            <div className="flex items-center justify-between gap-4 py-1">
-              <div className="flex flex-col">
-                <span className="text-xs font-black text-gray-800 dark:text-zinc-200">
-                  অ্যাপ থিম
-                </span>
-                <span className="text-[10px] text-gray-400 dark:text-zinc-500">
-                  আপনার পছন্দের ইন্টারফেস থিম নির্বাচন করুন
-                </span>
-              </div>
-              <div className="flex bg-gray-100 dark:bg-zinc-800/80 p-0.5 rounded-full border border-gray-200/40 dark:border-zinc-700/40">
-                {[
-                  { mode: "light" as const, icon: Sun, label: "লাইট" },
-                  { mode: "dark" as const, icon: Moon, label: "ডার্ক" },
-                  { mode: "system" as const, icon: Laptop, label: "সিস্টেম" },
-                ].map((item) => (
-                  <button
-                    key={item.mode}
-                    type="button"
-                    onClick={() =>
-                      setThemeMode
-                        ? setThemeMode(item.mode)
-                        : toggleTheme && toggleTheme(item.mode)
-                    }
-                    className={`flex items-center gap-1 py-1.5 px-3 rounded-full text-[10px] font-black transition-all ${
-                      themeMode === item.mode
-                        ? "bg-white dark:bg-zinc-700 text-primary dark:text-white shadow-sm border border-gray-200/50"
-                        : "text-gray-400 hover:text-gray-600 dark:text-zinc-400 dark:hover:text-zinc-200"
-                    }`}
-                  >
-                    <item.icon size={11} />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Language Selector */}
-            <div className="flex items-center justify-between gap-4 py-1">
-              <div className="flex flex-col">
-                <span className="text-xs font-black text-gray-800 dark:text-zinc-200">
-                  ভাষা (Language)
-                </span>
-                <span className="text-[10px] text-gray-400 dark:text-zinc-500">
-                  সিলেক্ট করুন আপনার ভাষা
-                </span>
-              </div>
-              <div className="flex bg-gray-100 dark:bg-zinc-800/80 p-0.5 rounded-full border border-gray-200/40 dark:border-zinc-700/40">
-                {[
-                  { lang: "bn" as const, label: "বাংলা" },
-                  { lang: "en" as const, label: "English" },
-                ].map((item) => (
-                  <button
-                    key={item.lang}
-                    type="button"
-                    onClick={() => setLanguage(item.lang)}
-                    className={`py-1.5 px-3 rounded-full text-[10px] font-black transition-all ${
-                      language === item.lang
-                        ? "bg-white dark:bg-zinc-700 text-primary dark:text-white shadow-sm border border-gray-200/50"
-                        : "text-gray-400 hover:text-gray-600 dark:text-zinc-400"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Typography & Display Font */}
-            <div className="border-t border-gray-100 dark:border-zinc-800/80 pt-3">
-              <button
-                type="button"
-                onClick={() => setIsQuestionDisplayExpanded(!isQuestionDisplayExpanded)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                    <Type size={15} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-black text-gray-800 dark:text-zinc-200">
-                      প্রশ্ন ডিসপ্লে ও ফন্ট সেটিংস
-                    </p>
-                    <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">
-                      {questionFont === "font-noto" ? "আধুনিক (Noto Sans)" : "ক্লাসিক (Tiro)"} •{" "}
-                      {questionFontSize === "text-sm" ? "ছোট" : questionFontSize === "text-base" ? "স্বাভাবিক" : questionFontSize === "text-lg" ? "বড়" : "অতিরিক্ত বড়"}
-                    </p>
-                  </div>
-                </div>
-                <div className={`p-1 text-gray-400 transition-transform duration-200 ${isQuestionDisplayExpanded ? "rotate-180" : ""}`}>
-                  <ChevronDown size={14} />
-                </div>
-              </button>
-
-              {isQuestionDisplayExpanded && (
-                <div className="pt-3.5 space-y-3 pl-11">
-                  {/* Font Choice */}
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
-                      ফন্ট স্টাইল
-                    </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(["font-noto", "font-tiro"] as const).map((fontOption) => (
-                        <button
-                          key={fontOption}
-                          type="button"
-                          onClick={() => setQuestionFont(fontOption)}
-                          className={`py-2 px-3 rounded-xl border text-center transition-all ${
-                            questionFont === fontOption
-                              ? "bg-purple-50 dark:bg-purple-950/40 border-purple-300 text-purple-700 dark:text-purple-300 font-bold shadow-sm"
-                              : "bg-gray-50/50 dark:bg-zinc-800/40 border-gray-100 dark:border-zinc-800 text-gray-500"
-                          }`}
-                        >
-                          <span className={`text-xs block ${fontOption}`}>পরীক্ষাঙ্গন</span>
-                          <span className="text-[9px] opacity-70">
-                            {fontOption === "font-noto" ? "Modern Noto" : "Classic Tiro"}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Font Size */}
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
-                      টেক্সট সাইজ
-                    </span>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[
-                        { size: "text-sm" as const, label: "ছোট" },
-                        { size: "text-base" as const, label: "স্বাভাবিক" },
-                        { size: "text-lg" as const, label: "বড়" },
-                        { size: "text-xl" as const, label: "অতিরিক্ত" },
-                      ].map((item) => (
-                        <button
-                          key={item.size}
-                          type="button"
-                          onClick={() => setQuestionFontSize(item.size)}
-                          className={`py-1.5 text-[10px] font-black rounded-lg border text-center transition-all ${
-                            questionFontSize === item.size
-                              ? "bg-purple-600 text-white border-purple-600 shadow-sm"
-                              : "bg-gray-50/50 dark:bg-zinc-800/40 border-gray-100 dark:border-zinc-800 text-gray-500"
-                          }`}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="h-px bg-gray-100 dark:bg-zinc-800/80" />
-
-          {/* Legal and App Info Footer */}
-          <div className="flex flex-col gap-3.5 pt-1">
-            <div className="flex items-center justify-center gap-3 text-[11px] font-semibold text-gray-400 dark:text-zinc-500">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  navigate("/privacy");
-                }}
-                className="hover:text-primary dark:hover:text-zinc-300 transition-colors"
-              >
-                প্রাইভেসি পলিসি
-              </button>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  navigate("/terms");
-                }}
-                className="hover:text-primary dark:hover:text-zinc-300 transition-colors"
-              >
-                ব্যবহারের শর্তাবলী
-              </button>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  navigate("/refund");
-                }}
-                className="hover:text-primary dark:hover:text-zinc-300 transition-colors"
-              >
-                রিফান্ড পলিসি
-              </button>
-            </div>
-
-            {/* Logout Button */}
-            <button
-              type="button"
-              onClick={async () => {
-                setShowProfileMenu(false);
-                await logout();
-              }}
-              className="w-full py-3 px-4 rounded-xl bg-rose-50 hover:bg-rose-100/60 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-black text-xs flex items-center justify-center gap-2 transition-all border border-rose-100 dark:border-rose-950/50 shadow-sm"
-            >
-              <LogOut size={13} />
-              <span>লগআউট করুন</span>
-            </button>
-          </div>
-        </div>
-      </BottomSheet>
     </div>
   );
 };
