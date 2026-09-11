@@ -3,11 +3,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  GraduationCap, Home, Moon, Sun, Swords, 
+  GraduationCap, Home, Swords, 
   Library, LogOut, ShieldCheck, Bell, Trophy, Archive, 
-  Monitor, Zap, Info, AlertTriangle, CheckCircle, Check,
+ Zap, Info, AlertTriangle, CheckCircle, Check,
   LayoutGrid, Bot, ChevronRight, X, Download, Share, Clock
 } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Notification } from '../types';
@@ -80,11 +81,11 @@ const Navigation: React.FC<NavigationProps> = ({
     const result = await subscribeToPushNotifications(currentUser);
     if (result && 'token' in result) {
       setIsPushSubscribed(true);
-      showToast("পুশ নোটিফিকেশন চালু হয়েছে!", "success");
+      showToast("পুশ নোটিফিকেশন চালু হয়েছে!", "success");
     } else if (result && 'error' in result) {
       showToast(result.error, "error");
     } else {
-      showToast("পুশ নোটিফিকেশন চালু করা যায়নি। আবার চেষ্টা করুন।", "error");
+      showToast("পুশ নোটিফিকেশন চালু করা যায়নি। আবার চেষ্টা করুন।", "error");
     }
   };
   
@@ -189,12 +190,6 @@ const Navigation: React.FC<NavigationProps> = ({
     } catch (error) {
       console.error("Failed to log out", error);
     }
-  };
-
-  const getThemeIcon = () => {
-    if (themeMode === 'dark') return <Moon size={16} />;
-    if (themeMode === 'system') return <Monitor size={16} />;
-    return <Sun size={16} />;
   };
 
   const getThemeLabel = () => {
@@ -374,12 +369,10 @@ const Navigation: React.FC<NavigationProps> = ({
                     }}
                     className="grid grid-cols-2 gap-3"
                   >
-                    <button
-                        onClick={toggleTheme}
-                        className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-gray-50 dark:bg-white/[0.03] text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors text-xs font-bold border border-gray-100 dark:border-white/[0.05] active:scale-95"
-                    >
-                        {getThemeIcon()} {getThemeLabel()}
-                    </button>
+                    <div className="flex items-center justify-center gap-2 p-1 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.05]">
+                        <ThemeToggle themeMode={themeMode || 'system'} onToggle={toggleTheme} size="sm" />
+                        <span className="pr-2 text-xs font-bold text-gray-600 dark:text-zinc-300">{getThemeLabel()}</span>
+                    </div>
                     <button
                         onClick={handleLogout}
                         className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-xs font-bold border border-red-100 dark:border-red-900/20 active:scale-95"
@@ -631,12 +624,10 @@ const Navigation: React.FC<NavigationProps> = ({
 
         <div className="p-4 border-t border-gray-100 dark:border-white/[0.05] space-y-3 bg-white dark:bg-black">
           <div className="grid grid-cols-2 gap-3">
-            <button
-                onClick={toggleTheme}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-gray-50 dark:bg-white/[0.03] text-gray-600 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors text-xs font-bold border border-gray-100 dark:border-white/[0.05]"
-            >
-                {getThemeIcon()} {getThemeLabel()}
-            </button>
+            <div className="flex items-center justify-center gap-2 p-1 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.05]">
+                <ThemeToggle themeMode={themeMode || 'system'} onToggle={toggleTheme} size="sm" />
+                <span className="pr-2 text-xs font-bold text-gray-600 dark:text-zinc-300">{getThemeLabel()}</span>
+            </div>
             <button
                 onClick={handleLogout}
                 className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-xs font-bold border border-red-100 dark:border-red-900/20"
