@@ -1,5 +1,5 @@
 
-import { ref, set, get, update, remove, onValue, off, runTransaction, child, serverTimestamp } from "firebase/database";
+import { ref, set, get, update, remove, onValue, off, runTransaction, child, serverTimestamp, onDisconnect } from "firebase/database";
 import { rtdb } from "./firebase";
 import { QuizQuestion } from "../types";
 
@@ -170,6 +170,9 @@ export const deleteRTDBRoom = async (roomId: string) => {
 
 export const setUserOnline = async (uid: string, name: string, avatar: string) => {
   const presenceRef = ref(rtdb, `presence/${uid}`);
+  // Server-side cleanup: if the client connection drops (tab closed, app killed,
+  // network lost), Firebase removes this presence node automatically.
+  await onDisconnect(presenceRef).remove();
   const data = {
     uid,
     name,
@@ -181,7 +184,19 @@ export const setUserOnline = async (uid: string, name: string, avatar: string) =
 
 export const setUserOffline = async (uid: string) => {
   const presenceRef = ref(rtdb, `presence/${uid}`);
+  // Cancel the pending disconnect hook so it does not fire on a later connection
+  await onDisconnect(presenceRef).cancel().catch(() => {});
   await remove(presenceRef);
+};
+
+// Observe the RTDB connection state (.info/connected). Used to re-arm presence
+// (setUserOnline) whenever the connection is restored after a drop.
+export const listenToConnectionState = (callback: (connected: boolean) => void) => {
+  const connRef = ref(rtdb, '.info/connected');
+  const listener = onValue(connRef, (snapshot) => {
+    callback(!!snapshot.val());
+  });
+  return () => off(connRef, 'value', listener);
 };
 
 export const listenToOnlineUsers = (currentUid: string, callback: (users: any[]) => void) => {
