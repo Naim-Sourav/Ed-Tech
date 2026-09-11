@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -46,6 +45,7 @@ const lazyWithRetry = (componentImport: () => Promise<any>) =>
 
 // --- Lazy Load Components ---
 const HomeDashboard = lazyWithRetry(() => import('./components/HomeDashboard'));
+const AccountMenu = lazyWithRetry(() => import('./components/AccountMenu'));
 const QuizArena = lazyWithRetry(() => import('./components/QuizArena'));
 const ExamPage = lazyWithRetry(() => import('./components/ExamPage'));
 const AdmissionSearch = lazyWithRetry(() => import('./components/AdmissionSearch'));
@@ -129,7 +129,7 @@ const PageLoader = () => (
                     <g clipPath="url(#c76e1fc440)">
                       <g clipPath="url(#bd5a1f1cc3)">
                         <g clipPath="url(#d12d5e9a15)">
-                          {/* Tailwind এর প্রাইমারি কালার ব্যবহার করা হয়েছে */}
+                          {/* Tailwind এর প্রাইমারি কালার ব্যবহার করা হয়েছে */}
                           <path className="fill-primary" d="M 0.0898438 0.664062 L 178.96875 0.664062 L 178.96875 179.542969 L 0.0898438 179.542969 Z M 0.0898438 0.664062 " fillOpacity="1" fillRule="nonzero"/>
                         </g>
                       </g>
@@ -230,7 +230,7 @@ const MainLayout: React.FC<{
       navigate('/battle', { state: { directRoomId: targetRoomId } });
     } catch (error: any) {
       console.error("Failed to accept invite:", error);
-      alert("ব্যাটেল রুমে যোগ দেওয়া সম্ভব হয়নি। হয়তো রুমটি ইতিমধ্যে বন্ধ বা শুরু হয়ে গেছে।");
+      alert("ব্যাটেল রুমে যোগ দেওয়া সম্ভব হয়নি। হয়তো রুমটি ইতিমধ্যে বন্ধ বা শুরু হয়ে গেছে।");
       setActiveInvite(null);
     }
   };
@@ -248,7 +248,7 @@ const MainLayout: React.FC<{
   const getSubjectBanglaName = (subject: string) => {
     const map: Record<string, string> = {
       'Physics': 'পদার্থবিজ্ঞান',
-      'Chemistry': 'রসায়ন',
+      'Chemistry': 'রসায়ন',
       'Math': 'উচ্চতর গণিত',
       'Biology': 'জীববিজ্ঞান',
       'ICT': 'আইসিটি',
@@ -442,17 +442,17 @@ const MainLayout: React.FC<{
                   {activeInvite.senderName}
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  আপনাকে একটি ব্যাটেল চ্যালেঞ্জ পাঠিয়েছেন!
+                  আপনাকে একটি ব্যাটেল চ্যালেঞ্জ পাঠিয়েছেন!
                 </p>
                 
                 <div className="mt-3 bg-orange-500/5 dark:bg-orange-500/10 p-2.5 rounded-xl border border-orange-500/10 text-xs space-y-1">
                   <p className="text-gray-700 dark:text-gray-300 font-bold flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                    বিষয়: {getSubjectBanglaName(activeInvite.subject)}
+                    বিষয়: {getSubjectBanglaName(activeInvite.subject)}
                   </p>
                   <p className="text-gray-500 dark:text-gray-400 font-medium truncate flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                    অধ্যায়: {activeInvite.chapter}
+                    অধ্যায়: {activeInvite.chapter}
                   </p>
                 </div>
               </div>
@@ -603,6 +603,7 @@ const AppRoutes: React.FC<{
                 <MainLayout themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode}>
                     <Routes location={location}>
                       <Route path="/dashboard" element={<HomeDashboard toggleTheme={toggleTheme} themeMode={themeMode} setThemeMode={setThemeMode} />} />
+                      <Route path="/account" element={<AccountMenu key={location.pathname} themeMode={themeMode} toggleTheme={toggleTheme} />} />
                       <Route path="/courses" element={<CourseSection />} />
                       <Route path="/qbank" element={<QuestionBank />} />
                       <Route path="/exams" element={<ExamHub />} />
