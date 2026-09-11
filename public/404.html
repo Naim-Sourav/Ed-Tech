@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, follow" />
+<title>পেজ পাওয়া যায়নি | পরীক্ষাঙ্গন (Porikkhangon)</title>
+<meta name="description" content="The page you are looking for does not exist. পরীক্ষাঙ্গন - HSC ও এডমিশন প্রস্তুতির AI প্ল্যাটফর্মে ফিরে যান।" />
+<link rel="canonical" href="https://www.porikkhangon.app/" />
+<link rel="icon" type="image/svg+xml" href="/Pshape.svg" />
+<style>
+  body{font-family:'Hind Siliguri',system-ui,sans-serif;background:#f9fafb;color:#111827;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:24px}
+  .card{max-width:560px;background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:40px 28px;box-shadow:0 10px 40px rgba(0,0,0,.06)}
+  h1{font-size:28px;margin:12px 0 8px}
+  p{color:#6b7280;line-height:1.7;margin:8px 0 20px}
+  a.btn{display:inline-block;background:#f97316;color:#fff;font-weight:700;text-decoration:none;padding:12px 26px;border-radius:12px;margin:4px}
+  a.link{display:inline-block;color:#f97316;font-weight:600;text-decoration:none;margin:4px 10px}
+  .logo{width:56px;height:56px}
+</style>
+<script>
+  // GitHub Pages has no server-side rewrites: send known app routes back into
+  // the SPA's hash router so shared deep links (e.g. /privacy) keep working.
+  (function () {
+    var known = ['auth','privacy','terms','refund','dashboard','courses','qbank','exams','quiz','battle','leaderboard','planner','history','admission','profile','saved-questions','wrong-questions','settings','challenges','bot','exam','exam-batch','payment'];
+    var path = location.pathname.replace(/\/+$/, '');
+    var seg = path.split('/')[1] || '';
+    if (seg === 'hsc-syllabus') { location.replace('/hsc-syllabus/'); return; }
+    if (seg && known.indexOf(seg) !== -1) {
+      location.replace('/#' + path + location.search);
+      return;
+    }
+    if (seg === '') { location.replace('/'); }
+  })();
+</script>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="/Pshape.svg" alt="Porikkhangon logo" />
+    <h1>৪৪ — পেজটি পাওয়া যায়নি</h1>
+    <p>দুঃখিত, আপনি যে ঠিকানাটি খুঁজছেন সেটি এখন আর নেই। নিচের লিংক থেকে পরীক্ষাঙ্গনে ফিরে যান — HSC ও এডমিশন প্রস্তুতির AI প্ল্যাটফর্ম।</p>
+    <a class="btn" href="/">হোমপেজে যান</a>
+    <div>
+      <a class="link" href="/hsc-syllabus/">HSC সিলেবাস গাইড</a>
+      <a class="link" href="/#/auth">লগইন / রেজিস্ট্রেশন</a>
+      <a class="link" href="/#/privacy">প্রাইভেসি পলিসি</a>
+    </div>
+  </div>
+</body>
+</html>

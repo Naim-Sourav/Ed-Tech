@@ -29,6 +29,12 @@ export default defineConfig(({ mode: _mode }) => {
         clientPort: 443
       }
     },
+    preview: {
+      host: true,
+      port: 4173,
+      strictPort: true,
+      allowedHosts: true,
+    },
     build: {
       outDir: 'dist',
       sourcemap: false,

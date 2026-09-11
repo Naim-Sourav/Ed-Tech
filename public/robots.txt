@@ -1,3 +1,8 @@
 User-agent: *
 Allow: /
-Sitemap: https://naim-sourav.github.io/Ed-Tech/#/sitemap.xml
+Disallow: /admin
+
+# Static, crawlable content hubs
+Allow: /hsc-syllabus/
+
+Sitemap: https://www.porikkhangon.app/sitemap.xml

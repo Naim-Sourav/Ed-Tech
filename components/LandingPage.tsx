@@ -23,19 +23,25 @@ interface LandingPageProps {
 // --- SUB-COMPONENTS ---
 
 const AnimatedCounter = ({ end, duration = 2000, suffix = "" }: { end: number, duration?: number, suffix?: string }) => {
-  const [count, setCount] = useState(0);
+  // Start at the final value so crawlers / no-rAF environments never capture
+  // "0+"; real browsers then animate from 0 for the visual effect.
+  const [count, setCount] = useState(end);
 
   useEffect(() => {
+    if (typeof window.requestAnimationFrame !== 'function') return;
     let startTime: number | null = null;
+    let frame = 0;
+    setCount(0);
     const step = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
       setCount(Math.floor(progress * end));
       if (progress < 1) {
-        window.requestAnimationFrame(step);
+        frame = window.requestAnimationFrame(step);
       }
     };
-    window.requestAnimationFrame(step);
+    frame = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(frame);
   }, [end, duration]);
 
   return <span>{count.toLocaleString()}{suffix}</span>;
@@ -135,13 +141,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
   return (
     <main className="h-screen w-full overflow-y-auto bg-white dark:bg-black font-sans text-gray-900 dark:text-white transition-colors scroll-smooth selection:bg-primary/30">
       <Helmet>
-        <title>Porikkhangon | HSC & Admission AI Tutor - Bangladesh's best Prep Platform</title>
-        <meta name="description" content="Porikkhangon (পরীক্ষাঙ্গন) - HSC একাডেমিক এবং এডমিশন প্রস্তুতির জন্য বাংলাদেশের সেরা AI-চালিত লার্নিং প্ল্যাটফর্ম। AI টিউটর, কুইজ ব্যাটল এবং স্মার্ট ট্র্যাকিং এর মাধ্যমে নিজেকে প্রস্তুত করো।" />
-        <meta name="keywords" content="Porikkhangon, পরীক্ষাঙ্গন, HSC Preparation, Admission Test Bangladesh, AI Tutor, BUET Admission, Medical Admission" />
-        <link rel="canonical" href="https://www.porikkhangon.app" />
-        <meta property="og:title" content="Porikkhangon | HSC & Admission AI Tutor" />
-        <meta property="og:description" content="HSC এবং এডমিশন প্রস্তুতির জন্য বাংলাদেশের সেরা AI প্ল্যাটফর্ম।" />
-        <meta property="og:image" content="https://www.porikkhangon.app/Pshape.svg" />
+        <title>পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম</title>
+        <meta name="description" content="পরীক্ষাঙ্গন (Porikkhangon) — HSC, ভর্তি পরীক্ষা ও MCQ প্রস্তুতির AI-চালিত প্ল্যাটফর্ম। ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং — সব ফ্রিতে।" />
+        <meta name="keywords" content="Porikkhangon, পরীক্ষাঙ্গন, HSC প্রস্তুতি, HSC Preparation, University Admission, BUET Admission, Medical Admission, DU Admission, GST ভর্তি, AI Tutor Bangladesh, HSC MCQ Practice, Question Bank Bangladesh, Admission Test Bangladesh, মডেল টেস্ট, প্রশ্নব্যাংক" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+        <link rel="canonical" href="https://www.porikkhangon.app/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.porikkhangon.app/" />
+        <meta property="og:locale" content="bn_BD" />
+        <meta property="og:title" content="পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম" />
+        <meta property="og:description" content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।" />
+        <meta property="og:image" content="https://www.porikkhangon.app/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম" />
+        <meta name="twitter:description" content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।" />
+        <meta name="twitter:image" content="https://www.porikkhangon.app/og-image.jpg" />
       </Helmet>
       
       {/* Navbar */}
@@ -190,7 +206,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             {/* Left Column: Text & Buttons */}
             <div className="text-center lg:text-left space-y-6 md:space-y-10 animate-in fade-in slide-in-from-left-8 duration-1000">
               <h1 className="text-3xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-normal tracking-tight text-gray-900 dark:text-white">
-                পরীক্ষা প্রস্তুতির বিশেষ <span className="text-primary dark:text-orange-400">অঙ্গন</span>
+                <span className="sr-only">পরীক্ষাঙ্গন (Porikkhangon) — </span>
+                HSC ও এডমিশন প্রস্তুতির বিশেষ <span className="text-primary dark:text-orange-400">অঙ্গন</span>
               </h1>
               
               <p className="text-sm md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed lg:text-2xl">
