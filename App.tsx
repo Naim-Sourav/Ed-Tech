@@ -62,6 +62,7 @@ const DailyChallengePage = lazyWithRetry(() => import('./components/DailyChallen
 const ExamHub = lazyWithRetry(() => import('./components/ExamHub'));
 const ExamBatchPage = lazyWithRetry(() => import('./components/ExamBatchPage'));
 const PaymentPage = lazyWithRetry(() => import('./components/PaymentPage'));
+const QuestionPage = lazyWithRetry(() => import('./components/QuestionPage'));
 const PrivacyPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.TermsOfService })));
 const RefundPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.RefundPolicy })));
@@ -595,8 +596,11 @@ const AppRoutes: React.FC<{
             <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => window.location.hash = '#/auth'} /> : <Navigate to="/dashboard" />} />
             <Route path="/auth" element={<AuthRoute><AuthPage onBack={() => window.location.hash = '#/'} /></AuthRoute>} />
             
-            {/* Public Exam Route - Accessible to guests */}
+                        {/* Public Exam Route - Accessible to guests */}
             <Route path="/exam/:examId" element={<ExamPage />} />
+
+            {/* Public question viewer - backs /q/<slug> share links & SEO pages */}
+            <Route path="/question/:slug" element={<QuestionPage />} />
 
             <Route path="/*" element={
               currentUser ? (
