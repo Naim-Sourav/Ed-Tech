@@ -1252,7 +1252,7 @@ const QuestionBank: React.FC = () => {
 
   const handleShare = useCallback(
     (question: QuizQuestion) => {
-      const url = `${window.location.origin}/#/question/${question.slug || question.id}`;
+            const url = `${window.location.origin}/q/${question.slug || question.id}/`;
       if (navigator.share) {
         navigator.share({ title: question.question, url }).catch(console.error);
       } else {
