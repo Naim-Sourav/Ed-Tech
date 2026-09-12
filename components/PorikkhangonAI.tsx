@@ -1,7 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import SafeHtml from './SafeHtml';
 import { X, Image as ImageIcon, Send, Sparkles, Bot, ExternalLink, ArrowLeft, Trash2, Loader2, CheckCircle, XCircle, HelpCircle, Settings, Key, MoreVertical } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { getGeminiApiKey } from "../services/geminiService";
 import { useNavigate } from 'react-router-dom';
 import { useCache } from '../contexts/CacheContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -306,8 +308,9 @@ const PorikkhangonAI: React.FC = () => {
     }
 
     const currentModel = BOT_MODELS[modelIndex];
-    // Use custom API key if provided, otherwise fallback to default env key
-    const apiKeyToUse = customApiKey.trim() || process.env.GEMINI_API_KEY;
+    // Secure key resolution: build-time env key first, else the user's own saved key.
+    // (Never hardcode keys — see services/geminiService.ts)
+    const apiKeyToUse = getGeminiApiKey();
     const ai = new GoogleGenAI({ apiKey: apiKeyToUse });
 
     try {
@@ -637,7 +640,7 @@ const PorikkhangonAI: React.FC = () => {
                                                         .replace(/\n/g, '<br/>');
 
                                                     return (
-                                                        <p key={pIdx} className="whitespace-pre-wrap mb-2 text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{__html: formattedContent}}></p>
+                                                        <SafeHtml html={formattedContent} as="p" key={pIdx} className="whitespace-pre-wrap mb-2 text-gray-700 dark:text-gray-300" />
                                                     );
                                                 } else if (part.type === 'mcq' && part.data) {
                                                     const mcq = part.data;

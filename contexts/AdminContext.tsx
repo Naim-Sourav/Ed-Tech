@@ -10,6 +10,7 @@ import {
   fetchAdminStatsAPI 
 } from '../services/api';
 import { useAuth } from './AuthContext';
+import { isAdminEmail } from '../utils/adminConfig';
 import { db } from '../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -42,8 +43,8 @@ export const useAdmin = () => {
   return context;
 };
 
-// Define the Admin Email
-const ADMIN_EMAIL = "nurnaimsourav@gmail.com";
+// Admin e-mails live in utils/adminConfig.ts (single source of truth).
+// NOTE: this only gates the UI — firestore.rules + backend must enforce it too.
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
@@ -57,8 +58,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     totalExams: 0
   });
   
-  // Dynamic Admin Check
-  const isAdmin = currentUser?.email === ADMIN_EMAIL;
+  // Dynamic Admin Check (UI gating only — server-side rules enforce the rest)
+  const isAdmin = isAdminEmail(currentUser?.email);
 
   const refreshRequests = async () => {
     // Prevent non-admins from fetching sensitive data

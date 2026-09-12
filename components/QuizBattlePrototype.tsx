@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import SafeHtml from './SafeHtml';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -1282,7 +1283,7 @@ const QuizBattlePrototype: React.FC = () => {
                 >
                     {question.contextText && (
                         <div className={`mb-5 p-4 bg-orange-50/50 dark:bg-orange-950/20 rounded-2xl border border-orange-100/60 dark:border-orange-900/30 text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap ${getFont(question.contextText)}`}>
-                            <div dangerouslySetInnerHTML={{ __html: question.contextText }} />
+                            <SafeHtml html={question.contextText} />
                             {question.contextImage && (
                                 <img src={question.contextImage} alt="Context" className="mt-4 rounded-xl max-h-48 object-contain mx-auto border bg-white" referrerPolicy="no-referrer" />
                             )}
@@ -1290,7 +1291,7 @@ const QuizBattlePrototype: React.FC = () => {
                     )}
                     
                     <h2 className={`text-xl md:text-2xl font-bold text-gray-900 dark:text-white leading-relaxed text-center whitespace-pre-wrap ${getFont(question.question)}`}>
-                        <div dangerouslySetInnerHTML={{ __html: question.question }} />
+                        <SafeHtml html={question.question} />
                     </h2>
                     
                     {question.questionImage && (
@@ -1347,7 +1348,7 @@ const QuizBattlePrototype: React.FC = () => {
                                             {['ক','খ','গ','ঘ'][idx]}
                                         </div>
                                         <div className="flex flex-col gap-2 min-w-0 text-left">
-                                            <span className={`text-[15px] md:text-base font-medium whitespace-pre-wrap ${getFont(opt)}`}><div dangerouslySetInnerHTML={{ __html: opt }} /></span>
+                                            <span className={`text-[15px] md:text-base font-medium whitespace-pre-wrap ${getFont(opt)}`}><SafeHtml html={opt} /></span>
                                             {question.optionsImages?.[idx] && (
                                                 <img src={question.optionsImages[idx]} alt={`Option ${idx}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
                                             )}
@@ -1625,14 +1626,14 @@ const QuizBattlePrototype: React.FC = () => {
                                         <div className="flex-1 min-w-0">
                                             {q.contextText && (
                                                 <div className={`mb-3 p-3 bg-white/5 rounded-2xl border border-white/10 text-sm opacity-80 whitespace-pre-wrap ${getFont(q.contextText)}`}>
-                                                    <div dangerouslySetInnerHTML={{ __html: q.contextText }} />
+                                                    <SafeHtml html={q.contextText} />
                                                     {q.contextImage && (
                                                         <img src={q.contextImage} alt="Context" className="mt-3 rounded-lg max-h-32 object-contain border bg-white" referrerPolicy="no-referrer" />
                                                     )}
                                                 </div>
                                             )}
                                             <h3 className={`font-bold text-white text-base leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
-                                                <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                                                <SafeHtml html={q.question} />
                                             </h3>
                                             {q.questionImage && (
                                                 <img src={q.questionImage} alt="Question" className="mt-3 rounded-lg max-h-40 object-contain border bg-white" referrerPolicy="no-referrer" />
@@ -1666,7 +1667,7 @@ const QuizBattlePrototype: React.FC = () => {
                                                         </div>
                                                         <div className="flex flex-col gap-2 min-w-0">
                                                             <span className={`text-sm whitespace-pre-wrap ${isCorrect ? 'text-emerald-400 font-bold' : 'text-gray-300'} ${getFont(opt)}`}>
-                                                                <div dangerouslySetInnerHTML={{ __html: opt }} />
+                                                                <SafeHtml html={opt} />
                                                             </span>
                                                             {q.optionsImages?.[oIdx] && (
                                                                 <img src={q.optionsImages[oIdx]} alt={`Option ${oIdx}`} className="h-12 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />

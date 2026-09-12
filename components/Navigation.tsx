@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
+import { isAdminEmail } from '../utils/adminConfig';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Notification } from '../types';
 import { useToast } from './Toast';
@@ -222,7 +223,7 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   if (!currentUser) return null;
-  const ADMIN_EMAIL = "nurnaimsourav@gmail.com";
+  const showAdminLinks = isAdminEmail(currentUser?.email);
 
   return (
     <>
@@ -338,7 +339,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     </motion.button>
                   )}
                   
-                  {currentUser.email === ADMIN_EMAIL && (
+                  {showAdminLinks && (
                     <motion.div
                       variants={{
                         hidden: { opacity: 0, x: -20 },
@@ -607,7 +608,7 @@ const Navigation: React.FC<NavigationProps> = ({
             </button>
           )}
           
-          {currentUser.email === ADMIN_EMAIL && (
+          {showAdminLinks && (
             <Link
               to="/admin"
               className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold mt-6 text-sm ${

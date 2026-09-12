@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
+import SafeHtml from './SafeHtml';
 import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI, generateQuizFromDB, fetchQuestionPapersAPI, syncUserToMongoDB, fetchSavedQuestionsAPI } from '../services/api';
 import { fetchPublicExamLeaderboard, getUserRank, submitGuestExamResult, fetchPublicExam } from '../services/publicExamService';
 import { 
@@ -1092,7 +1093,7 @@ const ExamPage: React.FC = () => {
                                             </div>
                                         )}
                                         {currentQ.contextText && (
-                                            <div className={`text-base md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 tex2jax_process whitespace-pre-wrap ${getFont(currentQ.contextText)}`} dangerouslySetInnerHTML={{ __html: currentQ.contextText }} />
+                                            <SafeHtml html={currentQ.contextText} className={`text-base md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 tex2jax_process whitespace-pre-wrap ${getFont(currentQ.contextText)}`} />
                                         )}
                                         {currentQ.contextImage && (
                                             <div className="mb-4 rounded-xl overflow-hidden border border-white dark:border-sky-800/50 bg-white dark:bg-black/20 p-1 shadow-sm">
@@ -1125,7 +1126,7 @@ const ExamPage: React.FC = () => {
 
                                     {/* Question Text (the biggest thing on screen, text-xl to text-2xl) */}
                                     <h2 className={`text-[22px] md:text-3xl font-black text-gray-905 dark:text-gray-50 leading-snug tex2jax_process whitespace-pre-wrap ${getFont(currentQ.question)}`}>
-                                        <div dangerouslySetInnerHTML={{ __html: currentQ.question }} />
+                                        <SafeHtml html={currentQ.question} as="span" />
                                     </h2>
 
                                     {currentQ.questionImage && (
@@ -1262,7 +1263,7 @@ const ExamPage: React.FC = () => {
                                                             <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
                                                             <div className="flex-1 min-w-0 pt-0.5">
                                                                 <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-[17px] md:text-[19px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
-                                                                    <span dangerouslySetInnerHTML={{ __html: q.question }} />
+                                                                    <SafeHtml html={q.question} as="span" />
                                                                 </h3>
                                                                 {q.questionImage && (
                                                                     <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm">
@@ -1860,7 +1861,7 @@ const ExamPage: React.FC = () => {
                                             <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
                                             <div className="flex-1 min-w-0 pt-0.5">
                                                 <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-[17px] md:text-[19px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
-                                                    <span dangerouslySetInnerHTML={{ __html: q.question }} />
+                                                    <SafeHtml html={q.question} as="span" />
                                                 </h3>
                                                 {q.questionImage && (
                                                     <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm">

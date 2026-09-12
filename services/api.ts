@@ -2,8 +2,53 @@
 // ... (imports from types.ts)
 import { PaymentRequest, Notification, LeaderboardUser, ExamPack, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
 import { normalizeBangla } from "../utils/normalization";
+import { auth } from "./firebase";
 
-export const API_BASE = 'https://mongodb-hb6b.onrender.com/api';
+const readEnvApiBase = (): string => {
+  try {
+    // @ts-ignore - import.meta.env is provided by Vite
+    const base = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_API_BASE : undefined;
+    if (typeof base === 'string' && base.length > 0) return base;
+  } catch (_e) {
+    // ignore
+  }
+  return '';
+};
+
+export const API_BASE = readEnvApiBase() || 'https://mongodb-hb6b.onrender.com/api';
+
+/**
+ * Build an `Authorization: Bearer <Firebase ID token>` header for the
+ * currently signed-in user. Returns {} when signed out (public endpoints).
+ *
+ * ⚠️ The backend MUST verify this token with firebase-admin on every request
+ * and never trust the userId sent in URLs/bodies. See SECURITY.md.
+ */
+export const getAuthHeaders = async (): Promise<Record<string, string>> => {
+  try {
+    const user = auth.currentUser;
+    if (user) {
+      const token = await user.getIdToken(/* forceRefresh */ false);
+      if (token) return { Authorization: `Bearer ${token}` };
+    }
+  } catch (e) {
+    console.warn('[API] Could not get auth token; calling backend unauthenticated.', e);
+  }
+  return {};
+};
+
+/** fetch() wrapper that injects the Firebase ID token when signed in. */
+export const authedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const authHeaders = await getAuthHeaders();
+  const mergedHeaders: Record<string, string> = {
+    ...((options.headers as Record<string, string> | undefined) || {}),
+  };
+  // Don't overwrite an explicitly provided Authorization header.
+  if (!mergedHeaders['Authorization'] && authHeaders['Authorization']) {
+    mergedHeaders['Authorization'] = authHeaders['Authorization'];
+  }
+  return fetch(url, { ...options, headers: mergedHeaders });
+};
 
 // --- MOCK DATA ---
 const MOCK_STATS = {
@@ -119,7 +164,7 @@ export const normalizeText = (text: string) => {
 
 const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fallback: any = null) => {
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`, options);
+    const response = await authedFetch(`${API_BASE}${endpoint}`, options);
     
     // 1. Handle HTTP Errors (non-200)
     if (!response.ok) {
@@ -363,7 +408,7 @@ export const fetchQuestionPapersAPI = async (): Promise<QuestionPaperMetadata[]>
 
 export const generateSlugsAPI = async () => {
     try {
-        const response = await fetch(`${API_BASE}/admin/generate-slugs`, {
+        const response = await authedFetch(`${API_BASE}/admin/generate-slugs`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -377,7 +422,7 @@ export const generateSlugsAPI = async () => {
 
 export const refineQuestionsAPI = async () => {
     try {
-        const response = await fetch(`${API_BASE}/admin/questions/refine`, {
+        const response = await authedFetch(`${API_BASE}/admin/questions/refine`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -391,7 +436,7 @@ export const refineQuestionsAPI = async () => {
 
 export const fetchAdmissionTagsAPI = async () => {
     try {
-        const response = await fetch(`${API_BASE}/admin/tags/admission`);
+        const response = await authedFetch(`${API_BASE}/admin/tags/admission`);
         if (!response.ok) throw new Error('Failed to fetch tags');
         return await response.json();
     } catch (error) {
@@ -402,7 +447,7 @@ export const fetchAdmissionTagsAPI = async () => {
 
 export const mapTagsToCategoryAPI = async (category: string, tags: string[]) => {
     try {
-        const response = await fetch(`${API_BASE}/admin/tags/map`, {
+        const response = await authedFetch(`${API_BASE}/admin/tags/map`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ category, tags })
@@ -417,7 +462,7 @@ export const mapTagsToCategoryAPI = async (category: string, tags: string[]) => 
 
 export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai') => {
     try {
-        const response = await fetch(`${API_BASE}/admin/questions/cleanup?type=${type}`, {
+        const response = await authedFetch(`${API_BASE}/admin/questions/cleanup?type=${type}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -431,7 +476,7 @@ export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai')
 
 export const fetchQuestionsForMigrator = async (page: number, limit: number) => {
   const url = `${API_BASE}/admin/questions?page=${page}&limit=${limit}`;
-  const response = await fetch(url);
+  const response = await authedFetch(url);
   if (!response.ok) {
     const err = await response.text();
     throw new Error(`HTTP ${response.status}: ${err}`);
@@ -585,7 +630,7 @@ export const fetchQuestionBankExamRefsAPI = async (level?: string) => {
 
 export const fetchIncompleteExamRefsAPI = async () => {
   try {
-      const response = await fetch(`${API_BASE}/admin/incomplete-exam-refs`);
+      const response = await authedFetch(`${API_BASE}/admin/incomplete-exam-refs`);
       if (response.ok) {
           const data = await response.json();
           return data;

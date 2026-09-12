@@ -149,11 +149,10 @@ export const submitGuestExamResult = async (examId: string, guestInfo: GuestUser
   const collectionRef = collection(db, 'guest_attempts');
   await addDoc(collectionRef, attemptData);
   
-  // 2. Save leaderboard entry (public)
+  // 2. Save leaderboard entry (PUBLIC — never put e-mail/phone here!)
   const leaderboardData = {
     examId,
-    name: guestInfo.name,
-    email: guestInfo.email,
+    name: (guestInfo.name || 'Guest').trim().slice(0, 100) || 'Guest',
     score: result.score,
     correct: result.correct,
     wrong: result.wrong,

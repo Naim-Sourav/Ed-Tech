@@ -6,6 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import SafeHtml from './SafeHtml';
 import { useAuth } from "../contexts/AuthContext";
 import {
   saveQuestionAPI,
@@ -188,10 +189,7 @@ const RevisionQuestionCard = React.memo(
                 </div>
               )}
               {q.contextText && (
-                <div
-                  className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{ __html: q.contextText }}
-                />
+                <SafeHtml html={q.contextText} className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap" />
               )}
               {q.contextImage && (
                 <div className="mt-2 rounded-xl overflow-hidden bg-white/50 dark:bg-black/10 border border-blue-200/30 p-2 shadow-sm">
@@ -215,7 +213,7 @@ const RevisionQuestionCard = React.memo(
                 className="text-base md:text-[18px] font-medium text-slate-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap"
                 id={`q-title-${idx}`}
               >
-                <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                <SafeHtml html={q.question} />
               </h3>
               {q.questionImage && (
                 <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm mt-2">
@@ -305,10 +303,7 @@ const RevisionQuestionCard = React.memo(
                   {["ক", "খ", "গ", "ঘ"][oIdx] || String.fromCharCode(65 + oIdx)}
                 </span>
                 <div className="flex flex-col gap-1 flex-1">
-                  <span
-                    className="text-[15px] md:text-base font-normal whitespace-pre-wrap leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: option }}
-                  ></span>
+                  <SafeHtml html={option} as="span" className="text-[15px] md:text-base font-normal whitespace-pre-wrap leading-relaxed" />
                   {q.optionsImages?.[oIdx] && (
                     <img
                       src={q.optionsImages[oIdx]}
@@ -361,7 +356,7 @@ const RevisionQuestionCard = React.memo(
                   </h4>
                 </div>
                 <div className="text-[15px] md:text-base text-gray-800 dark:text-gray-200 leading-loose font-tiro whitespace-pre-wrap pl-1 overflow-hidden">
-                  <div className="overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                  <SafeHtml html={q.explanation} className="overflow-x-auto max-w-full break-words py-1 scrollbar-thin" />
                   {q.explanationImage && (
                     <div className="mt-3 rounded-lg overflow-hidden border border-orange-200/20 p-1 max-w-sm bg-white dark:bg-black/20 self-start">
                       <img
@@ -1750,7 +1745,7 @@ const QuestionBank: React.FC = () => {
                             {(q.contextText || q.contextImage) && (
                               <div className="mb-4 p-4 bg-sky-50/50 dark:bg-sky-900/10 rounded-2xl border border-sky-100/50 dark:border-sky-800/30 mr-12">
                                 <span className="text-[9px] font-black text-sky-600/50 dark:text-sky-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
-                                {q.contextText && <div className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                                {q.contextText && <SafeHtml html={q.contextText} className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" />}
                                 {q.contextImage && (
                                   <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                                 )}
@@ -1763,7 +1758,7 @@ const QuestionBank: React.FC = () => {
                                 </span>
                                 <div className="flex-1">
                                     <div className={`${questionFontSize} font-medium text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
-                                      <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                                      <SafeHtml html={q.question} />
                                       {q.questionImage && (
                                         <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
                                       )}
@@ -1837,7 +1832,7 @@ const QuestionBank: React.FC = () => {
                                       {['ক', 'খ', 'গ', 'ঘ'][i] || String.fromCharCode(65 + i)}
                                     </span>
                                     <div className="flex flex-col gap-1 flex-1">
-                                      <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} font-normal whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                                      <SafeHtml html={opt} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} font-normal whitespace-pre-wrap ${getFont(opt)}`} />
                                       {q.optionsImages?.[i] && (
                                         <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded self-start bg-transparent mix-blend-multiply dark:mix-blend-normal" referrerPolicy="no-referrer" />
                                       )}
@@ -1865,7 +1860,7 @@ const QuestionBank: React.FC = () => {
                                       className="overflow-hidden"
                                     >
                                       <div id={`explanation-${itemId}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
-                                        <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-800 dark:text-gray-200 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                        <SafeHtml html={q.explanation} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-800 dark:text-gray-200 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} />
                                         {q.explanationImage && (
                                           <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
                                         )}

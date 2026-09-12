@@ -1,173 +1,241 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users collection
+
+    // ==================== Helper functions ====================
+
+    // ⚠️ Keep ADMIN_EMAILS in sync with `utils/adminConfig.ts`.
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.email in [
+          "nurnaimsourav@gmail.com",
+          "tasnimahmedutsha600@gmail.com"
+        ] ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Public guest leaderboard entries are world-readable by design,
+    // so creation is strictly validated instead (no PII allowed in new writes).
+    function isValidGuestLeaderboard(data) {
+      return data.keys().hasAll(
+               ['examId', 'name', 'score', 'correct', 'wrong', 'skipped', 'submittedAt', 'timeTaken', 'userId']
+             )
+        && data.examId is string && data.examId.size() > 0 && data.examId.size() <= 100
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.score is number && data.score >= -100000 && data.score <= 1000000
+        && data.correct is number && data.correct >= 0 && data.correct <= 10000
+        && data.wrong is number && data.wrong >= 0 && data.wrong <= 10000
+        && data.skipped is number && data.skipped >= 0 && data.skipped <= 10000
+        && data.submittedAt is number && data.submittedAt > 0
+        && data.timeTaken is number && data.timeTaken >= 0 && data.timeTaken <= 86400
+        && data.userId is string && data.userId.size() <= 128;
+    }
+
+    function isValidGuestAttempt(data) {
+      return data.keys().hasAll(
+               ['examId', 'guestInfo', 'result', 'userId', 'submittedAt', 'timeTaken', 'type']
+             )
+        && data.examId is string && data.examId.size() > 0 && data.examId.size() <= 100
+        && data.guestInfo is map
+        && data.guestInfo.name is string
+        && data.guestInfo.name.size() > 0 && data.guestInfo.name.size() <= 100
+        && data.result is map
+        && data.userId is string && data.userId.size() <= 128
+        && data.submittedAt is number && data.submittedAt > 0
+        && data.timeTaken is number && data.timeTaken >= 0 && data.timeTaken <= 86400
+        && data.type == 'guest_submission';
+    }
+
+    // ==================== Users ====================
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Profiles may contain phone numbers — only the owner (or an admin)
+      // may read them. The backend uses the Admin SDK and bypasses rules.
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
       allow delete: if false;
     }
 
-    // Admin collection for admin users
+    // Admin roster. NOTE: the previous rule allowed ANY signed-in user to
+    // create their own /admins/{uid} doc (= instant privilege escalation).
+    // Bootstrap the first admin manually in the Firebase Console; after that
+    // only existing admins can add/remove admins.
     match /admins/{adminId} {
-      allow read, write: if request.auth != null && request.auth.uid == adminId;
-    }
-
-    // Payment requests collection
-    match /paymentRequests/{document} {
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow read: if request.auth != null && 
-                 (resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if request.auth != null && isAdmin();
-      allow delete: if false;
-    }
-
-    // Courses collection
-    match /courses/{courseId} {
-      allow read: if request.auth != null;
-      allow create, update: if request.auth != null && isAdmin();
-      allow delete: if false;
-    }
-
-    // Course schedules collection
-    match /course_schedules/{courseId} {
-      allow read: if request.auth != null;
-      allow create, update: if request.auth != null && isAdmin();
-      allow delete: if request.auth != null && isAdmin();
-    }
-
-    // Course enrollments collection
-    match /enrollments/{enrollmentId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if false;
-    }
-
-    // Study Groups collection (NEW Rules for Study Group Feature)
-    match /study_groups/{groupId} {
-      // Anyone logged in can read group lists and create new groups
-      allow read, create: if request.auth != null;
-      
-      // Allow update for joining/leaving (updating activeCount)
-      // Ideally, specific field rules should be used, but general auth is okay for prototype
-      allow update: if request.auth != null;
-      
-      // Only the creator or admin can delete the group
-      allow delete: if request.auth != null && (resource.data.createdBy == request.auth.uid || isAdmin());
-
-      // Members sub-collection inside study_groups
-      match /members/{memberId} {
-        // Anyone in the app can see who is in the group
-        allow read: if request.auth != null;
-        
-        // A user can only write/update/delete their OWN member document
-        // This handles join (write), update status (update), and leave (delete)
-        allow write: if request.auth != null && request.auth.uid == memberId;
-      }
-    }
-
-    // Battle rooms collection
-    match /battle_rooms/{roomId} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Test collection for connection testing
-    match /test/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Telegram verifications collection
-    match /telegramVerifications/{code} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow delete: if request.auth != null;
-      allow list: if false;
-    }
-
-    // Exams collection
-    match /exams/{examId} {
-      allow read: if request.auth != null || resource.data.isPublic == true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-                   (isAdmin() || resource.data.isQuestionBank == true || resource.data.isTeacherExam == true);
-      allow delete: if request.auth != null && 
-                   (isAdmin() || resource.data.createdBy == request.auth.uid);
-    }
-
-    // Attempts collection
-    match /attempts/{attemptId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow update: if false;
-    }
-
-    // Guest Attempts collection
-    match /guest_attempts/{attemptId} {
-      allow create: if true; // Allow anyone (including unauthenticated) to submit guest results
-      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    // Guest Leaderboard collection (Publicly accessible, sanitized data)
-    match /guest_leaderboard/{entry} {
-      allow read, create: if true;
-    }
-
-    // Battle requests collection
-    match /battle_requests/{requestId} {
-      allow create: if request.auth != null;
-      allow read, update: if request.auth != null && 
-                         (resource.data.fromUser == request.auth.uid || 
-                          resource.data.toUser == request.auth.uid || 
-                          resource.data.toUser == null);
-      allow delete: if false;
-    }
-    
-    // Battles collection
-    match /battles/{battleId} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null && 
-                 (resource.data.player1 == request.auth.uid || 
-                  resource.data.player2 == request.auth.uid);
-      allow update: if request.auth != null && 
-                   (resource.data.player1 == request.auth.uid || 
-                    resource.data.player2 == request.auth.uid);
-      allow delete: if false;
-    }
-
-    // Question bank metadata collection
-    match /question_banks/{bankId} {
-      allow read: if request.auth != null;
+      allow get: if isOwner(adminId) || isAdmin();
+      allow list: if isAdmin();
       allow create, update, delete: if isAdmin();
     }
 
-    // Push notifications collection for admin triggers
-    match /push_notifications/{notifId} {
-      allow read: if isAdmin();
-      allow create: if isAdmin();
+    // ==================== Payments ====================
+    match /paymentRequests/{document} {
+      allow create: if isSignedIn()
+                    && request.resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn()
+                 && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ==================== Courses ====================
+    match /courses/{courseId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /course_schedules/{courseId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /enrollments/{enrollmentId} {
+      allow get: if isSignedIn()
+                 && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn()
+                    && request.resource.data.userId == request.auth.uid;
       allow update, delete: if false;
     }
 
-    // Allow reading questions from local files (if stored in Firestore)
+    // ==================== Study Groups ====================
+    match /study_groups/{groupId} {
+      allow read: if isSignedIn();
+      // The creator must stamp their own uid — prevents spoofed ownership.
+      allow create: if isSignedIn()
+                    && request.resource.data.createdBy == request.auth.uid;
+      // Joining/leaving bumps activeCount; creator+admins may edit the rest.
+      allow update: if isSignedIn() && (
+        isAdmin()
+        || resource.data.createdBy == request.auth.uid
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['activeCount'])
+      );
+      allow delete: if isSignedIn()
+                    && (resource.data.createdBy == request.auth.uid || isAdmin());
+
+      match /members/{memberId} {
+        allow read: if isSignedIn();
+        // A user can only write their OWN member document (join/update/leave).
+        allow create, update: if isOwner(memberId)
+                              && request.resource.data.uid == request.auth.uid;
+        allow delete: if isOwner(memberId) || isAdmin();
+      }
+    }
+
+    // ==================== Battle rooms (Firestore mirror) ====================
+    // NOTE: live battles run on RTDB (`database.rules.json`). Nothing in the
+    // web app reads/writes this Firestore collection, so it is admin-only.
+    // If another client needs it, scope it to participants like /battles below.
+    match /battle_rooms/{roomId} {
+      allow read, write: if isAdmin();
+    }
+
+    // DEBUG /test collection removed — it previously allowed any signed-in
+    // user to read AND write arbitrary documents.
+
+    // ==================== Telegram ====================
+    match /telegramVerifications/{code} {
+      allow create: if isSignedIn();
+      allow get, delete: if isSignedIn();
+      allow list: if false;
+      allow update: if false;
+    }
+
+    // ==================== Exams ====================
+    match /exams/{examId} {
+      // Public exams stay readable without login (guest exam links).
+      allow get: if isSignedIn() || resource.data.isPublic == true;
+      allow list: if isSignedIn();
+      // Only admins can publish/edit/remove exams (see createPublicExam —
+      // it is only reachable from the admin panel).
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ==================== Attempts (registered users) ====================
+    match /attempts/{attemptId} {
+      // Exam history is private: owner (or admin) only. All app queries
+      // filter by userId == uid, so this breaks nothing.
+      allow get, list: if isSignedIn()
+                       && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn()
+                    && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    // ==================== Guest attempts + public leaderboard ====================
+    match /guest_attempts/{attemptId} {
+      // Guests submit without an account — validate the payload instead.
+      allow create: if isValidGuestAttempt(request.resource.data);
+      allow get, list: if isAdmin()
+                       || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /guest_leaderboard/{entry} {
+      allow get, list: if true; // public leaderboard by design
+      allow create: if isValidGuestLeaderboard(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+
+    // ==================== Battles (Firestore) ====================
+    match /battle_requests/{requestId} {
+      allow create: if isSignedIn()
+                    && request.resource.data.fromUser == request.auth.uid;
+      allow get, list: if isSignedIn()
+                       && (resource.data.fromUser == request.auth.uid ||
+                           resource.data.toUser == request.auth.uid ||
+                           resource.data.toUser == null);
+      allow update: if isSignedIn()
+                    && (resource.data.fromUser == request.auth.uid ||
+                        resource.data.toUser == request.auth.uid);
+      allow delete: if false;
+    }
+
+    match /battles/{battleId} {
+      allow create: if isSignedIn()
+                    && (request.resource.data.player1 == request.auth.uid ||
+                        request.resource.data.player2 == request.auth.uid);
+      allow get, list: if isSignedIn()
+                       && (resource.data.player1 == request.auth.uid ||
+                           resource.data.player2 == request.auth.uid);
+      allow update: if isSignedIn()
+                    && (resource.data.player1 == request.auth.uid ||
+                        resource.data.player2 == request.auth.uid);
+      allow delete: if false;
+    }
+
+    // ==================== Question bank / notifications ====================
+    match /question_banks/{bankId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /push_notifications/{notifId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
     match /questions/{document=**} {
-      allow read: if request.auth != null;
+      allow read: if isSignedIn();
       allow write: if false;
     }
 
-    // Catch-all rule for other collections/documents
+    // ==================== Catch-all ====================
     match /{document=**} {
-      allow read: if request.auth != null;
+      allow read: if isSignedIn();
       allow write: if false;
-    }
-
-    // Helper function to check if user is admin
-    function isAdmin() {
-      return request.auth != null && 
-             (request.auth.token.admin == true ||
-              request.auth.token.email == "tasnimahmedutsha600@gmail.com" ||
-              exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
     }
   }
 }
