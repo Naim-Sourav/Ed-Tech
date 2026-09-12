@@ -33,7 +33,7 @@
 
 import { createServer } from 'node:http';
 import { THEME_CSS, SITE } from './theme.mjs';
-import { renderQuestionPage, renderNotFound, slugify, safePath } from './render.mjs';
+import { renderQuestionPage, renderNotFound, slugify, safePath, encodeSlug } from './render.mjs';
 
 const argv = process.argv;
 const portArg = argv.indexOf('--port');
@@ -100,7 +100,7 @@ export function createRestSource({ apiBase = API, refreshMs = 6 * 60 * 60 * 1000
       let slug = safePath(q.slug || '');
       if (!slug) continue;
       if (nextSlug.has(slug)) slug = `${slug}-${id.slice(-6)}`;
-      const rec = { ...q, slug, url: `${SITE}/q/${slug}/` };
+      const rec = { ...q, slug, url: `${SITE}/q/${encodeSlug(slug)}/` };
       nextSlug.set(slug, rec);
       const key = `${q.subject || ''}||${q.chapter || ''}`;
       if (!nextChapter.has(key)) nextChapter.set(key, []);
@@ -185,7 +185,7 @@ export function createSeoHandler({ source = createRestSource(), site = SITE } = 
           res,
           200,
           `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-            items.map((q) => `  <url><loc>${site}/q/${q.slug}/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`).join('\n') +
+            items.map((q) => `  <url><loc>${q.url || `${site}/q/${encodeSlug(q.slug)}/`}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`).join('\n') +
             `\n</urlset>\n`,
           'application/xml; charset=utf-8'
         );
@@ -211,7 +211,7 @@ export function createSeoHandler({ source = createRestSource(), site = SITE } = 
         res,
         200,
         `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-          slice.map((q) => `  <url><loc>${site}/q/${q.slug}/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`).join('\n') +
+          slice.map((q) => `  <url><loc>${q.url || `${site}/q/${encodeSlug(q.slug)}/`}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`).join('\n') +
           `\n</urlset>\n`,
         'application/xml; charset=utf-8'
       );

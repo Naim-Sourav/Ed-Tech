@@ -62,6 +62,21 @@ export function bnSlug(text) {
     .replace(/-$/g, '');
 }
 
+/**
+ * Percent-encode only the characters that make a slug an INVALID URL, leaving
+ * Bengali text as a readable IRI (Google accepts it and the existing sitemap
+ * already ships raw Bengali).
+ *
+ * Real examples pulled out of the bank:
+ *   "10%-Na-2CO-3-..."  -> "%" not followed by two hex digits = malformed escape
+ *   "...-Ni-2+-0-1M-||Ag" -> "|" is not allowed unescaped in a path
+ * Either one makes the <loc> in sitemap.xml invalid, and Google drops the URL.
+ */
+const URL_UNSAFE = /["<>|\\^`{}[\]\s\u0000-\u001f]|%(?![0-9a-fA-F]{2})/g;
+export function encodeSlug(slug) {
+  return String(slug).replace(URL_UNSAFE, (c) => encodeURIComponent(c));
+}
+
 /** Filesystem/URL-safe variant of a slug. */
 export function safePath(slug) {
   const s = String(slug).replace(/[/?#\\]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');

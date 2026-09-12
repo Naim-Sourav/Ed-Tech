@@ -46,6 +46,7 @@ import {
   slugify,
   bnSlug,
   safePath,
+  encodeSlug,
   esc,
   plain,
   bnCount,
@@ -364,7 +365,7 @@ for (const q of allMap.values()) {
   const n = seenSlug.get(q.slug) || 0;
   seenSlug.set(q.slug, n + 1);
   if (n > 0) q.slug = `${q.slug}-${q._id.slice(-6)}`;
-  q.url = `${SITE}/q/${q.slug}/`;
+  q.url = `${SITE}/q/${encodeSlug(q.slug)}/`;
 }
 
 // Index by chapter — real counts for every chapter, even if not every question
@@ -708,9 +709,12 @@ for (const q of pageQuestions) {
     totalQuestions: dbTotal,
   });
 
+  // Directory keeps the RAW slug (that's what the web server decodes the
+  // request path back to); the sitemap gets the percent-encoded form, because
+  // a raw "%" or "|" makes a <loc> an invalid URL and Google drops it.
   writePage(`q/${q.slug}/index.html`, html);
   qBytes += Buffer.byteLength(html, 'utf8');
-  urls.push([`q/${q.slug}`, '0.6']);
+  urls.push([`q/${encodeSlug(q.slug)}`, '0.6']);
   qPages++;
 }
 
