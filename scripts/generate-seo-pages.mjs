@@ -465,7 +465,7 @@ console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
     .join('\n');
 
   const body = `
-<h1>HSC সিলেবাস ২০৬ — বিষয় ও অধ্যায়ভিত্তিক পূর্ণাঙ্গ গাইড</h1>
+<h1>HSC সিলেবাস ২০২৬ — বিষয় ও অধ্যায়ভিত্তিক পূর্ণাঙ্গ গাইড</h1>
 <p class="lede">পরীক্ষাঙ্গন (Porikkhangon)-এর অধ্যায়ভিত্তিক সিলেবাস গাইডে HSC ও ভর্তি পরীক্ষার ${subjects.length}টি বিষয়ের ${totalChapters}টি অধ্যায়ের সম্পূর্ণ টপিক তালিকা, প্রস্তুতি টিপস এবং ফ্রি MCQ প্র্যাকটিসের সুবিধা একসাথে পাবে। নিজের বিষয় বেছে নাও, অধ্যায় খুলে দেখো কোন কোন টপিক থেকে প্রশ্ন আসে — এবং সাথে সাথেই প্রশ্নব্যাংকে প্র্যাকটিস শুরু করো।</p>
 <h2>বিষয় বেছে নাও</h2>
 <div class="grid">${cards}</div>
@@ -477,7 +477,7 @@ console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
 <li>ভুল প্রশ্নগুলো সেভ করে রাখো — রিভিশনের সময় এক ক্লিকে ফিরে পাবে।</li>
 </ul></div>
 <div class="banner"><h2>সিলেবাস জানা যথেষ্ট নয় — প্র্যাকটিসই আসল</h2>
-<p>৫০,০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর ও কুইজ ব্যাটল — সব ফ্রিতে।</p>
+<p>৫০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর ও কুইজ ব্যাটল — সব ফ্রিতে।</p>
 <a href="${SITE}/#/auth">এখনই ফ্রি একাউন্ট খোলো</a></div>`;
 
   const jsonLd = [
@@ -690,7 +690,7 @@ ${q.questionImage ? `<img class="qimg" src="${esc(q.questionImage)}" alt="প্
 ${explHtml}
 ${moreHtml}
 <div class="banner"><h2>একই ধরনের আরও প্রশ্ন সলভ করো</h2>
-<p>৫০,০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>
+<p>৫০,০০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>
 <a href="${SITE}/#/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
 
   const jsonLd = [
