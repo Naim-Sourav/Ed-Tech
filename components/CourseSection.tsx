@@ -3,14 +3,11 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BookOpen, CheckCircle, Users, ArrowRight, FileText, Lock, ChevronLeft, Activity, PlayCircle, ShoppingBag, Info } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useLanguage } from '../contexts/LanguageContext';
-
 import { SHARED_COURSES, Course, Module, ContentItem } from '../data/courses';
 
 const COURSES: Course[] = SHARED_COURSES;
 
 const CourseSection: React.FC = () => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -52,7 +49,7 @@ const CourseSection: React.FC = () => {
     switch (theme) {
       case 'blue': return {
         bg: 'bg-orange-50 dark:bg-orange-900/10',
-        text: 'text-orange-600 dark:text-orange-400',
+        text: 'text-orange-700 dark:text-orange-400',
         border: 'border-orange-100 dark:border-orange-800',
         button: 'bg-orange-600 hover:bg-orange-700',
         badge: 'bg-orange-100 text-orange-700'
@@ -73,7 +70,7 @@ const CourseSection: React.FC = () => {
       };
       case 'orange': return {
         bg: 'bg-orange-50 dark:bg-orange-900/10',
-        text: 'text-orange-600 dark:text-orange-400',
+        text: 'text-orange-700 dark:text-orange-400',
         border: 'border-orange-100 dark:border-orange-800',
         button: 'bg-orange-600 hover:bg-orange-700',
         badge: 'bg-orange-100 text-orange-700'
@@ -132,7 +129,7 @@ const CourseSection: React.FC = () => {
                 <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-200/50 dark:border-zinc-800/50">
                     <div>
                         {isOwned ? (
-                            <span className="text-green-600 font-bold text-xs md:text-sm flex items-center gap-1"><CheckCircle size={12} className="md:w-3.5 md:h-3.5"/> {t('course_active')}</span>
+                            <span className="text-green-600 font-bold text-xs md:text-sm flex items-center gap-1"><CheckCircle size={12} className="md:w-3.5 md:h-3.5"/> {"Active Plan"}</span>
                         ) : (
                             <>
                                 <span className="text-[12px] md:text-xs text-gray-400 line-through block font-bold">৳{course.originalPrice}</span>
@@ -149,14 +146,14 @@ const CourseSection: React.FC = () => {
                             onClick={() => openPlayer(course)}
                             className={`px-5 py-2 md:px-6 md:py-2.5 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95 text-xs md:text-sm uppercase tracking-wider ${themeStyles.button}`}
                         >
-                            {t('course_enroll')} <ArrowRight size={14} className="md:w-4 md:h-4"/>
+                            {"ভর্তি হোন"} <ArrowRight size={14} className="md:w-4 md:h-4"/>
                         </button>
                     ) : (
                         <button 
                             onClick={() => handleEnrollClick(course)}
                             className="px-5 py-2 md:px-6 md:py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl active:scale-95 text-xs md:text-sm uppercase tracking-wider"
                         >
-                            {course.price === 0 ? "ফ্রি এনরোল" : t('course_buy')}
+                            {course.price === 0 ? "ফ্রি এনরোল" : "কিনুন"}
                         </button>
                     )}
                 </div>
@@ -285,7 +282,7 @@ const CourseSection: React.FC = () => {
             {/* Section: Available Courses */}
             <div id="available-courses">
                 <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white mb-3 md:mb-4 flex items-center gap-2">
-                    <ShoppingBag className="text-orange-500" size={20}/> চলমান ও আপকামিং কোর্স
+                    <ShoppingBag className="text-orange-700 dark:text-orange-400" size={20}/> চলমান ও আপকামিং কোর্স
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 max-w-5xl">
                     {availableCourses.map(course => renderCourseCard(course, false))}

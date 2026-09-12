@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 
 // This service handles image uploads to Cloudinary
 
@@ -27,7 +28,7 @@ export const uploadImageToCloudinary = async (file: File): Promise<string> => {
     // Return the secure URL ensuring it's HTTPS and optimized
     return data.secure_url;
   } catch (error) {
-    console.error("Error uploading image:", error);
+    logger.error("Error uploading image:", error);
     throw error;
   }
 };

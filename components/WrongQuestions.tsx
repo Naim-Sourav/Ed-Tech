@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { logger } from '../utils/logger';
+import SafeHtml from './SafeHtml';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserMistakesAPI, deleteUserMistakeAPI, updateUserMistakeCategoryAPI } from '../services/api';
@@ -65,7 +67,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
       setMistakes(prev => prev.map(m => m._id === mistakeId ? { ...m, category } : m));
       showToast("ক্যাটাগরি আপডেট করা হয়েছে", "success");
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       showToast("ক্যাটাগরি আপডেট করা সম্ভব হয়নি", "error");
     } finally {
       setActiveCategoryMenuId(null);
@@ -100,7 +102,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
       const data = await fetchUserMistakesAPI(currentUser.uid);
       setMistakes(data);
     } catch (_e) {
-      console.error(_e);
+      logger.error(_e);
       showToast("লোড করা যায়নি", "error");
     } finally {
       setLoading(false);
@@ -221,9 +223,9 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
           if (window.MathJax && window.MathJax.typesetPromise) {
             const el = document.getElementById(`explanation-${id}`);
             if (el) {
-              window.MathJax.typesetPromise([el]).catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise([el]).catch((err: any) => logger.error(err));
             } else {
-              window.MathJax.typesetPromise().catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise().catch((err: any) => logger.error(err));
             }
           }
         }, 80);
@@ -535,7 +537,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                     {(q.contextText || q.contextImage) && (
                       <div className="mb-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/30">
                         <span className="text-[9px] font-black text-blue-500/50 dark:text-blue-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
-                        {q.contextText && <div className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                        {q.contextText && <SafeHtml html={q.contextText} className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" />}
                         {q.contextImage && (
                           <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                         )}
@@ -611,7 +613,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                       </div>
                       <div className="flex-1">
                         <div className={`${questionFontSize} font-medium text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
-                          <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                          <SafeHtml html={q.question} />
                           {q.questionImage && (
                             <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
                           )}
@@ -670,7 +672,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                               {getBanglaOptionChar(i)}
                             </span>
                             <div className="flex flex-col gap-1 flex-1">
-                              <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} font-semibold whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                              <SafeHtml html={opt} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} font-semibold whitespace-pre-wrap ${getFont(opt)}`} />
                               {q.optionsImages?.[i] && (
                                 <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded border self-start bg-white" referrerPolicy="no-referrer" />
                               )}
@@ -699,7 +701,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                               className="overflow-hidden"
                             >
                               <div id={`explanation-${item._id}`} className="mt-2 p-3 bg-slate-50 dark:bg-zinc-900/40 rounded-xl border border-slate-150 dark:border-zinc-800/80 flex flex-col gap-2 shadow-sm overflow-hidden">
-                                <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-600 dark:text-zinc-300 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                <SafeHtml html={q.explanation} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-600 dark:text-zinc-300 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} />
                                 {q.explanationImage && (
                                   <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                                 )}

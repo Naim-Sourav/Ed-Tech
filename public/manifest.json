@@ -3,6 +3,12 @@
   "name": "Porikkhangon - HSC &amp; Admission AI Tutor",
   "icons": [
     {
+      "src": "./icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
@@ -26,5 +32,6 @@
   "theme_color": "#F9FAFB",
   "background_color": "#ffffff",
   "orientation": "portrait",
-  "id": "porikkhangon-app"
+  "id": "porikkhangon-app",
+  "categories": ["education"]
 }

@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
+import SafeHtml from './SafeHtml';
 import { saveExamResultAPI, updateQuestProgressAPI, saveQuestionAPI, unsaveQuestionAPI, fetchQuestionsByExamRefAPI, recordUserActivityAPI, clearMistakesAPI, fetchExamResultAPI, generateQuizFromDB, fetchQuestionPapersAPI, syncUserToMongoDB, fetchSavedQuestionsAPI } from '../services/api';
 import { fetchPublicExamLeaderboard, getUserRank, submitGuestExamResult, fetchPublicExam } from '../services/publicExamService';
 import { 
@@ -187,7 +189,7 @@ const ExamPage: React.FC = () => {
                     return;
                 }
             } catch (e) {
-                console.error("Failed to check exam status", e);
+                logger.error("Failed to check exam status", e);
             }
         }
 
@@ -235,7 +237,7 @@ const ExamPage: React.FC = () => {
                     return;
                 }
             } catch (e) {
-                console.error("Failed to fetch public exam", e);
+                logger.error("Failed to fetch public exam", e);
             }
 
             if (!currentUser) {
@@ -280,7 +282,7 @@ const ExamPage: React.FC = () => {
                 try {
                     qs = await fetchQuestionsByExamRefAPI(parsedConfig.examRef);
                 } catch (e) {
-                    console.error(e);
+                    logger.error(e);
                     showToast("প্রশ্ন লোড করা যাচ্ছে না।", "error");
                     navigate('/dashboard');
                     return;
@@ -315,7 +317,7 @@ const ExamPage: React.FC = () => {
                     qs = qs.slice(0, 20);
                     
                 } catch (e) {
-                    console.error(e);
+                    logger.error(e);
                     showToast("অধ্যায়ভিত্তিক প্রশ্ন লোড করা যাচ্ছে না।", "error");
                 }
             }
@@ -370,7 +372,7 @@ const ExamPage: React.FC = () => {
                   }
               });
               setSavedQuestionIndices(indices);
-          }).catch((err: any) => console.error("Failed to sync saved questions", err));
+          }).catch((err: any) => logger.error("Failed to sync saved questions", err));
       }
   }, [currentUser, questions]); 
 
@@ -396,7 +398,7 @@ const ExamPage: React.FC = () => {
         }
         // Auth state change will trigger useEffect to re-run initExam
     } catch (err: any) {
-        console.error(err);
+        logger.error(err);
         if (err.code === 'auth/invalid-credential') {
             setAuthError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
         } else if (err.code === 'auth/email-already-in-use') {
@@ -440,7 +442,7 @@ const ExamPage: React.FC = () => {
           .then(() => {
             clearInterval(intervalId);
           })
-          .catch((err: any) => console.log('MathJax typeset failed:', err));
+          .catch((err: any) => logger.debug('MathJax typeset failed:', err));
       }
       if (attempts > 20) {
         clearInterval(intervalId);
@@ -509,7 +511,7 @@ const ExamPage: React.FC = () => {
                 });
             }
         })
-        .catch(err => console.error(err))
+        .catch(err => logger.error(err))
         .finally(() => setLeaderboardLoading(false));
     }
   }, [step, examId, currentUser, config, userAnswers, questions, examDuration]);
@@ -664,7 +666,7 @@ const ExamPage: React.FC = () => {
                     timestamp: submissionTimestamp
                 });
             } catch (err) {
-                console.error("Failed to store attempt in Firebase Firestore:", err);
+                logger.error("Failed to store attempt in Firebase Firestore:", err);
             }
 
             // If Public Exam, also save to public leaderboard
@@ -707,7 +709,7 @@ const ExamPage: React.FC = () => {
             }
         }
     } catch (_e) {
-        console.error(_e);
+        logger.error(_e);
         showToast("সাবমিট করতে সমস্যা হয়েছে", "error");
     } finally {
         localStorage.removeItem(SESSION_KEY);
@@ -826,7 +828,7 @@ const ExamPage: React.FC = () => {
                               {guestExamInfo.totalMarks} Marks
                           </div>
                           <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1.5 rounded-lg">
-                              <HelpCircle size={14} className="text-orange-500" />
+                              <HelpCircle size={14} className="text-orange-700 dark:text-orange-400" />
                               {guestExamInfo.questions?.length || 0} Qs
                           </div>
                       </div>
@@ -1092,7 +1094,7 @@ const ExamPage: React.FC = () => {
                                             </div>
                                         )}
                                         {currentQ.contextText && (
-                                            <div className={`text-base md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 tex2jax_process whitespace-pre-wrap ${getFont(currentQ.contextText)}`} dangerouslySetInnerHTML={{ __html: currentQ.contextText }} />
+                                            <SafeHtml html={currentQ.contextText} className={`text-base md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed font-semibold mb-3 tex2jax_process whitespace-pre-wrap ${getFont(currentQ.contextText)}`} />
                                         )}
                                         {currentQ.contextImage && (
                                             <div className="mb-4 rounded-xl overflow-hidden border border-white dark:border-sky-800/50 bg-white dark:bg-black/20 p-1 shadow-sm">
@@ -1125,7 +1127,7 @@ const ExamPage: React.FC = () => {
 
                                     {/* Question Text (the biggest thing on screen, text-xl to text-2xl) */}
                                     <h2 className={`text-[22px] md:text-3xl font-black text-gray-905 dark:text-gray-50 leading-snug tex2jax_process whitespace-pre-wrap ${getFont(currentQ.question)}`}>
-                                        <div dangerouslySetInnerHTML={{ __html: currentQ.question }} />
+                                        <SafeHtml html={currentQ.question} as="span" />
                                     </h2>
 
                                     {currentQ.questionImage && (
@@ -1262,7 +1264,7 @@ const ExamPage: React.FC = () => {
                                                             <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
                                                             <div className="flex-1 min-w-0 pt-0.5">
                                                                 <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-[17px] md:text-[19px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
-                                                                    <span dangerouslySetInnerHTML={{ __html: q.question }} />
+                                                                    <SafeHtml html={q.question} as="span" />
                                                                 </h3>
                                                                 {q.questionImage && (
                                                                     <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm">
@@ -1474,11 +1476,11 @@ const ExamPage: React.FC = () => {
                   <div className="relative z-10">
                       <div className="w-32 h-32 mx-auto mb-4">
                           <Confetti /> {/* Confetti fallback if Lottie breaks */}
-                          <Flame size={80} className="text-orange-500 fill-orange-500 mx-auto animate-pulse" />
+                          <Flame size={80} className="text-orange-700 dark:text-orange-400 fill-orange-500 mx-auto animate-pulse" />
                       </div>
                       
                       <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-2">
-                          {streakData.streak} <span className="text-2xl font-bold text-orange-500">Days</span>
+                          {streakData.streak} <span className="text-2xl font-bold text-orange-700 dark:text-orange-400">Days</span>
                       </h2>
                       <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-8">
                           Streak on Fire! 🔥
@@ -1492,7 +1494,7 @@ const ExamPage: React.FC = () => {
                                   
                                   return (
                                       <div key={idx} className="flex flex-col items-center gap-2">
-                                          <span className={`text-[12px] font-bold ${isToday ? 'text-orange-500' : 'text-gray-400'}`}>{day.name}</span>
+                                          <span className={`text-[12px] font-bold ${isToday ? 'text-orange-700 dark:text-orange-400' : 'text-gray-400'}`}>{day.name}</span>
                                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-500 ${
                                               isActive 
                                               ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/30 scale-110' 
@@ -1504,8 +1506,8 @@ const ExamPage: React.FC = () => {
                                                   <Check size={18} strokeWidth={4} className="text-white"/>
                                               ) : isToday ? (
                                                   <div className="relative flex items-center justify-center">
-                                                      <CheckCircle size={22} className="text-orange-500/30" strokeWidth={2} />
-                                                      <Check size={12} className="absolute text-orange-500/20" strokeWidth={4} />
+                                                      <CheckCircle size={22} className="text-orange-700 dark:text-orange-400/30" strokeWidth={2} />
+                                                      <Check size={12} className="absolute text-orange-700 dark:text-orange-400/20" strokeWidth={4} />
                                                   </div>
                                               ) : (
                                                   ''
@@ -1751,7 +1753,7 @@ const ExamPage: React.FC = () => {
                                                             <td className="py-2 px-3">
                                                                 <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
                                                                     {name}
-                                                                    {isCurrentUser && <span className="ml-1 text-[9px] bg-orange-100 text-orange-600 px-1 py-0.5 rounded font-bold">YOU</span>}
+                                                                    {isCurrentUser && <span className="ml-1 text-[9px] bg-orange-100 text-orange-700 dark:text-orange-400 px-1 py-0.5 rounded font-bold">YOU</span>}
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
@@ -1777,14 +1779,14 @@ const ExamPage: React.FC = () => {
                                                         </tr>
                                                         <tr className="bg-orange-50 dark:bg-orange-900/20 border-t border-orange-100 dark:border-orange-800">
                                                             <td className="py-2 px-3">
-                                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-orange-600 bg-orange-100">
+                                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-orange-700 dark:text-orange-400 bg-orange-100">
                                                                     {userRank}
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3">
                                                                 <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
                                                                     {currentUser?.displayName || 'Anonymous'}
-                                                                    <span className="ml-1 text-[9px] bg-orange-100 text-orange-600 px-1 py-0.5 rounded font-bold">YOU</span>
+                                                                    <span className="ml-1 text-[9px] bg-orange-100 text-orange-700 dark:text-orange-400 px-1 py-0.5 rounded font-bold">YOU</span>
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
@@ -1860,7 +1862,7 @@ const ExamPage: React.FC = () => {
                                             <span className="font-bold text-gray-400 font-mono text-lg shrink-0 pt-0.5 leading-6 select-none">{String(idx+1).padStart(2,'0')}.</span>
                                             <div className="flex-1 min-w-0 pt-0.5">
                                                 <h3 className={`font-semibold text-slate-905 dark:text-gray-50 text-[17px] md:text-[19px] leading-relaxed tex2jax_process ${getFont(q.question)}`}>
-                                                    <span dangerouslySetInnerHTML={{ __html: q.question }} />
+                                                    <SafeHtml html={q.question} as="span" />
                                                 </h3>
                                                 {q.questionImage && (
                                                     <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm">
@@ -1871,7 +1873,7 @@ const ExamPage: React.FC = () => {
                                                 {/* Tags list */}
                                                 <div className="flex flex-wrap gap-2 mt-3">
                                                     {q.chapter && (
-                                                        <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-orange-100/50 dark:border-orange-900/30">
+                                                        <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-orange-100/50 dark:border-orange-900/30">
                                                             {q.chapter}
                                                         </span>
                                                     )}

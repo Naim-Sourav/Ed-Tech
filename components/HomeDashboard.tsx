@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { logger } from '../utils/logger';
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
@@ -19,7 +20,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
-import { useLanguage } from "../contexts/LanguageContext";
 import { fetchUserStatsAPI, fetchLeaderboardAPI } from "../services/api";
 import { useCache } from "../contexts/CacheContext";
 import { LeaderboardUser } from "../types";
@@ -42,7 +42,6 @@ const HomeDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser, userAvatar, logout } = useAuth();
   const { getCache, setCache } = useCache();
-  const { language, setLanguage, t } = useLanguage();
   const [isQuestionDisplayExpanded, setIsQuestionDisplayExpanded] = useState(false);
 
   const cacheKey = `dashboard_${currentUser?.uid}`;
@@ -90,7 +89,7 @@ const HomeDashboard: React.FC = () => {
           greetingKey: getGreeting(),
         });
       } catch (e) {
-        console.error("Dashboard data load error", e);
+        logger.error("Dashboard data load error", e);
       } finally {
         setIsLoading(false);
       }
@@ -100,9 +99,9 @@ const HomeDashboard: React.FC = () => {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "greeting_morning";
-    else if (hour < 17) return "greeting_afternoon";
-    else return "greeting_evening";
+    if (hour < 12) return "শুভ সকাল";
+    else if (hour < 17) return "শুভ দুপুর";
+    else return "শুভ সন্ধ্যা";
   };
 
   useEffect(() => {
@@ -218,7 +217,7 @@ const HomeDashboard: React.FC = () => {
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 256 256"
               fill="currentColor"
-              className="w-5 h-5 md:w-6 md:h-6 text-orange-500 dark:text-orange-400"
+              className="w-5 h-5 md:w-6 md:h-6 text-orange-700 dark:text-orange-400"
             >
               <rect width="256" height="256" fill="none"></rect>
               <path d="M197.12793,66.60449c-13.07471-20.82129-29.90967-38.67578-44.65332-53.39355a7.99863,7.99863,0,0,0-12.87451,2.22168L108.74951,80.21875,76.47363,58.70117a7.99925,7.99925,0,0,0-11.104,2.23438C45.88135,90.31348,36,116.915,36,140a92,92,0,0,0,184,0C220,115.12207,212.51855,91.11426,197.12793,66.60449Zm-9.8335,82.61621a59.69692,59.69692,0,0,1-50.07275,50.07422,8.11543,8.11543,0,0,1-1.231.09473,8.00055,8.00055,0,0,1-1.21142-15.90723,44.31739,44.31739,0,0,0,36.70263-36.70312,7.99993,7.99993,0,1,1,15.8125,2.4414Z"></path>
@@ -230,7 +229,7 @@ const HomeDashboard: React.FC = () => {
 
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <img
-              src="/letterlogo.svg"
+              src={`${import.meta.env.BASE_URL}letterlogo.svg`}
               alt="Porikkhangon Logo"
               className="h-10 md:h-12 logo-dark-mode"
             />
@@ -264,13 +263,13 @@ const HomeDashboard: React.FC = () => {
             <div className="min-w-0">
               <p className="text-[11px] md:text-xs font-black uppercase tracking-[0.18em] text-orange-100 flex items-center gap-1.5">
                 <Sparkles size={13} className="shrink-0" />
-                {t(getGreeting() as "greeting_morning")}
+                {getGreeting()}
               </p>
               <h1 className="mt-1.5 text-2xl md:text-3xl font-black tracking-tight leading-tight truncate">
                 {currentUser?.displayName || "শিক্ষার্থী"}
               </h1>
               <p className="mt-1 text-xs md:text-sm font-medium text-orange-50/90 leading-relaxed">
-                {t("greeting_sub")}
+                {"আজকের প্রস্তুতি শুরু হোক একটি পরীক্ষা দিয়ে!"}
               </p>
             </div>
 
@@ -320,7 +319,7 @@ const HomeDashboard: React.FC = () => {
         {/* --- PROMO BANNER --- */}
         <div className="relative w-full rounded-[1.75rem] overflow-hidden shadow-md border border-gray-100 dark:border-white/5 group">
           <img
-            src="/banner.png"
+            src={`${import.meta.env.BASE_URL}banner.png`}
             alt="Promo Banner"
             className="w-full h-auto object-cover block transition-transform duration-500 group-hover:scale-[1.02]"
             draggable={false}
@@ -336,7 +335,7 @@ const HomeDashboard: React.FC = () => {
             </h2>
             <button
               onClick={() => navigate("/exams")}
-              className="text-[11px] md:text-xs font-black text-primary hover:text-orange-600 dark:hover:text-orange-300 flex items-center gap-1 transition-colors"
+              className="text-[11px] md:text-xs font-black text-primary hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 flex items-center gap-1 transition-colors"
             >
               পরীক্ষা জোন <ChevronRight size={13} />
             </button>
@@ -378,7 +377,7 @@ const HomeDashboard: React.FC = () => {
             <Flame size={26} className="text-white fill-orange-100/40" />
           </div>
           <div className="flex-1 min-w-0 relative">
-            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.15em] text-orange-500 dark:text-orange-400">
+            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.15em] text-orange-700 dark:text-orange-400">
               ধারাবাহিকতা
             </p>
             <p className="text-sm md:text-base font-black text-gray-900 dark:text-white mt-0.5 leading-tight">
@@ -402,7 +401,7 @@ const HomeDashboard: React.FC = () => {
               </span>
             </div>
           </div>
-          <div className="relative p-2 rounded-full bg-white/70 dark:bg-white/10 text-orange-500 dark:text-orange-400 group-hover:translate-x-0.5 transition-transform shrink-0">
+          <div className="relative p-2 rounded-full bg-white/70 dark:bg-white/10 text-orange-700 dark:text-orange-400 group-hover:translate-x-0.5 transition-transform shrink-0">
             <ChevronRight size={18} />
           </div>
         </motion.button>
@@ -527,7 +526,7 @@ const HomeDashboard: React.FC = () => {
                   let rankBadge = "bg-gray-100 text-gray-500 border-gray-200 dark:bg-white/5 dark:text-zinc-400 dark:border-white/5";
                   if (currentRank === 1) rankBadge = "bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm dark:bg-yellow-500/10 dark:text-yellow-500 dark:border-yellow-500/20";
                   else if (currentRank === 2) rankBadge = "bg-slate-50 text-slate-600 border-slate-200 shadow-sm dark:bg-zinc-500/10 dark:text-zinc-300 dark:border-white/10";
-                  else if (currentRank === 3) rankBadge = "bg-orange-50 text-orange-600 border-orange-200 shadow-sm dark:bg-orange-500/10 dark:text-orange-500 dark:border-orange-500/20";
+                  else if (currentRank === 3) rankBadge = "bg-orange-50 text-orange-700 border-orange-200 shadow-sm dark:bg-orange-500/10 dark:text-orange-500 dark:border-orange-500/20";
                   else if (isMe) rankBadge = "bg-blue-50 text-blue-600 border-blue-200 shadow-sm dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
 
                   return (

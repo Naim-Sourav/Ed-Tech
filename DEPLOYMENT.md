@@ -11,7 +11,12 @@ This project is configured to automatically deploy to GitHub Pages whenever chan
 Once deployed, your website will be available at:
 ডিপ্লয় হওয়ার পরে, আপনার ওয়েবসাইট এই লিংকে পাওয়া যাবে:
 
-**https://naim-sourav.github.io/Ed-Tech/**
+**https://www.porikkhangon.app/** (custom domain via `public/CNAME`)
+
+> The app uses clean URLs (BrowserRouter). Deep links work on GitHub Pages
+> through the `public/404.html` → `?p=` redirect trick restored in `index.html`.
+> `npm run build` also generates static SEO pages (`/hsc-syllabus/...`, `/q/...`)
+> plus `sitemap.xml` into `dist/` — see `SEO-AUDIT.md`.
 
 ## How It Works / এটি কীভাবে কাজ করে
 

@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { PaymentRequest } from '../types';
 import { 
   submitPaymentToAPI, 
@@ -10,6 +11,7 @@ import {
   fetchAdminStatsAPI 
 } from '../services/api';
 import { useAuth } from './AuthContext';
+import { isAdminEmail } from '../utils/adminConfig';
 import { db } from '../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -42,8 +44,8 @@ export const useAdmin = () => {
   return context;
 };
 
-// Define the Admin Email
-const ADMIN_EMAIL = "nurnaimsourav@gmail.com";
+// Admin e-mails live in utils/adminConfig.ts (single source of truth).
+// NOTE: this only gates the UI — firestore.rules + backend must enforce it too.
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
@@ -57,8 +59,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     totalExams: 0
   });
   
-  // Dynamic Admin Check
-  const isAdmin = currentUser?.email === ADMIN_EMAIL;
+  // Dynamic Admin Check (UI gating only — server-side rules enforce the rest)
+  const isAdmin = isAdminEmail(currentUser?.email);
 
   const refreshRequests = async () => {
     // Prevent non-admins from fetching sensitive data
@@ -83,7 +85,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           });
       }
     } catch (error) {
-      console.error("Error fetching admin data:", error);
+      logger.error("Error fetching admin data:", error);
     }
   };
 
@@ -99,7 +101,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Only refresh if the submitter is also an admin (testing purpose), otherwise user doesn't need admin data
       if (isAdmin) await refreshRequests(); 
     } catch (e) {
-      console.error("Error submitting payment:", e);
+      logger.error("Error submitting payment:", e);
       throw e;
     }
   };
@@ -110,7 +112,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await updatePaymentStatusAPI(id, 'APPROVED');
       await refreshRequests();
     } catch (e) {
-      console.error("Error approving:", e);
+      logger.error("Error approving:", e);
       alert("Failed to approve payment.");
     }
   };
@@ -121,7 +123,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await updatePaymentStatusAPI(id, 'REJECTED');
       await refreshRequests();
     } catch (e) {
-      console.error("Error rejecting:", e);
+      logger.error("Error rejecting:", e);
     }
   };
 
@@ -131,7 +133,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await deletePaymentAPI(id);
       await refreshRequests();
     } catch (e) {
-      console.error("Error deleting:", e);
+      logger.error("Error deleting:", e);
     }
   };
 
@@ -154,7 +156,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     } catch (e) {
-      console.error("Error sending notification:", e);
+      logger.error("Error sending notification:", e);
       throw e;
     }
   };

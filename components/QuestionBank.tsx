@@ -6,6 +6,8 @@ import React, {
   useRef,
 } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { logger } from '../utils/logger';
+import SafeHtml from './SafeHtml';
 import { useAuth } from "../contexts/AuthContext";
 import {
   saveQuestionAPI,
@@ -89,300 +91,6 @@ const toBengaliNumber = (num: string | number) => {
     .toString()
     .replace(/\d/g, (match) => bengaliDigits[parseInt(match)]);
 };
-
-// --- MULTI-USE COMPONENT: REVISION QUESTION CARD ---
-const RevisionQuestionCard = React.memo(
-  ({
-    q,
-    idx,
-    userSelected,
-    showAllAnswers,
-    isSaved,
-    onOptionClick,
-    onToggleSave,
-    showChapter = false,
-    isGroupStart = false,
-    isGroupMiddle = false,
-    isGroupEnd = false,
-    stimulusStart,
-    stimulusEnd,
-  }: {
-    q: QuizQuestion;
-    idx: number;
-    userSelected: number | undefined;
-    showAllAnswers: boolean;
-    isSaved: boolean;
-    onOptionClick: (qIdx: number, oIdx: number) => void;
-    onToggleSave: (q: QuizQuestion) => void;
-    showChapter?: boolean;
-    isGroupStart?: boolean;
-    isGroupMiddle?: boolean;
-    isGroupEnd?: boolean;
-    stimulusStart?: number;
-    stimulusEnd?: number;
-  }) => {
-    const cardRef = useRef<HTMLDivElement>(null);
-    const isAnswered = userSelected !== undefined;
-    const showFeedback = isAnswered || showAllAnswers;
-    const isRepeatStimulus = isGroupMiddle || isGroupEnd;
-
-    // Targeted MathJax rendering to prevent global lag
-    useEffect(() => {
-      if (window.MathJax && cardRef.current) {
-        const timer = setTimeout(() => {
-          if (cardRef.current) {
-            window.MathJax.typesetPromise([cardRef.current]).catch((err: any) =>
-              console.error("MathJax card typeset:", err),
-            );
-          }
-        }, 50);
-        return () => clearTimeout(timer);
-      }
-    }, [showFeedback, q.question]);
-
-    let roundedClasses = "rounded-3xl";
-    let borderClasses = "border border-gray-150 dark:border-zinc-800";
-    let marginClass = "mt-5";
-
-    if (isGroupStart) {
-      roundedClasses = "rounded-t-3xl rounded-b-none";
-      borderClasses =
-        "border border-b-dashed border-b-gray-200 dark:border-b-gray-800";
-    } else if (isGroupMiddle) {
-      roundedClasses = "rounded-none";
-      borderClasses =
-        "border-l border-r border-b-dashed border-b-gray-200 dark:border-b-gray-800 border-t-0";
-      marginClass = "mt-0";
-    } else if (isGroupEnd) {
-      roundedClasses = "rounded-b-3xl rounded-t-none";
-      borderClasses = "border border-t-0";
-      marginClass = "mt-0";
-    }
-
-    return (
-      <motion.div
-        ref={cardRef}
-        layout="position"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className={`p-4 pt-5 pb-4 md:px-5 transition-all duration-300 relative group bg-white dark:bg-zinc-950 shadow-sm hover:shadow-md ${roundedClasses} ${borderClasses} ${marginClass}`}
-      >
-        {/* Question Text & Stimulus */}
-        <div className="relative z-10">
-          {(q.contextText || q.contextImage) && !isRepeatStimulus && (
-            <div className="mb-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/30">
-              {stimulusStart && stimulusEnd ? (
-                <div className="mb-2 pb-1 border-b border-blue-100/30 dark:border-blue-800/20 flex flex-col sm:flex-row items-center justify-between gap-1">
-                  <span className="text-[10px] font-black tracking-widest text-blue-500 uppercase font-sans flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                    নিচের উদ্দীপকের আলোকে {toBengaliNumber(stimulusStart)} ও{" "}
-                    {toBengaliNumber(stimulusEnd)} নং প্রশ্নের উত্তর দাও:
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[9px] font-black tracking-widest text-blue-600 dark:text-blue-400 font-sans uppercase">
-                    উদ্দীপক
-                  </span>
-                </div>
-              )}
-              {q.contextText && (
-                <div
-                  className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{ __html: q.contextText }}
-                />
-              )}
-              {q.contextImage && (
-                <div className="mt-2 rounded-xl overflow-hidden bg-white/50 dark:bg-black/10 border border-blue-200/30 p-2 shadow-sm">
-                  <img
-                    src={q.contextImage}
-                    alt="Context"
-                    className="rounded-lg max-h-48 object-contain mx-auto"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex items-start gap-1.5 mb-3">
-            <span className="text-slate-950 dark:text-zinc-100 font-extrabold text-sm md:text-base shrink-0 select-none pt-0.5 min-w-[1.25rem]">
-              {toBengaliNumber(idx + 1)}.
-            </span>
-            <div className="flex-1 min-w-0">
-              <h3
-                className="text-base md:text-[18px] font-medium text-slate-900 dark:text-white leading-relaxed font-tiro whitespace-pre-wrap"
-                id={`q-title-${idx}`}
-              >
-                <div dangerouslySetInnerHTML={{ __html: q.question }} />
-              </h3>
-              {q.questionImage && (
-                <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-gray-950 p-2 max-w-sm mt-2">
-                  <img
-                    src={q.questionImage}
-                    alt="Question"
-                    className="max-h-64 object-contain mr-auto"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              )}
-
-              {/* Tags list */}
-              <div className="flex flex-wrap gap-1.5 items-center mt-2">
-                {q.tags &&
-                  q.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[10px] font-medium bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-100/50 dark:border-orange-800/30"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                {showChapter && q.chapter && (
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border ${q.subject && SUBJECT_DEFINITIONS[q.subject] ? `${SUBJECT_DEFINITIONS[q.subject].bg} ${SUBJECT_DEFINITIONS[q.subject].color} border-current/10` : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-100/50 dark:border-purple-800/30'}`}>
-                    {q.chapter}
-                  </span>
-                )}
-                {isRepeatStimulus && (
-                  <span className="text-[10px] font-medium bg-gray-100 dark:bg-gray-805 text-gray-400 px-2 py-0.5 rounded-lg border border-gray-200/50 dark:border-zinc-800/50 font-sans">
-                    পূর্বের উদ্দীপক
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <button
-              id={`btn-save-rev-${idx}`}
-              onClick={() => onToggleSave(q)}
-              className={`p-2 rounded-xl border transition-all duration-300 ${
-                isSaved
-                  ? "bg-orange-500/10 text-primary border-orange-500/20"
-                  : "bg-gray-50 hover:bg-gray-100 dark:bg-zinc-900 dark:hover:bg-gray-700 border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              }`}
-            >
-              <Bookmark
-                size={18}
-                fill={isSaved ? "currentColor" : "none"}
-                strokeWidth={2}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* Options */}
-        <div className="grid grid-cols-1 gap-1.5 mb-2 pl-0 md:pl-6 mt-4">
-          {q.options.map((option, oIdx) => {
-            const isSelected = userSelected === oIdx;
-            const isRight = oIdx === q.correctAnswerIndex;
-
-            let optionStyle = "bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300";
-            let iconStyle = "bg-white border-slate-200 text-slate-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500";
-
-            if (showFeedback) {
-              if (isRight) {
-                optionStyle = "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-500/50 dark:text-emerald-400 font-medium";
-                iconStyle = "bg-emerald-500 border-emerald-400 text-white";
-              } else if (isSelected) {
-                optionStyle = "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-500/50 dark:text-red-400";
-                iconStyle = "bg-red-500 border-red-400 text-white";
-              }
-            } else if (isSelected) {
-              optionStyle = "bg-orange-50 border-primary text-primary font-bold dark:bg-orange-950/10 dark:text-orange-400";
-              iconStyle = "bg-primary border-primary text-white";
-            }
-
-            return (
-              <button
-                key={oIdx}
-                disabled={showFeedback}
-                onClick={() => onOptionClick(idx, oIdx)}
-                className={`p-2 rounded-xl text-left text-sm md:text-base font-normal transition-all duration-200 border flex items-center gap-3 w-full ${optionStyle} ${
-                  !showFeedback ? "cursor-pointer hover:border-slate-350 dark:hover:border-zinc-700" : ""
-                }`}
-              >
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold border shrink-0 transition-colors ${iconStyle}`}>
-                  {["ক", "খ", "গ", "ঘ"][oIdx] || String.fromCharCode(65 + oIdx)}
-                </span>
-                <div className="flex flex-col gap-1 flex-1">
-                  <span
-                    className="text-[15px] md:text-base font-normal whitespace-pre-wrap leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: option }}
-                  ></span>
-                  {q.optionsImages?.[oIdx] && (
-                    <img
-                      src={q.optionsImages[oIdx]}
-                      alt={`Option ${oIdx}`}
-                      className="h-16 w-fit object-contain rounded border self-start bg-white select-none mt-1"
-                      referrerPolicy="no-referrer"
-                    />
-                  )}
-                </div>
-                {showFeedback && (
-                  <div className="shrink-0 ml-auto">
-                    {isRight ? (
-                      <div className="shrink-0 text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 p-1 rounded-full border border-emerald-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      </div>
-                    ) : (
-                      isSelected && (
-                        <div className="shrink-0 text-rose-500 bg-rose-50 dark:bg-rose-900/30 p-1 rounded-full border border-rose-150">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </div>
-                      )
-                    )}
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Feedback / Explanation */}
-        <AnimatePresence>
-          {showFeedback && q.explanation && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-5 ml-0 md:ml-13 p-4 bg-orange-500/5 dark:bg-orange-500/5 rounded-2xl border border-orange-200/20 shadow-inner flex flex-col gap-2.5">
-                <div className="flex items-center gap-1.5 pb-2 border-b border-orange-500/10">
-                  <BookOpen size={15} className="text-primary" />
-                  <h4 className="text-[11px] font-bold text-primary uppercase tracking-widest font-sans">
-                    ব্যাখ্যা ও তথ্যাবলী
-                  </h4>
-                </div>
-                <div className="text-[15px] md:text-base text-gray-800 dark:text-gray-200 leading-loose font-tiro whitespace-pre-wrap pl-1 overflow-hidden">
-                  <div className="overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }} />
-                  {q.explanationImage && (
-                    <div className="mt-3 rounded-lg overflow-hidden border border-orange-200/20 p-1 max-w-sm bg-white dark:bg-black/20 self-start">
-                      <img
-                        src={q.explanationImage}
-                        alt="Explanation"
-                        className="max-h-48 object-contain"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    );
-  },
-);
-
-RevisionQuestionCard.displayName = "RevisionQuestionCard";
 
 // --- ALL AVAILABLE SUBJECTS (MATCHING SYLLABUS_DB KEYS) ---
 const SUBJECT_DEFINITIONS: Record<
@@ -563,7 +271,7 @@ const NEW_ADMISSION_TAGS = [
     name: "RUET",
     icon: Shield,
     color:
-      "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/20",
+      "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/20",
   },
   {
     id: "jnu-a",
@@ -723,7 +431,7 @@ const QuestionBank: React.FC = () => {
     if (window.MathJax) {
       setTimeout(() => {
         window.MathJax.typesetPromise().catch((err: any) =>
-          console.error("MathJax typeset failed:", err),
+          logger.error("MathJax typeset failed:", err),
         );
       }, 100);
     }
@@ -736,7 +444,7 @@ const QuestionBank: React.FC = () => {
         const stats = await fetchSyllabusStatsAPI(selectedLevel || undefined);
         setSyllabusStats(stats);
       } catch (err) {
-        console.error("Failed to load syllabus stats", err);
+        logger.error("Failed to load syllabus stats", err);
       }
     };
     loadStats();
@@ -809,7 +517,7 @@ const QuestionBank: React.FC = () => {
         setQuestions(sortedFetched);
         setHasMore(fetchedQuestions.length >= 25);
       } catch (err) {
-        console.error(err);
+        logger.error(err);
         if (!ignore) showToast("প্রশ্ন লোড করতে সমস্যা হয়েছে", "error");
       } finally {
         if (!ignore) setLoading(false);
@@ -845,7 +553,7 @@ const QuestionBank: React.FC = () => {
           );
           setSavedQuestionIds(ids);
         })
-        .catch(console.error);
+        .catch(logger.error);
     }
   }, [currentUser]);
 
@@ -1035,9 +743,9 @@ const QuestionBank: React.FC = () => {
           if (window.MathJax && window.MathJax.typesetPromise) {
             const el = document.getElementById(`explanation-${id}`);
             if (el) {
-              window.MathJax.typesetPromise([el]).catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise([el]).catch((err: any) => logger.error(err));
             } else {
-              window.MathJax.typesetPromise().catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise().catch((err: any) => logger.error(err));
             }
           }
         }, 80);
@@ -1148,7 +856,7 @@ const QuestionBank: React.FC = () => {
           }
         }
       } catch (err) {
-        console.error(err);
+        logger.error(err);
       }
     }
 
@@ -1239,10 +947,10 @@ const QuestionBank: React.FC = () => {
       // and "Cannot update a component while rendering a different component" warnings.
       setTimeout(() => {
         if (wasSaved) {
-          unsaveQuestionAPI(currentUser.uid, qId).catch(console.error);
+          unsaveQuestionAPI(currentUser.uid, qId).catch(logger.error);
           showToast("বুকমার্ক রিমুভ করা হয়েছে", "info");
         } else {
-          saveQuestionAPI(currentUser.uid, qId).catch(console.error);
+          saveQuestionAPI(currentUser.uid, qId).catch(logger.error);
           showToast("প্রশ্নটি বুকমার্ক করা হয়েছে", "success");
         }
       }, 0);
@@ -1254,7 +962,7 @@ const QuestionBank: React.FC = () => {
     (question: QuizQuestion) => {
             const url = `${window.location.origin}/q/${question.slug || question.id}/`;
       if (navigator.share) {
-        navigator.share({ title: question.question, url }).catch(console.error);
+        navigator.share({ title: question.question, url }).catch(logger.error);
       } else {
         navigator.clipboard
           .writeText(url)
@@ -1270,7 +978,6 @@ const QuestionBank: React.FC = () => {
   }, [selectedSubject]);
 
   // --- RENDERING VIEWS ---
-
 
 
   return (
@@ -1313,7 +1020,7 @@ const QuestionBank: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 py-4 md:py-6 max-w-4xl mx-auto">
               {[
                 { id: "ACADEMIC", title: "একাডেমিক", subtitle: "বোর্ড ও কলেজ সংক্রান্ত", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-500/10", borderHover: "hover:border-blue-500" },
-                { id: "ADMISSION", title: "ভর্তি পরীক্ষা", subtitle: "ভার্সিটি, মেডিকেল", icon: Stethoscope, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-500/10", borderHover: "hover:border-orange-500" },
+                { id: "ADMISSION", title: "ভর্তি পরীক্ষা", subtitle: "ভার্সিটি, মেডিকেল", icon: Stethoscope, color: "text-orange-700 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/10", borderHover: "hover:border-orange-500" },
                 { id: "MAINBOOK", title: "অনুশীলনী", subtitle: "মেইন বইয়ের প্রশ্ন", icon: BookMarked, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10", borderHover: "hover:border-emerald-500" }
               ].map(item => (
                 <motion.div
@@ -1684,7 +1391,6 @@ const QuestionBank: React.FC = () => {
               )}
 
 
-
               {/* MAIN QUESTIONS CONTAINER */}
               <div className="space-y-4 pt-2">
                 <div className="flex items-center justify-between mb-4">
@@ -1750,7 +1456,7 @@ const QuestionBank: React.FC = () => {
                             {(q.contextText || q.contextImage) && (
                               <div className="mb-4 p-4 bg-sky-50/50 dark:bg-sky-900/10 rounded-2xl border border-sky-100/50 dark:border-sky-800/30 mr-12">
                                 <span className="text-[9px] font-black text-sky-600/50 dark:text-sky-400/50 uppercase tracking-widest mb-1 block">উদ্দীপক</span>
-                                {q.contextText && <div className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.contextText }} />}
+                                {q.contextText && <SafeHtml html={q.contextText} className="text-base md:text-[17px] font-semibold text-gray-800 dark:text-gray-200 leading-relaxed mb-2 whitespace-pre-wrap" />}
                                 {q.contextImage && (
                                   <img src={q.contextImage} alt="Context" className="mt-2 rounded-xl max-h-48 object-contain mx-auto border bg-white dark:bg-black/20 p-1" referrerPolicy="no-referrer" />
                                 )}
@@ -1763,7 +1469,7 @@ const QuestionBank: React.FC = () => {
                                 </span>
                                 <div className="flex-1">
                                     <div className={`${questionFontSize} font-medium text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap ${getFont(q.question)}`}>
-                                      <div dangerouslySetInnerHTML={{ __html: q.question }} />
+                                      <SafeHtml html={q.question} />
                                       {q.questionImage && (
                                         <img src={q.questionImage} alt="Question" className="mt-2 rounded-lg max-h-48 object-contain mr-auto border bg-transparent shadow-sm" referrerPolicy="no-referrer" />
                                       )}
@@ -1837,7 +1543,7 @@ const QuestionBank: React.FC = () => {
                                       {['ক', 'খ', 'গ', 'ঘ'][i] || String.fromCharCode(65 + i)}
                                     </span>
                                     <div className="flex flex-col gap-1 flex-1">
-                                      <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} font-normal whitespace-pre-wrap ${getFont(opt)}`} dangerouslySetInnerHTML={{ __html: opt }} />
+                                      <SafeHtml html={opt} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} font-normal whitespace-pre-wrap ${getFont(opt)}`} />
                                       {q.optionsImages?.[i] && (
                                         <img src={q.optionsImages[i]} alt={`Option ${i}`} className="h-16 w-fit object-contain rounded self-start bg-transparent mix-blend-multiply dark:mix-blend-normal" referrerPolicy="no-referrer" />
                                       )}
@@ -1865,7 +1571,7 @@ const QuestionBank: React.FC = () => {
                                       className="overflow-hidden"
                                     >
                                       <div id={`explanation-${itemId}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
-                                        <div className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-800 dark:text-gray-200 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} dangerouslySetInnerHTML={{ __html: q.explanation }} />
+                                        <SafeHtml html={q.explanation} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-800 dark:text-gray-200 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} />
                                         {q.explanationImage && (
                                           <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
                                         )}

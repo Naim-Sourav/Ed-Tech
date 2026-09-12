@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useAdmin } from '../contexts/AdminContext';
 import { Check, X, Search, Trash2, User, Phone, CreditCard, ShieldCheck, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, Activity, FileText, FileJson, Edit2, Save, Image as ImageIcon, Loader2, Lock, Bookmark, Link as LinkIcon } from 'lucide-react';
 import AdminJsonUpload from './AdminJsonUpload';
@@ -11,6 +12,7 @@ import AdminDuplicateFinder from './AdminDuplicateFinder';
 import { fetchQuestionsFromBankAPI, deleteQuestionFromBankAPI, updateQuestionInBankAPI, createQuestionInBankAPI, fetchNotificationsAPI, deleteNotificationAPI, generateSlugsAPI, refineQuestionsAPI, normalizeText } from '../services/api';
 import { SYLLABUS_DB } from '../services/syllabusData';
 import { useToast } from './Toast';
+import SafeHtml from './SafeHtml';
 import { useNavigate } from 'react-router-dom';
 
 declare global {
@@ -499,7 +501,7 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'DATABASE' && questions.length > 0 && window.MathJax) {
         setTimeout(() => {
-            window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
+            window.MathJax.typesetPromise().catch((err: any) => logger.error('MathJax error:', err));
         }, 200);
     }
   }, [questions, activeTab]);
@@ -511,7 +513,7 @@ const AdminPage: React.FC = () => {
           setQuestions(data.questions);
           setTotalQuestions(data.total);
       } catch (error) {
-          console.error(error);
+          logger.error(error);
       } finally {
           setLoadingQuestions(false);
       }
@@ -528,7 +530,7 @@ const AdminPage: React.FC = () => {
               showToast(data.error || "Failed to generate slugs", "error");
           }
       } catch (error) {
-          console.error(error);
+          logger.error(error);
           showToast("Error generating slugs", "error");
       }
   };
@@ -573,7 +575,7 @@ const AdminPage: React.FC = () => {
           showToast(res.message || "Question bank refined successfully!", "success");
           loadQuestions();
       } catch (err: any) {
-          console.error(err);
+          logger.error(err);
           showToast(err.message || "Failed to refine database", "error");
       }
   };
@@ -584,7 +586,7 @@ const AdminPage: React.FC = () => {
           const data = await fetchNotificationsAPI();
           setNotifications(data);
       } catch (error) {
-          console.error(error);
+          logger.error(error);
       } finally {
           setLoadingNotifs(false);
       }
@@ -825,7 +827,7 @@ const AdminPage: React.FC = () => {
                         <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800">
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">Enrollments</p>
                             <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.totalEnrollments}</p>
-                            <p className="text-xs text-orange-600/70 mt-1">Active Students</p>
+                            <p className="text-xs text-orange-700 dark:text-orange-400/70 mt-1">Active Students</p>
                         </div>
                     </div>
                     <div className="mt-6">
@@ -1161,7 +1163,7 @@ const AdminPage: React.FC = () => {
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
                                                 onClick={() => setEditingQuestion(q)}
-                                                className="p-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
+                                                className="p-1.5 bg-orange-50 text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
                                                 title="Edit"
                                             >
                                                 <Edit2 size={16} />
@@ -1181,16 +1183,13 @@ const AdminPage: React.FC = () => {
                                         {(q.contextText || q.contextImage) && !isRepeatStimulus && (
                                             <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl border-l-4 border-blue-200 dark:border-blue-800 text-sm font-tiro leading-relaxed whitespace-pre-wrap">
                                                 <span className="text-[12px] font-black text-blue-500 uppercase mb-1 block">উদ্দীপক (Context)</span>
-                                                {q.contextText && <div dangerouslySetInnerHTML={{ __html: q.contextText }}></div>}
+                                                {q.contextText && <SafeHtml html={q.contextText} />}
                                                 {q.contextImage && (
                                                     <img src={q.contextImage} alt="Context" className="mt-2 max-h-32 rounded-lg object-contain border border-blue-100 dark:border-blue-800/30" referrerPolicy="no-referrer" />
                                                 )}
                                             </div>
                                         )}
-                                    <h3 
-                                        className="text-lg font-bold text-gray-900 dark:text-white font-tiro leading-relaxed mb-2 whitespace-pre-wrap"
-                                        dangerouslySetInnerHTML={{ __html: q.question }}
-                                    ></h3>
+                                    <SafeHtml as="h3" html={q.question} className="text-lg font-bold text-gray-900 dark:text-white font-tiro leading-relaxed mb-2 whitespace-pre-wrap" />
                                     {q.questionImage && (
                                         <img src={q.questionImage} alt="Question" className="max-h-48 rounded-lg object-contain border border-gray-100 dark:border-zinc-800" referrerPolicy="no-referrer" />
                                     )}
@@ -1207,7 +1206,7 @@ const AdminPage: React.FC = () => {
                                                 <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[12px] font-bold border ${idx === Number(q.correctAnswerIndex) ? 'border-green-500 bg-white dark:bg-zinc-900' : 'border-gray-300 bg-white dark:bg-zinc-900'}`}>
                                                     {String.fromCharCode(65 + idx)}
                                                 </span>
-                                                <span className="font-tiro whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: opt }}></span>
+                                                <SafeHtml as="span" html={opt} className="font-tiro whitespace-pre-wrap" />
                                                 {idx === Number(q.correctAnswerIndex) && <Check size={14} className="ml-auto text-green-600"/>}
                                             </div>
                                             {q.optionsImages?.[idx] && (
@@ -1221,7 +1220,7 @@ const AdminPage: React.FC = () => {
                                 {q.explanation && (
                                     <div className="bg-gray-50 dark:bg-black/50 p-3 rounded-xl border-l-4 border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap overflow-hidden">
                                         <span className="font-bold text-xs uppercase tracking-wider text-gray-400 mb-1 block">Explanation</span>
-                                        <div className="font-tiro leading-relaxed overflow-x-auto max-w-full break-words py-1 scrollbar-thin" dangerouslySetInnerHTML={{ __html: q.explanation }}></div>
+                                        <SafeHtml html={q.explanation} className="font-tiro leading-relaxed overflow-x-auto max-w-full break-words py-1 scrollbar-thin" />
                                         {q.explanationImage && (
                                             <img src={q.explanationImage} alt="Explanation" className="mt-2 max-h-32 rounded-lg object-contain border border-gray-100 dark:border-zinc-800" referrerPolicy="no-referrer" />
                                         )}
@@ -1281,7 +1280,7 @@ const AdminPage: React.FC = () => {
            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 md:p-10 animate-in fade-in slide-in-from-bottom-2">
                <div className="max-w-2xl mx-auto">
                    <div className="text-center mb-8">
-                      <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
                          <Send size={32} />
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">গ্লোবাল নোটিফিকেশন</h2>

@@ -30,6 +30,16 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     };
   }, [isOpen]);
 
+  // Close on Escape for keyboard users
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
   // Server Side Rendering (SSR) check for createPortal
   if (typeof document === 'undefined') return null;
 
@@ -52,6 +62,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || 'ডায়ালগ'}
             className="relative w-full md:max-w-xl bg-white dark:bg-zinc-900 rounded-t-[2.5rem] shadow-2xl overflow-hidden border-t border-gray-200 dark:border-zinc-800 flex flex-col"
             style={{ maxHeight }}
           >
@@ -69,6 +82,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
               )}
               <button
                 onClick={onClose}
+                aria-label="বন্ধ করুন"
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-400 ml-auto"
               >
                 <X size={20} />

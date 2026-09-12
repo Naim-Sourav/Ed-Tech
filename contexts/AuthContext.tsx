@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { auth, googleProvider } from '../services/firebase';
 import { onAuthStateChanged, User, signOut, updateProfile, setPersistence, browserLocalPersistence, signInWithPopup } from 'firebase/auth';
 import { syncUserToMongoDB, fetchUserEnrollments, fetchUserStatsAPI } from '../services/api';
@@ -31,6 +32,7 @@ interface AuthContextType {
   profileLoading: boolean; // New Flag to track API fetch status
   isProfileComplete: boolean;
   logout: () => Promise<void>;
+  dismissOnboarding: () => void;
   updateUserProfile: (name: string, photoURL: string, additionalData?: UserProfileExtended) => Promise<void>;
   enrollInCourse: (course: EnrolledCourse) => void;
   isEnrolled: (contentId: string) => boolean;
@@ -53,18 +55,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userAvatar, setUserAvatar] = useState<string>('');
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [extendedProfile, setExtendedProfile] = useState<UserProfileExtended | null>(null);
+  const [onboardingSkipped, setOnboardingSkipped] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('onboarding_skipped_v1') === '1';
+    } catch (_e) {
+      return false;
+    }
+  });
 
-  // Derive profile completion status
+  const dismissOnboarding = React.useCallback(() => {
+    try {
+      localStorage.setItem('onboarding_skipped_v1', '1');
+    } catch (_e) {
+      // ignore — still hide for this session
+    }
+    setOnboardingSkipped(true);
+  }, []);
+
+  // Derive profile completion status: a display name plus the study profile
+  // (batch/department/target) collected by the onboarding wizard — unless the
+  // user explicitly skipped it.
   const isProfileComplete = React.useMemo(() => {
       if (!currentUser) return false;
-      // We only consider the profile complete if the user has a display name
-      return !!currentUser.displayName;
-  }, [currentUser, extendedProfile]);
+      if (onboardingSkipped) return true;
+      if (!currentUser.displayName) return false;
+      return !!extendedProfile?.hscBatch;
+  }, [currentUser, extendedProfile, onboardingSkipped]);
 
   useEffect(() => {
     setPersistence(auth, browserLocalPersistence)
       .catch((error) => {
-        console.error("Failed to set auth persistence:", error);
+        logger.error("Failed to set auth persistence:", error);
       });
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -105,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                });
            }
         } catch (err) {
-           console.error("Error loading user data", err);
+           logger.error("Error loading user data", err);
         } finally {
            setProfileLoading(false); 
         }
@@ -163,7 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (connected) goOnline();
       });
     }).catch(err => {
-      console.error("Failed to load battleService", err);
+      logger.error("Failed to load battleService", err);
     });
 
     return () => {
@@ -184,7 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const result = await signInWithPopup(auth, googleProvider);
       return result.user;
     } catch (error) {
-      console.error("Google Login Error", error);
+      logger.error("Google Login Error", error);
       throw error;
     }
   };
@@ -228,11 +249,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return enrolledCourses.some(c => c.id === contentId);
   };
 
-  const value = { 
-    currentUser, 
-    loading, 
+  const value = {
+    currentUser,
+    loading,
     profileLoading,
-    logout, 
+    logout,
+    dismissOnboarding,
     userAvatar, 
     enrolledCourses,
     extendedProfile,

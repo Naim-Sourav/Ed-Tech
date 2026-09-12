@@ -1,7 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { logger } from '../utils/logger';
+import SafeHtml from './SafeHtml';
 import { X, Image as ImageIcon, Send, Sparkles, Bot, ExternalLink, ArrowLeft, Trash2, Loader2, CheckCircle, XCircle, HelpCircle, Settings, Key, MoreVertical } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { getGeminiApiKey } from "../services/geminiService";
 import { useNavigate } from 'react-router-dom';
 import { useCache } from '../contexts/CacheContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -92,7 +95,7 @@ const PorikkhangonAI: React.FC = () => {
           return parsed;
         }
       } catch (e) {
-        console.error('Error parsing stats:', e);
+        logger.error('Error parsing stats:', e);
       }
     }
     return { date: new Date().toDateString(), count: 0 };
@@ -116,7 +119,7 @@ const PorikkhangonAI: React.FC = () => {
         const chatContainer = document.getElementById('porikkhangon-chat-container');
         if (chatContainer) {
           window.MathJax.typesetPromise([chatContainer])
-            .catch((err: any) => console.error('MathJax error:', err));
+            .catch((err: any) => logger.error('MathJax error:', err));
           clearInterval(intervalId);
         }
       }
@@ -259,7 +262,7 @@ const PorikkhangonAI: React.FC = () => {
         throw new Error('Empty response');
       }
     } catch (error: any) {
-      console.error('API Key test failed:', error);
+      logger.error('API Key test failed:', error);
       setApiStatus('invalid');
       setApiErrorMessage(error.message || 'API Key কাজ করছে না। দয়া করে সঠিক Key দিন।');
     }
@@ -306,12 +309,13 @@ const PorikkhangonAI: React.FC = () => {
     }
 
     const currentModel = BOT_MODELS[modelIndex];
-    // Use custom API key if provided, otherwise fallback to default env key
-    const apiKeyToUse = customApiKey.trim() || process.env.GEMINI_API_KEY;
+    // Secure key resolution: build-time env key first, else the user's own saved key.
+    // (Never hardcode keys — see services/geminiService.ts)
+    const apiKeyToUse = getGeminiApiKey();
     const ai = new GoogleGenAI({ apiKey: apiKeyToUse });
 
     try {
-        console.log(`Attempting API call with Model: ${currentModel}`);
+        logger.debug(`Attempting API call with Model: ${currentModel}`);
         const response = await ai.models.generateContent({
             model: currentModel,
             contents: currentHistory,
@@ -348,11 +352,11 @@ const PorikkhangonAI: React.FC = () => {
         }
 
     } catch (error: any) {
-        console.error(`Error with model ${currentModel}:`, error);
+        logger.error(`Error with model ${currentModel}:`, error);
         
         // Failover Logic
         if (modelIndex < BOT_MODELS.length - 1) {
-            console.log(`Switching to next model...`);
+            logger.debug(`Switching to next model...`);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
             sendBotMessage(modelIndex + 1);
         } else {
@@ -400,7 +404,7 @@ const PorikkhangonAI: React.FC = () => {
                 <div>
                     <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2 leading-tight">
                         Porikkhangon AI 
-                        <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-md text-[9px] font-bold tracking-wider uppercase border border-orange-500/20">BETA</span>
+                        <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-700 dark:text-orange-400 rounded-md text-[9px] font-bold tracking-wider uppercase border border-orange-500/20">BETA</span>
                     </h3>
                     <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Active Now</p>
                 </div>
@@ -479,7 +483,7 @@ const PorikkhangonAI: React.FC = () => {
                     <div className="p-6 overflow-y-auto">
                         <div className="mb-6">
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center justify-between">
-                                <span className="flex items-center gap-2"><Key size={16} className="text-orange-500"/> Custom API Key</span>
+                                <span className="flex items-center gap-2"><Key size={16} className="text-orange-700 dark:text-orange-400"/> Custom API Key</span>
                                 {apiStatus === 'valid' && <span className="text-[12px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold uppercase tracking-wider">Active</span>}
                             </label>
                             <div className="flex gap-2">
@@ -510,7 +514,7 @@ const PorikkhangonAI: React.FC = () => {
                             <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-widest">Usage Stats</h4>
                             <div className="flex justify-between items-end mb-2">
                                 <span className="text-2xl font-black text-gray-900 dark:text-white">{requestStats.count} <span className="text-xs font-normal text-gray-500">requests</span></span>
-                                <span className="text-xs font-bold text-orange-600">Daily Limit: 1,500</span>
+                                <span className="text-xs font-bold text-orange-700 dark:text-orange-400">Daily Limit: 1,500</span>
                             </div>
                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                                 <motion.div 
@@ -523,7 +527,7 @@ const PorikkhangonAI: React.FC = () => {
 
                         <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800">
                             <h4 className="font-bold text-sm text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-                                <HelpCircle size={18} className="text-orange-500"/> API Key কীভাবে পাবেন?
+                                <HelpCircle size={18} className="text-orange-700 dark:text-orange-400"/> API Key কীভাবে পাবেন?
                             </h4>
                             <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                                 Google AI Studio থেকে ফ্রিতে API Key তৈরি করে এখানে ব্যবহার করতে পারেন।
@@ -565,7 +569,7 @@ const PorikkhangonAI: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6"
                 >
-                    <div className="w-20 h-20 bg-orange-500/10 rounded-3xl flex items-center justify-center text-orange-500 mb-6 animate-bounce">
+                    <div className="w-20 h-20 bg-orange-500/10 rounded-3xl flex items-center justify-center text-orange-700 dark:text-orange-400 mb-6 animate-bounce">
                         <Bot size={40} />
                     </div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">আসসালামু আলাইকুম!</h2>
@@ -637,7 +641,7 @@ const PorikkhangonAI: React.FC = () => {
                                                         .replace(/\n/g, '<br/>');
 
                                                     return (
-                                                        <p key={pIdx} className="whitespace-pre-wrap mb-2 text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{__html: formattedContent}}></p>
+                                                        <SafeHtml html={formattedContent} as="p" key={pIdx} className="whitespace-pre-wrap mb-2 text-gray-700 dark:text-gray-300" />
                                                     );
                                                 } else if (part.type === 'mcq' && part.data) {
                                                     const mcq = part.data;
@@ -647,7 +651,7 @@ const PorikkhangonAI: React.FC = () => {
                                                     return (
                                                         <div key={pIdx} className="bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/10 rounded-2xl p-4 my-4 shadow-sm">
                                                             <p className="font-bold text-sm mb-4 text-gray-900 dark:text-white leading-snug whitespace-pre-wrap">
-                                                                <span className="text-orange-500 mr-2">Q.</span>
+                                                                <span className="text-orange-700 dark:text-orange-400 mr-2">Q.</span>
                                                                 {mcq.question}
                                                             </p>
                                                             <div className="grid grid-cols-1 gap-2">
@@ -691,8 +695,8 @@ const PorikkhangonAI: React.FC = () => {
                                                                     className="mt-4 pt-4 border-t border-gray-200 dark:border-zinc-800"
                                                                 >
                                                                     <div className="flex items-center gap-2 mb-2">
-                                                                        <Sparkles size={14} className="text-orange-500" />
-                                                                        <span className="text-[12px] font-bold uppercase tracking-widest text-orange-500">Explanation</span>
+                                                                        <Sparkles size={14} className="text-orange-700 dark:text-orange-400" />
+                                                                        <span className="text-[12px] font-bold uppercase tracking-widest text-orange-700 dark:text-orange-400">Explanation</span>
                                                                     </div>
                                                                     <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed italic whitespace-pre-wrap">
                                                                         {mcq.explanation}
@@ -791,7 +795,7 @@ const PorikkhangonAI: React.FC = () => {
               <div className="bg-white dark:bg-zinc-900 rounded-[28px] shadow-xl shadow-gray-200/50 dark:shadow-black/20 border border-gray-200/50 dark:border-zinc-800/50 flex items-end p-1.5 gap-1.5">
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-3 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-full transition-all active:scale-90"
+                    className="p-3 text-gray-400 hover:text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-full transition-all active:scale-90"
                   >
                       <ImageIcon size={22} />
                   </button>

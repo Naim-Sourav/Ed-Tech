@@ -1,7 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { logger } from '../utils/logger';
+import SafeHtml from './SafeHtml';
 import { Minimize2, X, Image as ImageIcon, Send, Sparkles, Bot, ExternalLink, ArrowLeft, Trash2, StopCircle, Loader2, CheckCircle, XCircle, HelpCircle } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { getGeminiApiKey } from "../services/geminiService";
 import { useNavigate } from 'react-router-dom';
 import { useCache } from '../contexts/CacheContext';
 
@@ -93,7 +96,7 @@ const SynapseBot: React.FC = () => {
         const chatContainer = document.getElementById('synapse-chat-container');
         if (chatContainer) {
           window.MathJax.typesetPromise([chatContainer])
-            .catch((err: any) => console.error('MathJax error:', err));
+            .catch((err: any) => logger.error('MathJax error:', err));
           clearInterval(intervalId);
         }
       }
@@ -231,10 +234,11 @@ const SynapseBot: React.FC = () => {
     }
 
     const currentModel = BOT_MODELS[modelIndex];
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    // Secure key resolution (build-time env key or the user's own saved key).
+    const ai = new GoogleGenAI({ apiKey: getGeminiApiKey() });
 
     try {
-        console.log(`Attempting API call with Model: ${currentModel}`);
+        logger.debug(`Attempting API call with Model: ${currentModel}`);
         const response = await ai.models.generateContent({
             model: currentModel,
             contents: currentHistory,
@@ -269,11 +273,11 @@ const SynapseBot: React.FC = () => {
         }
 
     } catch (error: any) {
-        console.error(`Error with model ${currentModel}:`, error);
+        logger.error(`Error with model ${currentModel}:`, error);
         
         // Failover Logic
         if (modelIndex < BOT_MODELS.length - 1) {
-            console.log(`Switching to next model...`);
+            logger.debug(`Switching to next model...`);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
             sendBotMessage(modelIndex + 1);
         } else {
@@ -374,7 +378,7 @@ const SynapseBot: React.FC = () => {
                                         .replace(/\n/g, '<br/>');
 
                                      return (
-                                         <p key={pIdx} className="whitespace-pre-wrap mb-2 text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{__html: formattedContent}}></p>
+                                         <SafeHtml html={formattedContent} as="p" key={pIdx} className="whitespace-pre-wrap mb-2 text-gray-700 dark:text-gray-300" />
                                      );
                                  } else if (part.type === 'mcq' && part.data) {
                                      const mcq = part.data;

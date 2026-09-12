@@ -1,5 +1,6 @@
 
 import { db } from "./firebase";
+import { logger } from '../utils/logger';
 import { 
   collection, addDoc, doc, updateDoc, onSnapshot, 
   query, orderBy, serverTimestamp, deleteDoc, 
@@ -38,7 +39,7 @@ export const createGroup = async (name: string, subject: string, userId: string)
     });
     return docRef.id;
   } catch (error) {
-    console.error("Error creating group:", error);
+    logger.error("Error creating group:", error);
     throw error;
   }
 };
@@ -64,7 +65,7 @@ export const joinGroup = async (groupId: string, user: { uid: string, displayNam
       activeCount: increment(1)
     });
   } catch (error) {
-    console.error("Error joining group:", error);
+    logger.error("Error joining group:", error);
     throw error;
   }
 };
@@ -82,7 +83,7 @@ export const leaveGroup = async (groupId: string, userId: string) => {
       activeCount: increment(-1)
     });
   } catch (error) {
-    console.error("Error leaving group:", error);
+    logger.error("Error leaving group:", error);
   }
 };
 
@@ -96,7 +97,7 @@ export const updateMemberStatus = async (groupId: string, userId: string, status
       lastActive: serverTimestamp()
     });
   } catch (error) {
-    console.error("Error updating status:", error);
+    logger.error("Error updating status:", error);
   }
 };
 

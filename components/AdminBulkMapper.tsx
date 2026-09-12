@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useToast } from './Toast';
 import { fetchQuestionsByExamRefAPI, updateQuestionInBankAPI, normalizeText, fetchQuestionBankExamRefsAPI } from '../services/api';
 import { QuizQuestion } from '../types';
@@ -23,7 +24,7 @@ const AdminBulkMapper: React.FC = () => {
             const data = await fetchQuestionBankExamRefsAPI();
             setAvailableExamRefs(data || []);
         } catch (error: any) {
-            console.error(error);
+            logger.error(error);
             showToast("Failed to load available exam refs", "error");
         } finally {
             setIsLoadingRefs(false);

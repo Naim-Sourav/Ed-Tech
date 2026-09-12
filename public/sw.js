@@ -1,132 +1,177 @@
-const CACHE_NAME = 'porikkhangon-pwa-v1';
-const API_CACHE_NAME = 'porikkhangon-api-cache-v1';
+/* Porikkhangon Service Worker (v2)
+ * - App-shell + static asset caching (offline support)
+ * - Firebase Cloud Messaging background handler (merged here so a single SW
+ *   controls the whole scope — do NOT register a second worker)
+ */
+const STATIC_CACHE = 'porikkhangon-static-v2';
+const RUNTIME_CACHE = 'porikkhangon-runtime-v2';
 
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './Pshape.svg',
-  './letterlogo.svg'
+  './letterlogo.svg',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
-// à§§. Install Event: App Shell à¦•à§à¦¯à¦¾à¦¶ à¦•à¦°à¦¾
+// ---- Install: precache the app shell (tolerant: one failure must not kill all)
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Caching App Shell');
-      return cache.addAll(APP_SHELL);
-    })
+    caches.open(STATIC_CACHE).then((cache) =>
+      Promise.allSettled(APP_SHELL.map((url) => cache.add(url)))
+    )
   );
 });
 
-// à§¨. Activate Event: à¦ªà§à¦°à¦¾à¦¨à§‹ à¦•à§à¦¯à¦¾à¦¶ à¦•à§à¦²à¦¿à¦¨ à¦•à¦°à¦¾
+// ---- Activate: drop old caches, take control immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches
+      .keys()
+      .then((names) =>
+        Promise.all(
+          names.map((name) => {
+            if (name !== STATIC_CACHE && name !== RUNTIME_CACHE) {
+              return caches.delete(name);
+            }
+            return Promise.resolve(false);
+          })
+        )
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// à§©. Fetch Event: API Caching à¦à¦¬à¦‚ Offline Support
+// Allow the page to trigger an update: navigator.serviceWorker.controller.postMessage({type:'SKIP_WAITING'})
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// URLs the worker must NEVER touch (auth streams, realtime DB, APIs, FCM).
+const BYPASS = [
+  'firestore.googleapis.com',
+  'firebaseio.com',
+  'fcm.googleapis.com',
+  'firebaseinstallations.googleapis.com',
+  'identitytoolkit.googleapis.com',
+  'securetoken.googleapis.com',
+  '/api/',
+  'onrender.com',
+  'googleapis.com/gemini',
+  'generativelanguage.googleapis.com',
+];
+
+function shouldBypass(url) {
+  return BYPASS.some((part) => url.includes(part));
+}
+
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = req.url;
+  if (shouldBypass(url)) return; // let the browser handle it (no caching)
 
-  // A. API Caching (Firebase à¦¬à¦¾ à¦à¦•à§à¦¸à¦Ÿà¦¾à¦°à§à¦¨à¦¾à¦² à¦¡à¦¾à¦Ÿà¦¾à¦° à¦œà¦¨à§à¦¯ Network First Strategy)
-  if (url.origin !== self.location.origin || url.pathname.includes('/api/')) {
+  // A. Navigations (incl. /?p= deep-link restores): network first, else cached shell.
+  if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          const responseToCache = networkResponse.clone();
-          caches.open(API_CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return networkResponse;
-        })
-        .catch(() => caches.match(event.request)) // à¦…à¦«à¦²à¦¾à¦‡à¦¨à§‡ à¦¥à¦¾à¦•à¦²à§‡ à¦•à§à¦¯à¦¾à¦¶ à¦¥à§‡à¦•à§‡ à¦¡à¦¾à¦Ÿà¦¾ à¦¦à§‡à¦–à¦¾à¦¬à§‡
-    );
-    return;
-  }
-
-  // B. Navigation Requests (SPA Routing)
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => response.status === 200 ? response : caches.match('./index.html'))
+      fetch(req)
+        .then((res) => (res && res.status === 200 ? res : caches.match('./index.html')))
         .catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  // C. Static Assets Caching (Stale-While-Revalidate)
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
-        }
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
-        return networkResponse;
-      });
-    })
-  );
-});
+  const sameOrigin = new URL(url).origin === self.location.origin;
 
-// à§ª. Push Notifications: à¦¬à§à¦¯à¦¾à¦•à¦—à§à¦°à¦¾à¦‰à¦¨à§à¦¡à§‡ à¦¨à§‹à¦Ÿà¦¿à¦«à¦¿à¦•à§‡à¦¶à¦¨ à¦°à¦¿à¦¸à¦¿à¦­ à¦•à¦°à¦¾
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push Received.');
-  let data = { title: 'à¦¨à¦¤à§à¦¨ à¦†à¦ªà¦¡à§‡à¦Ÿ!', content: 'à¦ªà¦°à§€à¦•à§à¦·à¦¾à¦™à§à¦—à¦¨à§‡ à¦¨à¦¤à§à¦¨ à¦•à¦¿à¦›à§ à¦à¦¸à§‡à¦›à§‡, à¦šà§‡à¦• à¦•à¦°à§‡ à¦¦à§‡à¦–à§à¦¨!', url: '/' };
-  
-  if (event.data) {
-    data = event.data.json();
+  // B. Same-origin static assets: stale-while-revalidate.
+  if (sameOrigin) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.status === 200) {
+              const copy = res.clone();
+              caches.open(RUNTIME_CACHE).then((cache) => cache.put(req, copy));
+            }
+            return res;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
+    );
+    return;
   }
 
-  const options = {
-    body: data.content,
-    icon: './Pshape.svg',
-    badge: './Pshape.svg',
-    vibrate: [100, 50, 100],
-    data: { url: data.url }
-  };
-
-  event.waitUntil(self.registration.showNotification(data.title, options));
+  // C. Cross-origin GET (fonts, images): cache first, then network.
+  if (req.destination === 'font' || req.destination === 'image' || req.destination === 'style') {
+    event.respondWith(
+      caches.match(req).then(
+        (cached) =>
+          cached ||
+          fetch(req).then((res) => {
+            if (res && (res.status === 200 || res.type === 'opaque')) {
+              const copy = res.clone();
+              caches.open(RUNTIME_CACHE).then((cache) => cache.put(req, copy));
+            }
+            return res;
+          })
+      )
+    );
+  }
 });
 
-// à¦¨à§‹à¦Ÿà¦¿à¦«à¦¿à¦•à§‡à¦¶à¦¨à§‡ à¦•à§à¦²à¦¿à¦• à¦•à¦°à¦²à§‡ à¦…à§à¦¯à¦¾à¦ª à¦“à¦ªà§‡à¦¨ à¦¹à¦“à§Ÿà¦¾
+// ---- Firebase Cloud Messaging (background) ----
+try {
+  importScripts(
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js'
+  );
+
+  firebase.initializeApp({
+    apiKey: 'AIzaSyBXXaWWoFqn6MpH6IWSm6CGaqUJzAmzbzA',
+    authDomain: 'dopamine-quiz.firebaseapp.com',
+    projectId: 'dopamine-quiz',
+    storageBucket: 'dopamine-quiz.firebasestorage.app',
+    messagingSenderId: '822531459966',
+    appId: '1:822531459966:web:8e7d2385090e997eb1c12f',
+  });
+
+  const messaging = firebase.messaging();
+
+  // Data-only messages need manual display; notification-payload messages are
+  // shown automatically by the SDK — never add a second generic push listener.
+  messaging.onBackgroundMessage((payload) => {
+    if (payload.notification) return; // SDK already displayed it
+    const title = (payload.data && payload.data.title) || 'নতুন আপডেট';
+    const options = {
+      body: (payload.data && payload.data.body) || 'আপনার জন্য একটি নতুন মেসেজ আছে।',
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      data: payload.data || {},
+    };
+    self.registration.showNotification(title, options);
+  });
+} catch (_e) {
+  // Offline during install — messaging simply stays unavailable until next update.
+}
+
+// ---- Notification click: focus the app or open the target URL
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data.url));
-});
-
-// à§«. Background Sync: à¦…à¦«à¦²à¦¾à¦‡à¦¨à§‡ à¦•à§à¦‡à¦œ à¦¸à¦¾à¦¬à¦®à¦¿à¦Ÿ à¦•à¦°à¦²à§‡ à¦‡à¦¨à§à¦Ÿà¦¾à¦°à¦¨à§‡à¦Ÿà§‡ à¦†à¦¸à¦²à§‡ à¦¸à¦¿à¦™à§à¦• à¦¹à¦“à§Ÿà¦¾
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background Sync Triggered:', event.tag);
-  if (event.tag === 'sync-quiz-results') {
-    event.waitUntil(
-      // à¦à¦–à¦¾à¦¨à§‡ à¦†à¦ªà¦¨à¦¾à¦° à¦¡à¦¾à¦Ÿà¦¾à¦¬à§‡à¦¸à§‡ à¦¸à§‡à¦­ à¦•à¦°à¦¾à¦° à¦«à¦¾à¦‚à¦¶à¦¨ à¦•à¦² à¦¹à¦¬à§‡
-      console.log('[SW] Syncing offline quiz results to server...')
-    );
-  }
-});
-
-// à§¬. Periodic Background Sync: à¦ªà§à¦°à¦¤à¦¿à¦¦à¦¿à¦¨ à¦¬à§à¦¯à¦¾à¦•à¦—à§à¦°à¦¾à¦‰à¦¨à§à¦¡à§‡ à¦²à¦¿à¦¡à¦¾à¦°à¦¬à§‹à¦°à§à¦¡ à¦¬à¦¾ à¦•à§‹à§Ÿà§‡à¦¸à§à¦Ÿ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à¦¾
-self.addEventListener('periodicsync', (event) => {
-  console.log('[SW] Periodic Sync Triggered:', event.tag);
-  if (event.tag === 'update-leaderboard') {
-    event.waitUntil(
-      // à¦¡à¦¾à¦Ÿà¦¾à¦¬à§‡à¦¸ à¦¥à§‡à¦•à§‡ à¦¨à¦¤à§à¦¨ à¦²à¦¿à¦¡à¦¾à¦°à¦¬à§‹à¦°à§à¦¡ à¦•à§à¦¯à¦¾à¦¶ à¦•à¦°à¦¾à¦° à¦«à¦¾à¦‚à¦¶à¦¨
-      console.log('[SW] Updating leaderboard data in background...')
-    );
-  }
+  const data = event.notification.data || {};
+  const target = data.url || data.link || data.click_action || '/';
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windows) => {
+        for (const win of windows) {
+          if ('focus' in win) return win.focus();
+        }
+        if (self.clients.openWindow) return self.clients.openWindow(target);
+        return null;
+      })
+  );
 });

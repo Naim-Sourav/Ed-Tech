@@ -176,7 +176,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           <div className="flex items-center gap-3 md:gap-4">
             <button 
               onClick={onLoginClick}
-              className="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-400 hidden sm:block px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+              className="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-700 dark:text-orange-400 hidden sm:block px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
             >
               লগইন
             </button>
@@ -400,7 +400,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                         "২৪ ঘণ্টা এভেইলঅ্যাবল সাপোর্ট"
                     ].map((item, i) => (
                         <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium">
-                        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
                             <Zap size={14} fill="currentColor" />
                         </div>
                         {item}
@@ -458,7 +458,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                         "টার্গেট ভিত্তিক পড়াশোনা"
                     ].map((item, i) => (
                         <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium">
-                        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
                             <Clock size={14} />
                         </div>
                         {item}
@@ -612,11 +612,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
-              { icon: <Clock className="text-orange-500" />, title: "স্মার্ট স্টাডি প্ল্যানার", desc: "তোমার সময় অনুযায়ী অটোমেটিক রুটিন তৈরি করে দেবে আমাদের সিস্টেম।" },
+              { icon: <Clock className="text-orange-700 dark:text-orange-400" />, title: "স্মার্ট স্টাডি প্ল্যানার", desc: "তোমার সময় অনুযায়ী অটোমেটিক রুটিন তৈরি করে দেবে আমাদের সিস্টেম।" },
               { icon: <Archive className="text-red-500" />, title: "ভুল সেভ রাখা", desc: "পরীক্ষায় করা ভুলগুলো আলাদাভাবে সেভ থাকবে যাতে পরে রিভিশন দিতে পারো।" },
-              { icon: <RotateCcw className="text-orange-600" />, title: "আনলিমিটেড রিটেক", desc: "যেকোনো পরীক্ষা যতবার খুশি ততবার দিয়ে নিজেকে শুধরে নেওয়ার সুযোগ।" },
+              { icon: <RotateCcw className="text-orange-700 dark:text-orange-400" />, title: "আনলিমিটেড রিটেক", desc: "যেকোনো পরীক্ষা যতবার খুশি ততবার দিয়ে নিজেকে শুধরে নেওয়ার সুযোগ।" },
               { icon: <Bookmark className="text-amber-500" />, title: "কোশ্চেন সেভ ব্যবস্থা", desc: "গুরুত্বপূর্ণ প্রশ্নগুলো বুকমার্ক করে রাখো এবং যেকোনো সময় প্র্যাকটিস করো।" },
-              { icon: <Swords className="text-orange-500" />, title: "লাইভ কুইজ ব্যাটল", desc: "বন্ধুদের সাথে রিয়েল-টাইম লড়াইয়ে মেতে ওঠো এবং নিজের মেধা যাচাই করো।" },
+              { icon: <Swords className="text-orange-700 dark:text-orange-400" />, title: "লাইভ কুইজ ব্যাটল", desc: "বন্ধুদের সাথে রিয়েল-টাইম লড়াইয়ে মেতে ওঠো এবং নিজের মেধা যাচাই করো।" },
               { icon: <Activity className="text-red-400" />, title: "স্মার্ট প্রোগ্রেস ট্র্যাকিং", desc: "গ্রাফ এবং চার্টের মাধ্যমে তোমার উন্নতির গ্রাফ দেখো প্রতিদিন।" }
             ].map((feature, i) => (
               <div key={i} className="p-6 md:p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800 hover:shadow-xl transition-all group">

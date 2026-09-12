@@ -1,5 +1,6 @@
 
 import { messaging } from './firebase';
+import { logger } from '../utils/logger';
 import { getToken, onMessage } from 'firebase/messaging';
 import { syncUserToMongoDB } from './api';
 import { User } from 'firebase/auth';
@@ -25,8 +26,10 @@ export async function subscribeToPushNotifications(user: User | null) {
       return { error: 'Firebase Messaging শুরু করা যায়নি।' };
     }
 
-    // 2. Register Service Worker with relative path
-    const swPath = './firebase-messaging-sw.js';
+    // 2. Register the single app Service Worker (also handles FCM background
+    // messages — see public/sw.js). One worker per scope: never register a
+    // second one here or they will fight over control.
+    const swPath = './sw.js';
     const registration = await navigator.serviceWorker.register(swPath, {
       scope: './'
     });
@@ -41,14 +44,14 @@ export async function subscribeToPushNotifications(user: User | null) {
     });
 
     if (token && user) {
-      console.log('Token generated successfully');
+      logger.debug('Token generated successfully');
       await syncUserToMongoDB(user, { fcmToken: token });
       return { token };
     }
     
     return { error: 'টোকেন জেনারেট করা যায়নি। আবার চেষ্টা করুন।' };
   } catch (error: any) {
-    console.error('Detailed Error:', error);
+    logger.error('Detailed Error:', error);
     // Provide user-friendly error messages based on common Firebase errors
     if (error.code === 'messaging/permission-blocked') {
       return { error: 'নোটিফিকেশন ব্লক করা আছে। সেটিংস থেকে পারমিশন রিসেট করুন।' };
@@ -73,7 +76,7 @@ export async function checkSubscription() {
 export function onForegroundMessage(callback: (payload: any) => void) {
   if (!messaging) return () => {};
   return onMessage(messaging, (payload) => {
-    console.log('Message received in foreground: ', payload);
+    logger.debug('Message received in foreground: ', payload);
     callback(payload);
   });
 }

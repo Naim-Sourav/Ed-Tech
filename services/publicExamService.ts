@@ -1,5 +1,6 @@
 
 import { db, auth } from './firebase';
+import { logger } from '../utils/logger';
 // Fetch leaderboard for a specific public exam
 import { query, where, getDocs, orderBy, limit, collection, addDoc, doc, getDoc, getCountFromServer } from 'firebase/firestore';
 
@@ -25,7 +26,7 @@ export const fetchPublicExamLeaderboard = async (examId: string) => {
         return (a.timeTaken || 0) - (b.timeTaken || 0);
     });
   } catch (error) {
-    console.error("Error fetching leaderboard:", error);
+    logger.error("Error fetching leaderboard:", error);
     return [];
   }
 };
@@ -57,7 +58,7 @@ export const getUserRank = async (examId: string, score: number, timeTaken: numb
 
     return higherCount + betterTimeCount + 1;
   } catch (error) {
-    console.error("Error fetching rank:", error);
+    logger.error("Error fetching rank:", error);
     return null;
   }
 };
@@ -106,7 +107,7 @@ export const fetchPublicExam = async (examId: string) => {
     try {
         await signInAnonymously(auth);
     } catch (_e) {
-        console.warn("Anonymous auth failed (likely disabled in console). Proceeding unauthenticated.");
+        logger.warn("Anonymous auth failed (likely disabled in console). Proceeding unauthenticated.");
     }
   }
 
@@ -149,11 +150,10 @@ export const submitGuestExamResult = async (examId: string, guestInfo: GuestUser
   const collectionRef = collection(db, 'guest_attempts');
   await addDoc(collectionRef, attemptData);
   
-  // 2. Save leaderboard entry (public)
+  // 2. Save leaderboard entry (PUBLIC — never put e-mail/phone here!)
   const leaderboardData = {
     examId,
-    name: guestInfo.name,
-    email: guestInfo.email,
+    name: (guestInfo.name || 'Guest').trim().slice(0, 100) || 'Guest',
     score: result.score,
     correct: result.correct,
     wrong: result.wrong,

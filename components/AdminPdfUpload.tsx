@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logger } from '../utils/logger';
 import * as pdfjsLib from 'pdfjs-dist';
 import { GoogleGenAI } from "@google/genai";
 import { saveQuestionsToBankAPI } from '../services/api';
@@ -58,12 +59,12 @@ const AdminPdfUpload: React.FC = () => {
     }
 
     const getSubjectIcon = (subject: string) => {
-        if (subject.includes('Physics')) return <Atom size={18} className="text-orange-600 dark:text-orange-400" />;
-        if (subject.includes('Chemistry')) return <Beaker size={18} className="text-orange-600 dark:text-orange-400" />;
-        if (subject.includes('Math')) return <Calculator size={18} className="text-orange-600 dark:text-orange-400" />;
+        if (subject.includes('Physics')) return <Atom size={18} className="text-orange-700 dark:text-orange-400" />;
+        if (subject.includes('Chemistry')) return <Beaker size={18} className="text-orange-700 dark:text-orange-400" />;
+        if (subject.includes('Math')) return <Calculator size={18} className="text-orange-700 dark:text-orange-400" />;
         if (subject.includes('Biology')) return <Dna size={18} className="text-green-600 dark:text-green-400" />;
         if (subject.includes('English') || subject.includes('Bangla')) return <Book size={18} className="text-teal-600 dark:text-teal-400" />;
-        if (subject.includes('ICT')) return <Activity size={18} className="text-orange-600 dark:text-orange-400" />;
+        if (subject.includes('ICT')) return <Activity size={18} className="text-orange-700 dark:text-orange-400" />;
         return <Globe size={18} className="text-gray-600 dark:text-gray-400" />;
     };
 
@@ -93,7 +94,7 @@ const AdminPdfUpload: React.FC = () => {
                 const matches = text.match(questionPattern);
                 setEstimatedCount(matches ? matches.length : 0);
             } catch (error) {
-                console.error("Analysis failed:", error);
+                logger.error("Analysis failed:", error);
                 showToast("Failed to analyze PDF. Please try a different file.", "error");
             } finally {
                 setIsAnalyzing(false);
@@ -193,7 +194,7 @@ const AdminPdfUpload: React.FC = () => {
             return [];
 
         } catch (error) {
-            console.error("Gemini Error:", error);
+            logger.error("Gemini Error:", error);
             return [];
         }
     };
@@ -372,7 +373,7 @@ const AdminPdfUpload: React.FC = () => {
                                 id="pdf-upload"
                             />
                             <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center">
-                                <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mb-4">
+                                <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full flex items-center justify-center mb-4">
                                     <Upload size={28} />
                                 </div>
                                 <span className="text-lg font-bold text-gray-900 dark:text-white">
@@ -386,7 +387,7 @@ const AdminPdfUpload: React.FC = () => {
                             {file && (
                                 <div className="mt-6 space-y-4 w-full max-w-md">
                                     {isAnalyzing ? (
-                                        <div className="flex flex-col items-center gap-2 text-orange-600">
+                                        <div className="flex flex-col items-center gap-2 text-orange-700 dark:text-orange-400">
                                             <Loader2 className="animate-spin" />
                                             <span className="text-sm font-bold">Analyzing PDF structure...</span>
                                         </div>
@@ -396,7 +397,7 @@ const AdminPdfUpload: React.FC = () => {
                                                 Analysis Complete
                                             </p>
                                             <p className="text-gray-600 dark:text-gray-400 text-xs">
-                                                Detected approximately <span className="font-bold text-orange-600 dark:text-orange-400 text-lg">{estimatedCount}</span> questions.
+                                                Detected approximately <span className="font-bold text-orange-700 dark:text-orange-400 text-lg">{estimatedCount}</span> questions.
                                             </p>
                                         </div>
                                     )}
@@ -413,7 +414,7 @@ const AdminPdfUpload: React.FC = () => {
                             )}
                             
                             {isProcessing && (
-                                <p className="mt-4 text-sm font-bold text-orange-600 animate-pulse">{progress}</p>
+                                <p className="mt-4 text-sm font-bold text-orange-700 dark:text-orange-400 animate-pulse">{progress}</p>
                             )}
                         </div>
 

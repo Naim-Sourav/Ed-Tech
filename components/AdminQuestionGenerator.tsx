@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { logger } from '../utils/logger';
 import { generateQuiz } from "../services/geminiService";
 import { saveQuestionsToBankAPI } from "../services/api";
 import { ExamStandard, QuizQuestion } from "../types";
@@ -364,17 +365,17 @@ const AdminQuestionGenerator: React.FC = () => {
   const getSubjectIcon = (subject: string) => {
     if (subject.includes("Physics"))
       return (
-        <Atom size={18} className="text-orange-600 dark:text-orange-400" />
+        <Atom size={18} className="text-orange-700 dark:text-orange-400" />
       );
     if (subject.includes("Chemistry"))
       return (
-        <Beaker size={18} className="text-orange-600 dark:text-orange-400" />
+        <Beaker size={18} className="text-orange-700 dark:text-orange-400" />
       );
     if (subject.includes("Math"))
       return (
         <Calculator
           size={18}
-          className="text-orange-600 dark:text-orange-400"
+          className="text-orange-700 dark:text-orange-400"
         />
       );
     if (subject.includes("Biology"))
@@ -383,7 +384,7 @@ const AdminQuestionGenerator: React.FC = () => {
       return <Book size={18} className="text-teal-600 dark:text-teal-400" />;
     if (subject.includes("ICT"))
       return (
-        <Activity size={18} className="text-orange-600 dark:text-orange-400" />
+        <Activity size={18} className="text-orange-700 dark:text-orange-400" />
       );
     return <Globe size={18} className="text-gray-600 dark:text-gray-400" />;
   };
@@ -792,7 +793,7 @@ const AdminQuestionGenerator: React.FC = () => {
                 await new Promise((r) => setTimeout(r, 1500)); // Rate limit pause
               }
             } catch (err) {
-              console.error("Batch failed", err);
+              logger.error("Batch failed", err);
             }
           }
         }
@@ -801,7 +802,7 @@ const AdminQuestionGenerator: React.FC = () => {
       setProgress("Generation Complete!");
       setTimeout(() => setProgress(""), 3000);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       showToast("সমস্যা হয়েছে।", "error");
     } finally {
       setIsGenerating(false);
@@ -842,7 +843,7 @@ const AdminQuestionGenerator: React.FC = () => {
         setProgress("");
       }, 2000);
     } catch (error: any) {
-      console.error("Save error:", error);
+      logger.error("Save error:", error);
       showToast(error.message || "সেভ এরর", "error");
     } finally {
       setIsSaving(false);
@@ -893,7 +894,7 @@ const AdminQuestionGenerator: React.FC = () => {
       };
       reader.readAsText(file);
     } catch (error) {
-      console.error("File upload error:", error);
+      logger.error("File upload error:", error);
       showToast("Error loading file", "error");
     } finally {
       setIsFileLoading(false);
@@ -905,7 +906,7 @@ const AdminQuestionGenerator: React.FC = () => {
     <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 animate-in fade-in">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center">
-          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
             <Brain size={32} />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -920,7 +921,7 @@ const AdminQuestionGenerator: React.FC = () => {
             <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-xl inline-flex">
               <button
                 onClick={() => setMode("AI")}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mode === "AI" ? "bg-white dark:bg-gray-600 shadow-sm text-orange-600 dark:text-orange-300" : "text-gray-500 dark:text-gray-400"}`}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mode === "AI" ? "bg-white dark:bg-gray-600 shadow-sm text-orange-700 dark:text-orange-300" : "text-gray-500 dark:text-gray-400"}`}
               >
                 <Sparkles size={16} /> AI Generator
               </button>
@@ -1157,7 +1158,7 @@ const AdminQuestionGenerator: React.FC = () => {
                   </button>
                 </div>
                 {isGenerating && (
-                  <p className="text-center text-xs mt-2 text-orange-600 animate-pulse">
+                  <p className="text-center text-xs mt-2 text-orange-700 dark:text-orange-400 animate-pulse">
                     {progress}
                   </p>
                 )}
@@ -1181,7 +1182,7 @@ const AdminQuestionGenerator: React.FC = () => {
                     <button
                       onClick={() => smartFileInputRef.current?.click()}
                       disabled={isFileLoading}
-                      className="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg border border-orange-200 dark:border-orange-800 transition-all"
+                      className="text-xs font-bold text-orange-700 dark:text-orange-400 hover:text-orange-700 flex items-center gap-1 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg border border-orange-200 dark:border-orange-800 transition-all"
                     >
                       {isFileLoading ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -1346,7 +1347,7 @@ const AdminQuestionGenerator: React.FC = () => {
                 </div>
 
                 {isFileLoading && (
-                  <p className="text-center text-xs mt-2 text-orange-600 animate-pulse">
+                  <p className="text-center text-xs mt-2 text-orange-700 dark:text-orange-400 animate-pulse">
                     {progress}
                   </p>
                 )}
@@ -1388,7 +1389,7 @@ Example:
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="text-xs font-bold text-gray-500 hover:text-orange-600 flex items-center gap-1"
+                className="text-xs font-bold text-gray-500 hover:text-orange-700 dark:text-orange-400 flex items-center gap-1"
               >
                 <Upload size={12} /> Import JSON
               </button>

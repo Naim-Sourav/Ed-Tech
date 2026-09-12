@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, CheckCircle, Clock, Trophy, Target, 
@@ -82,7 +83,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
             setLifetimeQuests(updatedLifetime);
         }
       } catch (e) {
-        console.error("Failed to load quests", e);
+        logger.error("Failed to load quests", e);
       } finally {
         setLoading(false);
       }
@@ -132,7 +133,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
           case 'Target': return <Target size={size} className="text-red-500" />;
           case 'FileCheck': return <FileCheck size={size} className="text-blue-500" />;
           case 'Clock': return <Clock size={size} className="text-purple-500" />;
-          case 'Swords': return <Swords size={size} className="text-orange-500" />;
+          case 'Swords': return <Swords size={size} className="text-orange-700 dark:text-orange-400" />;
           case 'Bot': return <Bot size={size} className="text-green-500" />;
           case 'Bookmark': return <Bookmark size={size} className="text-yellow-500" />;
           case 'Crown': return <Crown size={size} className="text-amber-500" />;

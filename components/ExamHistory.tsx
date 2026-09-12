@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -64,7 +65,7 @@ const ExamHistory: React.FC = () => {
           setAttempts(deduplicated);
         }
       } catch (err) {
-        console.error("Failed to sync attempts with Firestore:", err);
+        logger.error("Failed to sync attempts with Firestore:", err);
       } finally {
         if (active) {
           setLoadingAttempts(false);
@@ -95,7 +96,7 @@ const ExamHistory: React.FC = () => {
         try {
           await deleteDoc(doc(db, 'attempts', attemptDocId));
         } catch (fErr) {
-          console.error("Failed to delete from Firestore:", fErr);
+          logger.error("Failed to delete from Firestore:", fErr);
         }
       } else {
         try {
@@ -111,7 +112,7 @@ const ExamHistory: React.FC = () => {
           });
           await Promise.all(promises);
         } catch (fErr) {
-          console.error("Failed to delete from Firestore via query:", fErr);
+          logger.error("Failed to delete from Firestore via query:", fErr);
         }
       }
 
@@ -121,7 +122,7 @@ const ExamHistory: React.FC = () => {
       setAttempts(updatedAttempts.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0)));
       showToast("পরীক্ষাটি ইতিহাস থেকে মুছে ফেলা হয়েছে", "success");
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       showToast("মুছে ফেলা সম্ভব হয়নি", "error");
     } finally {
       setDeletingAttemptId(null);
@@ -207,7 +208,7 @@ const ExamHistory: React.FC = () => {
                 ) : attempts.length === 0 ? (
                   <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-gray-150 dark:border-zinc-800 shadow-sm">
                     <div className="w-16 h-16 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
-                      <FileQuestion size={32} className="text-orange-500" />
+                      <FileQuestion size={32} className="text-orange-700 dark:text-orange-400" />
                     </div>
                     <p className="text-gray-900 dark:text-white font-bold text-base mb-1">কোনো পরীক্ষার রেকর্ড নেই</p>
                     <p className="text-gray-400 text-xs max-w-xs mx-auto leading-relaxed">আপনি এখনও কোনো পরীক্ষায় অংশ নেননি। পরীক্ষা দেওয়ার পর আপনার সকল ফলাফলের বিস্তারিত বিবরণ এখানে দেখতে পাবেন।</p>

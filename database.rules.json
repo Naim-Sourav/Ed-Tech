@@ -6,7 +6,8 @@
     "presence": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'name', 'avatar', 'lastActive']) && newData.child('uid').val() === $uid && newData.child('name').isString() && newData.child('avatar').isString() && newData.child('lastActive').isNumber())"
       }
     },
 
@@ -14,7 +15,8 @@
       "$receiverUid": {
         ".read": "auth != null && auth.uid === $receiverUid",
         "$inviteId": {
-          ".write": "auth != null"
+          ".write": "auth != null && (auth.uid === $receiverUid || (!data.exists() && newData.child('senderUid').val() === auth.uid))",
+          ".validate": "!newData.exists() || (newData.hasChildren(['roomId', 'senderUid', 'senderName', 'subject', 'chapter', 'timestamp']) && newData.child('senderUid').isString() && newData.child('roomId').isString() && newData.child('timestamp').isNumber())"
         }
       }
     },
@@ -22,7 +24,18 @@
     "battles": {
       "$roomId": {
         ".read": "auth != null",
-        ".write": "auth != null"
+        ".write": "auth != null && (data.child('players').hasChild(auth.uid) || (newData.exists() && newData.child('players').hasChild(auth.uid)))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['roomId', 'hostId', 'status', 'players']) && (newData.child('status').val() === 'WAITING' || newData.child('status').val() === 'ACTIVE' || newData.child('status').val() === 'FINISHED'))",
+        "players": {
+          "$playerUid": {
+            "score": {
+              ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000)"
+            },
+            "status": {
+              ".validate": "!newData.exists() || (newData.val() === 'JOINED' || newData.val() === 'READY')"
+            }
+          }
+        }
       }
     }
   }

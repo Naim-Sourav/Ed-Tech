@@ -143,8 +143,8 @@ const AccountMenu: React.FC<{
             {currentUser?.email || ""}
           </p>
           <div className="flex items-center gap-2 mt-3">
-            <span className="inline-flex items-center gap-1 text-[11px] font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/40 px-3 py-1 rounded-full">
-              <Flame size={12} className="fill-orange-500 text-orange-500" />
+            <span className="inline-flex items-center gap-1 text-[11px] font-black text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/40 px-3 py-1 rounded-full">
+              <Flame size={12} className="fill-orange-500 text-orange-700 dark:text-orange-400" />
               {toBengaliNumber(currentStreak)} দিনের স্ট্রিক
             </span>
             {rank && (

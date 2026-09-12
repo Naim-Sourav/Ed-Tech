@@ -273,7 +273,7 @@ footer a:hover{color:var(--brand)}
 <body>
 <header><div class="header-in">
   <a class="brand" href="${SITE}/"><img src="${SITE}/Pshape.svg" alt="পরীক্ষাঙ্গন লোগো"> পরীক্ষাঙ্গন</a>
-  <a class="cta" href="${SITE}/#/auth">ফ্রি শুরু করো</a>
+  <a class="cta" href="${SITE}/auth">ফ্রি শুরু করো</a>
 </div></header>
 <main>
   <nav class="crumb" aria-label="breadcrumb">${crumbHtml}</nav>
@@ -284,8 +284,8 @@ footer a:hover{color:var(--brand)}
   <span>
     <a href="${SITE}/">হোম</a> ·
     <a href="${SITE}/hsc-syllabus/">সিলেবাস গাইড</a> ·
-    <a href="${SITE}/#/privacy">প্রাইভেসি</a> ·
-    <a href="${SITE}/#/terms">টার্মস</a>
+    <a href="${SITE}/privacy">প্রাইভেসি</a> ·
+    <a href="${SITE}/terms">টার্মস</a>
   </span>
 </div></footer>
 </body>
@@ -478,7 +478,7 @@ console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
 </ul></div>
 <div class="banner"><h2>সিলেবাস জানা যথেষ্ট নয় — প্র্যাকটিসই আসল</h2>
 <p>৫০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর ও কুইজ ব্যাটল — সব ফ্রিতে।</p>
-<a href="${SITE}/#/auth">এখনই ফ্রি একাউন্ট খোলো</a></div>`;
+<a href="${SITE}/auth">এখনই ফ্রি একাউন্ট খোলো</a></div>`;
 
   const jsonLd = [
     breadcrumbLd([
@@ -535,7 +535,7 @@ for (const [subject, chapters] of subjects) {
 <ul class="topics">${tips.map((t) => `<li>${esc(t)}</li>`).join('\n')}</ul></div>
 <div class="banner"><h2>${esc(subject)}-এর MCQ প্র্যাকটিস করো ফ্রিতে</h2>
 <p>অধ্যায়ভিত্তিক প্রশ্নব্যাংক, ব্যাখ্যাসহ উত্তর ও প্রোগ্রেস ট্র্যাকিং।</p>
-<a href="${SITE}/#/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}">প্রশ্নব্যাংক খোলো</a></div>`;
+<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}">প্রশ্নব্যাংক খোলো</a></div>`;
 
     const jsonLd = [
       breadcrumbLd([
@@ -607,7 +607,7 @@ ${sampleHtml}
 ${pager}
 <div class="banner"><h2>"${esc(chapter)}" এর প্রশ্ন প্র্যাকটিস করবে?</h2>
 <p>ব্যাখ্যাসহ উত্তর, টাইমার ও ইনস্ট্যান্ট রেজাল্ট — একদম ফ্রি।</p>
-<a href="${SITE}/#/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}">এই অধ্যায়ের প্রশ্ন সলভ করো</a></div>`;
+<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}">এই অধ্যায়ের প্রশ্ন সলভ করো</a></div>`;
 
     const jsonLd = [
       breadcrumbLd([
@@ -691,7 +691,7 @@ ${explHtml}
 ${moreHtml}
 <div class="banner"><h2>একই ধরনের আরও প্রশ্ন সলভ করো</h2>
 <p>৫০,০০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>
-<a href="${SITE}/#/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
+<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
 
   const jsonLd = [
     breadcrumbLd(crumbs),
@@ -738,13 +738,19 @@ ${moreHtml}
 
 // --- Root + sitemap --------------------------------------------------------
 urls.push(['/', '1.0']);
+// Client-rendered app entry points (BrowserRouter deep links, no trailing slash).
+urls.push(['auth', '0.7']);
+urls.push(['privacy', '0.4']);
+urls.push(['terms', '0.4']);
+urls.push(['refund', '0.3']);
+const NO_TRAILING_SLASH = new Set(['auth', 'privacy', 'terms', 'refund']);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls
   .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0]))
   .map(
     ([p, pr]) => `  <url>
-    <loc>${p === '/' ? `${SITE}/` : `${SITE}/${p}/`}</loc>
+    <loc>${p === '/' ? `${SITE}/` : NO_TRAILING_SLASH.has(p) ? `${SITE}/${p}` : `${SITE}/${p}/`}</loc>
     <lastmod>${TODAY}</lastmod>
     <changefreq>${pr === '0.6' ? 'monthly' : 'weekly'}</changefreq>
     <priority>${pr}</priority>

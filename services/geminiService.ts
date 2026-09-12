@@ -1,51 +1,71 @@
 
 import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { logger } from '../utils/logger';
 import { QuizQuestion, Subject, AdmissionResult, SearchSource, ExamStandard, QuizConfig, DifficultyLevel } from "../types";
 
 // ============================================================
-// 🔑 API KEY CONFIGURATION
+// 🔑 API KEY CONFIGURATION (SECURE)
 // ============================================================
-// নিচে কোটেশনের ভেতর আপনার API Key টি পেস্ট করুন (প্রাইভেট রিপোর জন্য)
-const DIRECT_API_KEY = ""; 
+// ⚠️ NEVER hardcode API keys in this file. This repo is public and
+// anything here ships inside the browser bundle where anyone can read it.
+// Keys are resolved ONLY from, in priority order:
+//   1. Build-time env vars  (VITE_GEMINI_API_KEY / VITE_API_KEY / GEMINI_API_KEY)
+//   2. The end-user's OWN key saved in their browser (AI Settings screen)
+// Long-term the AI calls should move to a backend proxy — see SECURITY.md.
+const CUSTOM_KEY_STORAGE_KEY = 'porikkhangon_custom_api_key';
 
-// Helper to safely get Env Variable
-const getEnvKey = () => {
+const readEnvKey = (): string => {
+  // Vite browser build
+  try {
+    // @ts-ignore - import.meta.env is provided by Vite
+    const viteEnv = typeof import.meta !== 'undefined' ? import.meta.env : undefined;
+    const viteKey = viteEnv?.VITE_GEMINI_API_KEY || viteEnv?.VITE_API_KEY || viteEnv?.GEMINI_API_KEY;
+    if (typeof viteKey === 'string' && viteKey.length > 10) return viteKey;
+  } catch (_e) {
+    // ignore
+  }
+
+  // AI Studio / Node-style runtimes (guarded: `process` does not exist in browsers)
   try {
     // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
-      // @ts-ignore
-      return import.meta.env.VITE_API_KEY;
-    }
+    const nodeEnv = typeof process !== 'undefined' ? process.env : undefined;
+    const nodeKey = nodeEnv?.GEMINI_API_KEY || nodeEnv?.VITE_GEMINI_API_KEY || nodeEnv?.VITE_API_KEY;
+    if (typeof nodeKey === 'string' && nodeKey.length > 10) return nodeKey;
   } catch (_e) {
-    // console.warn("Environment variable read failed", _e);
+    // ignore
   }
-  
-  try {
-    // @ts-ignore
-    if (typeof process !== 'undefined' && process.env && process.env.VITE_API_KEY) {
-      // @ts-ignore
-      return process.env.VITE_API_KEY;
-    }
-  } catch (_e) {
-    console.warn("Failed to retrieve API key from process.env", _e);
-  }
-  
-  return "";
+
+  return '';
 };
 
-// API Key Rotation Pool
-const API_KEYS = [
-  DIRECT_API_KEY, // Highest priority
-  getEnvKey(),
-  "AIzaSyBNJxFT8X1ldhADeCUNXpRp-b2k2uM2RIw", // Fallback 1
-  "AIzaSyA3Z-b1YZfuHc-e2leBTOiKkGWLawLsRvw", // Fallback 2
-  "AIzaSyBgVW3lgdx67iuDAdzT1AXFXx5RNmeJXt0"  // Fallback 3
-].filter((key) => key && key.length > 10 && key.startsWith('AIzaSy'));
+const readCustomKey = (): string => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return (localStorage.getItem(CUSTOM_KEY_STORAGE_KEY) || '').trim();
+    }
+  } catch (_e) {
+    // localStorage unavailable (private mode etc.)
+  }
+  return '';
+};
+
+/** Resolve the Gemini API key. Returns "" when none is configured. */
+export const getGeminiApiKey = (): string => {
+  return readEnvKey() || readCustomKey();
+};
+
+/** True when at least one API key source is available. */
+export const isGeminiConfigured = (): boolean => {
+  return getGeminiApiKey().length > 10;
+};
 
 const getClient = () => {
-  const apiKey = API_KEYS[0] || API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    console.warn("API Key is missing. Please add it to DIRECT_API_KEY in geminiService.ts");
+    logger.warn(
+      "Gemini API Key is missing. Set VITE_GEMINI_API_KEY in .env (see .env.example) " +
+      "or add your own key in the app's AI Settings screen."
+    );
   }
   return new GoogleGenAI({ apiKey: apiKey || 'dummy_key' });
 };
@@ -159,7 +179,7 @@ export const generatePorikkhangonResponse = async (
          return { text: response.text, sources: [] };
       }
   } catch (_e) {
-    console.error("Porikkhangon AI: Final backoff failed.");
+    logger.error("Porikkhangon AI: Final backoff failed.");
   }
 
   throw lastError || new Error("Failed to generate response.");
@@ -193,7 +213,7 @@ export const explainConcept = async (
 
     return response.text || "দুঃখিত, আমি উত্তরটি তৈরি করতে পারিনি।";
   } catch (error) {
-    console.error("Error in explainConcept:", error);
+    logger.error("Error in explainConcept:", error);
     throw error;
   }
 };
@@ -287,7 +307,7 @@ export const generateQuiz = async (
     let lastError: any = null;
     for (const model of GENERATIVE_MODELS) {
       try {
-        console.log(`Generating quiz with model: ${model}`);
+        logger.debug(`Generating quiz with model: ${model}`);
         const response = await ai.models.generateContent({
           model: model,
           contents: prompt,
@@ -312,16 +332,16 @@ export const generateQuiz = async (
           return finalQuestions.slice(0, count);
         }
       } catch (error: any) {
-        console.warn(`Model ${model} failed:`, error.message);
+        logger.warn(`Model ${model} failed:`, error.message);
         lastError = error;
       }
     }
 
-    console.error("All models failed to generate quiz.");
+    logger.error("All models failed to generate quiz.");
     throw lastError || new Error("Failed to generate quiz.");
 
   } catch (error) {
-    console.error("Error generating quiz:", error);
+    logger.error("Error generating quiz:", error);
     throw error;
   }
 };
@@ -359,7 +379,7 @@ export const searchAdmissionInfo = async (query: string): Promise<AdmissionResul
 
     return { text, sources };
   } catch (error) {
-    console.error("Error searching admission info:", error);
+    logger.error("Error searching admission info:", error);
     throw error;
   }
 };
@@ -431,7 +451,7 @@ export const enrichQuestionList = async (
       await new Promise(r => setTimeout(r, 1000));
 
     } catch (e) {
-      console.error("Batch processing failed:", e);
+      logger.error("Batch processing failed:", e);
       const fallback = chunk.map((q: any) => ({
          question: q.question,
          options: q.options || [],

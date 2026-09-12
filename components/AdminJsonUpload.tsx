@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { logger } from '../utils/logger';
 import { saveQuestionsToBankAPI, normalizeText } from "../services/api";
 import { SYLLABUS_DB } from "../services/syllabusData";
 import { QuizQuestion, QuestionPaperMetadata } from "../types";
@@ -414,16 +415,16 @@ const AdminJsonUpload: React.FC = () => {
           if (previewListRef.current) {
             window.MathJax.typesetClear([previewListRef.current]);
             window.MathJax.typesetPromise([previewListRef.current]).catch((err: any) =>
-              console.error("MathJax error:", err),
+              logger.error("MathJax error:", err),
             );
           } else {
             window.MathJax.typesetClear();
             window.MathJax.typesetPromise().catch((err: any) =>
-              console.error("MathJax error:", err),
+              logger.error("MathJax error:", err),
             );
           }
         } catch (e) {
-          console.error("MathJax trigger error:", e);
+          logger.error("MathJax trigger error:", e);
         }
       }, 150);
       return () => clearTimeout(timer);
@@ -843,7 +844,7 @@ const AdminJsonUpload: React.FC = () => {
       setProcessedQuestions([]);
       setRawInput("");
     } catch (error: any) {
-      console.error("Save error:", error);
+      logger.error("Save error:", error);
       showToast(error.message || "সেভ এরর", "error");
     } finally {
       setIsSaving(false);
@@ -1314,7 +1315,7 @@ const AdminJsonUpload: React.FC = () => {
                           q.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="px-2 py-1 bg-orange-50 text-orange-600 text-[9px] font-black rounded-lg border border-orange-100"
+                              className="px-2 py-1 bg-orange-50 text-orange-700 dark:text-orange-400 text-[9px] font-black rounded-lg border border-orange-100"
                             >
                               {tag}
                             </span>
