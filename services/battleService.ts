@@ -1,5 +1,6 @@
 
 import { ref, set, get, update, remove, onValue, off, runTransaction, child, serverTimestamp, onDisconnect } from "firebase/database";
+import { logger } from '../utils/logger';
 import { rtdb } from "./firebase";
 import { QuizQuestion } from "../types";
 
@@ -269,7 +270,7 @@ export const listenToBattleRoom = (roomId: string, callback: (data: BattleRoom |
       callback(val);
     },
     (error) => {
-      console.error("RTDB Listener Error:", error);
+      logger.error("RTDB Listener Error:", error);
       if (onError) onError(error);
     }
   );

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { FileCheck, ShoppingBag, ArrowRight, CheckCircle2, ChevronLeft, Timer, CheckCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,7 +26,7 @@ const ExamPackSection: React.FC = () => {
         const data = await fetchExamPacksAPI();
         setPacks(data);
       } catch (err) {
-        console.error("Failed to load exam packs", err);
+        logger.error("Failed to load exam packs", err);
       } finally {
         setLoading(false);
       }

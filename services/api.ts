@@ -1,6 +1,7 @@
 
 // ... (imports from types.ts)
 import { PaymentRequest, Notification, LeaderboardUser, ExamPack, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
+import { logger } from '../utils/logger';
 import { normalizeBangla } from "../utils/normalization";
 import { auth } from "./firebase";
 
@@ -32,7 +33,7 @@ export const getAuthHeaders = async (): Promise<Record<string, string>> => {
       if (token) return { Authorization: `Bearer ${token}` };
     }
   } catch (e) {
-    console.warn('[API] Could not get auth token; calling backend unauthenticated.', e);
+    logger.warn('[API] Could not get auth token; calling backend unauthenticated.', e);
   }
   return {};
 };
@@ -190,7 +191,7 @@ const fetchWithFallback = async (endpoint: string, options: RequestInit = {}, fa
     // 3. Fallback Mechanism
     if (fallback !== undefined) {
         // Log as info instead of warn to reduce noise for expected 404s
-        console.info(`[API Fallback] ${endpoint}: ${error.message}`);
+        logger.info(`[API Fallback] ${endpoint}: ${error.message}`);
         return fallback;
     }
     throw error;
@@ -415,7 +416,7 @@ export const generateSlugsAPI = async () => {
         if (!response.ok) throw new Error('Failed to generate slugs');
         return await response.json();
     } catch (error) {
-        console.error("Error generating slugs:", error);
+        logger.error("Error generating slugs:", error);
         throw error;
     }
 };
@@ -429,7 +430,7 @@ export const refineQuestionsAPI = async () => {
         if (!response.ok) throw new Error('Failed to refine questions');
         return await response.json();
     } catch (error) {
-        console.error("Error refining questions:", error);
+        logger.error("Error refining questions:", error);
         throw error;
     }
 };
@@ -440,7 +441,7 @@ export const fetchAdmissionTagsAPI = async () => {
         if (!response.ok) throw new Error('Failed to fetch tags');
         return await response.json();
     } catch (error) {
-        console.error("Error fetching tags:", error);
+        logger.error("Error fetching tags:", error);
         throw error;
     }
 };
@@ -455,7 +456,7 @@ export const mapTagsToCategoryAPI = async (category: string, tags: string[]) => 
         if (!response.ok) throw new Error('Failed to map tags');
         return await response.json();
     } catch (error) {
-        console.error("Error mapping tags:", error);
+        logger.error("Error mapping tags:", error);
         throw error;
     }
 };
@@ -469,7 +470,7 @@ export const cleanupQuestionsAPI = async (type: 'remove-difficulty' | 'cull-ai')
         if (!response.ok) throw new Error('Failed to cleanup questions');
         return await response.json();
     } catch (error) {
-        console.error("Error cleaning up questions:", error);
+        logger.error("Error cleaning up questions:", error);
         throw error;
     }
 };
@@ -636,7 +637,7 @@ export const fetchIncompleteExamRefsAPI = async () => {
           return data;
       }
   } catch {
-      console.warn("Fast API failed, falling back to client-side evaluation.");
+      logger.warn("Fast API failed, falling back to client-side evaluation.");
   }
   
   // Fallback: manually fetch questions for all refs and find incomplete ones
@@ -664,7 +665,7 @@ export const fetchIncompleteExamRefsAPI = async () => {
       }
       return incompleteRefs;
   } catch (e) {
-      console.error(e);
+      logger.error(e);
       return [];
   }
 };

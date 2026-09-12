@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -169,7 +170,7 @@ const QuizArena: React.FC = () => {
         const stats = await fetchSyllabusStatsAPI();
         setSyllabusStats(stats);
       } catch (err) {
-        console.error("Failed to load syllabus stats", err);
+        logger.error("Failed to load syllabus stats", err);
       }
     };
     loadStats();
@@ -440,7 +441,7 @@ const QuizArena: React.FC = () => {
             isPracticeMode: true
         });
     } catch (err) {
-        console.error("Failed to load mistakes", err);
+        logger.error("Failed to load mistakes", err);
         showToast("ভুল প্রশ্ন লোড করা যায়নি", 'error');
         setSearchParams({ step: 'SELECTION' }, { replace: true });
     }
@@ -583,7 +584,7 @@ const QuizArena: React.FC = () => {
 
       qs = finalQs;
       
-      if (isAiGenerated) saveQuestionsToBankAPI(qs).catch(e => console.log("Auto-harvest failed", e));
+      if (isAiGenerated) saveQuestionsToBankAPI(qs).catch(e => logger.debug("Auto-harvest failed", e));
 
       // SAVE CONFIG AND REDIRECT TO EXAM PAGE WITH UNIQUE ID
       const examId = `exam_${Date.now()}_${Math.floor(Math.random()*1000)}`;
@@ -605,7 +606,7 @@ const QuizArena: React.FC = () => {
       navigate(`/exam/${examId}`);
 
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       showToast("দুঃখিত, প্রশ্ন লোড করা যায়নি।", "error");
       setSearchParams(prev => {
         const newP = new URLSearchParams(prev);

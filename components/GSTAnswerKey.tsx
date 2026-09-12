@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { 
@@ -105,7 +106,7 @@ const GSTAnswerKey: React.FC = () => {
           setQuestions(GST_A_UNIT_DATA.questions);
         }
       } catch (error) {
-        console.error("Failed to load GST questions:", error);
+        logger.error("Failed to load GST questions:", error);
         setQuestions(GST_A_UNIT_DATA.questions);
       } finally {
         setLoading(false);
@@ -126,7 +127,7 @@ const GSTAnswerKey: React.FC = () => {
   useEffect(() => {
     if (questions.length > 0 && window.MathJax) {
       setTimeout(() => {
-        window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
+        window.MathJax.typesetPromise().catch((err: any) => logger.error('MathJax error:', err));
       }, 200);
     }
   }, [questions, filteredQuestions]);
@@ -144,7 +145,7 @@ const GSTAnswerKey: React.FC = () => {
         title: GST_A_UNIT_DATA.examName,
         text: 'GST A Unit ২০২৫-২৬ এর প্রশ্ন ও উত্তরপত্র দেখে নিন আমাদের অ্যাপে!',
         url: window.location.href,
-      }).catch(console.error);
+      }).catch(logger.error);
     } else {
       navigator.clipboard.writeText(window.location.href);
       showToast("লিঙ্ক কপি করা হয়েছে", "success");

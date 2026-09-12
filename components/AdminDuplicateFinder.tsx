@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { Trash2, GitMerge, Check, AlertCircle, Loader2, FileText, Search, Zap, CheckCircle2 } from 'lucide-react';
 import { useToast } from './Toast';
 import { deleteQuestionFromBankAPI, fetchQuestionsFromBankAPI, updateQuestionInBankAPI, autoScanDuplicatesAPI, autoMergeDuplicatesAPI } from '../services/api';
@@ -39,7 +40,7 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
     useEffect(() => {
         if (duplicates.length > 0 && window.MathJax) {
             setTimeout(() => {
-                window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
+                window.MathJax.typesetPromise().catch((err: any) => logger.error('MathJax error:', err));
             }, 200);
         }
     }, [duplicates]);
@@ -137,7 +138,7 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
                     setHasScanned(false);
                     showToast(`Bulk merge completed successfully! Merged ${mergedCount} groups, removed ${deletedCount} redundant questions.`, "success");
                 } catch (e) {
-                    console.error("Merge error:", e);
+                    logger.error("Merge error:", e);
                     showToast("Failed to merge duplicates automatically", "error");
                 } finally {
                     setIsAutoMerging(false);
@@ -372,7 +373,7 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
                     showToast(`Successfully merged ${mergedCount} groups! Removed ${deletedCount} redundant copies.`, "success");
                     setDuplicates([]);
                 } catch (e) {
-                    console.error(e);
+                    logger.error(e);
                     showToast("Failed to complete bulk merging.", "error");
                 } finally {
                     setIsMergingAll(false);

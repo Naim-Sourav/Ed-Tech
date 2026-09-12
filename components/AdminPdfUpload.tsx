@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logger } from '../utils/logger';
 import * as pdfjsLib from 'pdfjs-dist';
 import { GoogleGenAI } from "@google/genai";
 import { saveQuestionsToBankAPI } from '../services/api';
@@ -93,7 +94,7 @@ const AdminPdfUpload: React.FC = () => {
                 const matches = text.match(questionPattern);
                 setEstimatedCount(matches ? matches.length : 0);
             } catch (error) {
-                console.error("Analysis failed:", error);
+                logger.error("Analysis failed:", error);
                 showToast("Failed to analyze PDF. Please try a different file.", "error");
             } finally {
                 setIsAnalyzing(false);
@@ -193,7 +194,7 @@ const AdminPdfUpload: React.FC = () => {
             return [];
 
         } catch (error) {
-            console.error("Gemini Error:", error);
+            logger.error("Gemini Error:", error);
             return [];
         }
     };

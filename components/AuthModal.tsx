@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { logger } from '../utils/logger';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -36,7 +37,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         await loginWithGoogle();
         onClose();
     } catch (err: any) {
-        console.error("Login Error:", err);
+        logger.error("Login Error:", err);
         let msg = "Google Login Failed.";
         if (err.code === 'auth/popup-closed-by-user') {
             msg = "লগইন উইন্ডোটি বন্ধ করা হয়েছে।";
@@ -77,7 +78,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       }
       onClose();
     } catch (err: any) {
-      console.error(err);
+      logger.error(err);
       if (err.code === 'auth/invalid-credential') {
         setError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
       } else if (err.code === 'auth/email-already-in-use') {

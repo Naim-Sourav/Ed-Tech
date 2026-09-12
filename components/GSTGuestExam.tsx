@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -95,7 +96,7 @@ const GSTGuestExam: React.FC = () => {
           showToast("প্রশ্ন পাওয়া যায়নি। দয়া করে পরে চেষ্টা করুন।", "error");
         }
       } catch (error) {
-        console.error("Error loading questions:", error);
+        logger.error("Error loading questions:", error);
         showToast("সার্ভার ত্রুটি। দয়া করে পরে চেষ্টা করুন।", "error");
       } finally {
         setLoading(false);
@@ -233,7 +234,7 @@ const GSTGuestExam: React.FC = () => {
       );
       loadLeaderboard();
     } catch (error) {
-      console.error("Error submitting result:", error);
+      logger.error("Error submitting result:", error);
     }
 
     setStep('RESULT');
@@ -250,7 +251,7 @@ const GSTGuestExam: React.FC = () => {
       const data = await fetchPublicExamLeaderboard(GST_EXAM_REF);
       setLeaderboard(data);
     } catch (error) {
-      console.error("Error loading leaderboard:", error);
+      logger.error("Error loading leaderboard:", error);
     } finally {
       setLeaderboardLoading(false);
     }

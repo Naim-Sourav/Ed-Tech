@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -189,7 +190,7 @@ const Navigation: React.FC<NavigationProps> = ({
       setIsMobileMenuOpen(false);
       navigate('/');
     } catch (error) {
-      console.error("Failed to log out", error);
+      logger.error("Failed to log out", error);
     }
   };
 

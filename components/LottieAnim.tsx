@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { logger } from '../utils/logger';
 import Lottie from 'lottie-react';
 
 interface LottieAnimProps {
@@ -31,7 +32,7 @@ const LottieAnim: React.FC<LottieAnimProps> = ({ animationData, url, className, 
         })
         .then((data) => setAnimData(data))
         .catch((err) => {
-            console.warn("Lottie Load Skipped (Using Fallback):", err.message);
+            logger.warn("Lottie Load Skipped (Using Fallback):", err.message);
             setError(true);
         });
     }

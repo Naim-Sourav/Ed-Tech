@@ -13,6 +13,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Porikkhangon">
     <meta name="application-name" content="Porikkhangon">
+    <script>
+      // GitHub Pages SPA deep-link restore (pairs with public/404.html):
+      // 404.html redirects /privacy → /?p=/privacy ; this puts the clean URL
+      // back BEFORE React Router boots, so refresh/share links keep working.
+      (function () {
+        var m = window.location.search.match(/[?&]p=([^&]+)/);
+        if (m) {
+          var dest = decodeURIComponent(m[1]);
+          if (dest.charAt(0) === '/') {
+            window.history.replaceState(null, '', dest);
+          }
+        }
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="./Pshape.svg">
     <link rel="shortcut icon" type="image/png" href="./icon-192.png">
     <link rel="apple-touch-icon" href="./Pshape.svg">
@@ -225,10 +239,10 @@
         </p>
         <ul>
           <li><a href="https://www.porikkhangon.app/hsc-syllabus/">HSC সিলেবাস ও অধ্যায়ভিত্তিক গাইড</a></li>
-          <li><a href="https://www.porikkhangon.app/#/auth">লগইন ও রেজিস্ট্রেশন</a></li>
-          <li><a href="https://www.porikkhangon.app/#/privacy">প্রাইভেসি পলিসি</a></li>
-          <li><a href="https://www.porikkhangon.app/#/terms">টার্মস অব সার্ভিস</a></li>
-          <li><a href="https://www.porikkhangon.app/#/refund">রিফান্ড পলিসি</a></li>
+          <li><a href="https://www.porikkhangon.app/auth">লগইন ও রেজিস্ট্রেশন</a></li>
+          <li><a href="https://www.porikkhangon.app/privacy">প্রাইভেসি পলিসি</a></li>
+          <li><a href="https://www.porikkhangon.app/terms">টার্মস অব সার্ভিস</a></li>
+          <li><a href="https://www.porikkhangon.app/refund">রিফান্ড পলিসি</a></li>
         </ul>
         <p>সাইটটি পুরোপুরি ব্যবহার করতে JavaScript চালু করুন।</p>
       </div>

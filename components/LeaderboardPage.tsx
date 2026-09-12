@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { fetchLeaderboardAPI, normalizeText } from '../services/api';
 import { LeaderboardUser } from '../types';
@@ -40,7 +41,7 @@ const LeaderboardPage: React.FC = () => {
       const sortedData = [...data].sort((a, b) => b.points - a.points);
       setUsers(sortedData);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
     } finally {
       setLoading(false);
       setRefreshing(false);

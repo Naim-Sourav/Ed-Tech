@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { 
   Zap, CheckCircle, Clock, Trophy, Target, 
@@ -82,7 +83,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
             setLifetimeQuests(updatedLifetime);
         }
       } catch (e) {
-        console.error("Failed to load quests", e);
+        logger.error("Failed to load quests", e);
       } finally {
         setLoading(false);
       }

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { logger } from './utils/logger';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -9,7 +10,7 @@ import { CacheProvider } from './contexts/CacheContext';
 
 import { HelmetProvider } from 'react-helmet-async';
 
-console.log("App initializing...");
+logger.debug("App initializing...");
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");

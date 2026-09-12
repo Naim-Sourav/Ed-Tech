@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { 
@@ -79,7 +80,7 @@ const GSTResultPage: React.FC = () => {
         title: 'GST A Unit Result Updates',
         text: 'গুচ্ছ ক ইউনিটের রেজাল্ট আপডেট সবার আগে পেতে এই পেজটি ভিজিট করুন!',
         url: window.location.href,
-      }).catch(console.error);
+      }).catch(logger.error);
     } else {
       navigator.clipboard.writeText(window.location.href);
       showToast("লিঙ্ক কপি করা হয়েছে", "success");

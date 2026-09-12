@@ -1,5 +1,6 @@
 
 import { messaging } from './firebase';
+import { logger } from '../utils/logger';
 import { getToken, onMessage } from 'firebase/messaging';
 import { syncUserToMongoDB } from './api';
 import { User } from 'firebase/auth';
@@ -41,14 +42,14 @@ export async function subscribeToPushNotifications(user: User | null) {
     });
 
     if (token && user) {
-      console.log('Token generated successfully');
+      logger.debug('Token generated successfully');
       await syncUserToMongoDB(user, { fcmToken: token });
       return { token };
     }
     
     return { error: 'টোকেন জেনারেট করা যায়নি। আবার চেষ্টা করুন।' };
   } catch (error: any) {
-    console.error('Detailed Error:', error);
+    logger.error('Detailed Error:', error);
     // Provide user-friendly error messages based on common Firebase errors
     if (error.code === 'messaging/permission-blocked') {
       return { error: 'নোটিফিকেশন ব্লক করা আছে। সেটিংস থেকে পারমিশন রিসেট করুন।' };
@@ -73,7 +74,7 @@ export async function checkSubscription() {
 export function onForegroundMessage(callback: (payload: any) => void) {
   if (!messaging) return () => {};
   return onMessage(messaging, (payload) => {
-    console.log('Message received in foreground: ', payload);
+    logger.debug('Message received in foreground: ', payload);
     callback(payload);
   });
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Plus, Trash2, Edit3, 
@@ -351,7 +352,7 @@ const StudyPlanner: React.FC = () => {
         if (sound && bgmRef.current.src !== sound.url) {
           bgmRef.current.src = sound.url;
         }
-        bgmRef.current.play().catch(e => console.log("BGM play failed:", e));
+        bgmRef.current.play().catch(e => logger.debug("BGM play failed:", e));
       } else {
         bgmRef.current.pause();
       }
@@ -361,7 +362,7 @@ const StudyPlanner: React.FC = () => {
   const playAlarm = () => {
     if (bgmRef.current) bgmRef.current.pause(); // Stop BGM when alarm starts
     if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+      audioRef.current.play().catch(e => logger.debug("Audio play failed:", e));
     }
     if (navigator.vibrate) {
       navigator.vibrate([500, 200, 500, 200, 500]);
@@ -385,7 +386,7 @@ const StudyPlanner: React.FC = () => {
     const savedHistory = localStorage.getItem('porikkhangon_study_history');
 
     if (savedSubjects) {
-      try { setSubjects(JSON.parse(savedSubjects)); } catch (e) { console.error(e); }
+      try { setSubjects(JSON.parse(savedSubjects)); } catch (e) { logger.error(e); }
     } else {
       const defaults: Subject[] = [
         { id: '1', name: 'পদার্থবিজ্ঞান', duration: 120, color: 'bg-blue-500' },
@@ -397,11 +398,11 @@ const StudyPlanner: React.FC = () => {
     }
 
     if (savedTodos) {
-      try { setTodos(JSON.parse(savedTodos)); } catch (e) { console.error(e); }
+      try { setTodos(JSON.parse(savedTodos)); } catch (e) { logger.error(e); }
     }
 
     if (savedHistory) {
-      try { setStudyHistory(JSON.parse(savedHistory)); } catch (e) { console.error(e); }
+      try { setStudyHistory(JSON.parse(savedHistory)); } catch (e) { logger.error(e); }
     }
   }, []);
 

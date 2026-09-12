@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { auth, googleProvider } from '../services/firebase';
 import { onAuthStateChanged, User, signOut, updateProfile, setPersistence, browserLocalPersistence, signInWithPopup } from 'firebase/auth';
 import { syncUserToMongoDB, fetchUserEnrollments, fetchUserStatsAPI } from '../services/api';
@@ -64,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     setPersistence(auth, browserLocalPersistence)
       .catch((error) => {
-        console.error("Failed to set auth persistence:", error);
+        logger.error("Failed to set auth persistence:", error);
       });
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -105,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                });
            }
         } catch (err) {
-           console.error("Error loading user data", err);
+           logger.error("Error loading user data", err);
         } finally {
            setProfileLoading(false); 
         }
@@ -163,7 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (connected) goOnline();
       });
     }).catch(err => {
-      console.error("Failed to load battleService", err);
+      logger.error("Failed to load battleService", err);
     });
 
     return () => {
@@ -184,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const result = await signInWithPopup(auth, googleProvider);
       return result.user;
     } catch (error) {
-      console.error("Google Login Error", error);
+      logger.error("Google Login Error", error);
       throw error;
     }
   };

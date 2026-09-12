@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { logger } from '../utils/logger';
 import SafeHtml from './SafeHtml';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -98,7 +99,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
       });
       setSavedQuestions(sortedData);
     } catch (_e) {
-      console.error(_e);
+      logger.error(_e);
       showToast("লোড করা যায়নি", "error");
     } finally {
       setLoading(false);
@@ -263,9 +264,9 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
           if (window.MathJax && window.MathJax.typesetPromise) {
             const el = document.getElementById(`explanation-${id}`);
             if (el) {
-              window.MathJax.typesetPromise([el]).catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise([el]).catch((err: any) => logger.error(err));
             } else {
-              window.MathJax.typesetPromise().catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise().catch((err: any) => logger.error(err));
             }
           }
         }, 80);

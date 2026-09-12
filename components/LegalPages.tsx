@@ -14,7 +14,8 @@ const PageLayout = ({ title, icon: Icon, children, lastUpdated }: { title: strin
             {/* Header */}
             <div className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 px-4 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                    {/* Direct visitors (Google / share links) have no history — send them home. */}
+                    <button onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/'); }} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors" aria-label="পেছনে যান">
                         <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
                     </button>
                     <div className="flex items-center gap-2">

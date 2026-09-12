@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import SafeHtml from './SafeHtml';
 import { X, Image as ImageIcon, Send, Sparkles, Bot, ExternalLink, ArrowLeft, Trash2, Loader2, CheckCircle, XCircle, HelpCircle, Settings, Key, MoreVertical } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
@@ -94,7 +95,7 @@ const PorikkhangonAI: React.FC = () => {
           return parsed;
         }
       } catch (e) {
-        console.error('Error parsing stats:', e);
+        logger.error('Error parsing stats:', e);
       }
     }
     return { date: new Date().toDateString(), count: 0 };
@@ -118,7 +119,7 @@ const PorikkhangonAI: React.FC = () => {
         const chatContainer = document.getElementById('porikkhangon-chat-container');
         if (chatContainer) {
           window.MathJax.typesetPromise([chatContainer])
-            .catch((err: any) => console.error('MathJax error:', err));
+            .catch((err: any) => logger.error('MathJax error:', err));
           clearInterval(intervalId);
         }
       }
@@ -261,7 +262,7 @@ const PorikkhangonAI: React.FC = () => {
         throw new Error('Empty response');
       }
     } catch (error: any) {
-      console.error('API Key test failed:', error);
+      logger.error('API Key test failed:', error);
       setApiStatus('invalid');
       setApiErrorMessage(error.message || 'API Key কাজ করছে না। দয়া করে সঠিক Key দিন।');
     }
@@ -314,7 +315,7 @@ const PorikkhangonAI: React.FC = () => {
     const ai = new GoogleGenAI({ apiKey: apiKeyToUse });
 
     try {
-        console.log(`Attempting API call with Model: ${currentModel}`);
+        logger.debug(`Attempting API call with Model: ${currentModel}`);
         const response = await ai.models.generateContent({
             model: currentModel,
             contents: currentHistory,
@@ -351,11 +352,11 @@ const PorikkhangonAI: React.FC = () => {
         }
 
     } catch (error: any) {
-        console.error(`Error with model ${currentModel}:`, error);
+        logger.error(`Error with model ${currentModel}:`, error);
         
         // Failover Logic
         if (modelIndex < BOT_MODELS.length - 1) {
-            console.log(`Switching to next model...`);
+            logger.debug(`Switching to next model...`);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
             sendBotMessage(modelIndex + 1);
         } else {

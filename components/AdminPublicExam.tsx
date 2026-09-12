@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { createPublicExam } from '../services/publicExamService';
 import { generateQuiz } from '../services/geminiService';
 import { saveQuestionsToBankAPI } from '../services/api';
@@ -49,7 +50,7 @@ const AdminPublicExam = () => {
             .then(() => {
               if (intervalId) clearInterval(intervalId);
             })
-            .catch((err: any) => console.log('MathJax typeset failed: ', err));
+            .catch((err: any) => logger.debug('MathJax typeset failed: ', err));
         }
       };
 
@@ -123,7 +124,7 @@ const AdminPublicExam = () => {
         showToast("No questions generated. Try again.", "error");
       }
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       showToast("AI Generation Failed", "error");
     } finally {
       setIsGenerating(false);
@@ -219,7 +220,7 @@ const AdminPublicExam = () => {
             }
           }
         } catch (err) {
-          console.error(err);
+          logger.error(err);
           showToast("Failed to parse JSON", "error");
         }
       };
@@ -246,7 +247,7 @@ const AdminPublicExam = () => {
       let finalQuestions = [...questionsWithIds];
       try {
         const response = await saveQuestionsToBankAPI(questionsWithIds);
-        console.log("Questions saved to bank", response);
+        logger.debug("Questions saved to bank", response);
         
         // If backend returns the saved questions with IDs, use them
         if (response && Array.isArray(response.questions)) {
@@ -256,11 +257,11 @@ const AdminPublicExam = () => {
             finalQuestions = response;
             showToast("প্রশ্নগুলো ব্যাংকে সেভ করা হয়েছে এবং এক্সাম তৈরি হচ্ছে...", "success");
         } else {
-            console.warn("Questions saved but no IDs returned (possibly offline mode). Using local IDs.");
+            logger.warn("Questions saved but no IDs returned (possibly offline mode). Using local IDs.");
             showToast("সতর্কতা: সার্ভার থেকে আইডি আসেনি, লোকাল আইডি ব্যবহার করা হচ্ছে।", "warning");
         }
       } catch (err) {
-        console.error("Failed to save questions to bank", err);
+        logger.error("Failed to save questions to bank", err);
         // Continue anyway, as we can still create the exam in Firebase
       }
 
@@ -273,7 +274,7 @@ const AdminPublicExam = () => {
         isPublic: true
       });
       
-      const link = `${window.location.origin}/#/exam/${examId}`;
+      const link = `${window.location.origin}/exam/${examId}`;
       setExamLink(link);
       showToast("Public Exam Created & Questions Saved to DB!", "success");
       

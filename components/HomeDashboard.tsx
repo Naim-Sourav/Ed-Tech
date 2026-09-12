@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { logger } from '../utils/logger';
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
@@ -90,7 +91,7 @@ const HomeDashboard: React.FC = () => {
           greetingKey: getGreeting(),
         });
       } catch (e) {
-        console.error("Dashboard data load error", e);
+        logger.error("Dashboard data load error", e);
       } finally {
         setIsLoading(false);
       }

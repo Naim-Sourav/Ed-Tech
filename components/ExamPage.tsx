@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
@@ -188,7 +189,7 @@ const ExamPage: React.FC = () => {
                     return;
                 }
             } catch (e) {
-                console.error("Failed to check exam status", e);
+                logger.error("Failed to check exam status", e);
             }
         }
 
@@ -236,7 +237,7 @@ const ExamPage: React.FC = () => {
                     return;
                 }
             } catch (e) {
-                console.error("Failed to fetch public exam", e);
+                logger.error("Failed to fetch public exam", e);
             }
 
             if (!currentUser) {
@@ -281,7 +282,7 @@ const ExamPage: React.FC = () => {
                 try {
                     qs = await fetchQuestionsByExamRefAPI(parsedConfig.examRef);
                 } catch (e) {
-                    console.error(e);
+                    logger.error(e);
                     showToast("প্রশ্ন লোড করা যাচ্ছে না।", "error");
                     navigate('/dashboard');
                     return;
@@ -316,7 +317,7 @@ const ExamPage: React.FC = () => {
                     qs = qs.slice(0, 20);
                     
                 } catch (e) {
-                    console.error(e);
+                    logger.error(e);
                     showToast("অধ্যায়ভিত্তিক প্রশ্ন লোড করা যাচ্ছে না।", "error");
                 }
             }
@@ -371,7 +372,7 @@ const ExamPage: React.FC = () => {
                   }
               });
               setSavedQuestionIndices(indices);
-          }).catch((err: any) => console.error("Failed to sync saved questions", err));
+          }).catch((err: any) => logger.error("Failed to sync saved questions", err));
       }
   }, [currentUser, questions]); 
 
@@ -397,7 +398,7 @@ const ExamPage: React.FC = () => {
         }
         // Auth state change will trigger useEffect to re-run initExam
     } catch (err: any) {
-        console.error(err);
+        logger.error(err);
         if (err.code === 'auth/invalid-credential') {
             setAuthError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
         } else if (err.code === 'auth/email-already-in-use') {
@@ -441,7 +442,7 @@ const ExamPage: React.FC = () => {
           .then(() => {
             clearInterval(intervalId);
           })
-          .catch((err: any) => console.log('MathJax typeset failed:', err));
+          .catch((err: any) => logger.debug('MathJax typeset failed:', err));
       }
       if (attempts > 20) {
         clearInterval(intervalId);
@@ -510,7 +511,7 @@ const ExamPage: React.FC = () => {
                 });
             }
         })
-        .catch(err => console.error(err))
+        .catch(err => logger.error(err))
         .finally(() => setLeaderboardLoading(false));
     }
   }, [step, examId, currentUser, config, userAnswers, questions, examDuration]);
@@ -665,7 +666,7 @@ const ExamPage: React.FC = () => {
                     timestamp: submissionTimestamp
                 });
             } catch (err) {
-                console.error("Failed to store attempt in Firebase Firestore:", err);
+                logger.error("Failed to store attempt in Firebase Firestore:", err);
             }
 
             // If Public Exam, also save to public leaderboard
@@ -708,7 +709,7 @@ const ExamPage: React.FC = () => {
             }
         }
     } catch (_e) {
-        console.error(_e);
+        logger.error(_e);
         showToast("সাবমিট করতে সমস্যা হয়েছে", "error");
     } finally {
         localStorage.removeItem(SESSION_KEY);

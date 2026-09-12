@@ -19,14 +19,16 @@
 </style>
 <script>
   // GitHub Pages has no server-side rewrites: send known app routes back into
-  // the SPA's hash router so shared deep links (e.g. /privacy) keep working.
+  // the SPA (BrowserRouter) so shared deep links (e.g. /privacy) keep working.
+  // The ?p= payload is restored to the clean URL by index.html on boot.
   (function () {
-    var known = ['auth','privacy','terms','refund','dashboard','courses','qbank','exams','quiz','battle','leaderboard','planner','history','admission','profile','saved-questions','wrong-questions','settings','challenges','bot','exam','exam-batch','payment'];
-    var path = location.pathname.replace(/\/+$/, '');
+    if (location.search.indexOf('p=') !== -1) return; // already a redirect payload
+    var known = ['auth','privacy','terms','refund','dashboard','courses','qbank','exams','quiz','battle','leaderboard','planner','history','admission','profile','saved-questions','wrong-questions','settings','account','challenges','bot','exam','exam-batch','payment','question','q'];
+    var path = location.pathname.replace(/\/+$/, '') || '/';
     var seg = path.split('/')[1] || '';
     if (seg === 'hsc-syllabus') { location.replace('/hsc-syllabus/'); return; }
     if (seg && known.indexOf(seg) !== -1) {
-      location.replace('/#' + path + location.search);
+      location.replace('/?p=' + encodeURIComponent(path + location.search));
       return;
     }
     if (seg === '') { location.replace('/'); }
@@ -41,8 +43,8 @@
     <a class="btn" href="/">হোমপেজে যান</a>
     <div>
       <a class="link" href="/hsc-syllabus/">HSC সিলেবাস গাইড</a>
-      <a class="link" href="/#/auth">লগইন / রেজিস্ট্রেশন</a>
-      <a class="link" href="/#/privacy">প্রাইভেসি পলিসি</a>
+      <a class="link" href="/auth">লগইন / রেজিস্ট্রেশন</a>
+      <a class="link" href="/privacy">প্রাইভেসি পলিসি</a>
     </div>
   </div>
 </body>

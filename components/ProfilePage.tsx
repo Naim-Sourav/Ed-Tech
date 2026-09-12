@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { logger } from '../utils/logger';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI, fetchSyllabusStatsAPI } from '../services/api';
@@ -179,10 +180,112 @@ const aggregateStatsFromAttempts = (attempts: any[], serverStats: any) => {
   return stats;
 };
 
+// --- Lifted helper components (module scope: avoids remount-on-render) ---
+
+// Skeleton Loader for Profile
+const ProfileSkeleton: React.FC = () => (
+  <div className="space-y-6 animate-pulse">
+      {/* Header Skeleton */}
+      <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-gray-200 dark:border-zinc-800 h-72 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-32 bg-gray-200/50 dark:bg-gray-700/50"></div>
+          <div className="relative flex flex-col md:flex-row items-center gap-8 mt-12">
+              <div className="w-32 h-32 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-zinc-800 shadow-xl"></div>
+              <div className="space-y-4 flex-1 w-full text-center md:text-left">
+                  <div className="h-8 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-2xl mx-auto md:mx-0"></div>
+                  <div className="flex gap-3 justify-center md:justify-start">
+                      <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                      <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      {/* Stats Skeleton */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-zinc-800"></div>
+          ))}
+      </div>
+  </div>
+);
+
+interface FilterSectionProps {
+  currentFilterSubject: string;
+  currentFilterChapter: string;
+  uniqueSubjects: string[];
+  uniqueChapters: string[];
+  setCurrentFilterSubject: (val: string) => void;
+  setCurrentFilterChapter: (val: string) => void;
+  resetCurrentFilters: () => void;
+}
+
+const FilterSection: React.FC<FilterSectionProps> = ({
+  currentFilterSubject, currentFilterChapter, uniqueSubjects, uniqueChapters,
+  setCurrentFilterSubject, setCurrentFilterChapter, resetCurrentFilters,
+}) => (
+    <div className="flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-black/50 p-2 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-inner animate-in fade-in slide-in-from-top-1">
+        <div className="flex items-center justify-center text-gray-400 px-2"><Filter size={16}/></div>
+        <select 
+            value={currentFilterSubject} 
+            onChange={(e) => { setCurrentFilterSubject(e.target.value); setCurrentFilterChapter('ALL'); }}
+            className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
+        >
+            <option value="ALL">সকল বিষয়</option>
+            {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select 
+            value={currentFilterChapter} 
+            onChange={(e) => setCurrentFilterChapter(e.target.value)}
+            className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
+        >
+            <option value="ALL">সকল অধ্যায়</option>
+            {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button 
+          onClick={resetCurrentFilters}
+          className="text-[12px] text-red-500 hover:text-red-600 font-bold px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors whitespace-nowrap"
+        >
+          রিসেট
+        </button>
+    </div>
+);
+
+interface PaginationControlsProps {
+  currentPage: number;
+  totalPages: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const PaginationControls: React.FC<PaginationControlsProps> = ({ currentPage, totalPages, setCurrentPage }) => {
+    if (totalPages <= 1) return null;
+    return (
+        <div className="flex justify-center items-center gap-4 mt-8">
+            <button 
+                onClick={() => setCurrentPage((prev: number) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
+            >
+                <ChevronLeft size={20} />
+            </button>
+            <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-900 px-6 py-3 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-lg">
+                Page <span className="text-primary">{currentPage}</span> of {totalPages}
+            </span>
+            <button 
+                onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
+            >
+                <ChevronRight size={20} />
+            </button>
+        </div>
+    );
+};
+
+
 const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleTheme?: () => void; setThemeMode?: (mode: 'light' | 'dark' | 'system') => void }> = ({ themeMode, toggleTheme, setThemeMode }) => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>(); // Get userID from URL params
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const { currentUser, userAvatar, enrolledCourses, extendedProfile, updateUserProfile, logout } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const { questionFont, setQuestionFont, questionFontSize, setQuestionFontSize } = usePreferences();
@@ -198,7 +301,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
   const cachedData = getCache(cacheKey) || {};
 
   // Tab State derived from URL
-  const activeTab = (searchParams.get('tab') as 'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES' | 'HISTORY' | 'SETTINGS') || (window.location.hash.includes('/settings') ? 'SETTINGS' : 'INFO');
+  const activeTab = (searchParams.get('tab') as 'INFO' | 'COURSES' | 'SAVED' | 'MISTAKES' | 'HISTORY' | 'SETTINGS') || (location.pathname === '/settings' ? 'SETTINGS' : 'INFO');
   
   const setActiveTab = (tab: string) => {
       setSearchParams({ tab });
@@ -237,7 +340,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
               }
               setAttempts(deduplicated);
           } catch (err) {
-              console.error('Failed to load attempts from Firebase', err);
+              logger.error('Failed to load attempts from Firebase', err);
           }
       };
       fetchAttempts();
@@ -282,7 +385,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
           });
           await Promise.all(promises);
         } catch (fErr) {
-          console.error("Failed to delete from Firestore:", fErr);
+          logger.error("Failed to delete from Firestore:", fErr);
         }
       }
       
@@ -307,7 +410,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
 
       showToast("পরীক্ষাটি সফলভাবে মুছে ফেলা হয়েছে", "success");
     } catch (err) {
-      console.error("Failed to delete exam result", err);
+      logger.error("Failed to delete exam result", err);
       showToast("মুছে ফেলতে ব্যর্থ হয়েছে", "error");
     } finally {
       setDeletingAttemptId(null);
@@ -534,7 +637,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
         try {
             fetchSyllabusStatsAPI().then(stats => {
                 if (stats) setSyllabusStats(stats);
-            }).catch(console.error);
+            }).catch(logger.error);
 
             if (isOwnProfile) {
                 // Initialize edit fields
@@ -628,7 +731,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                 }
             }
         } catch (e) {
-            console.error("Profile load error", e);
+            logger.error("Profile load error", e);
         } finally {
             setLoading(false);
         }
@@ -657,7 +760,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
           return dateB - dateA;
       });
       setSavedQuestions(sortedData);
-    } catch (e) { console.error(e); } finally { setLoadingSaved(false); }
+    } catch (e) { logger.error(e); } finally { setLoadingSaved(false); }
   };
 
   const loadMistakes = async (silent = false) => {
@@ -667,7 +770,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
       const data = await fetchUserMistakesAPI(viewingUserId);
       setMistakes(data);
     } catch (e) { 
-        console.error(e); 
+        logger.error(e); 
     } finally { 
         setLoadingMistakes(false); 
     }
@@ -699,7 +802,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
       setShowAvatarSelector(false);
       showToast("প্রোফাইল আপডেট হয়েছে", "success");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       showToast("আপডেট ব্যর্থ হয়েছে", "error");
     } finally {
       setLoading(false);
@@ -858,7 +961,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
           .then(() => {
             clearInterval(intervalId);
           })
-          .catch((err: any) => console.log('MathJax typeset failed:', err));
+          .catch((err: any) => logger.debug('MathJax typeset failed:', err));
       }
 
       if (attempts > 20) {
@@ -927,90 +1030,9 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
     );
   };
 
-  // Skeleton Loader for Profile
-  const ProfileSkeleton = () => (
-    <div className="space-y-6 animate-pulse">
-        {/* Header Skeleton */}
-        <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-gray-200 dark:border-zinc-800 h-72 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-32 bg-gray-200/50 dark:bg-gray-700/50"></div>
-            <div className="relative flex flex-col md:flex-row items-center gap-8 mt-12">
-                <div className="w-32 h-32 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-zinc-800 shadow-xl"></div>
-                <div className="space-y-4 flex-1 w-full text-center md:text-left">
-                    <div className="h-8 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-2xl mx-auto md:mx-0"></div>
-                    <div className="flex gap-3 justify-center md:justify-start">
-                        <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
-                        <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {/* Stats Skeleton */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-24 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2rem] border border-gray-200 dark:border-zinc-800"></div>
-            ))}
-        </div>
-    </div>
-  );
-
   if (loading && !profileData.stats) {
       return <div className="h-full p-4 md:p-8"><ProfileSkeleton /></div>;
   }
-
-  // Helper component for Filters
-  const FilterSection = () => (
-      <div className="flex flex-wrap items-center gap-3 bg-gray-50/50 dark:bg-black/50 p-2 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-inner animate-in fade-in slide-in-from-top-1">
-          <div className="flex items-center justify-center text-gray-400 px-2"><Filter size={16}/></div>
-          <select 
-              value={currentFilterSubject} 
-              onChange={(e) => { setCurrentFilterSubject(e.target.value); setCurrentFilterChapter('ALL'); }}
-              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
-          >
-              <option value="ALL">সকল বিষয়</option>
-              {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select 
-              value={currentFilterChapter} 
-              onChange={(e) => setCurrentFilterChapter(e.target.value)}
-              className="flex-1 min-w-[100px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-none text-[12px] md:text-xs font-bold text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary shadow-sm truncate"
-          >
-              <option value="ALL">সকল অধ্যায়</option>
-              {uniqueChapters.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <button 
-            onClick={resetCurrentFilters}
-            className="text-[12px] text-red-500 hover:text-red-600 font-bold px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors whitespace-nowrap"
-          >
-            রিসেট
-          </button>
-      </div>
-  );
-
-  // Pagination Component
-  const PaginationControls = () => {
-      if (totalPages <= 1) return null;
-      return (
-          <div className="flex justify-center items-center gap-4 mt-8">
-              <button 
-                  onClick={() => setCurrentPage((prev: number) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
-              >
-                  <ChevronLeft size={20} />
-              </button>
-              <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-900 px-6 py-3 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-lg">
-                  Page <span className="text-primary">{currentPage}</span> of {totalPages}
-              </span>
-              <button 
-                  onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg active:scale-90"
-              >
-                  <ChevronRight size={20} />
-              </button>
-          </div>
-      );
-  };
 
   return (
     <div 
@@ -1509,7 +1531,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                 {/* Filter Section */}
                 {savedQuestions.length > 0 && (
                     <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-sm">
-                        <FilterSection />
+                        <FilterSection currentFilterSubject={currentFilterSubject} currentFilterChapter={currentFilterChapter} uniqueSubjects={uniqueSubjects} uniqueChapters={uniqueChapters} setCurrentFilterSubject={setCurrentFilterSubject} setCurrentFilterChapter={setCurrentFilterChapter} resetCurrentFilters={resetCurrentFilters} />
                     </div>
                 )}
 
@@ -1619,7 +1641,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                             );
                         })}
                         
-                        <PaginationControls />
+                        <PaginationControls currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
                     </div>
                 )}
             </motion.div>
@@ -1666,7 +1688,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                {/* Filter Section */}
                {mistakes.length > 0 && (
                    <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl p-4 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-sm">
-                       <FilterSection />
+                       <FilterSection currentFilterSubject={currentFilterSubject} currentFilterChapter={currentFilterChapter} uniqueSubjects={uniqueSubjects} uniqueChapters={uniqueChapters} setCurrentFilterSubject={setCurrentFilterSubject} setCurrentFilterChapter={setCurrentFilterChapter} resetCurrentFilters={resetCurrentFilters} />
                    </div>
                )}
                
@@ -1748,7 +1770,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                         </motion.div>
                      )})}
                      
-                     <PaginationControls />
+                     <PaginationControls currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
                    </div>
                )}
             </motion.div>

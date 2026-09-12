@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useAdmin } from '../contexts/AdminContext';
 import { Check, X, Search, Trash2, User, Phone, CreditCard, ShieldCheck, Users, DollarSign, Bell, Send, BarChart3, TrendingUp, AlertCircle, Database, ChevronLeft, ChevronRight, Layers, Activity, FileText, FileJson, Edit2, Save, Image as ImageIcon, Loader2, Lock, Bookmark, Link as LinkIcon } from 'lucide-react';
 import AdminJsonUpload from './AdminJsonUpload';
@@ -500,7 +501,7 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'DATABASE' && questions.length > 0 && window.MathJax) {
         setTimeout(() => {
-            window.MathJax.typesetPromise().catch((err: any) => console.error('MathJax error:', err));
+            window.MathJax.typesetPromise().catch((err: any) => logger.error('MathJax error:', err));
         }, 200);
     }
   }, [questions, activeTab]);
@@ -512,7 +513,7 @@ const AdminPage: React.FC = () => {
           setQuestions(data.questions);
           setTotalQuestions(data.total);
       } catch (error) {
-          console.error(error);
+          logger.error(error);
       } finally {
           setLoadingQuestions(false);
       }
@@ -529,7 +530,7 @@ const AdminPage: React.FC = () => {
               showToast(data.error || "Failed to generate slugs", "error");
           }
       } catch (error) {
-          console.error(error);
+          logger.error(error);
           showToast("Error generating slugs", "error");
       }
   };
@@ -574,7 +575,7 @@ const AdminPage: React.FC = () => {
           showToast(res.message || "Question bank refined successfully!", "success");
           loadQuestions();
       } catch (err: any) {
-          console.error(err);
+          logger.error(err);
           showToast(err.message || "Failed to refine database", "error");
       }
   };
@@ -585,7 +586,7 @@ const AdminPage: React.FC = () => {
           const data = await fetchNotificationsAPI();
           setNotifications(data);
       } catch (error) {
-          console.error(error);
+          logger.error(error);
       } finally {
           setLoadingNotifs(false);
       }

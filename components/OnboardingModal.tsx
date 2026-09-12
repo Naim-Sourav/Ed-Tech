@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { useAuth } from '../contexts/AuthContext';
 import { Loader2, Sparkles, User as UserIcon } from 'lucide-react';
 import { useToast } from './Toast';
@@ -28,7 +29,7 @@ const OnboardingModal: React.FC = () => {
         await updateUserProfile(name.trim(), currentUser?.photoURL || '');
         showToast("প্রোফাইল সেটআপ সম্পন্ন! 🎉", "success");
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         showToast("সেভ করতে সমস্যা হয়েছে", "error");
     } finally {
         setLoading(false);

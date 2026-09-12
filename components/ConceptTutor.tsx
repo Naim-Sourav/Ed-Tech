@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { Send, User, Bot, Loader2 } from 'lucide-react';
 import { explainConcept } from '../services/geminiService';
 import { Subject, ChatMessage } from '../types';
@@ -35,7 +36,7 @@ const ConceptTutor: React.FC = () => {
             .then(() => {
               if (intervalId) clearInterval(intervalId);
             })
-            .catch((err: any) => console.log('MathJax typeset failed: ', err));
+            .catch((err: any) => logger.debug('MathJax typeset failed: ', err));
         }
       };
 

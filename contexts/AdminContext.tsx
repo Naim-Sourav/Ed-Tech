@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { PaymentRequest } from '../types';
 import { 
   submitPaymentToAPI, 
@@ -84,7 +85,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           });
       }
     } catch (error) {
-      console.error("Error fetching admin data:", error);
+      logger.error("Error fetching admin data:", error);
     }
   };
 
@@ -100,7 +101,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Only refresh if the submitter is also an admin (testing purpose), otherwise user doesn't need admin data
       if (isAdmin) await refreshRequests(); 
     } catch (e) {
-      console.error("Error submitting payment:", e);
+      logger.error("Error submitting payment:", e);
       throw e;
     }
   };
@@ -111,7 +112,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await updatePaymentStatusAPI(id, 'APPROVED');
       await refreshRequests();
     } catch (e) {
-      console.error("Error approving:", e);
+      logger.error("Error approving:", e);
       alert("Failed to approve payment.");
     }
   };
@@ -122,7 +123,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await updatePaymentStatusAPI(id, 'REJECTED');
       await refreshRequests();
     } catch (e) {
-      console.error("Error rejecting:", e);
+      logger.error("Error rejecting:", e);
     }
   };
 
@@ -132,7 +133,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await deletePaymentAPI(id);
       await refreshRequests();
     } catch (e) {
-      console.error("Error deleting:", e);
+      logger.error("Error deleting:", e);
     }
   };
 
@@ -155,7 +156,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     } catch (e) {
-      console.error("Error sending notification:", e);
+      logger.error("Error sending notification:", e);
       throw e;
     }
   };

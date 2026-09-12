@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { logger } from '../utils/logger';
 import { generateQuiz } from "../services/geminiService";
 import { saveQuestionsToBankAPI } from "../services/api";
 import { ExamStandard, QuizQuestion } from "../types";
@@ -792,7 +793,7 @@ const AdminQuestionGenerator: React.FC = () => {
                 await new Promise((r) => setTimeout(r, 1500)); // Rate limit pause
               }
             } catch (err) {
-              console.error("Batch failed", err);
+              logger.error("Batch failed", err);
             }
           }
         }
@@ -801,7 +802,7 @@ const AdminQuestionGenerator: React.FC = () => {
       setProgress("Generation Complete!");
       setTimeout(() => setProgress(""), 3000);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       showToast("সমস্যা হয়েছে।", "error");
     } finally {
       setIsGenerating(false);
@@ -842,7 +843,7 @@ const AdminQuestionGenerator: React.FC = () => {
         setProgress("");
       }, 2000);
     } catch (error: any) {
-      console.error("Save error:", error);
+      logger.error("Save error:", error);
       showToast(error.message || "সেভ এরর", "error");
     } finally {
       setIsSaving(false);
@@ -893,7 +894,7 @@ const AdminQuestionGenerator: React.FC = () => {
       };
       reader.readAsText(file);
     } catch (error) {
-      console.error("File upload error:", error);
+      logger.error("File upload error:", error);
       showToast("Error loading file", "error");
     } finally {
       setIsFileLoading(false);

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { logger } from '../utils/logger';
 import SafeHtml from './SafeHtml';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -66,7 +67,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
       setMistakes(prev => prev.map(m => m._id === mistakeId ? { ...m, category } : m));
       showToast("ক্যাটাগরি আপডেট করা হয়েছে", "success");
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       showToast("ক্যাটাগরি আপডেট করা সম্ভব হয়নি", "error");
     } finally {
       setActiveCategoryMenuId(null);
@@ -101,7 +102,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
       const data = await fetchUserMistakesAPI(currentUser.uid);
       setMistakes(data);
     } catch (_e) {
-      console.error(_e);
+      logger.error(_e);
       showToast("লোড করা যায়নি", "error");
     } finally {
       setLoading(false);
@@ -222,9 +223,9 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
           if (window.MathJax && window.MathJax.typesetPromise) {
             const el = document.getElementById(`explanation-${id}`);
             if (el) {
-              window.MathJax.typesetPromise([el]).catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise([el]).catch((err: any) => logger.error(err));
             } else {
-              window.MathJax.typesetPromise().catch((err: any) => console.error(err));
+              window.MathJax.typesetPromise().catch((err: any) => logger.error(err));
             }
           }
         }, 80);

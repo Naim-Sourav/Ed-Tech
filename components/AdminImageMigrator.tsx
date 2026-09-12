@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logger } from '../utils/logger';
 import { Play, Loader2, Image as ImageIcon, CheckCircle, AlertCircle } from 'lucide-react';
 import { fetchQuestionsFromBankAPI, updateQuestionInBankAPI, fetchQuestionsForMigrator } from '../services/api';
 import { useToast } from './Toast';
@@ -52,12 +53,12 @@ export default function AdminImageMigrator() {
             try {
                 imageBase64 = await fetchAsBase64(imageUrl);
             } catch (e) {
-                console.warn('Direct fetch failed (CORS?), trying proxy...', e);
+                logger.warn('Direct fetch failed (CORS?), trying proxy...', e);
                 try {
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
                     imageBase64 = await fetchAsBase64(proxyUrl);
                 } catch (proxyErr) {
-                    console.warn('Proxy fetch also failed, falling back to URL upload', proxyErr);
+                    logger.warn('Proxy fetch also failed, falling back to URL upload', proxyErr);
                 }
             }
 
@@ -104,7 +105,7 @@ export default function AdminImageMigrator() {
                 throw new Error(data.error?.message || 'Upload failed');
             }
         } catch (error: any) {
-            console.error('ImgBB upload error:', error);
+            logger.error('ImgBB upload error:', error);
             throw error;
         }
     };
@@ -232,7 +233,7 @@ export default function AdminImageMigrator() {
             showToast('Migration process completed', 'success');
 
         } catch (error) {
-            console.error(error);
+            logger.error(error);
             showToast('Migration process encountered a fatal error', 'error');
             addLog('Fatal error during migration');
         } finally {

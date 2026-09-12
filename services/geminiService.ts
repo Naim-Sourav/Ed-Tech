@@ -1,5 +1,6 @@
 
 import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { logger } from '../utils/logger';
 import { QuizQuestion, Subject, AdmissionResult, SearchSource, ExamStandard, QuizConfig, DifficultyLevel } from "../types";
 
 // ============================================================
@@ -61,7 +62,7 @@ export const isGeminiConfigured = (): boolean => {
 const getClient = () => {
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    console.warn(
+    logger.warn(
       "Gemini API Key is missing. Set VITE_GEMINI_API_KEY in .env (see .env.example) " +
       "or add your own key in the app's AI Settings screen."
     );
@@ -178,7 +179,7 @@ export const generatePorikkhangonResponse = async (
          return { text: response.text, sources: [] };
       }
   } catch (_e) {
-    console.error("Porikkhangon AI: Final backoff failed.");
+    logger.error("Porikkhangon AI: Final backoff failed.");
   }
 
   throw lastError || new Error("Failed to generate response.");
@@ -212,7 +213,7 @@ export const explainConcept = async (
 
     return response.text || "দুঃখিত, আমি উত্তরটি তৈরি করতে পারিনি।";
   } catch (error) {
-    console.error("Error in explainConcept:", error);
+    logger.error("Error in explainConcept:", error);
     throw error;
   }
 };
@@ -306,7 +307,7 @@ export const generateQuiz = async (
     let lastError: any = null;
     for (const model of GENERATIVE_MODELS) {
       try {
-        console.log(`Generating quiz with model: ${model}`);
+        logger.debug(`Generating quiz with model: ${model}`);
         const response = await ai.models.generateContent({
           model: model,
           contents: prompt,
@@ -331,16 +332,16 @@ export const generateQuiz = async (
           return finalQuestions.slice(0, count);
         }
       } catch (error: any) {
-        console.warn(`Model ${model} failed:`, error.message);
+        logger.warn(`Model ${model} failed:`, error.message);
         lastError = error;
       }
     }
 
-    console.error("All models failed to generate quiz.");
+    logger.error("All models failed to generate quiz.");
     throw lastError || new Error("Failed to generate quiz.");
 
   } catch (error) {
-    console.error("Error generating quiz:", error);
+    logger.error("Error generating quiz:", error);
     throw error;
   }
 };
@@ -378,7 +379,7 @@ export const searchAdmissionInfo = async (query: string): Promise<AdmissionResul
 
     return { text, sources };
   } catch (error) {
-    console.error("Error searching admission info:", error);
+    logger.error("Error searching admission info:", error);
     throw error;
   }
 };
@@ -450,7 +451,7 @@ export const enrichQuestionList = async (
       await new Promise(r => setTimeout(r, 1000));
 
     } catch (e) {
-      console.error("Batch processing failed:", e);
+      logger.error("Batch processing failed:", e);
       const fallback = chunk.map((q: any) => ({
          question: q.question,
          options: q.options || [],
