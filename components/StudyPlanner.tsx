@@ -858,12 +858,12 @@ const StudyPlanner: React.FC = () => {
               <div className="space-y-3">
                 <button className="w-full flex items-center justify-between p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-white/[0.05] active:scale-[0.98] transition-all">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-orange-500/10 text-orange-500 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-orange-500/10 text-orange-700 dark:text-orange-400 rounded-xl flex items-center justify-center">
                       <Flame size={20} />
                     </div>
                     <span className="font-bold text-gray-700 dark:text-zinc-300">স্টাডি স্ট্রিক</span>
                   </div>
-                  <span className="font-black text-orange-500">🔥 ৫ দিন</span>
+                  <span className="font-black text-orange-700 dark:text-orange-400">🔥 ৫ দিন</span>
                 </button>
 
                 <button 
@@ -1218,7 +1218,7 @@ const StudyPlanner: React.FC = () => {
       {/* Tips Section */}
       <div className="px-6 mt-4">
         <div className="bg-orange-50 dark:bg-orange-900/10 rounded-[2rem] p-5 border border-orange-100 dark:border-orange-900/20 flex gap-4">
-          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
+          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
             <AlertCircle size={20} />
           </div>
           <div>

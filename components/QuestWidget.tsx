@@ -21,9 +21,9 @@ const QuestWidget: React.FC<QuestWidgetProps> = ({ quests, onQuestUpdate }) => {
   const getIcon = (iconName?: string) => {
       switch(iconName) {
           case 'Target': return <Target size={18} className="text-red-500" />;
-          case 'FileCheck': return <FileCheck size={18} className="text-orange-500" />;
+          case 'FileCheck': return <FileCheck size={18} className="text-orange-700 dark:text-orange-400" />;
           case 'Clock': return <Clock size={18} className="text-purple-500" />;
-          case 'Swords': return <Swords size={18} className="text-orange-500" />;
+          case 'Swords': return <Swords size={18} className="text-orange-700 dark:text-orange-400" />;
           case 'Bot': return <Bot size={18} className="text-green-500" />;
           case 'Bookmark': return <Bookmark size={18} className="text-yellow-500" />;
           default: return <Trophy size={18} className="text-primary" />;
@@ -90,7 +90,7 @@ const QuestWidget: React.FC<QuestWidgetProps> = ({ quests, onQuestUpdate }) => {
                                     {claiming === quest.id ? 'Claiming...' : 'Claim Points'}
                                 </button>
                             ) : (
-                                <span className="text-xs font-bold text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded">+{quest.reward} Pts</span>
+                                <span className="text-xs font-bold text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded">+{quest.reward} Pts</span>
                             )}
                         </div>
 

@@ -281,7 +281,7 @@ const GSTResultPage: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'মোট পরীক্ষার্থী', value: '১,৬৬,১৬২ জন', icon: Users, color: 'text-blue-500 bg-blue-50' },
-            { label: 'মোট আসন', value: '৮৫০০টি', icon: Trophy, color: 'text-orange-500 bg-orange-50' },
+            { label: 'মোট আসন', value: '৮৫০০টি', icon: Trophy, color: 'text-orange-700 dark:text-orange-400 bg-orange-50' },
             { label: 'আসন প্রতি লড়ছে', value: '২০জন', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50' },
             { label: 'বিশ্ববিদ্যালয় সংখ্যা', value: '২০টি', icon: Zap, color: 'text-purple-500 bg-purple-50' },
           ].map((stat, i) => (

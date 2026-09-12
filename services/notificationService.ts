@@ -26,8 +26,10 @@ export async function subscribeToPushNotifications(user: User | null) {
       return { error: 'Firebase Messaging শুরু করা যায়নি।' };
     }
 
-    // 2. Register Service Worker with relative path
-    const swPath = './firebase-messaging-sw.js';
+    // 2. Register the single app Service Worker (also handles FCM background
+    // messages — see public/sw.js). One worker per scope: never register a
+    // second one here or they will fight over control.
+    const swPath = './sw.js';
     const registration = await navigator.serviceWorker.register(swPath, {
       scope: './'
     });

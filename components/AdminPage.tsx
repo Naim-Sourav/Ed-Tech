@@ -827,7 +827,7 @@ const AdminPage: React.FC = () => {
                         <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800">
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">Enrollments</p>
                             <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.totalEnrollments}</p>
-                            <p className="text-xs text-orange-600/70 mt-1">Active Students</p>
+                            <p className="text-xs text-orange-700 dark:text-orange-400/70 mt-1">Active Students</p>
                         </div>
                     </div>
                     <div className="mt-6">
@@ -1163,7 +1163,7 @@ const AdminPage: React.FC = () => {
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
                                                 onClick={() => setEditingQuestion(q)}
-                                                className="p-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
+                                                className="p-1.5 bg-orange-50 text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
                                                 title="Edit"
                                             >
                                                 <Edit2 size={16} />
@@ -1280,7 +1280,7 @@ const AdminPage: React.FC = () => {
            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 md:p-10 animate-in fade-in slide-in-from-bottom-2">
                <div className="max-w-2xl mx-auto">
                    <div className="text-center mb-8">
-                      <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
                          <Send size={32} />
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">গ্লোবাল নোটিফিকেশন</h2>

@@ -8,7 +8,6 @@ import { generateQuizFromDB, fetchSyllabusStatsAPI, saveQuestionsToBankAPI } fro
 import { generateQuiz } from '../services/geminiService';
 import { QuizQuestion, ExamStandard, QuizConfig, DifficultyLevel } from '../types';
 import { SYLLABUS_DB, SyllabusItem, TopicNode } from '../services/syllabusData';
-import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
 import { normalizeBangla, uniqueByNormalization } from '../utils/normalization';
 import { 
@@ -28,7 +27,7 @@ const SUBJECT_GROUPS = [
     display: 'জীববিজ্ঞান',
     subDisplay: 'Biology',
     icon: Dna,
-    color: 'text-orange-600 bg-orange-100',
+    color: 'text-orange-700 dark:text-orange-400 bg-orange-100',
     papers: ['Biology 1st Paper', 'Biology 2nd Paper']
   },
   {
@@ -60,7 +59,7 @@ const SUBJECT_GROUPS = [
     display: 'ইংরেজি',
     subDisplay: 'English',
     icon: Languages,
-    color: 'text-orange-500 bg-orange-50',
+    color: 'text-orange-700 dark:text-orange-400 bg-orange-50',
     papers: ['English']
   },
   {
@@ -76,7 +75,7 @@ const SUBJECT_GROUPS = [
     display: 'তথ্য ও যোগাযোগ প্রযুক্তি',
     subDisplay: 'ICT',
     icon: Cpu,
-    color: 'text-orange-600 bg-orange-100',
+    color: 'text-orange-700 dark:text-orange-400 bg-orange-100',
     papers: ['ICT']
   },
   {
@@ -105,7 +104,6 @@ const QuizArena: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useAuth();
-  const { t } = useLanguage();
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -1026,7 +1024,7 @@ const QuizArena: React.FC = () => {
                 <ChevronLeft size={20} strokeWidth={3}/>
             </button>
             <h2 className="text-base font-black text-gray-800 dark:text-white uppercase tracking-tight">
-                {t('quiz_settings')}
+                {"পরীক্ষার সেটিংস"}
             </h2>
             <div className="w-10"></div>
         </div>
@@ -1043,7 +1041,7 @@ const QuizArena: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <Layers size={16} className="text-primary" />
                                 <label className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                                    {t('quiz_question_count')}
+                                    {"প্রশ্ন সংখ্যা"}
                                 </label>
                             </div>
                             <span className="text-sm font-black text-primary dark:text-orange-400 bg-orange-50 dark:bg-black px-3 py-1 rounded-full border border-orange-100 dark:border-orange-900/30">
@@ -1117,7 +1115,7 @@ const QuizArena: React.FC = () => {
                     {/* View Mode */}
                     <div className="space-y-3">
                         <label className="text-[12px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                            {t('quiz_view_mode')}
+                            {"ভিউ মোড"}
                         </label>
                         <div className="grid grid-cols-2 gap-2 bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded-2xl">
                             <button 
@@ -1198,7 +1196,7 @@ const QuizArena: React.FC = () => {
                     onClick={startCustomQuiz} 
                     className="flex-1 bg-primary hover:bg-orange-700 text-white p-4 rounded-2xl font-black flex items-center justify-center gap-3 shadow-lg shadow-primary/20 active:scale-95 transition-all uppercase tracking-widest text-sm"
                 >
-                    <span>{t('quiz_start')}</span>
+                    <span>{"মক টেস্ট শুরু করুন"}</span>
                     <Play fill="currentColor" size={16} strokeWidth={0}/>
                 </button>
             </div>
@@ -1224,7 +1222,7 @@ const QuizArena: React.FC = () => {
                     </div>
                 </div>
                 <h3 className="text-xl md:text-2xl font-black text-gray-800 dark:text-white mb-2 tracking-tight">
-                    {t('common_loading')}
+                    {"লোড হচ্ছে..."}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium max-w-xs mx-auto animate-pulse">
                     প্রশ্ন তৈরি করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...

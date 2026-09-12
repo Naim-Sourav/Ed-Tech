@@ -29,7 +29,7 @@
     </script>
     <link rel="icon" type="image/svg+xml" href="./Pshape.svg">
     <link rel="shortcut icon" type="image/png" href="./icon-192.png">
-    <link rel="apple-touch-icon" href="./Pshape.svg">
+    <link rel="apple-touch-icon" href="./icon-180.png">
 
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="description" content="পরীক্ষাঙ্গন (Porikkhangon) — HSC, ভর্তি পরীক্ষা ও MCQ প্রস্তুতির AI-চালিত প্ল্যাটফর্ম। ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং — সব ফ্রিতে।" />
@@ -249,15 +249,13 @@
     </noscript>
 
     <script>
-      // Unregister Service Worker if it exists
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-            console.log('[SW] Service Worker unregistered');
-          }
-        }).catch(function(err) {
-          console.log('[SW] Service Worker unregistration failed: ', err);
+      // Register the PWA service worker (skipped on localhost so development
+      // never serves stale cached bundles).
+      if ('serviceWorker' in navigator && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname)) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function (err) {
+            console.warn('[SW] registration failed:', err);
+          });
         });
       }
     </script>

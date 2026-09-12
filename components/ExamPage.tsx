@@ -828,7 +828,7 @@ const ExamPage: React.FC = () => {
                               {guestExamInfo.totalMarks} Marks
                           </div>
                           <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1.5 rounded-lg">
-                              <HelpCircle size={14} className="text-orange-500" />
+                              <HelpCircle size={14} className="text-orange-700 dark:text-orange-400" />
                               {guestExamInfo.questions?.length || 0} Qs
                           </div>
                       </div>
@@ -1476,11 +1476,11 @@ const ExamPage: React.FC = () => {
                   <div className="relative z-10">
                       <div className="w-32 h-32 mx-auto mb-4">
                           <Confetti /> {/* Confetti fallback if Lottie breaks */}
-                          <Flame size={80} className="text-orange-500 fill-orange-500 mx-auto animate-pulse" />
+                          <Flame size={80} className="text-orange-700 dark:text-orange-400 fill-orange-500 mx-auto animate-pulse" />
                       </div>
                       
                       <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-2">
-                          {streakData.streak} <span className="text-2xl font-bold text-orange-500">Days</span>
+                          {streakData.streak} <span className="text-2xl font-bold text-orange-700 dark:text-orange-400">Days</span>
                       </h2>
                       <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-8">
                           Streak on Fire! 🔥
@@ -1494,7 +1494,7 @@ const ExamPage: React.FC = () => {
                                   
                                   return (
                                       <div key={idx} className="flex flex-col items-center gap-2">
-                                          <span className={`text-[12px] font-bold ${isToday ? 'text-orange-500' : 'text-gray-400'}`}>{day.name}</span>
+                                          <span className={`text-[12px] font-bold ${isToday ? 'text-orange-700 dark:text-orange-400' : 'text-gray-400'}`}>{day.name}</span>
                                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-500 ${
                                               isActive 
                                               ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/30 scale-110' 
@@ -1506,8 +1506,8 @@ const ExamPage: React.FC = () => {
                                                   <Check size={18} strokeWidth={4} className="text-white"/>
                                               ) : isToday ? (
                                                   <div className="relative flex items-center justify-center">
-                                                      <CheckCircle size={22} className="text-orange-500/30" strokeWidth={2} />
-                                                      <Check size={12} className="absolute text-orange-500/20" strokeWidth={4} />
+                                                      <CheckCircle size={22} className="text-orange-700 dark:text-orange-400/30" strokeWidth={2} />
+                                                      <Check size={12} className="absolute text-orange-700 dark:text-orange-400/20" strokeWidth={4} />
                                                   </div>
                                               ) : (
                                                   ''
@@ -1753,7 +1753,7 @@ const ExamPage: React.FC = () => {
                                                             <td className="py-2 px-3">
                                                                 <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
                                                                     {name}
-                                                                    {isCurrentUser && <span className="ml-1 text-[9px] bg-orange-100 text-orange-600 px-1 py-0.5 rounded font-bold">YOU</span>}
+                                                                    {isCurrentUser && <span className="ml-1 text-[9px] bg-orange-100 text-orange-700 dark:text-orange-400 px-1 py-0.5 rounded font-bold">YOU</span>}
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
@@ -1779,14 +1779,14 @@ const ExamPage: React.FC = () => {
                                                         </tr>
                                                         <tr className="bg-orange-50 dark:bg-orange-900/20 border-t border-orange-100 dark:border-orange-800">
                                                             <td className="py-2 px-3">
-                                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-orange-600 bg-orange-100">
+                                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-orange-700 dark:text-orange-400 bg-orange-100">
                                                                     {userRank}
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3">
                                                                 <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
                                                                     {currentUser?.displayName || 'Anonymous'}
-                                                                    <span className="ml-1 text-[9px] bg-orange-100 text-orange-600 px-1 py-0.5 rounded font-bold">YOU</span>
+                                                                    <span className="ml-1 text-[9px] bg-orange-100 text-orange-700 dark:text-orange-400 px-1 py-0.5 rounded font-bold">YOU</span>
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
@@ -1873,7 +1873,7 @@ const ExamPage: React.FC = () => {
                                                 {/* Tags list */}
                                                 <div className="flex flex-wrap gap-2 mt-3">
                                                     {q.chapter && (
-                                                        <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-orange-100/50 dark:border-orange-900/30">
+                                                        <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-orange-100/50 dark:border-orange-900/30">
                                                             {q.chapter}
                                                         </span>
                                                     )}

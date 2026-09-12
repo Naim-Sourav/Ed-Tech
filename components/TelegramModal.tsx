@@ -25,6 +25,16 @@ const TelegramModal: React.FC = () => {
     localStorage.setItem('hasSeenTelegramModal', 'true');
   };
 
+  // Close on Escape for keyboard users
+  useEffect(() => {
+    if (!show) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [show]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleJoin = () => {
     window.open('https://t.me/porikkhangon', '_blank');
     handleClose();
@@ -40,6 +50,9 @@ const TelegramModal: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="টেলিগ্রাম চ্যানেলে যুক্ত হোন"
             className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden relative border border-gray-100 dark:border-zinc-800"
           >
             {/* Background design elements */}
@@ -49,6 +62,7 @@ const TelegramModal: React.FC = () => {
             {/* Close Button */}
             <button
               onClick={handleClose}
+              aria-label="বন্ধ করুন"
               className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors z-10 bg-gray-50 dark:bg-zinc-800/50 rounded-full"
             >
               <X size={20} />

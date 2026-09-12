@@ -9,11 +9,13 @@ import LandingPage from './components/LandingPage';
 import { Menu, ArrowLeft, Bell, Swords } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
-import { LanguageProvider } from './contexts/LanguageContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
 import PorikkhangonAI from './components/PorikkhangonAI';
 import OnboardingModal from './components/OnboardingModal';
 import TelegramModal from './components/TelegramModal'; // ADDED Import
+import NotificationPrompt from './components/NotificationPrompt';
+import OfflineBanner from './components/OfflineBanner';
+import { useToast } from './components/Toast';
 import { fetchNotificationsAPI } from './services/api';
 import { Notification } from './types';
 import { subscribeToPushNotifications, onForegroundMessage, checkSubscription } from './services/notificationService';
@@ -85,7 +87,8 @@ const MainLayout: React.FC<{
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, isProfileComplete, profileLoading } = useAuth(); 
+  const { currentUser, isProfileComplete, profileLoading } = useAuth();
+  const { showToast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
 
@@ -151,7 +154,7 @@ const MainLayout: React.FC<{
       navigate('/battle', { state: { directRoomId: targetRoomId } });
     } catch (error: any) {
       logger.error("Failed to accept invite:", error);
-      alert("ব্যাটেল রুমে যোগ দেওয়া সম্ভব হয়নি। হয়তো রুমটি ইতিমধ্যে বন্ধ বা শুরু হয়ে গেছে।");
+      showToast("ব্যাটেল রুমে যোগ দেওয়া সম্ভব হয়নি। হয়তো রুমটি ইতিমধ্যে বন্ধ বা শুরু হয়ে গেছে।", "error");
       setActiveInvite(null);
     }
   };
@@ -304,6 +307,7 @@ const MainLayout: React.FC<{
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-black font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
       {!profileLoading && !isProfileComplete && !location.pathname.startsWith('/exam/') && <OnboardingModal />}
       <TelegramModal />
+      <NotificationPrompt />
 
       {!hideNav && (
         <Navigation 
@@ -320,7 +324,8 @@ const MainLayout: React.FC<{
       )}
 
       <div className="flex-1 flex flex-col h-full relative w-full">
-        <main 
+        <OfflineBanner />
+        <main
             ref={mainContentRef}
             className={`flex-1 transition-colors relative scroll-smooth ${
               (isQuizPage || isExamPage || isBotPage || isPaymentPage) 
@@ -465,19 +470,17 @@ const App: React.FC = () => {
   }
 
   return (
-    <LanguageProvider>
-      <PreferencesProvider>
-        <AdminProvider>
-          <BrowserRouter>
-            <ErrorBoundary>
-               <Suspense fallback={<PageLoader />}>
-                  <AppRoutes themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode} currentUser={currentUser} />
-               </Suspense>
-            </ErrorBoundary>
-          </BrowserRouter>
-        </AdminProvider>
-      </PreferencesProvider>
-    </LanguageProvider>
+    <PreferencesProvider>
+      <AdminProvider>
+        <BrowserRouter>
+          <ErrorBoundary>
+             <Suspense fallback={<PageLoader />}>
+                <AppRoutes themeMode={themeMode} toggleTheme={toggleTheme} setThemeMode={setThemeMode} currentUser={currentUser} />
+             </Suspense>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </AdminProvider>
+    </PreferencesProvider>
   );
 };
 

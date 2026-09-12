@@ -32,6 +32,7 @@ interface AuthContextType {
   profileLoading: boolean; // New Flag to track API fetch status
   isProfileComplete: boolean;
   logout: () => Promise<void>;
+  dismissOnboarding: () => void;
   updateUserProfile: (name: string, photoURL: string, additionalData?: UserProfileExtended) => Promise<void>;
   enrollInCourse: (course: EnrolledCourse) => void;
   isEnrolled: (contentId: string) => boolean;
@@ -54,13 +55,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userAvatar, setUserAvatar] = useState<string>('');
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [extendedProfile, setExtendedProfile] = useState<UserProfileExtended | null>(null);
+  const [onboardingSkipped, setOnboardingSkipped] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('onboarding_skipped_v1') === '1';
+    } catch (_e) {
+      return false;
+    }
+  });
 
-  // Derive profile completion status
+  const dismissOnboarding = React.useCallback(() => {
+    try {
+      localStorage.setItem('onboarding_skipped_v1', '1');
+    } catch (_e) {
+      // ignore — still hide for this session
+    }
+    setOnboardingSkipped(true);
+  }, []);
+
+  // Derive profile completion status: a display name plus the study profile
+  // (batch/department/target) collected by the onboarding wizard — unless the
+  // user explicitly skipped it.
   const isProfileComplete = React.useMemo(() => {
       if (!currentUser) return false;
-      // We only consider the profile complete if the user has a display name
-      return !!currentUser.displayName;
-  }, [currentUser, extendedProfile]);
+      if (onboardingSkipped) return true;
+      if (!currentUser.displayName) return false;
+      return !!extendedProfile?.hscBatch;
+  }, [currentUser, extendedProfile, onboardingSkipped]);
 
   useEffect(() => {
     setPersistence(auth, browserLocalPersistence)
@@ -229,11 +249,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return enrolledCourses.some(c => c.id === contentId);
   };
 
-  const value = { 
-    currentUser, 
-    loading, 
+  const value = {
+    currentUser,
+    loading,
     profileLoading,
-    logout, 
+    logout,
+    dismissOnboarding,
     userAvatar, 
     enrolledCourses,
     extendedProfile,

@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { FileCheck, ShoppingBag, ArrowRight, CheckCircle2, ChevronLeft, Timer, CheckCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from './Toast';
 import { ExamPack } from '../types';
 import { fetchExamPacksAPI } from '../services/api';
 
@@ -19,6 +20,7 @@ const ExamPackSection: React.FC = () => {
   const viewMode = activePack ? 'PLAYER' : 'LIST';
 
   const { isEnrolled } = useAuth();
+  const { showToast } = useToast();
 
   useEffect(() => {
     const loadPacks = async () => {
@@ -50,9 +52,9 @@ const ExamPackSection: React.FC = () => {
   const getThemeColor = (theme: string) => {
     switch (theme) {
       case 'emerald': return 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/30 dark:border-red-800';
-      case 'blue': return 'text-orange-600 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
+      case 'blue': return 'text-orange-700 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
       case 'purple': return 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-900/30 dark:border-amber-800';
-      case 'orange': return 'text-orange-600 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
+      case 'orange': return 'text-orange-700 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
       default: return 'text-gray-600 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-900 dark:border-zinc-800';
     }
   };
@@ -112,7 +114,7 @@ const ExamPackSection: React.FC = () => {
                       {mockExams.map((exam) => (
                           <div key={exam.id} className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm flex items-center justify-between group hover:border-primary/50 transition-all">
                               <div className="flex items-center gap-4">
-                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${exam.status === 'COMPLETED' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'}`}>
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${exam.status === 'COMPLETED' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'}`}>
                                       {exam.status === 'COMPLETED' ? <CheckCircle size={20}/> : <span className="text-sm">{exam.id}</span>}
                                   </div>
                                   <div>
@@ -124,7 +126,7 @@ const ExamPackSection: React.FC = () => {
                                   </div>
                               </div>
                               <button 
-                                onClick={() => alert("Starting Exam... (Demo)")}
+                                onClick={() => showToast("পরীক্ষা শীঘ্রই আসছে!", "info")}
                                 className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${exam.status === 'COMPLETED' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200' : 'bg-primary text-white hover:bg-orange-700 shadow-sm'}`}
                               >
                                 {exam.status === 'COMPLETED' ? 'Review' : 'Start'}

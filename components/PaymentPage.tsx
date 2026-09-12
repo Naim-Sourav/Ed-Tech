@@ -177,7 +177,7 @@ const PaymentPage: React.FC = () => {
                       <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">অর্ডার সামারি</h3>
                       
                       <div className="flex gap-4 mb-6">
-                          <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400">
+                          <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center text-orange-700 dark:text-orange-400">
                               <FileText size={24}/>
                           </div>
                           <div className="flex-1">

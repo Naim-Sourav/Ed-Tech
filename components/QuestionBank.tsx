@@ -271,7 +271,7 @@ const NEW_ADMISSION_TAGS = [
     name: "RUET",
     icon: Shield,
     color:
-      "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/20",
+      "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/20",
   },
   {
     id: "jnu-a",
@@ -1020,7 +1020,7 @@ const QuestionBank: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 py-4 md:py-6 max-w-4xl mx-auto">
               {[
                 { id: "ACADEMIC", title: "একাডেমিক", subtitle: "বোর্ড ও কলেজ সংক্রান্ত", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-500/10", borderHover: "hover:border-blue-500" },
-                { id: "ADMISSION", title: "ভর্তি পরীক্ষা", subtitle: "ভার্সিটি, মেডিকেল", icon: Stethoscope, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-500/10", borderHover: "hover:border-orange-500" },
+                { id: "ADMISSION", title: "ভর্তি পরীক্ষা", subtitle: "ভার্সিটি, মেডিকেল", icon: Stethoscope, color: "text-orange-700 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/10", borderHover: "hover:border-orange-500" },
                 { id: "MAINBOOK", title: "অনুশীলনী", subtitle: "মেইন বইয়ের প্রশ্ন", icon: BookMarked, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10", borderHover: "hover:border-emerald-500" }
               ].map(item => (
                 <motion.div

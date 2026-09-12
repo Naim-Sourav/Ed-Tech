@@ -120,13 +120,13 @@ const QuestionPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <Link
             to="/qbank"
-            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-400"
+            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-700 dark:text-orange-400"
           >
             <ArrowLeft size={16} /> প্রশ্নব্যাংকে ফিরে যাও
           </Link>
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-400"
+            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-700 dark:text-orange-400"
           >
             <Share2 size={16} /> শেয়ার
           </button>
@@ -149,7 +149,7 @@ const QuestionPage: React.FC = () => {
               <Link to="/qbank" className="px-5 py-2.5 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-xl">
                 প্রশ্নব্যাংক খোলো
               </Link>
-              <a href="/hsc-syllabus/" className="px-5 py-2.5 border border-gray-200 dark:border-zinc-700 text-sm font-bold rounded-xl text-gray-700 dark:text-gray-200">
+              <a href={`${import.meta.env.BASE_URL}hsc-syllabus/`} className="px-5 py-2.5 border border-gray-200 dark:border-zinc-700 text-sm font-bold rounded-xl text-gray-700 dark:text-gray-200">
                 সিলেবাস গাইড
               </a>
             </div>

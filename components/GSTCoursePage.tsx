@@ -180,11 +180,11 @@ Discipline • Dedication • Domination
                 {/* ALL DAY */}
                 <div className="flex flex-col md:flex-row items-center justify-between mb-8 relative group">
                     <div className="md:w-1/2 md:pr-12 hidden md:flex justify-end">
-                        <BookOpen className="text-orange-500 opacity-50" size={32}/>
+                        <BookOpen className="text-orange-700 dark:text-orange-400 opacity-50" size={32}/>
                     </div>
                     <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-orange-500 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
                     <div className="md:w-1/2 md:pl-12 text-left pl-6">
-                        <h4 className="text-lg font-bold text-orange-500">সারাদিন</h4>
+                        <h4 className="text-lg font-bold text-orange-700 dark:text-orange-400">সারাদিন</h4>
                         <p className="text-sm font-bold text-gray-800 dark:text-white">সেলফ স্টাডি (Study Time)</p>
                         <p className="text-xs text-gray-500">বই এবং প্রশ্নব্যাংক থেকে টপিকগুলো শেষ করবেন।</p>
                     </div>
@@ -306,7 +306,7 @@ Discipline • Dedication • Domination
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {/* Phase 1 */}
-                                <tr className="bg-orange-50/50 dark:bg-orange-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-orange-600 uppercase tracking-widest">Phase 1: Chapter Wise</td></tr>
+                                <tr className="bg-orange-50/50 dark:bg-orange-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest">Phase 1: Chapter Wise</td></tr>
                                 {PHASE_1_ROUTINE.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <td className="p-4 font-bold text-gray-500">Day {row.day}</td>
@@ -325,11 +325,11 @@ Discipline • Dedication • Domination
                                 ))}
 
                                 {/* Phase 3 */}
-                                <tr className="bg-orange-50/50 dark:bg-orange-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-orange-600 uppercase tracking-widest">Phase 3: Subject Final</td></tr>
+                                <tr className="bg-orange-50/50 dark:bg-orange-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest">Phase 3: Subject Final</td></tr>
                                 {PHASE_3_ROUTINE.map((row, idx) => (
                                     <tr key={`p3-${idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <td className="p-4 font-bold text-gray-500">Day {row.day}</td>
-                                        <td colSpan={2} className="p-4 font-black text-orange-600 dark:text-orange-400">{row.exam}</td>
+                                        <td colSpan={2} className="p-4 font-black text-orange-700 dark:text-orange-400">{row.exam}</td>
                                     </tr>
                                 ))}
 

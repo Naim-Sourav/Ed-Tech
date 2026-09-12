@@ -1315,7 +1315,7 @@ const AdminJsonUpload: React.FC = () => {
                           q.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="px-2 py-1 bg-orange-50 text-orange-600 text-[9px] font-black rounded-lg border border-orange-100"
+                              className="px-2 py-1 bg-orange-50 text-orange-700 dark:text-orange-400 text-[9px] font-black rounded-lg border border-orange-100"
                             >
                               {tag}
                             </span>

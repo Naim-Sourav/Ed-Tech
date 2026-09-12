@@ -191,7 +191,7 @@ const GSTAnswerKey: React.FC = () => {
               </button>
               <button 
                 onClick={handleTakeExam}
-                className="flex-1 md:flex-none px-8 py-4 bg-white text-orange-600 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-black/10 hover:scale-105 active:scale-95 transition-all"
+                className="flex-1 md:flex-none px-8 py-4 bg-white text-orange-700 dark:text-orange-400 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-black/10 hover:scale-105 active:scale-95 transition-all"
               >
                 <Play fill="currentColor" size={18} /> পরীক্ষা দিন
               </button>
@@ -205,7 +205,7 @@ const GSTAnswerKey: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-white/5 p-4 md:p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-500/20">
-              <p className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-1">মোট প্রশ্ন</p>
+              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest mb-1">মোট প্রশ্ন</p>
               <p className="text-2xl font-black text-gray-800 dark:text-white">{questions.length}</p>
             </div>
             <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-500/20">
@@ -217,7 +217,7 @@ const GSTAnswerKey: React.FC = () => {
               <p className="text-2xl font-black text-gray-800 dark:text-white">০.২৫</p>
             </div>
             <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-500/20">
-              <p className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-1">সময়</p>
+              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest mb-1">সময়</p>
               <p className="text-2xl font-black text-gray-800 dark:text-white">৬০ মি.</p>
             </div>
           </div>
@@ -252,7 +252,7 @@ const GSTAnswerKey: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 mt-8 space-y-4">
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="animate-spin text-orange-500" size={40} />
+            <Loader2 className="animate-spin text-orange-700 dark:text-orange-400" size={40} />
             <p className="text-gray-500 font-bold">প্রশ্ন লোড হচ্ছে...</p>
           </div>
         ) : filteredQuestions.length > 0 ? (
@@ -266,7 +266,7 @@ const GSTAnswerKey: React.FC = () => {
               className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-white/5 p-5 md:p-6 shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[10px] font-black uppercase tracking-widest rounded-full">
+                <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-[10px] font-black uppercase tracking-widest rounded-full">
                   {q.subject}
                 </span>
                 <span className="text-xs font-bold text-gray-400">Q. {idx + 1}</span>

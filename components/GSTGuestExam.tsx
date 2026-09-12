@@ -266,7 +266,7 @@ const GSTGuestExam: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <Loader2 className="animate-spin text-orange-500 mb-4" size={48} />
+        <Loader2 className="animate-spin text-orange-700 dark:text-orange-400 mb-4" size={48} />
         <p className="text-gray-500 font-bold">প্রশ্ন লোড হচ্ছে...</p>
       </div>
     );
@@ -285,7 +285,7 @@ const GSTGuestExam: React.FC = () => {
           >
             <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 shadow-xl border border-gray-100 dark:border-white/5">
               <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center mb-6">
-                <Play className="text-orange-600" fill="currentColor" size={32} />
+                <Play className="text-orange-700 dark:text-orange-400" fill="currentColor" size={32} />
               </div>
               <h1 className="text-2xl font-black text-gray-800 dark:text-white mb-2">GST লাইভ এক্সাম</h1>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 font-medium">
@@ -363,11 +363,11 @@ const GSTGuestExam: React.FC = () => {
               <div className="space-y-3 mb-8">
                 <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-500 rounded-2xl flex items-center justify-between">
                   <span className="font-bold text-orange-700 dark:text-orange-300">Physics (পদার্থবিজ্ঞান)</span>
-                  <CheckCircle2 className="text-orange-500" size={20} />
+                  <CheckCircle2 className="text-orange-700 dark:text-orange-400" size={20} />
                 </div>
                 <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-500 rounded-2xl flex items-center justify-between">
                   <span className="font-bold text-orange-700 dark:text-orange-300">Chemistry (রসায়ন)</span>
-                  <CheckCircle2 className="text-orange-500" size={20} />
+                  <CheckCircle2 className="text-orange-700 dark:text-orange-400" size={20} />
                 </div>
                 
                 <div className="grid grid-cols-1 gap-3">
@@ -392,7 +392,7 @@ const GSTGuestExam: React.FC = () => {
                         <span className={`font-bold ${isSelected ? 'text-orange-700 dark:text-orange-300' : 'text-gray-600 dark:text-gray-400'}`}>
                           {sub} {sub === 'Math' ? '(গণিত)' : sub === 'Biology' ? '(জীববিজ্ঞান)' : sub === 'Bangla' ? '(বাংলা)' : '(ইংরেজি)'}
                         </span>
-                        {isSelected ? <CheckCircle2 className="text-orange-500" size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-gray-200"></div>}
+                        {isSelected ? <CheckCircle2 className="text-orange-700 dark:text-orange-400" size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-gray-200"></div>}
                       </button>
                     );
                   })}
@@ -429,7 +429,7 @@ const GSTGuestExam: React.FC = () => {
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Clock className="text-orange-600" size={18} />
+                    <Clock className="text-orange-700 dark:text-orange-400" size={18} />
                   </div>
                   <div>
                     <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">সময় বাকি</p>
@@ -441,7 +441,7 @@ const GSTGuestExam: React.FC = () => {
 
                 <div className="flex flex-col items-center">
                   <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">প্রগতি</p>
-                  <p className="text-xs sm:text-sm font-black text-orange-600">
+                  <p className="text-xs sm:text-sm font-black text-orange-700 dark:text-orange-400">
                     {userAnswers.filter(a => a !== null).length} / {questions.length}
                   </p>
                 </div>
@@ -584,7 +584,7 @@ const GSTGuestExam: React.FC = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                   <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-500/20">
-                    <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">স্কোর</p>
+                    <p className="text-[10px] font-black text-orange-700 dark:text-orange-400 uppercase tracking-widest mb-1">স্কোর</p>
                     <p className="text-2xl font-black text-gray-800 dark:text-white">{result?.score.toFixed(2)}</p>
                   </div>
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-500/20">
@@ -623,7 +623,7 @@ const GSTGuestExam: React.FC = () => {
                         }`}>
                           <div className="flex items-center gap-3">
                             <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${
-                              idx === 0 ? 'bg-yellow-400 text-white' : isMe ? 'bg-white text-orange-500' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'
+                              idx === 0 ? 'bg-yellow-400 text-white' : isMe ? 'bg-white text-orange-700 dark:text-orange-400' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'
                             }`}>
                               {idx + 1}
                             </span>
@@ -634,7 +634,7 @@ const GSTGuestExam: React.FC = () => {
                               </p>
                             </div>
                           </div>
-                          <p className={`text-sm font-black ${isMe ? 'text-white' : 'text-orange-600'}`}>{entry.score.toFixed(2)}</p>
+                          <p className={`text-sm font-black ${isMe ? 'text-white' : 'text-orange-700 dark:text-orange-400'}`}>{entry.score.toFixed(2)}</p>
                         </div>
                       );
                     })}
@@ -828,7 +828,7 @@ const GSTGuestExam: React.FC = () => {
               className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 shadow-2xl relative z-10 max-w-sm w-full text-center"
             >
               <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <AlertCircle className="text-orange-600" size={32} />
+                <AlertCircle className="text-orange-700 dark:text-orange-400" size={32} />
               </div>
               <h3 className="text-xl font-black text-gray-800 dark:text-white mb-2">আপনি কি নিশ্চিত?</h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 font-medium">

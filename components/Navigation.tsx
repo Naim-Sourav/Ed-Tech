@@ -12,7 +12,6 @@ import {
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { isAdminEmail } from '../utils/adminConfig';
-import { useLanguage } from '../contexts/LanguageContext';
 import { Notification } from '../types';
 import { useToast } from './Toast';
 import { subscribeToPushNotifications, checkSubscription } from '../services/notificationService';
@@ -58,7 +57,6 @@ const Navigation: React.FC<NavigationProps> = ({
   setIsNotificationOpen
 }) => {
   const { currentUser, logout, userAvatar } = useAuth();
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
@@ -163,16 +161,16 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   const navItems = [
-    { path: '/dashboard', label: t('nav_home'), icon: <Home size={18} /> },
+    { path: '/dashboard', label: "হোম", icon: <Home size={18} /> },
     { path: '/exams', label: 'Exam Zone', icon: <LayoutGrid size={18} /> },
-    { path: '/challenges', label: t('nav_challenges'), icon: <Zap size={18} /> },
+    { path: '/challenges', label: "চ্যালেঞ্জ", icon: <Zap size={18} /> },
     { path: '/bot', label: 'Porikkhangon AI', icon: <Bot size={18} /> },
-    { path: '/courses', label: t('nav_courses'), icon: <Library size={18} /> },
-    { path: '/qbank', label: t('nav_qbank'), icon: <Archive size={18} /> },
-    { path: '/battle', label: t('nav_battle'), icon: <Swords size={18} /> },
-    { path: '/leaderboard', label: t('nav_leaderboard'), icon: <Trophy size={18} /> },
+    { path: '/courses', label: "কোর্সসমূহ", icon: <Library size={18} /> },
+    { path: '/qbank', label: "প্রশ্ন ব্যাংক", icon: <Archive size={18} /> },
+    { path: '/battle', label: "কুইজ ব্যাটল", icon: <Swords size={18} /> },
+    { path: '/leaderboard', label: "লিডারবোর্ড", icon: <Trophy size={18} /> },
     { path: '/history', label: 'ইতিহাস', icon: <Clock size={18} /> },
-    { path: '/admission', label: t('nav_admission'), icon: <GraduationCap size={18} /> },
+    { path: '/admission', label: "ভর্তি তথ্য", icon: <GraduationCap size={18} /> },
   ];
 
   // Mobile Bottom Nav Items - Custom SVG Icons
@@ -203,10 +201,10 @@ const Navigation: React.FC<NavigationProps> = ({
   const getNotificationIcon = (type: string) => {
       switch(type) {
           case 'WARNING': return <AlertTriangle size={16} className="text-amber-600" />;
-          case 'SUCCESS': return <CheckCircle size={16} className="text-orange-600" />;
-          case 'BATTLE_CHALLENGE': return <Swords size={16} className="text-orange-600" />;
+          case 'SUCCESS': return <CheckCircle size={16} className="text-orange-700 dark:text-orange-400" />;
+          case 'BATTLE_CHALLENGE': return <Swords size={16} className="text-orange-700 dark:text-orange-400" />;
           case 'BATTLE_RESULT': return <Trophy size={16} className="text-amber-600" />;
-          default: return <Info size={16} className="text-orange-600" />;
+          default: return <Info size={16} className="text-orange-700 dark:text-orange-400" />;
       }
   };
 
@@ -296,7 +294,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         {currentUser.displayName || 'Learner'}
                       </p>
                       <p className="text-[12px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
-                        {t('nav_profile_view')} <ChevronRight size={10}/>
+                        {"প্রোফাইল দেখুন"} <ChevronRight size={10}/>
                       </p>
                     </div>
                   </Link>
@@ -333,7 +331,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         visible: { opacity: 1, x: 0 }
                       }}
                       onClick={handleInstallClick}
-                      className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400"
+                      className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-700 dark:text-orange-400"
                     >
                       {isIOS ? <Share size={18} /> : <Download size={18} />}
                       <span>অ্যাপ ইনস্টল করুন</span>
@@ -357,7 +355,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         }`}
                       >
                         <ShieldCheck size={18} />
-                        <span>{t('nav_admin')}</span>
+                        <span>{"অ্যাডমিন প্যানেল"}</span>
                       </Link>
                     </motion.div>
                   )}
@@ -379,7 +377,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         onClick={handleLogout}
                         className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-xs font-bold border border-red-100 dark:border-red-900/20 active:scale-95"
                     >
-                        <LogOut size={16} /> {t('nav_logout')}
+                        <LogOut size={16} /> {"লগআউট"}
                     </button>
                   </motion.div>
                 </div>
@@ -450,7 +448,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     <div className="px-4 py-3 bg-orange-50 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-900/20">
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
+                                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-700 dark:text-orange-400">
                                     <Bell size={16} />
                                 </div>
                                 <div>
@@ -577,7 +575,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 {currentUser.displayName || 'Learner'}
               </p>
               <p className="text-[12px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
-                {t('nav_profile_view')} <ChevronRight size={10}/>
+                {"প্রোফাইল দেখুন"} <ChevronRight size={10}/>
               </p>
             </div>
           </Link>
@@ -602,7 +600,7 @@ const Navigation: React.FC<NavigationProps> = ({
           {!isAppInstalled && (
             <button
               onClick={handleInstallClick}
-              className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400"
+              className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-700 dark:text-orange-400"
             >
               {isIOS ? <Share size={18} /> : <Download size={18} />}
               <span>অ্যাপ ইনস্টল করুন</span>
@@ -619,7 +617,7 @@ const Navigation: React.FC<NavigationProps> = ({
               }`}
             >
               <ShieldCheck size={18} />
-              <span>{t('nav_admin')}</span>
+              <span>{"অ্যাডমিন প্যানেল"}</span>
             </Link>
           )}
         </nav>
@@ -634,7 +632,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 onClick={handleLogout}
                 className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-xs font-bold border border-red-100 dark:border-red-900/20"
             >
-                <LogOut size={16} /> {t('nav_logout')}
+                <LogOut size={16} /> {"লগআউট"}
             </button>
           </div>
           <div className="text-[12px] text-center text-gray-400 dark:text-zinc-500 font-medium">

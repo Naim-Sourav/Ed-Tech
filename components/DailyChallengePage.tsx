@@ -133,7 +133,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
           case 'Target': return <Target size={size} className="text-red-500" />;
           case 'FileCheck': return <FileCheck size={size} className="text-blue-500" />;
           case 'Clock': return <Clock size={size} className="text-purple-500" />;
-          case 'Swords': return <Swords size={size} className="text-orange-500" />;
+          case 'Swords': return <Swords size={size} className="text-orange-700 dark:text-orange-400" />;
           case 'Bot': return <Bot size={size} className="text-green-500" />;
           case 'Bookmark': return <Bookmark size={size} className="text-yellow-500" />;
           case 'Crown': return <Crown size={size} className="text-amber-500" />;

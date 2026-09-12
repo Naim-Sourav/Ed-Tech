@@ -487,7 +487,7 @@ const StudyTracker: React.FC = () => {
               <Settings size={20} className="text-gray-600 dark:text-gray-300" />
             </button>
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-              <Flame size={20} className="text-orange-500" fill="currentColor" />
+              <Flame size={20} className="text-orange-700 dark:text-orange-400" fill="currentColor" />
             </div>
           </div>
         </div>
@@ -545,7 +545,7 @@ const StudyTracker: React.FC = () => {
                         <span className={`text-[12px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
                           task.type === 'NAMAZ' ? 'bg-emerald-100 text-emerald-700' :
                           task.type === 'COACHING' ? 'bg-amber-100 text-amber-700' :
-                          'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'
+                          'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
                         }`}>
                           {task.subject}
                         </span>

@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 're
 import { logger } from '../utils/logger';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useLanguage } from '../contexts/LanguageContext';
 import { fetchSavedQuestionsAPI, deleteSavedQuestionAPI, fetchUserStatsAPI, fetchUserMistakesAPI, deleteUserMistakeAPI, updateSavedQuestionFolderAPI, deleteExamResultAPI, fetchSyllabusStatsAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import { motion, AnimatePresence } from 'motion/react';
@@ -287,7 +286,6 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const { currentUser, userAvatar, enrolledCourses, extendedProfile, updateUserProfile, logout } = useAuth();
-  const { t, language, setLanguage } = useLanguage();
   const { questionFont, setQuestionFont, questionFontSize, setQuestionFontSize } = usePreferences();
   const { showToast } = useToast();
   const { getCache, setCache } = useCache();
@@ -1104,7 +1102,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                {isEditing && isOwnProfile ? (
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl bg-gray-50/50 dark:bg-zinc-900/30 p-5 rounded-3xl border border-gray-100 dark:border-white/5 text-left">
                     <div className="space-y-1.5">
-                      <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{t('auth_name')}</label>
+                      <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{"আপনার নাম"}</label>
                       <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
                     </div>
                     <div className="space-y-1.5">
@@ -1138,9 +1136,9 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
 
                     <div className="flex flex-wrap justify-center gap-2 md:gap-3 text-[11px] md:text-sm text-gray-600 dark:text-gray-300">
                        {profileData.college && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><GraduationCap size={16} className="text-primary"/> {profileData.college}</div>}
-                       {profileData.hscBatch && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><Calendar size={16} className="text-orange-500"/> Batch: {profileData.hscBatch}</div>}
-                       {profileData.department && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><Briefcase size={16} className="text-orange-500"/> {profileData.department}</div>}
-                       {profileData.target && <div className="flex items-center justify-center gap-2 bg-orange-100/50 dark:bg-white/5 text-orange-600 dark:text-orange-400 px-4 py-2 rounded-2xl font-black border border-orange-200 dark:border-white/5 shadow-sm"><Target size={16}/> {profileData.target} Aspirant</div>}
+                       {profileData.hscBatch && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><Calendar size={16} className="text-orange-700 dark:text-orange-400"/> Batch: {profileData.hscBatch}</div>}
+                       {profileData.department && <div className="flex items-center justify-center gap-2 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-200/50 dark:border-white/5 font-bold shadow-sm"><Briefcase size={16} className="text-orange-700 dark:text-orange-400"/> {profileData.department}</div>}
+                       {profileData.target && <div className="flex items-center justify-center gap-2 bg-orange-100/50 dark:bg-white/5 text-orange-700 dark:text-orange-400 px-4 py-2 rounded-2xl font-black border border-orange-200 dark:border-white/5 shadow-sm"><Target size={16}/> {profileData.target} Aspirant</div>}
                     </div>
                  </div>
                )}
@@ -1168,13 +1166,13 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                <>
                    <button onClick={() => setActiveTab('COURSES')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'COURSES' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}><BookOpen size={16}/> Courses</button>
                    <button onClick={() => setActiveTab('SAVED')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'SAVED' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
-                       <Bookmark size={16}/> {t('profile_saved')}
+                       <Bookmark size={16}/> {"বুকমার্ক"}
                    </button>
                    <button onClick={() => setActiveTab('MISTAKES')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'MISTAKES' ? 'bg-red-600 text-white shadow-xl shadow-red-500/20' : 'text-gray-500 hover:text-red-600 dark:hover:text-red-400'}`}>
-                       <AlertTriangle size={16}/> {t('profile_mistakes')}
+                       <AlertTriangle size={16}/> {"ভুলসমূহ"}
                    </button>
-                   <button onClick={() => setActiveTab('HISTORY')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'HISTORY' ? 'bg-orange-500 text-white shadow-xl shadow-orange-500/20' : 'text-gray-500 hover:text-orange-500'}`}>
-                       <Calendar size={16}/> {t('profile_history')}
+                   <button onClick={() => setActiveTab('HISTORY')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'HISTORY' ? 'bg-orange-500 text-white shadow-xl shadow-orange-500/20' : 'text-gray-500 hover:text-orange-700 dark:text-orange-400'}`}>
+                       <Calendar size={16}/> {"এক্সাম হিস্ট্রি"}
                    </button>
                    <button onClick={() => setActiveTab('SETTINGS')} className={`flex-1 md:flex-none px-6 py-2.5 rounded-2xl text-[11px] md:text-sm font-black flex items-center justify-center gap-2.5 transition-all whitespace-nowrap ${activeTab === 'SETTINGS' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-xl' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>
                        <Settings size={16}/> Settings
@@ -1215,7 +1213,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                         </div>
                     </div>
                     <div className="relative mt-5 flex flex-col gap-2 sm:flex-row">
-                        <button onClick={() => navigate('/qbank')} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-orange-600 shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0"><Play size={16} fill="currentColor"/> অনুশীলন শুরু করুন <ArrowRight size={16}/></button>
+                        <button onClick={() => navigate('/qbank')} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-orange-700 dark:text-orange-400 shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0"><Play size={16} fill="currentColor"/> অনুশীলন শুরু করুন <ArrowRight size={16}/></button>
                         {performanceSummary.weakestSubject && <button onClick={scrollToSubjectAnalysis} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-white/20"><FileQuestion size={16}/> দুর্বল বিষয় দেখুন</button>}
                     </div>
                 </section>
@@ -1224,8 +1222,8 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                     {[
                         { label: 'Total Points', value: profileData.stats.points, icon: Award, color: 'primary', bg: 'bg-primary/10', text: 'text-primary' },
-                        { label: 'Exams Taken', value: profileData.stats.totalExams, icon: FileQuestion, color: 'orange', bg: 'bg-orange-500/10', text: 'text-orange-600' },
-                        { label: 'Correct Ans', value: profileData.stats.totalCorrect, icon: CheckCircle, color: 'orange', bg: 'bg-orange-500/10', text: 'text-orange-600' },
+                        { label: 'Exams Taken', value: profileData.stats.totalExams, icon: FileQuestion, color: 'orange', bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400' },
+                        { label: 'Correct Ans', value: profileData.stats.totalCorrect, icon: CheckCircle, color: 'orange', bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400' },
                         { label: 'Wrong Ans', value: profileData.stats.totalWrong, icon: X, color: 'red', bg: 'bg-red-500/10', text: 'text-red-600' }
                     ].map((stat, i) => (
                         <motion.div 
@@ -1252,7 +1250,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                         <div className="w-full lg:w-3/5 mx-auto bg-white dark:bg-zinc-950 p-6 md:p-8 rounded-[2.5rem] border border-gray-150 dark:border-zinc-850 shadow-sm min-h-[360px] flex flex-col">
                             <div className="mb-4">
                                 <h4 className="text-sm font-extrabold text-gray-950 dark:text-zinc-100 flex items-center justify-center gap-2.5">
-                                    <PieChart size={18} className="text-orange-500"/> সামগ্রিক প্রগ্রেস
+                                    <PieChart size={18} className="text-orange-700 dark:text-orange-400"/> সামগ্রিক প্রগ্রেস
                                 </h4>
                             </div>
 
@@ -1303,7 +1301,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                 <div id="subject-analysis" className="mt-8 scroll-mt-6">
                     <div className="flex items-center justify-between mb-6 px-2">
                         <h3 className="font-extrabold text-gray-950 dark:text-zinc-100 flex items-center gap-2.5 text-base md:text-lg tracking-tight">
-                            <BarChart3 size={20} className="text-orange-500"/> বিষয়ভিত্তিক বিশ্লেষণ
+                            <BarChart3 size={20} className="text-orange-700 dark:text-orange-400"/> বিষয়ভিত্তিক বিশ্লেষণ
                         </h3>
                     </div>
                     
@@ -1337,11 +1335,11 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                                                 
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     <span className={`text-sm md:text-base font-black ${
-                                                        completionPercent >= 80 ? 'text-primary' : completionPercent >= 60 ? 'text-orange-400' : 'text-gray-400 dark:text-zinc-500'
+                                                        completionPercent >= 80 ? 'text-primary' : completionPercent >= 60 ? 'text-orange-700 dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'
                                                     }`}>
                                                         {completionPercent}%
                                                     </span>
-                                                    <div className={`p-1 text-gray-400 dark:text-zinc-600 transition-all ${isExpanded ? 'rotate-180 text-orange-500 dark:text-orange-400' : ''}`}>
+                                                    <div className={`p-1 text-gray-400 dark:text-zinc-600 transition-all ${isExpanded ? 'rotate-180 text-orange-700 dark:text-orange-400' : ''}`}>
                                                         <ChevronDown size={14} />
                                                     </div>
                                                 </div>
@@ -1380,7 +1378,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                                                                 }}
                                                                 className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-900/50 dark:hover:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-300 rounded-lg transition-all border border-gray-200 dark:border-zinc-800 flex items-center justify-center gap-1.5 shrink-0 active:scale-95"
                                                             >
-                                                                <img src="/analysis-icon.png" alt="analysis" className="w-5 h-5 object-contain mix-blend-multiply dark:invert dark:mix-blend-screen" />
+                                                                <img src={`${import.meta.env.BASE_URL}analysis-icon.png`} alt="analysis" className="w-5 h-5 object-contain mix-blend-multiply dark:invert dark:mix-blend-screen" />
                                                                 Deep Analysis
                                                             </button>
                                                         </div>
@@ -1564,7 +1562,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex flex-wrap gap-2 items-center">
-                                            <span className="px-3 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[12px] font-bold rounded-xl border border-orange-100 dark:border-orange-800/50">{q.subject}</span>
+                                            <span className="px-3 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-[12px] font-bold rounded-xl border border-orange-100 dark:border-orange-800/50">{q.subject}</span>
                                             <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[12px] font-bold rounded-xl flex items-center gap-2 border border-gray-200 dark:border-gray-600">
                                                 <Folder size={12} className="text-primary"/> {item.folder || 'General'}
                                             </span>
@@ -1661,7 +1659,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                        </div>
                        <div>
                            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                              {t('profile_mistakes')}
+                              {"ভুলসমূহ"}
                            </h2>
                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Total {filteredItems.length} questions to review</p>
                        </div>
@@ -1680,7 +1678,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                          className="w-full md:w-auto px-8 py-3 bg-red-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-red-700 shadow-xl shadow-red-200 dark:shadow-none transition-all active:scale-95 group"
                        >
                           <RefreshCw size={18} className="group-hover:rotate-180 transition-transform duration-500" /> 
-                          {t('quiz_retry')} ({filteredItems.length})
+                          {"আবার দিন"} ({filteredItems.length})
                        </button>
                    )}
                </div>
@@ -1786,12 +1784,12 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                 {/* Header Information Card */}
                 <div className="flex justify-between items-center bg-white/40 dark:bg-zinc-900/30 backdrop-blur-xl p-5 rounded-[2rem] border border-gray-150 dark:border-zinc-800 shadow-sm">
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-orange-50 dark:bg-orange-500/10 rounded-2xl text-orange-500">
+                        <div className="p-3 bg-orange-50 dark:bg-orange-500/10 rounded-2xl text-orange-700 dark:text-orange-400">
                             <Calendar size={20} />
                         </div>
                         <div>
                             <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
-                                {t('profile_history')}
+                                {"এক্সাম হিস্ট্রি"}
                             </h2>
                             <p className="text-xs text-gray-400 dark:text-zinc-500 font-semibold mt-0.5">
                                 {attempts.length > 0 ? `মোট ${attempts.length}টি পরীক্ষা সম্পন্ন হয়েছে` : "কোনো পরীক্ষার রেকর্ড পাওয়া যায়নি"}
@@ -1803,7 +1801,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                 {attempts.length === 0 ? (
                     <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-gray-150 dark:border-zinc-800 shadow-sm">
                         <div className="w-16 h-16 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
-                            <FileQuestion size={32} className="text-orange-500"/>
+                            <FileQuestion size={32} className="text-orange-700 dark:text-orange-400"/>
                         </div>
                         <p className="text-gray-900 dark:text-white font-bold text-base mb-1">কোনো পরীক্ষার রেকর্ড নেই</p>
                         <p className="text-gray-400 text-xs max-w-xs mx-auto leading-relaxed">আপনি এখনও কোনো পরীক্ষায় অংশ নেননি। পরীক্ষা দেওয়ার পর আপনার সকল ফলাফলের বিস্তারিত বিবরণ এখানে দেখতে পাবেন।</p>
@@ -2053,45 +2051,6 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                         </div>
                     )}
 
-                    {/* Language card */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-white/5 p-4 md:p-5 shadow-sm">
-                        <div className="flex items-center gap-3.5 mb-4">
-                            <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-black text-lg shrink-0">
-                                অ
-                            </div>
-                            <div>
-                                <p className="text-sm md:text-base font-black text-gray-900 dark:text-white">ভাষা</p>
-                                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5 font-medium">Select your preferred language</p>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            {([
-                                { lang: 'bn' as const, label: 'বাংলা', sub: 'Bangla' },
-                                { lang: 'en' as const, label: 'English', sub: 'English' },
-                            ]).map((item) => {
-                                const isActive = language === item.lang;
-                                return (
-                                    <button
-                                        key={item.lang}
-                                        onClick={() => setLanguage(item.lang)}
-                                        className={`relative flex flex-col items-center gap-0.5 py-3.5 rounded-2xl border-2 transition-all active:scale-95 ${
-                                            isActive
-                                                ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-400 dark:border-emerald-500/60 shadow-sm text-emerald-700 dark:text-emerald-300'
-                                                : 'bg-gray-50/60 dark:bg-zinc-800/40 border-gray-100 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 hover:border-gray-200 dark:hover:border-zinc-700'
-                                        }`}
-                                    >
-                                        <span className="text-sm font-black">{item.label}</span>
-                                        <span className="text-[9px] font-bold uppercase tracking-wider opacity-60">{item.sub}</span>
-                                        {isActive && (
-                                            <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                                                <Check size={10} strokeWidth={4} />
-                                            </span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
                 </section>
 
                 {/* --- Section: Display --- */}
@@ -2273,7 +2232,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                     className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100/70 dark:hover:bg-rose-950/40 font-black text-sm transition-all active:scale-[0.98]"
                 >
                     <LogOut size={17} strokeWidth={2.5}/>
-                    {t('nav_logout')}
+                    {"লগআউট"}
                 </button>
 
                 {/* Version footer */}
@@ -2334,7 +2293,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                                                   </div>
                                                   <div className="flex items-center gap-2 shrink-0">
                                                       <span className={`text-sm md:text-base font-black ${
-                                                          completionPercent >= 80 ? 'text-primary' : completionPercent >= 60 ? 'text-orange-400' : 'text-gray-400 dark:text-zinc-500'
+                                                          completionPercent >= 80 ? 'text-primary' : completionPercent >= 60 ? 'text-orange-700 dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'
                                                       }`}>
                                                           {total}/{available}
                                                       </span>
@@ -2380,7 +2339,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                                                               
                                                               let cColor = "text-gray-400 dark:text-zinc-500";
                                                               if (cCompletion >= 80) { cColor = "text-primary"; } 
-                                                              else if (cCompletion >= 60) { cColor = "text-orange-400"; } 
+                                                              else if (cCompletion >= 60) { cColor = "text-orange-700 dark:text-orange-400"; } 
                                                               else if (cCompletion >= 40) { cColor = "text-orange-300 dark:text-orange-600"; }
 
                                                               return (
@@ -2475,7 +2434,7 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                         </div>
 
                         <div className="space-y-4">
-                            <label className="block text-xs md:text-sm font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest ml-1">{t('quiz_time_limit')}</label>
+                            <label className="block text-xs md:text-sm font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest ml-1">{"সময় (মিনিট)"}</label>
                             <div className="grid grid-cols-4 gap-3">
                                 {[0, 10, 20, 30].map(t => (
                                     <button 
