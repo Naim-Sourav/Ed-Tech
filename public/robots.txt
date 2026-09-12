@@ -1,8 +1,12 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /api
 
-# Static, crawlable content hubs
+# Static + server-rendered content hubs
 Allow: /hsc-syllabus/
+Allow: /questions/
+Allow: /q/
 
+# Full URL list (sitemap index; auto-split into 40k-URL parts)
 Sitemap: https://www.porikkhangon.app/sitemap.xml

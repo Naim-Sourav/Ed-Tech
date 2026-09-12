@@ -1,1 +1,15 @@
+# Cloudflare Pages / Netlify routing for porikkhangon.app
+#
+# The question pages and the sitemap are rendered dynamically by the backend
+# (seo/ssr-server.mjs) so that ALL 50k+ questions in the database have a real
+# 200-OK page without a rebuild. Everything else is served from dist/.
+#
+# Real files in dist/ always win over these rules, so /seo.css and any
+# statically generated /q/<slug>/ page still take precedence.
+
+/q/*                     https://mongodb-hb6b.onrender.com/q/:splat      200
+/sitemap.xml             https://mongodb-hb6b.onrender.com/sitemap.xml   200
+/sitemap-questions-*.xml https://mongodb-hb6b.onrender.com/:splat        200
+
+# SPA fallback (hash router lives in index.html)
 /*  /index.html  200

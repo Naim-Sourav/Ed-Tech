@@ -16,6 +16,7 @@ export default {
         tiro: ['Kalpurush', 'sans-serif'],
         display: ['Outfit', 'Inter', 'sans-serif'],
         noto: ['Noto Sans Bengali', 'sans-serif'],
+        'serif-bn': ['"Noto Serif Bengali"', 'Hind Siliguri', 'serif'],
       },
       fontSize: {
         xs: '0.75rem',
