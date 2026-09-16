@@ -31,7 +31,7 @@ interface NavigationProps {
 // Icon used inside the floating (dark) bottom bar — masked so it always takes the ink color
 const BarIcon = ({ src, active, size = 'w-6 h-6' }: { src: string, active: boolean, size?: string }) => (
   <div
-    className={`${size} transition-all duration-300 ${active ? 'bg-white' : 'bg-white/45'} group-active:scale-90`}
+    className={`${size} transition-all duration-300 ${active ? 'bn-icon-on' : 'bg-white/45'} group-active:scale-90`}
     style={{
       maskImage: `url(${src})`,
       WebkitMaskImage: `url(${src})`,
@@ -59,7 +59,7 @@ const BarLink = ({ item, active }: { item: MobileBarItem; active: boolean }) => 
     <span className={`flex h-8 w-full max-w-[54px] items-center justify-center rounded-full transition-all duration-300 ${active ? 'bg-white/10' : 'bg-transparent'}`}>
       <BarIcon src={item.icon} active={active} />
     </span>
-    <span className={`text-[10px] sm:text-[10.5px] leading-none font-bold tracking-tight whitespace-nowrap transition-colors ${active ? 'text-white' : 'text-white/50'}`}>
+    <span className={`max-w-full truncate text-[10px] sm:text-[10.5px] leading-none font-bold tracking-tight transition-colors ${active ? 'text-white' : 'text-white/50'}`}>
       {item.label}
     </span>
   </Link>
@@ -666,48 +666,48 @@ const Navigation: React.FC<NavigationProps> = ({
         </div>
       </div>
 
-      {/* Floating Bottom Navigation — raised center button with the P (পরীক্ষা/Exam) logo */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] pointer-events-none">
-        <div className="pointer-events-auto relative rounded-t-[1.9rem] bg-[#0B0B10]/[0.97] dark:bg-[#06060A] backdrop-blur-2xl ring-1 ring-white/10 shadow-[0_-14px_44px_rgba(0,0,0,0.28)] pt-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] px-1.5">
+      {/* Floating bottom bar with a curved notch; the raised P (পরীক্ষা/Exam) button floats inside it */}
+      <div className="bn md:hidden fixed bottom-0 left-0 right-0 z-[100] pointer-events-none">
+        {/* drop-shadow lives on the shell so it follows the notch curve */}
+        <div className="bn-shell">
+          <div className="bn-bar pointer-events-auto relative rounded-t-[1.9rem] bg-[#0B0B10] dark:bg-[#06060A] pt-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] px-1.5">
+            <div className="relative flex items-stretch">
+              {mobileNavLeft.map((item) => (
+                <BarLink key={item.path} item={item} active={isActive(item.path)} />
+              ))}
 
-          {/* Soft green halo spilling out of the center button onto the bar */}
-          <div className="pointer-events-none absolute left-1/2 top-0 h-14 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/20 blur-2xl nav-halo" />
+              {/* Center slot — only the label, the button itself floats above the edge */}
+              <div className="w-[76px] sm:w-[88px] shrink-0 flex items-end justify-center pb-[3px]">
+                <span className={`bn-label max-w-full truncate text-[10px] sm:text-[10.5px] leading-none font-bold tracking-tight ${isActive(examNavItem.path) ? 'bn-label-on' : ''}`}>
+                  {examNavItem.label}
+                </span>
+              </div>
 
-          <div className="relative flex items-stretch">
-            {/* Left group */}
-            {mobileNavLeft.map((item) => (
-              <BarLink key={item.path} item={item} active={isActive(item.path)} />
-            ))}
-
-            {/* Center slot — kept clear so the raised button can sit on the bar's top edge */}
-            <div className="w-[72px] sm:w-[84px] shrink-0 flex items-end justify-center pb-[3px]">
-              <span className={`text-[10px] sm:text-[10.5px] leading-none font-bold tracking-tight whitespace-nowrap transition-colors ${isActive(examNavItem.path) ? 'text-emerald-300' : 'text-white/50'}`}>
-                {examNavItem.label}
-              </span>
+              {mobileNavRight.map((item) => (
+                <BarLink key={item.path} item={item} active={isActive(item.path)} />
+              ))}
             </div>
-
-            {/* Right group */}
-            {mobileNavRight.map((item) => (
-              <BarLink key={item.path} item={item} active={isActive(item.path)} />
-            ))}
           </div>
-
-          {/* Raised Exam button — the "P" mark that stands for পরীক্ষা / Exam */}
-          <Link
-            to={examNavItem.path}
-            aria-label="এক্সাম জোন"
-            title="এক্সাম"
-            onClick={() => { if (navigator.vibrate) navigator.vibrate(12); }}
-            className={`nav-fab absolute left-1/2 -top-[28px] -translate-x-1/2 flex h-[58px] w-[58px] items-center justify-center rounded-[1.45rem] border-[3px] border-white bg-gradient-to-br from-[#9B7BFF] via-[#7C3AED] to-[#4C1D95] transition-transform duration-150 active:scale-95 ${isActive(examNavItem.path) ? 'nav-fab-active' : ''}`}
-          >
-            <img
-              src="/icons/exam-p-glyph.png"
-              alt=""
-              aria-hidden="true"
-              className="h-[27px] w-[27px] object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-            />
-          </Link>
         </div>
+
+        {/* Warm glow spilling around the raised button */}
+        <div className="bn-halo pointer-events-none" aria-hidden="true" />
+
+        {/* Raised Exam button — our own "P" mark, sitting in the middle of the curve */}
+        <Link
+          to={examNavItem.path}
+          aria-label="এক্সাম জোন"
+          title="এক্সাম"
+          onClick={() => { if (navigator.vibrate) navigator.vibrate(12); }}
+          className={`bn-fab pointer-events-auto flex items-center justify-center ${isActive(examNavItem.path) ? 'bn-fab-on' : ''}`}
+        >
+          <img
+            src="/icons/exam-p-glyph.png"
+            alt=""
+            aria-hidden="true"
+            className="bn-glyph"
+          />
+        </Link>
       </div>
     </>
   );
