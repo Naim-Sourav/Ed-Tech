@@ -28,12 +28,12 @@ interface NavigationProps {
   setIsNotificationOpen: (open: boolean) => void;
 }
 
-// Icon used inside the floating (dark) bottom bar — masked so it always takes the ink color
-const BarIcon = ({ src, active, size = 'w-6 h-6' }: { src: string, active: boolean, size?: string }) => (
-  <div
-    className={`${size} transition-all duration-300 ${active ? 'bn-icon-on' : 'bg-white/45'} group-active:scale-90`}
-    style={{
-      maskImage: `url(${src})`,
+// Custom SVG Icon Component for Bottom Nav
+const CustomIcon = ({ src, active, className }: { src: string, active: boolean, className?: string }) => (
+  <div 
+    className={`w-6 h-6 transition-all duration-300 ${active ? 'bg-primary dark:bg-orange-400' : 'bg-gray-400 dark:bg-zinc-500'} ${className}`}
+    style={{ 
+      maskImage: `url(${src})`, 
       WebkitMaskImage: `url(${src})`,
       maskRepeat: 'no-repeat',
       WebkitMaskRepeat: 'no-repeat',
@@ -43,26 +43,6 @@ const BarIcon = ({ src, active, size = 'w-6 h-6' }: { src: string, active: boole
       WebkitMaskSize: 'contain'
     }}
   />
-);
-
-type MobileBarItem = { path: string; label: string; icon: string };
-
-// One tappable cell of the floating bottom bar (icon + label, always labelled)
-const BarLink = ({ item, active }: { item: MobileBarItem; active: boolean }) => (
-  <Link
-    to={item.path}
-    aria-label={item.label}
-    aria-current={active ? 'page' : undefined}
-    onClick={() => { if (navigator.vibrate) navigator.vibrate(8); }}
-    className={`group relative flex-1 flex flex-col items-center justify-center gap-[3px] py-1.5 transition-all duration-300 ${active ? 'text-white' : 'text-white/50'}`}
-  >
-    <span className={`flex h-8 w-full max-w-[54px] items-center justify-center rounded-full transition-all duration-300 ${active ? 'bg-white/10' : 'bg-transparent'}`}>
-      <BarIcon src={item.icon} active={active} />
-    </span>
-    <span className={`max-w-full truncate text-[10px] sm:text-[10.5px] leading-none font-bold tracking-tight transition-colors ${active ? 'text-white' : 'text-white/50'}`}>
-      {item.label}
-    </span>
-  </Link>
 );
 
 const Navigation: React.FC<NavigationProps> = ({ 
@@ -194,18 +174,13 @@ const Navigation: React.FC<NavigationProps> = ({
   ];
 
   // Mobile Bottom Nav Items - Custom SVG Icons
-  // The center slot is reserved for the raised "Exam" button (P logo)
-  const mobileNavLeft: MobileBarItem[] = [
+  const mobileNavItems = [
     { path: '/dashboard', label: 'হোম', icon: '/icons/home.svg' },
     { path: '/qbank', label: 'প্রশ্নব্যাংক', icon: '/icons/qbank.svg' },
-  ];
-
-  const mobileNavRight: MobileBarItem[] = [
+    { path: '/exams', label: 'এক্সাম', icon: '/icons/exam.svg' },
     { path: '/history', label: 'ইতিহাস', icon: '/icons/history.svg' },
     { path: '/profile', label: 'প্রোফাইল', icon: '/icons/user.svg' },
   ];
-
-  const examNavItem = { path: '/exams', label: 'এক্সাম' };
 
   const handleLogout = async () => {
     try {
@@ -666,48 +641,45 @@ const Navigation: React.FC<NavigationProps> = ({
         </div>
       </div>
 
-      {/* Floating bottom bar with a curved notch; the raised P (পরীক্ষা/Exam) button floats inside it */}
-      <div className="bn md:hidden fixed bottom-0 left-0 right-0 z-[100] pointer-events-none">
-        {/* drop-shadow lives on the shell so it follows the notch curve */}
-        <div className="bn-shell">
-          <div className="bn-bar pointer-events-auto relative rounded-t-[1.9rem] bg-[#0B0B10] dark:bg-[#06060A] pt-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] px-1.5">
-            <div className="relative flex items-stretch">
-              {mobileNavLeft.map((item) => (
-                <BarLink key={item.path} item={item} active={isActive(item.path)} />
-              ))}
-
-              {/* Center slot — only the label, the button itself floats above the edge */}
-              <div className="w-[76px] sm:w-[88px] shrink-0 flex items-end justify-center pb-[3px]">
-                <span className={`bn-label max-w-full truncate text-[10px] sm:text-[10.5px] leading-none font-bold tracking-tight ${isActive(examNavItem.path) ? 'bn-label-on' : ''}`}>
-                  {examNavItem.label}
-                </span>
-              </div>
-
-              {mobileNavRight.map((item) => (
-                <BarLink key={item.path} item={item} active={isActive(item.path)} />
-              ))}
-            </div>
-          </div>
+      {/* Native-like Fixed Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-100 dark:border-white/[0.05] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around h-16 px-1 relative">
+          {mobileNavItems.map((item, idx) => {
+            const active = item.path ? isActive(item.path) : false;
+            
+            return (
+              <Link 
+                key={idx} 
+                to={item.path!} 
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(10);
+                }}
+                className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-300 relative z-10 ${active ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
+              >
+                {/* 2px top-border indicator above the active icon */}
+                {active && (
+                  <motion.div 
+                    layoutId="activeNavIndicatorLine"
+                    className="absolute top-0 left-5 right-5 h-[2px] bg-primary dark:bg-orange-400 rounded-full"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  />
+                )}
+                
+                <div className={`flex flex-col items-center ${active ? 'gap-0.5' : ''}`}>
+                  <CustomIcon 
+                    src={item.icon} 
+                    active={active} 
+                  />
+                  {active && (
+                    <span className="text-[12px] font-bold text-primary dark:text-orange-400 transition-all duration-300 tracking-tight font-sans">
+                      {item.label}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            )
+          })}
         </div>
-
-        {/* Warm glow spilling around the raised button */}
-        <div className="bn-halo pointer-events-none" aria-hidden="true" />
-
-        {/* Raised Exam button — our own "P" mark, sitting in the middle of the curve */}
-        <Link
-          to={examNavItem.path}
-          aria-label="এক্সাম জোন"
-          title="এক্সাম"
-          onClick={() => { if (navigator.vibrate) navigator.vibrate(12); }}
-          className={`bn-fab pointer-events-auto flex items-center justify-center ${isActive(examNavItem.path) ? 'bn-fab-on' : ''}`}
-        >
-          <img
-            src="/icons/exam-p-glyph.png"
-            alt=""
-            aria-hidden="true"
-            className="bn-glyph"
-          />
-        </Link>
       </div>
     </>
   );
