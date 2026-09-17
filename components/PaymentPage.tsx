@@ -177,7 +177,7 @@ const PaymentPage: React.FC = () => {
                       <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">অর্ডার সামারি</h3>
                       
                       <div className="flex gap-4 mb-6">
-                          <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center text-orange-700 dark:text-orange-400">
+                          <div className="w-16 h-16 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center text-purple-700 dark:text-purple-400">
                               <FileText size={24}/>
                           </div>
                           <div className="flex-1">
@@ -234,7 +234,7 @@ const PaymentPage: React.FC = () => {
                           )}
                           <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-100 dark:border-zinc-800">
                               <span className="font-bold text-gray-800 dark:text-white">মোট প্রদেয়</span>
-                              <span className="text-xl font-black text-primary dark:text-orange-400">
+                              <span className="text-xl font-black text-primary dark:text-purple-400">
                                   {finalAmount === 0 ? 'FREE' : `৳${finalAmount}`}
                               </span>
                           </div>

@@ -217,7 +217,7 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
 ${mathjax ? `<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']],processEscapes:true},options:{enableMenu:false},chtml:{scale:1,minScale:0.5},startup:{typeset:true}};</script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>` : ''}
 <style>
-:root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--brand:#f97316;--bg:#ffffff;--ok:#16a34a}
+:root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--brand:#7c3aed;--bg:#ffffff;--ok:#16a34a}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.8}
 a{color:var(--brand)}
@@ -246,7 +246,7 @@ ul.topics li{margin:5px 0}
 ul.topics ul{margin:4px 0;padding-left:18px;color:var(--muted);font-size:14.5px}
 .tips{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:16px 20px;margin:22px 0}
 .tips h2{margin-top:0}
-.banner{margin:34px 0 8px;border-radius:18px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;padding:26px 24px;text-align:center}
+.banner{margin:34px 0 8px;border-radius:18px;background:linear-gradient(135deg,#7c3aed,#ea580c);color:#fff;padding:26px 24px;text-align:center}
 .banner h2{margin:0 0 6px;color:#fff}
 .banner p{margin:0 0 16px;opacity:.95}
 .banner a{display:inline-block;background:#fff;color:#ea580c;font-weight:800;text-decoration:none;padding:12px 26px;border-radius:12px}

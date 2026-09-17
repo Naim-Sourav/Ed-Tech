@@ -52,9 +52,9 @@ const ExamPackSection: React.FC = () => {
   const getThemeColor = (theme: string) => {
     switch (theme) {
       case 'emerald': return 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/30 dark:border-red-800';
-      case 'blue': return 'text-orange-700 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
-      case 'purple': return 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-900/30 dark:border-amber-800';
-      case 'orange': return 'text-orange-700 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/30 dark:border-orange-800';
+      case 'blue': return 'text-purple-700 bg-purple-50 border-purple-200 dark:text-purple-400 dark:bg-purple-900/30 dark:border-purple-800';
+      case 'purple': return 'text-violet-600 bg-violet-50 border-violet-200 dark:text-violet-400 dark:bg-violet-900/30 dark:border-violet-800';
+      case 'orange': return 'text-fuchsia-700 bg-fuchsia-50 border-fuchsia-200 dark:text-fuchsia-400 dark:bg-fuchsia-900/30 dark:border-fuchsia-800';
       default: return 'text-gray-600 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-zinc-900 dark:border-zinc-800';
     }
   };
@@ -114,7 +114,7 @@ const ExamPackSection: React.FC = () => {
                       {mockExams.map((exam) => (
                           <div key={exam.id} className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm flex items-center justify-between group hover:border-primary/50 transition-all">
                               <div className="flex items-center gap-4">
-                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${exam.status === 'COMPLETED' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'}`}>
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${exam.status === 'COMPLETED' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'}`}>
                                       {exam.status === 'COMPLETED' ? <CheckCircle size={20}/> : <span className="text-sm">{exam.id}</span>}
                                   </div>
                                   <div>
@@ -127,7 +127,7 @@ const ExamPackSection: React.FC = () => {
                               </div>
                               <button 
                                 onClick={() => showToast("পরীক্ষা শীঘ্রই আসছে!", "info")}
-                                className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${exam.status === 'COMPLETED' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200' : 'bg-primary text-white hover:bg-orange-700 shadow-sm'}`}
+                                className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${exam.status === 'COMPLETED' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200' : 'bg-primary text-white hover:bg-purple-700 shadow-sm'}`}
                               >
                                 {exam.status === 'COMPLETED' ? 'Review' : 'Start'}
                               </button>
@@ -145,7 +145,7 @@ const ExamPackSection: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
             <header className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-3">
-                    <ShoppingBag size={32} className="text-primary dark:text-orange-400" />
+                    <ShoppingBag size={32} className="text-primary dark:text-purple-400" />
                     এক্সাম প্যাক সমূহ
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
@@ -200,7 +200,7 @@ const ExamPackSection: React.FC = () => {
                                         {isOwned ? (
                                             <button 
                                                 onClick={() => openPack(pack)}
-                                                className="px-6 py-2.5 bg-primary hover:bg-orange-700 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none transition-all active:scale-95"
+                                                className="px-6 py-2.5 bg-primary hover:bg-purple-700 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-purple-200 dark:shadow-none transition-all active:scale-95"
                                             >
                                                 ওপেন করুন <ArrowRight size={16}/>
                                             </button>

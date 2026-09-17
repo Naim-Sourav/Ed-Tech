@@ -71,7 +71,7 @@ const NotificationPrompt: React.FC = () => {
           aria-label="নোটিফিকেশন চালু করুন"
           className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-[9000] bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-2xl p-4 flex items-start gap-3"
         >
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-700 dark:text-orange-400 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-700 dark:text-purple-400 flex items-center justify-center shrink-0">
             <BellRing size={20} />
           </div>
           <div className="flex-1 min-w-0">
@@ -83,7 +83,7 @@ const NotificationPrompt: React.FC = () => {
               <button
                 onClick={enable}
                 disabled={busy}
-                className="flex-1 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors disabled:opacity-60"
+                className="flex-1 py-2 rounded-xl bg-purple-500 hover:bg-purple-600 text-white text-xs font-bold transition-colors disabled:opacity-60"
               >
                 {busy ? 'চালু হচ্ছে…' : 'চালু করুন'}
               </button>

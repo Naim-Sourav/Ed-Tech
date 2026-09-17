@@ -10,7 +10,7 @@ export const PlayerAvatar: React.FC<{ src?: string | null; name?: string | null;
   }
   return (
     <div
-      className={`${className} flex items-center justify-center bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-950/40 dark:to-amber-950/30 text-orange-700 dark:text-orange-400 font-black select-none`}
+      className={`${className} flex items-center justify-center bg-gradient-to-br from-purple-100 to-violet-100 dark:from-purple-950/40 dark:to-violet-950/30 text-purple-700 dark:text-purple-400 font-black select-none`}
       aria-label={name || undefined}
     >
       {(name || 'P').trim().charAt(0).toUpperCase()}

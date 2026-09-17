@@ -27,7 +27,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       {actionText && onActionClick && (
         <button 
           onClick={onActionClick}
-          className="px-5 py-2.5 bg-[#ff5200] hover:bg-[#ff5200]/90 text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-all w-full max-w-xs font-tiro"
+          className="px-5 py-2.5 bg-[#7c3aed] hover:bg-[#7c3aed]/90 text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-all w-full max-w-xs font-tiro"
         >
           {actionText}
         </button>

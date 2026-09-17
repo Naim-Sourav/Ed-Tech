@@ -106,8 +106,8 @@ const SUBJECT_DEFINITIONS: Record<
   "Biology 2nd Paper": {
     display: "জীববিজ্ঞান ২য় পত্র",
     icon: Dna,
-    color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-50 dark:bg-amber-950/20",
+    color: "text-violet-600 dark:text-violet-400",
+    bg: "bg-violet-50 dark:bg-violet-950/20",
   },
   "Physics 1st Paper": {
     display: "পদার্থবিজ্ঞান ১ম পত্র",
@@ -221,7 +221,7 @@ const NEW_ADMISSION_TAGS = [
     id: "buet",
     name: "BUET",
     icon: Cpu,
-    color: "text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/20",
+    color: "text-violet-600 bg-violet-50 dark:text-violet-400 dark:bg-violet-950/20",
   },
   {
     id: "ckruet-ka",
@@ -271,7 +271,7 @@ const NEW_ADMISSION_TAGS = [
     name: "RUET",
     icon: Shield,
     color:
-      "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/20",
+      "text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/20",
   },
   {
     id: "jnu-a",
@@ -309,7 +309,7 @@ const NEW_ADMISSION_TAGS = [
     id: "hstu-a",
     name: "HSTU-A",
     icon: BookMarked,
-    color: "text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/20",
+    color: "text-violet-600 bg-violet-50 dark:text-violet-400 dark:bg-violet-950/20",
   },
   {
     id: "sust-b",
@@ -1020,7 +1020,7 @@ const QuestionBank: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 py-4 md:py-6 max-w-4xl mx-auto">
               {[
                 { id: "ACADEMIC", title: "একাডেমিক", subtitle: "বোর্ড ও কলেজ সংক্রান্ত", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-500/10", borderHover: "hover:border-blue-500" },
-                { id: "ADMISSION", title: "ভর্তি পরীক্ষা", subtitle: "ভার্সিটি, মেডিকেল", icon: Stethoscope, color: "text-orange-700 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/10", borderHover: "hover:border-orange-500" },
+                { id: "ADMISSION", title: "ভর্তি পরীক্ষা", subtitle: "ভার্সিটি, মেডিকেল", icon: Stethoscope, color: "text-purple-700 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-500/10", borderHover: "hover:border-purple-500" },
                 { id: "MAINBOOK", title: "অনুশীলনী", subtitle: "মেইন বইয়ের প্রশ্ন", icon: BookMarked, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10", borderHover: "hover:border-emerald-500" }
               ].map(item => (
                 <motion.div
@@ -1086,7 +1086,7 @@ const QuestionBank: React.FC = () => {
 
               <section>
                 <div className="flex items-center gap-2 mb-4 px-2">
-                  <span className="w-1 h-5 bg-orange-500 rounded-full" />
+                  <span className="w-1 h-5 bg-purple-500 rounded-full" />
                   <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest font-sans">
                     বিষয় নির্বাচন করুন
                   </h2>
@@ -1250,11 +1250,11 @@ const QuestionBank: React.FC = () => {
                         <button
                           key={idx}
                           onClick={() => handleChapterSelect(chapter)}
-                          className={`px-4 py-2 rounded-2xl text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${isSelected ? "bg-orange-500/10 text-primary border-orange-500/20 shadow-sm" : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-[#333]"}`}
+                          className={`px-4 py-2 rounded-2xl text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${isSelected ? "bg-purple-500/10 text-primary border-purple-500/20 shadow-sm" : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-[#333]"}`}
                         >
                           {chapter}
                           <span
-                            className={`px-1.5 py-0.5 rounded-lg text-[11px] ${selectedChapter === chapter ? "bg-orange-500/20 text-primary" : "bg-gray-100 dark:bg-[#222] text-gray-500"}`}
+                            className={`px-1.5 py-0.5 rounded-lg text-[11px] ${selectedChapter === chapter ? "bg-purple-500/20 text-primary" : "bg-gray-100 dark:bg-[#222] text-gray-500"}`}
                           >
                             {toBengaliNumber(count)}
                           </span>
@@ -1367,7 +1367,7 @@ const QuestionBank: React.FC = () => {
                          onClick={() => setSearchParams(p => { p.delete('admissionCategory'); return p; }, {replace: true})}
                          className={`px-4 py-2 rounded-2xl text-[13px] font-bold transition-all whitespace-nowrap border ${
                            !selectedAdmissionCategory 
-                             ? "bg-orange-500 border-orange-500 text-white shadow-sm" 
+                             ? "bg-purple-500 border-purple-500 text-white shadow-sm" 
                              : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1A1A1A]"
                          }`}
                        >
@@ -1379,7 +1379,7 @@ const QuestionBank: React.FC = () => {
                              onClick={() => setSearchParams(p => { p.set('admissionCategory', cat.id); return p; }, {replace: true})}
                              className={`px-4 py-2 rounded-2xl text-[13px] font-bold transition-all whitespace-nowrap border ${
                                selectedAdmissionCategory === cat.id 
-                                 ? "bg-orange-500 border-orange-500 text-white shadow-sm" 
+                                 ? "bg-purple-500 border-purple-500 text-white shadow-sm" 
                                  : "bg-white dark:bg-[#121212] border-gray-200 dark:border-[#222] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1A1A1A]"
                              }`}
                            >
@@ -1445,7 +1445,7 @@ const QuestionBank: React.FC = () => {
                                 onClick={() => toggleSaveQuestion(q)}
                                 className={`p-2 rounded-xl transition-all ${
                                   isSaved
-                                    ? "bg-orange-500/10 text-primary"
+                                    ? "bg-purple-500/10 text-primary"
                                     : "bg-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 pointer-events-auto"
                                 }`}
                               >
@@ -1570,7 +1570,7 @@ const QuestionBank: React.FC = () => {
                                       exit={{ height: 0, opacity: 0 }}
                                       className="overflow-hidden"
                                     >
-                                      <div id={`explanation-${itemId}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
+                                      <div id={`explanation-${itemId}`} className="mt-2 ml-0 md:ml-10 p-3 bg-purple-50/50 dark:bg-purple-900/10 rounded-xl border border-purple-100/50 dark:border-purple-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
                                         <SafeHtml html={q.explanation} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-800 dark:text-gray-200 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} />
                                         {q.explanationImage && (
                                           <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />
@@ -1585,7 +1585,7 @@ const QuestionBank: React.FC = () => {
                             <div className="mt-3 pt-3 border-t border-slate-55 dark:border-zinc-800 flex items-center justify-between">
                               <div className="flex flex-wrap gap-2">
                                 {q.tags && q.tags.length > 0 && q.tags.map((tag) => (
-                                  <span key={tag} className="px-2 py-1 bg-orange-500/10 text-primary dark:bg-orange-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-orange-500/10 font-sans">
+                                  <span key={tag} className="px-2 py-1 bg-purple-500/10 text-primary dark:bg-purple-500/15 rounded-lg text-[9px] font-bold tracking-tight border border-purple-500/10 font-sans">
                                     {tag}
                                   </span>
                                 ))}
@@ -1695,7 +1695,7 @@ const QuestionBank: React.FC = () => {
 
                     <button
                       onClick={handleStartExam}
-                      className="bg-primary text-white font-bold rounded-full flex items-center justify-center shadow-xl hover:bg-orange-600 hover:shadow-orange-500/20 active:scale-95 transition-all w-16 h-16 relative pointer-events-auto"
+                      className="bg-primary text-white font-bold rounded-full flex items-center justify-center shadow-xl hover:bg-purple-600 hover:shadow-purple-500/20 active:scale-95 transition-all w-16 h-16 relative pointer-events-auto"
                     >
                       <motion.div animate={{ rotate: showExamTypeSelect ? 45 : 0 }} className="flex items-center justify-center absolute inset-0">
                         {showExamTypeSelect ? <Plus size={32} /> : (
@@ -1882,7 +1882,7 @@ const QuestionBank: React.FC = () => {
               <div className="mt-8 flex flex-col gap-3">
                 <button
                   onClick={handleConfirmExamStart}
-                  className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/25 active:scale-95"
+                  className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-purple-600 transition-colors shadow-lg shadow-purple-500/25 active:scale-95"
                 >
                   <Play size={18} fill="currentColor" /> পরীক্ষা শুরু করুন
                 </button>

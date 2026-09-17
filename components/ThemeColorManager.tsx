@@ -11,7 +11,7 @@ const ThemeColorManager = ({ themeMode }: { themeMode: 'light' | 'dark' | 'syste
 
     const updateThemeColor = () => {
       const isDark = document.documentElement.classList.contains('dark');
-      let targetColor = isDark ? '#000000' : '#f9fafb'; // default fallback
+      let targetColor = isDark ? '#120c22' : '#f5f3ff'; // default fallback
 
       // Try to find the topmost element's background color
       try {

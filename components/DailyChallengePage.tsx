@@ -133,10 +133,10 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
           case 'Target': return <Target size={size} className="text-red-500" />;
           case 'FileCheck': return <FileCheck size={size} className="text-blue-500" />;
           case 'Clock': return <Clock size={size} className="text-purple-500" />;
-          case 'Swords': return <Swords size={size} className="text-orange-700 dark:text-orange-400" />;
+          case 'Swords': return <Swords size={size} className="text-purple-700 dark:text-purple-400" />;
           case 'Bot': return <Bot size={size} className="text-green-500" />;
           case 'Bookmark': return <Bookmark size={size} className="text-yellow-500" />;
-          case 'Crown': return <Crown size={size} className="text-amber-500" />;
+          case 'Crown': return <Crown size={size} className="text-violet-500" />;
           case 'Star': return <Star size={size} className="text-yellow-400" />;
           default: return <Trophy size={size} className="text-primary" />;
       }
@@ -148,7 +148,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
           case 'APPRENTICE': return 'border-l-4 border-l-green-500';
           case 'ELITE': return 'border-l-4 border-l-blue-500';
           case 'MASTER': return 'border-l-4 border-l-purple-500';
-          case 'LEGEND': return 'border-l-4 border-l-orange-500 bg-orange-50/10';
+          case 'LEGEND': return 'border-l-4 border-l-purple-500 bg-purple-50/10';
           default: return '';
       }
   };
@@ -197,7 +197,7 @@ const DailyChallengePage: React.FC<DailyChallengePageProps> = () => {
          <div className="flex bg-white dark:bg-zinc-900 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 mb-6 w-full overflow-x-auto no-scrollbar">
              <button 
                 onClick={() => setActiveTab('DAILY')}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'DAILY' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap ${activeTab === 'DAILY' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
              >
                  <Zap size={16}/> Daily
              </button>

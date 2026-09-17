@@ -266,7 +266,7 @@ const GSTGuestExam: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <Loader2 className="animate-spin text-orange-700 dark:text-orange-400 mb-4" size={48} />
+        <Loader2 className="animate-spin text-purple-700 dark:text-purple-400 mb-4" size={48} />
         <p className="text-gray-500 font-bold">প্রশ্ন লোড হচ্ছে...</p>
       </div>
     );
@@ -284,8 +284,8 @@ const GSTGuestExam: React.FC = () => {
             className="max-w-md mx-auto px-4 py-12"
           >
             <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 shadow-xl border border-gray-100 dark:border-white/5">
-              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center mb-6">
-                <Play className="text-orange-700 dark:text-orange-400" fill="currentColor" size={32} />
+              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mb-6">
+                <Play className="text-purple-700 dark:text-purple-400" fill="currentColor" size={32} />
               </div>
               <h1 className="text-2xl font-black text-gray-800 dark:text-white mb-2">GST লাইভ এক্সাম</h1>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 font-medium">
@@ -302,7 +302,7 @@ const GSTGuestExam: React.FC = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="যেমন: তাসনিন আহমেদ"
-                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-bold text-gray-800 dark:text-white"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all font-bold text-gray-800 dark:text-white"
                     />
                   </div>
                 </div>
@@ -315,7 +315,7 @@ const GSTGuestExam: React.FC = () => {
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
                       placeholder="যেমন: ঢাকা কলেজ"
-                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all font-bold text-gray-800 dark:text-white"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all font-bold text-gray-800 dark:text-white"
                     />
                   </div>
                 </div>
@@ -338,7 +338,7 @@ const GSTGuestExam: React.FC = () => {
 
               <button 
                 onClick={handleStartExam}
-                className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-orange-500/20 transition-all active:scale-95"
+                className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-purple-500/20 transition-all active:scale-95"
               >
                 পরবর্তী ধাপ <ArrowRight size={20} />
               </button>
@@ -361,13 +361,13 @@ const GSTGuestExam: React.FC = () => {
               </p>
 
               <div className="space-y-3 mb-8">
-                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-500 rounded-2xl flex items-center justify-between">
-                  <span className="font-bold text-orange-700 dark:text-orange-300">Physics (পদার্থবিজ্ঞান)</span>
-                  <CheckCircle2 className="text-orange-700 dark:text-orange-400" size={20} />
+                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-500 rounded-2xl flex items-center justify-between">
+                  <span className="font-bold text-purple-700 dark:text-purple-300">Physics (পদার্থবিজ্ঞান)</span>
+                  <CheckCircle2 className="text-purple-700 dark:text-purple-400" size={20} />
                 </div>
-                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-500 rounded-2xl flex items-center justify-between">
-                  <span className="font-bold text-orange-700 dark:text-orange-300">Chemistry (রসায়ন)</span>
-                  <CheckCircle2 className="text-orange-700 dark:text-orange-400" size={20} />
+                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-500 rounded-2xl flex items-center justify-between">
+                  <span className="font-bold text-purple-700 dark:text-purple-300">Chemistry (রসায়ন)</span>
+                  <CheckCircle2 className="text-purple-700 dark:text-purple-400" size={20} />
                 </div>
                 
                 <div className="grid grid-cols-1 gap-3">
@@ -383,16 +383,16 @@ const GSTGuestExam: React.FC = () => {
                         disabled={isDisabled && !isSelected}
                         className={`p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
                           isSelected 
-                            ? 'bg-orange-50 border-orange-500 dark:bg-orange-900/20' 
+                            ? 'bg-purple-50 border-purple-500 dark:bg-purple-900/20' 
                             : isDisabled 
                               ? 'bg-gray-100 border-transparent opacity-50 cursor-not-allowed' 
                               : 'bg-gray-50 border-transparent dark:bg-gray-700/30 hover:border-gray-200'
                         }`}
                       >
-                        <span className={`font-bold ${isSelected ? 'text-orange-700 dark:text-orange-300' : 'text-gray-600 dark:text-gray-400'}`}>
+                        <span className={`font-bold ${isSelected ? 'text-purple-700 dark:text-purple-300' : 'text-gray-600 dark:text-gray-400'}`}>
                           {sub} {sub === 'Math' ? '(গণিত)' : sub === 'Biology' ? '(জীববিজ্ঞান)' : sub === 'Bangla' ? '(বাংলা)' : '(ইংরেজি)'}
                         </span>
-                        {isSelected ? <CheckCircle2 className="text-orange-700 dark:text-orange-400" size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-gray-200"></div>}
+                        {isSelected ? <CheckCircle2 className="text-purple-700 dark:text-purple-400" size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-gray-200"></div>}
                       </button>
                     );
                   })}
@@ -408,7 +408,7 @@ const GSTGuestExam: React.FC = () => {
                 </button>
                 <button 
                   onClick={startExamNow}
-                  className="flex-[2] py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black shadow-xl shadow-orange-500/20 transition-all active:scale-95"
+                  className="flex-[2] py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-black shadow-xl shadow-purple-500/20 transition-all active:scale-95"
                 >
                   এক্সাম শুরু করুন
                 </button>
@@ -428,8 +428,8 @@ const GSTGuestExam: React.FC = () => {
             <div className="sticky top-2 sm:top-4 z-30 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-lg border border-gray-100 dark:border-white/5 mb-4 sm:mb-8 flex flex-col gap-3">
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Clock className="text-orange-700 dark:text-orange-400" size={18} />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg sm:rounded-xl flex items-center justify-center">
+                    <Clock className="text-purple-700 dark:text-purple-400" size={18} />
                   </div>
                   <div>
                     <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">সময় বাকি</p>
@@ -441,7 +441,7 @@ const GSTGuestExam: React.FC = () => {
 
                 <div className="flex flex-col items-center">
                   <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">প্রগতি</p>
-                  <p className="text-xs sm:text-sm font-black text-orange-700 dark:text-orange-400">
+                  <p className="text-xs sm:text-sm font-black text-purple-700 dark:text-purple-400">
                     {userAnswers.filter(a => a !== null).length} / {questions.length}
                   </p>
                 </div>
@@ -457,7 +457,7 @@ const GSTGuestExam: React.FC = () => {
               {/* Progress Bar (Slim) */}
               <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div 
-                  className="h-full bg-orange-500"
+                  className="h-full bg-purple-500"
                   initial={{ width: 0 }}
                   animate={{ width: `${(userAnswers.filter(a => a !== null).length / questions.length) * 100}%` }}
                 />
@@ -492,10 +492,10 @@ const GSTGuestExam: React.FC = () => {
                           <div 
                             key={qIdx} 
                             id={`question-${qIdx}`}
-                            className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-10 shadow-xl border border-gray-100 dark:border-white/5 scroll-mt-20 sm:scroll-mt-24 transition-all hover:shadow-2xl hover:border-orange-500/20"
+                            className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-10 shadow-xl border border-gray-100 dark:border-white/5 scroll-mt-20 sm:scroll-mt-24 transition-all hover:shadow-2xl hover:border-purple-500/20"
                           >
                             <div className="flex justify-between items-start mb-4 sm:mb-6">
-                              <span className={`px-2 sm:px-3 py-0.5 sm:py-1 ${SUBJECT_COLORS[subject] || 'bg-orange-500'} text-white text-[8px] sm:text-[10px] font-black uppercase tracking-widest rounded-full`}>
+                              <span className={`px-2 sm:px-3 py-0.5 sm:py-1 ${SUBJECT_COLORS[subject] || 'bg-purple-500'} text-white text-[8px] sm:text-[10px] font-black uppercase tracking-widest rounded-full`}>
                                 {subject}
                               </span>
                               <span className="text-[10px] sm:text-xs font-bold text-gray-400">প্রশ্ন {subIdx + 1}</span>
@@ -518,19 +518,19 @@ const GSTGuestExam: React.FC = () => {
                                   onClick={() => handleAnswer(qIdx, i)}
                                   className={`p-5 rounded-2xl border-2 flex items-center gap-4 transition-all text-left group ${
                                     userAnswers[qIdx] === i 
-                                      ? 'bg-orange-50 border-orange-500 dark:bg-orange-900/20' 
+                                      ? 'bg-purple-50 border-purple-500 dark:bg-purple-900/20' 
                                       : 'bg-gray-50 border-transparent dark:bg-gray-700/30 hover:border-gray-200'
                                   }`}
                                 >
                                   <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-all ${
                                     userAnswers[qIdx] === i 
-                                      ? 'bg-orange-500 text-white' 
+                                      ? 'bg-purple-500 text-white' 
                                       : 'bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-300 shadow-sm group-hover:scale-110'
                                   }`}>
                                     {String.fromCharCode(65 + i)}
                                   </span>
                                   <span className={`text-sm font-bold ${getFont(opt)} ${
-                                    userAnswers[qIdx] === i ? 'text-orange-700 dark:text-orange-300' : 'text-gray-600 dark:text-gray-300'
+                                    userAnswers[qIdx] === i ? 'text-purple-700 dark:text-purple-300' : 'text-gray-600 dark:text-gray-300'
                                   }`}>
                                     {opt}
                                   </span>
@@ -550,7 +550,7 @@ const GSTGuestExam: React.FC = () => {
             <div className="mt-12 text-center">
               <button 
                 onClick={() => setShowSubmitModal(true)}
-                className="px-12 py-5 bg-orange-600 hover:bg-orange-700 text-white rounded-3xl font-black text-lg shadow-2xl shadow-orange-500/30 transition-all active:scale-95 flex items-center gap-3 mx-auto"
+                className="px-12 py-5 bg-purple-600 hover:bg-purple-700 text-white rounded-3xl font-black text-lg shadow-2xl shadow-purple-500/30 transition-all active:scale-95 flex items-center gap-3 mx-auto"
               >
                 পরীক্ষা শেষ করুন <CheckCircle2 size={24} />
               </button>
@@ -568,7 +568,7 @@ const GSTGuestExam: React.FC = () => {
             {result?.pass && <Confetti />}
             
             <div className="bg-white dark:bg-gray-800 rounded-[3rem] p-8 md:p-12 shadow-2xl border border-gray-100 dark:border-white/5 text-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
               
               <div className="relative z-10">
                 <div className={`w-24 h-24 mx-auto rounded-3xl flex items-center justify-center mb-6 shadow-xl ${result?.pass ? 'bg-green-500 shadow-green-500/20' : 'bg-red-500 shadow-red-500/20'}`}>
@@ -583,8 +583,8 @@ const GSTGuestExam: React.FC = () => {
                 </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                  <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-500/20">
-                    <p className="text-[10px] font-black text-orange-700 dark:text-orange-400 uppercase tracking-widest mb-1">স্কোর</p>
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-500/20">
+                    <p className="text-[10px] font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest mb-1">স্কোর</p>
                     <p className="text-2xl font-black text-gray-800 dark:text-white">{result?.score.toFixed(2)}</p>
                   </div>
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-500/20">
@@ -618,23 +618,23 @@ const GSTGuestExam: React.FC = () => {
                       return (
                         <div key={idx} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
                           isMe 
-                            ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20 scale-[1.02]' 
+                            ? 'bg-purple-500 text-white border-purple-400 shadow-lg shadow-purple-500/20 scale-[1.02]' 
                             : 'bg-gray-50 dark:bg-gray-700/30 border-gray-100 dark:border-white/5'
                         }`}>
                           <div className="flex items-center gap-3">
                             <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${
-                              idx === 0 ? 'bg-yellow-400 text-white' : isMe ? 'bg-white text-orange-700 dark:text-orange-400' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'
+                              idx === 0 ? 'bg-yellow-400 text-white' : isMe ? 'bg-white text-purple-700 dark:text-purple-400' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'
                             }`}>
                               {idx + 1}
                             </span>
                             <div>
                               <p className={`text-sm font-bold ${isMe ? 'text-white' : 'text-gray-800 dark:text-white'}`}>{entry.name}</p>
-                              <p className={`text-[10px] font-medium ${isMe ? 'text-orange-100' : 'text-gray-400'}`}>
+                              <p className={`text-[10px] font-medium ${isMe ? 'text-purple-100' : 'text-gray-400'}`}>
                                 {entry.college && entry.college !== 'Unknown' ? entry.college : 'কলেজ তথ্য নেই'}
                               </p>
                             </div>
                           </div>
-                          <p className={`text-sm font-black ${isMe ? 'text-white' : 'text-orange-700 dark:text-orange-400'}`}>{entry.score.toFixed(2)}</p>
+                          <p className={`text-sm font-black ${isMe ? 'text-white' : 'text-purple-700 dark:text-purple-400'}`}>{entry.score.toFixed(2)}</p>
                         </div>
                       );
                     })}
@@ -661,7 +661,7 @@ const GSTGuestExam: React.FC = () => {
                       setUserAnswers([]);
                       setTimeLeft(3600);
                     }}
-                    className="flex-1 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black flex items-center justify-center gap-2 shadow-xl shadow-orange-500/20 transition-all active:scale-95"
+                    className="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-black flex items-center justify-center gap-2 shadow-xl shadow-purple-500/20 transition-all active:scale-95"
                   >
                     <RefreshCw size={20} /> আবার দিন
                   </button>
@@ -669,7 +669,7 @@ const GSTGuestExam: React.FC = () => {
 
                 {/* CTA */}
                 <div className="mt-12 p-6 bg-gray-900 dark:bg-black rounded-[2rem] text-white text-left relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
                   <div className="relative z-10">
                     <h4 className="text-lg font-black mb-2">আরও ফিচার ট্রাই করতে চান?</h4>
                     <p className="text-xs text-gray-400 mb-6 leading-relaxed">
@@ -827,8 +827,8 @@ const GSTGuestExam: React.FC = () => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 shadow-2xl relative z-10 max-w-sm w-full text-center"
             >
-              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <AlertCircle className="text-orange-700 dark:text-orange-400" size={32} />
+              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="text-purple-700 dark:text-purple-400" size={32} />
               </div>
               <h3 className="text-xl font-black text-gray-800 dark:text-white mb-2">আপনি কি নিশ্চিত?</h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 font-medium">
@@ -846,7 +846,7 @@ const GSTGuestExam: React.FC = () => {
                     setShowSubmitModal(false);
                     handleSubmitExam();
                   }}
-                  className="flex-1 py-4 bg-orange-600 text-white rounded-2xl font-black shadow-lg shadow-orange-500/20 transition-all active:scale-95"
+                  className="flex-1 py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg shadow-purple-500/20 transition-all active:scale-95"
                 >
                   হ্যাঁ, জমা দিন
                 </button>

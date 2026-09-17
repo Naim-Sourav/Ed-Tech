@@ -59,12 +59,12 @@ const AdminPdfUpload: React.FC = () => {
     }
 
     const getSubjectIcon = (subject: string) => {
-        if (subject.includes('Physics')) return <Atom size={18} className="text-orange-700 dark:text-orange-400" />;
-        if (subject.includes('Chemistry')) return <Beaker size={18} className="text-orange-700 dark:text-orange-400" />;
-        if (subject.includes('Math')) return <Calculator size={18} className="text-orange-700 dark:text-orange-400" />;
+        if (subject.includes('Physics')) return <Atom size={18} className="text-purple-700 dark:text-purple-400" />;
+        if (subject.includes('Chemistry')) return <Beaker size={18} className="text-purple-700 dark:text-purple-400" />;
+        if (subject.includes('Math')) return <Calculator size={18} className="text-purple-700 dark:text-purple-400" />;
         if (subject.includes('Biology')) return <Dna size={18} className="text-green-600 dark:text-green-400" />;
         if (subject.includes('English') || subject.includes('Bangla')) return <Book size={18} className="text-teal-600 dark:text-teal-400" />;
-        if (subject.includes('ICT')) return <Activity size={18} className="text-orange-700 dark:text-orange-400" />;
+        if (subject.includes('ICT')) return <Activity size={18} className="text-purple-700 dark:text-purple-400" />;
         return <Globe size={18} className="text-gray-600 dark:text-gray-400" />;
     };
 
@@ -373,7 +373,7 @@ const AdminPdfUpload: React.FC = () => {
                                 id="pdf-upload"
                             />
                             <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center">
-                                <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full flex items-center justify-center mb-4">
+                                <div className="w-16 h-16 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full flex items-center justify-center mb-4">
                                     <Upload size={28} />
                                 </div>
                                 <span className="text-lg font-bold text-gray-900 dark:text-white">
@@ -387,17 +387,17 @@ const AdminPdfUpload: React.FC = () => {
                             {file && (
                                 <div className="mt-6 space-y-4 w-full max-w-md">
                                     {isAnalyzing ? (
-                                        <div className="flex flex-col items-center gap-2 text-orange-700 dark:text-orange-400">
+                                        <div className="flex flex-col items-center gap-2 text-purple-700 dark:text-purple-400">
                                             <Loader2 className="animate-spin" />
                                             <span className="text-sm font-bold">Analyzing PDF structure...</span>
                                         </div>
                                     ) : (
-                                        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800">
-                                            <p className="text-orange-800 dark:text-orange-300 font-bold text-sm mb-1">
+                                        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-800">
+                                            <p className="text-purple-800 dark:text-purple-300 font-bold text-sm mb-1">
                                                 Analysis Complete
                                             </p>
                                             <p className="text-gray-600 dark:text-gray-400 text-xs">
-                                                Detected approximately <span className="font-bold text-orange-700 dark:text-orange-400 text-lg">{estimatedCount}</span> questions.
+                                                Detected approximately <span className="font-bold text-purple-700 dark:text-purple-400 text-lg">{estimatedCount}</span> questions.
                                             </p>
                                         </div>
                                     )}
@@ -405,7 +405,7 @@ const AdminPdfUpload: React.FC = () => {
                                     <button 
                                         onClick={handleProcess}
                                         disabled={isProcessing || isAnalyzing || !subject || !chapter || estimatedCount === 0}
-                                        className="w-full px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                        className="w-full px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-purple-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
                                         {isProcessing ? <Loader2 className="animate-spin" /> : <Brain />}
                                         {isProcessing ? "Generating..." : "Start Generation"}
@@ -414,7 +414,7 @@ const AdminPdfUpload: React.FC = () => {
                             )}
                             
                             {isProcessing && (
-                                <p className="mt-4 text-sm font-bold text-orange-700 dark:text-orange-400 animate-pulse">{progress}</p>
+                                <p className="mt-4 text-sm font-bold text-purple-700 dark:text-purple-400 animate-pulse">{progress}</p>
                             )}
                         </div>
 
@@ -447,7 +447,7 @@ const AdminPdfUpload: React.FC = () => {
                                             </button>
                                             
                                             <div className="flex gap-2 mb-2">
-                                                <span className="px-2 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-700 text-xs font-bold rounded">{q.topic}</span>
+                                                <span className="px-2 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 text-xs font-bold rounded">{q.topic}</span>
                                                 {q.examRef && <span className="px-2 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 text-xs font-bold rounded">{q.examRef}</span>}
                                             </div>
 

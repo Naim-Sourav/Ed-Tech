@@ -52,7 +52,7 @@ interface Subject {
 
 const COLORS = [
   'bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 
-  'bg-orange-500', 'bg-pink-500', 'bg-indigo-500',
+  'bg-purple-500', 'bg-pink-500', 'bg-indigo-500',
   'bg-cyan-500', 'bg-rose-500'
 ];
 
@@ -599,7 +599,7 @@ const StudyPlanner: React.FC = () => {
     return Array.from(distMap.entries()).map(([name, value]) => ({ name, value }));
   };
 
-  const CHART_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#6366f1'];
+  const CHART_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#8b5cf6', '#ec4899', '#6366f1'];
 
   return (
     <div className="min-h-full bg-gray-50 dark:bg-black flex flex-col pb-24 relative overflow-hidden">
@@ -858,12 +858,12 @@ const StudyPlanner: React.FC = () => {
               <div className="space-y-3">
                 <button className="w-full flex items-center justify-between p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-white/[0.05] active:scale-[0.98] transition-all">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-orange-500/10 text-orange-700 dark:text-orange-400 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-xl flex items-center justify-center">
                       <Flame size={20} />
                     </div>
                     <span className="font-bold text-gray-700 dark:text-zinc-300">স্টাডি স্ট্রিক</span>
                   </div>
-                  <span className="font-black text-orange-700 dark:text-orange-400">🔥 ৫ দিন</span>
+                  <span className="font-black text-purple-700 dark:text-purple-400">🔥 ৫ দিন</span>
                 </button>
 
                 <button 
@@ -1113,7 +1113,7 @@ const StudyPlanner: React.FC = () => {
                             if (sessionMode === 'running') setSessionMode('break');
                             else setSessionMode('running');
                           }}
-                          className={`w-16 h-16 rounded-full flex items-center justify-center transition-all active:scale-90 ${sessionMode === 'break' ? 'bg-orange-500 text-white shadow-orange-500/30' : 'bg-gray-100 dark:bg-zinc-900 text-gray-500'}`}
+                          className={`w-16 h-16 rounded-full flex items-center justify-center transition-all active:scale-90 ${sessionMode === 'break' ? 'bg-purple-500 text-white shadow-purple-500/30' : 'bg-gray-100 dark:bg-zinc-900 text-gray-500'}`}
                         >
                           <Coffee size={24} />
                         </button>
@@ -1217,13 +1217,13 @@ const StudyPlanner: React.FC = () => {
 
       {/* Tips Section */}
       <div className="px-6 mt-4">
-        <div className="bg-orange-50 dark:bg-orange-900/10 rounded-[2rem] p-5 border border-orange-100 dark:border-orange-900/20 flex gap-4">
-          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
+        <div className="bg-purple-50 dark:bg-purple-900/10 rounded-[2rem] p-5 border border-purple-100 dark:border-purple-900/20 flex gap-4">
+          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-purple-700 dark:text-purple-400 shrink-0">
             <AlertCircle size={20} />
           </div>
           <div>
-            <h4 className="font-black text-orange-800 dark:text-orange-300 text-sm">টিপস</h4>
-            <p className="text-xs font-bold text-orange-700/70 dark:text-orange-400/60 leading-relaxed mt-0.5">
+            <h4 className="font-black text-purple-800 dark:text-purple-300 text-sm">টিপস</h4>
+            <p className="text-xs font-bold text-purple-700/70 dark:text-purple-400/60 leading-relaxed mt-0.5">
               সাবজেক্ট এ ক্লিক করে টাইমার সেট করুন এবং পড়াশোনা শুরু করুন। সেশন শেষে অটোমেটিক সময় যোগ হয়ে যাবে।
             </p>
           </div>

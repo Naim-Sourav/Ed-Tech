@@ -27,7 +27,7 @@ const OfflineBanner: React.FC = () => {
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           role="status"
-          className="bg-gray-900 dark:bg-amber-500 text-white dark:text-black text-center text-xs font-bold py-2 px-4 flex items-center justify-center gap-2 overflow-hidden"
+          className="bg-gray-900 dark:bg-violet-500 text-white dark:text-black text-center text-xs font-bold py-2 px-4 flex items-center justify-center gap-2 overflow-hidden"
         >
           <WifiOff size={14} />
           ইন্টারনেট সংযোগ নেই — কিছু ফিচার অফলাইনে কাজ নাও করতে পারে

@@ -42,7 +42,7 @@ const BATCH_STRATEGIES: BatchStrategy[] = [
     temp: 0.3,
     instruction:
       "Focus on: Knowledge & Memory. Ask direct questions about definitions, specific dates, scientific names, SI units, formulas, and fundamental facts from the textbook.",
-    color: "bg-orange-100 text-orange-700 border-orange-200",
+    color: "bg-purple-100 text-purple-700 border-purple-200",
   },
   {
     label: "Comprehension (অনুধাবনমূলক)",
@@ -365,17 +365,17 @@ const AdminQuestionGenerator: React.FC = () => {
   const getSubjectIcon = (subject: string) => {
     if (subject.includes("Physics"))
       return (
-        <Atom size={18} className="text-orange-700 dark:text-orange-400" />
+        <Atom size={18} className="text-purple-700 dark:text-purple-400" />
       );
     if (subject.includes("Chemistry"))
       return (
-        <Beaker size={18} className="text-orange-700 dark:text-orange-400" />
+        <Beaker size={18} className="text-purple-700 dark:text-purple-400" />
       );
     if (subject.includes("Math"))
       return (
         <Calculator
           size={18}
-          className="text-orange-700 dark:text-orange-400"
+          className="text-purple-700 dark:text-purple-400"
         />
       );
     if (subject.includes("Biology"))
@@ -384,7 +384,7 @@ const AdminQuestionGenerator: React.FC = () => {
       return <Book size={18} className="text-teal-600 dark:text-teal-400" />;
     if (subject.includes("ICT"))
       return (
-        <Activity size={18} className="text-orange-700 dark:text-orange-400" />
+        <Activity size={18} className="text-purple-700 dark:text-purple-400" />
       );
     return <Globe size={18} className="text-gray-600 dark:text-gray-400" />;
   };
@@ -906,7 +906,7 @@ const AdminQuestionGenerator: React.FC = () => {
     <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 animate-in fade-in">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center">
-          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
             <Brain size={32} />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -921,7 +921,7 @@ const AdminQuestionGenerator: React.FC = () => {
             <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-xl inline-flex">
               <button
                 onClick={() => setMode("AI")}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mode === "AI" ? "bg-white dark:bg-gray-600 shadow-sm text-orange-700 dark:text-orange-300" : "text-gray-500 dark:text-gray-400"}`}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mode === "AI" ? "bg-white dark:bg-gray-600 shadow-sm text-purple-700 dark:text-purple-300" : "text-gray-500 dark:text-gray-400"}`}
               >
                 <Sparkles size={16} /> AI Generator
               </button>
@@ -1021,7 +1021,7 @@ const AdminQuestionGenerator: React.FC = () => {
                           <button
                             key={idx}
                             onClick={() => toggleTopic(t)}
-                            className={`text-left p-3 rounded-xl text-xs font-medium border transition-all ${selectedTopics.includes(t) ? "bg-orange-50 border-orange-500 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 hover:border-orange-300"}`}
+                            className={`text-left p-3 rounded-xl text-xs font-medium border transition-all ${selectedTopics.includes(t) ? "bg-purple-50 border-purple-500 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 hover:border-purple-300"}`}
                           >
                             {t}
                           </button>
@@ -1040,15 +1040,15 @@ const AdminQuestionGenerator: React.FC = () => {
                           >
                             <div
                               onClick={() => toggleGroup(t)}
-                              className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${isSelected ? "bg-orange-50 dark:bg-orange-900/20" : "bg-gray-50 dark:bg-black/50 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                              className={`p-3 flex justify-between items-center cursor-pointer transition-colors ${isSelected ? "bg-purple-50 dark:bg-purple-900/20" : "bg-gray-50 dark:bg-black/50 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
                             >
                               <span
-                                className={`text-xs font-bold ${isSelected ? "text-orange-700 dark:text-orange-300" : "text-gray-700 dark:text-gray-300"}`}
+                                className={`text-xs font-bold ${isSelected ? "text-purple-700 dark:text-purple-300" : "text-gray-700 dark:text-gray-300"}`}
                               >
                                 {t.title}
                               </span>
                               <span
-                                className={`text-[12px] px-2 py-0.5 rounded-full ${selectedCount > 0 ? "bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-200" : "bg-gray-200 text-gray-500 dark:bg-gray-700"}`}
+                                className={`text-[12px] px-2 py-0.5 rounded-full ${selectedCount > 0 ? "bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-200" : "bg-gray-200 text-gray-500 dark:bg-gray-700"}`}
                               >
                                 {selectedCount}/{t.subTopics.length}
                               </span>
@@ -1058,10 +1058,10 @@ const AdminQuestionGenerator: React.FC = () => {
                                 <button
                                   key={sIdx}
                                   onClick={() => toggleTopic(sub)}
-                                  className={`w-full text-left px-3 py-2 rounded-lg text-[11px] border transition-all flex items-center gap-2 ${selectedTopics.includes(sub) ? "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-900/10 dark:border-orange-800 dark:text-orange-300" : "border-transparent hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"}`}
+                                  className={`w-full text-left px-3 py-2 rounded-lg text-[11px] border transition-all flex items-center gap-2 ${selectedTopics.includes(sub) ? "bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-900/10 dark:border-purple-800 dark:text-purple-300" : "border-transparent hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"}`}
                                 >
                                   <div
-                                    className={`w-3 h-3 rounded-full border flex items-center justify-center ${selectedTopics.includes(sub) ? "bg-orange-500 border-orange-500" : "border-gray-400"}`}
+                                    className={`w-3 h-3 rounded-full border flex items-center justify-center ${selectedTopics.includes(sub) ? "bg-purple-500 border-purple-500" : "border-gray-400"}`}
                                   >
                                     {selectedTopics.includes(sub) && (
                                       <Check size={8} className="text-white" />
@@ -1119,7 +1119,7 @@ const AdminQuestionGenerator: React.FC = () => {
                         onChange={(e) =>
                           updateDistribution(idx, parseInt(e.target.value))
                         }
-                        className="w-16 p-1 text-center font-bold rounded border-gray-300 focus:ring-2 focus:ring-orange-500 text-gray-800"
+                        className="w-16 p-1 text-center font-bold rounded border-gray-300 focus:ring-2 focus:ring-purple-500 text-gray-800"
                       />
                     </div>
                   ))}
@@ -1147,7 +1147,7 @@ const AdminQuestionGenerator: React.FC = () => {
                   <button
                     onClick={handleGenerate}
                     disabled={isGenerating || totalQuestionsToGenerate === 0}
-                    className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isGenerating ? (
                       <Loader2 className="animate-spin" />
@@ -1158,7 +1158,7 @@ const AdminQuestionGenerator: React.FC = () => {
                   </button>
                 </div>
                 {isGenerating && (
-                  <p className="text-center text-xs mt-2 text-orange-700 dark:text-orange-400 animate-pulse">
+                  <p className="text-center text-xs mt-2 text-purple-700 dark:text-purple-400 animate-pulse">
                     {progress}
                   </p>
                 )}
@@ -1182,7 +1182,7 @@ const AdminQuestionGenerator: React.FC = () => {
                     <button
                       onClick={() => smartFileInputRef.current?.click()}
                       disabled={isFileLoading}
-                      className="text-xs font-bold text-orange-700 dark:text-orange-400 hover:text-orange-700 flex items-center gap-1 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg border border-orange-200 dark:border-orange-800 transition-all"
+                      className="text-xs font-bold text-purple-700 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 transition-all"
                     >
                       {isFileLoading ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -1347,14 +1347,14 @@ const AdminQuestionGenerator: React.FC = () => {
                 </div>
 
                 {isFileLoading && (
-                  <p className="text-center text-xs mt-2 text-orange-700 dark:text-orange-400 animate-pulse">
+                  <p className="text-center text-xs mt-2 text-purple-700 dark:text-purple-400 animate-pulse">
                     {progress}
                   </p>
                 )}
                 <textarea
                   value={manualInput}
                   onChange={(e) => setManualInput(e.target.value)}
-                  className="w-full h-[300px] p-4 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-mono text-xs focus:ring-2 focus:ring-orange-500 outline-none resize-none"
+                  className="w-full h-[300px] p-4 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 font-mono text-xs focus:ring-2 focus:ring-purple-500 outline-none resize-none"
                   placeholder={`Paste your questions here (JSON or Object format)...
 Example:
 [
@@ -1389,7 +1389,7 @@ Example:
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="text-xs font-bold text-gray-500 hover:text-orange-700 dark:text-orange-400 flex items-center gap-1"
+                className="text-xs font-bold text-gray-500 hover:text-purple-700 dark:text-purple-400 flex items-center gap-1"
               >
                 <Upload size={12} /> Import JSON
               </button>
@@ -1500,7 +1500,7 @@ Example:
                       <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs font-bold rounded">
                         {q.topic}
                       </span>
-                      <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded border border-orange-200">
+                      <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded border border-purple-200">
                         {q.level}
                       </span>
                     </div>

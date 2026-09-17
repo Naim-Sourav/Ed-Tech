@@ -53,7 +53,7 @@ const SUBJECTS = [
 
 const SPECIAL_CATEGORIES = [
   { name: 'Namaz', type: 'NAMAZ', color: '#059669', icon: '🕌' },
-  { name: 'Coaching', type: 'COACHING', color: '#D97706', icon: '🏫' },
+  { name: 'Coaching', type: 'COACHING', color: '#7c3aed', icon: '🏫' },
   { name: 'Break', type: 'BREAK', color: '#6B7280', icon: '☕' },
 ];
 
@@ -487,13 +487,13 @@ const StudyTracker: React.FC = () => {
               <Settings size={20} className="text-gray-600 dark:text-gray-300" />
             </button>
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-              <Flame size={20} className="text-orange-700 dark:text-orange-400" fill="currentColor" />
+              <Flame size={20} className="text-purple-700 dark:text-purple-400" fill="currentColor" />
             </div>
           </div>
         </div>
         
         <div className="bg-primary/5 dark:bg-primary/10 p-4 rounded-2xl border border-primary/10">
-          <p className="text-sm font-medium text-primary dark:text-orange-300 italic text-center">
+          <p className="text-sm font-medium text-primary dark:text-purple-300 italic text-center">
             "{quote}"
           </p>
         </div>
@@ -544,8 +544,8 @@ const StudyTracker: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`text-[12px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
                           task.type === 'NAMAZ' ? 'bg-emerald-100 text-emerald-700' :
-                          task.type === 'COACHING' ? 'bg-amber-100 text-amber-700' :
-                          'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                          task.type === 'COACHING' ? 'bg-violet-100 text-violet-700' :
+                          'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
                         }`}>
                           {task.subject}
                         </span>

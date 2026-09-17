@@ -50,7 +50,7 @@ class ErrorBoundary extends Component<Props, State> {
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-orange-200 dark:shadow-none hover:bg-orange-700 transition-all flex items-center gap-2"
+            className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-purple-200 dark:shadow-none hover:bg-purple-700 transition-all flex items-center gap-2"
           >
             <RefreshCw size={18} /> পেজ রিফ্রেশ করুন
           </button>

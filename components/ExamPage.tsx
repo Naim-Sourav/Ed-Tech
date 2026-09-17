@@ -828,7 +828,7 @@ const ExamPage: React.FC = () => {
                               {guestExamInfo.totalMarks} Marks
                           </div>
                           <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1.5 rounded-lg">
-                              <HelpCircle size={14} className="text-orange-700 dark:text-orange-400" />
+                              <HelpCircle size={14} className="text-purple-700 dark:text-purple-400" />
                               {guestExamInfo.questions?.length || 0} Qs
                           </div>
                       </div>
@@ -911,7 +911,7 @@ const ExamPage: React.FC = () => {
                           <button
                               type="submit"
                               disabled={authLoading}
-                              className="w-full bg-primary hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 active:scale-95 disabled:opacity-70 mt-4"
+                              className="w-full bg-primary hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 active:scale-95 disabled:opacity-70 mt-4"
                           >
                               {authLoading ? <Loader2 size={18} className="animate-spin" /> : (authMode === 'LOGIN' ? 'শুরু করুন' : 'রেজিস্টার করুন')} <ArrowRight size={18} />
                           </button>
@@ -1074,7 +1074,7 @@ const ExamPage: React.FC = () => {
                                 initial={{ width: 0 }}
                                 animate={{ width: `${((currentQIndex + 1) / questions.length) * 100}%` }}
                                 transition={{ type: 'spring', stiffness: 50, damping: 20 }}
-                                className={`h-full ${isRapidFire ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]' : 'bg-primary shadow-[0_0_8px_rgba(249,115,22,0.3)]'}`}
+                                className={`h-full ${isRapidFire ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)]' : 'bg-primary shadow-[0_0_8px_rgba(139,92,246,0.3)]'}`}
                             />
                         </div>
                     )}
@@ -1116,7 +1116,7 @@ const ExamPage: React.FC = () => {
                                             onClick={() => toggleSaveQuestion(currentQIndex)} 
                                             className={`p-1.5 rounded-lg transition-all flex items-center justify-center ${
                                                 savedQuestionIndices.has(currentQIndex) 
-                                                    ? 'text-primary bg-orange-50 dark:bg-orange-950/20' 
+                                                    ? 'text-primary bg-purple-50 dark:bg-purple-950/20' 
                                                     : 'text-gray-400 hover:text-primary dark:text-gray-500'
                                             }`}
                                             title="Bookmark Question"
@@ -1176,7 +1176,7 @@ const ExamPage: React.FC = () => {
                                         }
                                     } else {
                                         if (isSelected) {
-                                            rowClass += " bg-orange-50 border-primary text-primary font-bold dark:bg-orange-950/10 dark:text-orange-400";
+                                            rowClass += " bg-purple-50 border-primary text-primary font-bold dark:bg-purple-950/10 dark:text-purple-400";
                                             circleClass += " bg-primary border-primary text-white";
                                         } else {
                                             rowClass += " bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300 hover:border-slate-350 dark:hover:border-zinc-700";
@@ -1215,15 +1215,15 @@ const ExamPage: React.FC = () => {
                             </div>
 
                             {((config?.isPracticeMode && !isRapidFire && userAnswers[currentQIndex] !== null) || (isRapidFire && isRapidFireCorrect)) && (
-                                <div id={`explanation-${currentQIndex}`} className="mb-24 p-6 md:p-8 bg-amber-50/50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-800/50 animate-in slide-in-from-bottom-2 duration-500 overflow-hidden">
-                                    <div className="flex items-center gap-2 mb-4 font-black text-amber-600 dark:text-amber-400 text-xs uppercase tracking-widest">
+                                <div id={`explanation-${currentQIndex}`} className="mb-24 p-6 md:p-8 bg-violet-50/50 dark:bg-violet-900/10 rounded-[2rem] border border-violet-100 dark:border-violet-800/50 animate-in slide-in-from-bottom-2 duration-500 overflow-hidden">
+                                    <div className="flex items-center gap-2 mb-4 font-black text-violet-600 dark:text-violet-400 text-xs uppercase tracking-widest">
                                         <BookOpen size={16}/> Explanation
                                     </div>
                                     <p className={`text-base md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(questions[currentQIndex].explanation)}`}>
                                         {questions[currentQIndex].explanation || "অফিসিয়াল ব্যাখ্যা পাওয়া যায়নি।"}
                                     </p>
                                     {questions[currentQIndex].explanationImage && (
-                                        <div className="mt-4 rounded-xl overflow-hidden border border-amber-100 dark:border-amber-800/50 bg-white dark:bg-black/20 p-1">
+                                        <div className="mt-4 rounded-xl overflow-hidden border border-violet-100 dark:border-violet-800/50 bg-white dark:bg-black/20 p-1">
                                             <img src={questions[currentQIndex].explanationImage} alt="Explanation" className="max-h-56 rounded-lg object-contain mx-auto" />
                                         </div>
                                     )}
@@ -1304,7 +1304,7 @@ const ExamPage: React.FC = () => {
                                                                 }
                                                             } else {
                                                                 if (isSelected) {
-                                                                    rowClass += " bg-orange-50 border-primary text-primary font-bold dark:bg-orange-950/10 dark:text-orange-400";
+                                                                    rowClass += " bg-purple-50 border-primary text-primary font-bold dark:bg-purple-950/10 dark:text-purple-400";
                                                                     circleClass += " bg-primary border-primary text-white";
                                                                 } else {
                                                                     rowClass += " bg-slate-50 border-slate-100 text-slate-700 dark:bg-zinc-900/40 dark:border-zinc-800/80 dark:text-zinc-300 hover:border-slate-350 dark:hover:border-zinc-700";
@@ -1396,7 +1396,7 @@ const ExamPage: React.FC = () => {
                                 ) : (
                                     <button 
                                         onClick={() => setCurrentQIndex(prev => Math.min(questions.length - 1, prev + 1))}
-                                        className="py-3 px-5 sm:px-6 bg-primary hover:bg-orange-600 text-white rounded-full font-black shadow-md transition-all text-sm md:text-base flex items-center justify-center gap-1 shrink-0 active:scale-95"
+                                        className="py-3 px-5 sm:px-6 bg-primary hover:bg-purple-600 text-white rounded-full font-black shadow-md transition-all text-sm md:text-base flex items-center justify-center gap-1 shrink-0 active:scale-95"
                                     >
                                         <span>পরবর্তী</span>
                                         <ChevronRight size={18} />
@@ -1471,16 +1471,16 @@ const ExamPage: React.FC = () => {
       return (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-500">
               <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden text-center animate-in zoom-in-95 duration-500">
-                  <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-orange-100 to-transparent dark:from-orange-900/20 dark:to-transparent pointer-events-none"></div>
+                  <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-100 to-transparent dark:from-purple-900/20 dark:to-transparent pointer-events-none"></div>
                   
                   <div className="relative z-10">
                       <div className="w-32 h-32 mx-auto mb-4">
                           <Confetti /> {/* Confetti fallback if Lottie breaks */}
-                          <Flame size={80} className="text-orange-700 dark:text-orange-400 fill-orange-500 mx-auto animate-pulse" />
+                          <Flame size={80} className="text-purple-700 dark:text-purple-400 fill-purple-500 mx-auto animate-pulse" />
                       </div>
                       
                       <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-2">
-                          {streakData.streak} <span className="text-2xl font-bold text-orange-700 dark:text-orange-400">Days</span>
+                          {streakData.streak} <span className="text-2xl font-bold text-purple-700 dark:text-purple-400">Days</span>
                       </h2>
                       <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-8">
                           Streak on Fire! 🔥
@@ -1494,20 +1494,20 @@ const ExamPage: React.FC = () => {
                                   
                                   return (
                                       <div key={idx} className="flex flex-col items-center gap-2">
-                                          <span className={`text-[12px] font-bold ${isToday ? 'text-orange-700 dark:text-orange-400' : 'text-gray-400'}`}>{day.name}</span>
+                                          <span className={`text-[12px] font-bold ${isToday ? 'text-purple-700 dark:text-purple-400' : 'text-gray-400'}`}>{day.name}</span>
                                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-500 ${
                                               isActive 
-                                              ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/30 scale-110' 
+                                              ? 'bg-purple-500 border-purple-500 text-white shadow-md shadow-purple-500/30 scale-110' 
                                               : isToday 
-                                                  ? 'border-dashed border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-900/10 text-orange-200' 
+                                                  ? 'border-dashed border-purple-200 dark:border-purple-900/50 bg-purple-50 dark:bg-purple-900/10 text-purple-200' 
                                                   : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-300'
                                           }`}>
                                               {isActive ? (
                                                   <Check size={18} strokeWidth={4} className="text-white"/>
                                               ) : isToday ? (
                                                   <div className="relative flex items-center justify-center">
-                                                      <CheckCircle size={22} className="text-orange-700 dark:text-orange-400/30" strokeWidth={2} />
-                                                      <Check size={12} className="absolute text-orange-700 dark:text-orange-400/20" strokeWidth={4} />
+                                                      <CheckCircle size={22} className="text-purple-700 dark:text-purple-400/30" strokeWidth={2} />
+                                                      <Check size={12} className="absolute text-purple-700 dark:text-purple-400/20" strokeWidth={4} />
                                                   </div>
                                               ) : (
                                                   ''
@@ -1673,7 +1673,7 @@ const ExamPage: React.FC = () => {
                                     background: `conic-gradient(
                                         #10B981 0% ${correctP}%, 
                                         #EF4444 ${correctP}% ${correctP + wrongP}%, 
-                                        #F59E0B ${correctP + wrongP}% 100%
+                                        #8b5cf6 ${correctP + wrongP}% 100%
                                     )`
                                 }}
                             ></div>
@@ -1688,7 +1688,7 @@ const ExamPage: React.FC = () => {
                         <button onClick={handleRetake} className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2 text-sm">
                             <RefreshCw size={18}/> আবার পরীক্ষা দিন
                         </button>
-                        <button onClick={() => navigate('/dashboard')} className="flex-1 py-3 rounded-xl bg-primary text-white font-bold hover:bg-orange-700 flex items-center justify-center gap-2 text-sm shadow-lg shadow-orange-200 dark:shadow-none">
+                        <button onClick={() => navigate('/dashboard')} className="flex-1 py-3 rounded-xl bg-primary text-white font-bold hover:bg-purple-700 flex items-center justify-center gap-2 text-sm shadow-lg shadow-purple-200 dark:shadow-none">
                             <Home size={18}/> ড্যাশবোর্ড
                         </button>
                     </div>
@@ -1739,12 +1739,12 @@ const ExamPage: React.FC = () => {
                                                     const isCurrentUser = (entry.userId && entry.userId === currentUser?.uid);
 
                                                     return (
-                                                        <tr key={entry.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isCurrentUser ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
+                                                        <tr key={entry.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isCurrentUser ? 'bg-purple-50 dark:bg-purple-900/20' : ''}`}>
                                                             <td className="py-2 px-3">
                                                                 <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold ${
                                                                     rank === 1 ? 'bg-yellow-100 text-yellow-700' :
                                                                     rank === 2 ? 'bg-gray-200 text-gray-700' :
-                                                                    rank === 3 ? 'bg-orange-100 text-orange-700' :
+                                                                    rank === 3 ? 'bg-purple-100 text-purple-700' :
                                                                     'text-gray-500'
                                                                 }`}>
                                                                     {rank}
@@ -1753,7 +1753,7 @@ const ExamPage: React.FC = () => {
                                                             <td className="py-2 px-3">
                                                                 <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
                                                                     {name}
-                                                                    {isCurrentUser && <span className="ml-1 text-[9px] bg-orange-100 text-orange-700 dark:text-orange-400 px-1 py-0.5 rounded font-bold">YOU</span>}
+                                                                    {isCurrentUser && <span className="ml-1 text-[9px] bg-purple-100 text-purple-700 dark:text-purple-400 px-1 py-0.5 rounded font-bold">YOU</span>}
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
@@ -1777,16 +1777,16 @@ const ExamPage: React.FC = () => {
                                                         <tr className="border-t-2 border-dashed border-gray-200 dark:border-zinc-800">
                                                             <td colSpan={6} className="py-1 text-center text-[12px] text-gray-400">...</td>
                                                         </tr>
-                                                        <tr className="bg-orange-50 dark:bg-orange-900/20 border-t border-orange-100 dark:border-orange-800">
+                                                        <tr className="bg-purple-50 dark:bg-purple-900/20 border-t border-purple-100 dark:border-purple-800">
                                                             <td className="py-2 px-3">
-                                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-orange-700 dark:text-orange-400 bg-orange-100">
+                                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-purple-700 dark:text-purple-400 bg-purple-100">
                                                                     {userRank}
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3">
                                                                 <div className="font-medium text-xs text-gray-900 dark:text-white truncate max-w-[120px]">
                                                                     {currentUser?.displayName || 'Anonymous'}
-                                                                    <span className="ml-1 text-[9px] bg-orange-100 text-orange-700 dark:text-orange-400 px-1 py-0.5 rounded font-bold">YOU</span>
+                                                                    <span className="ml-1 text-[9px] bg-purple-100 text-purple-700 dark:text-purple-400 px-1 py-0.5 rounded font-bold">YOU</span>
                                                                 </div>
                                                             </td>
                                                             <td className="py-2 px-3 text-center font-bold text-xs text-gray-900 dark:text-white">
@@ -1873,7 +1873,7 @@ const ExamPage: React.FC = () => {
                                                 {/* Tags list */}
                                                 <div className="flex flex-wrap gap-2 mt-3">
                                                     {q.chapter && (
-                                                        <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-orange-100/50 dark:border-orange-900/30">
+                                                        <span className="bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-purple-100/50 dark:border-purple-900/30">
                                                             {q.chapter}
                                                         </span>
                                                     )}
@@ -1950,15 +1950,15 @@ const ExamPage: React.FC = () => {
                                     </div>
 
                                     {q.explanation && (
-                                        <div className="mt-5 p-5 md:p-6 bg-amber-50/40 dark:bg-amber-950/10 rounded-2xl border border-amber-100 dark:border-amber-900/30">
-                                            <div className="flex items-center gap-2 mb-3 font-extrabold text-amber-650 dark:text-amber-400 text-[11px] uppercase tracking-widest">
+                                        <div className="mt-5 p-5 md:p-6 bg-violet-50/40 dark:bg-violet-950/10 rounded-2xl border border-violet-100 dark:border-violet-900/30">
+                                            <div className="flex items-center gap-2 mb-3 font-extrabold text-violet-600 dark:text-violet-400 text-[11px] uppercase tracking-widest">
                                                 <BookOpen size={14}/> ব্যাখ্যা
                                             </div>
                                             <p className={`text-[15px] md:text-[17px] text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap tex2jax_process overflow-x-auto max-w-full break-words py-1 scrollbar-thin ${getFont(q.explanation)}`}>
                                                 {q.explanation}
                                             </p>
                                             {q.explanationImage && (
-                                                <div className="mt-3 rounded-xl overflow-hidden border border-amber-100/50 dark:border-amber-900/20 bg-white dark:bg-black/20 p-1.5 max-w-md">
+                                                <div className="mt-3 rounded-xl overflow-hidden border border-violet-100/50 dark:border-violet-900/20 bg-white dark:bg-black/20 p-1.5 max-w-md">
                                                     <img src={q.explanationImage} alt="Explanation" className="max-h-56 rounded-lg object-contain mx-auto" referrerPolicy="no-referrer" />
                                                 </div>
                                             )}

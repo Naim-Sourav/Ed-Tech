@@ -15,7 +15,7 @@ const Confetti: React.FC = () => {
     canvas.height = window.innerHeight;
 
     const particles: any[] = [];
-    const colors = ['#006a4e', '#f42a41', '#fbbf24', '#3b82f6', '#8b5cf6'];
+    const colors = ['#006a4e', '#f42a41', '#a78bfa', '#3b82f6', '#8b5cf6'];
 
     for (let i = 0; i < 100; i++) {
       particles.push({

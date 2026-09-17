@@ -274,7 +274,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
               </button>
               <button 
                 onClick={() => setShowAllAnswers(!showAllAnswers)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${showAllAnswers ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-100 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${showAllAnswers ? 'bg-violet-100 text-violet-700 dark:bg-violet-950/20 dark:text-violet-400' : 'bg-slate-100 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400'}`}
               >
                 {showAllAnswers ? <EyeOff size={14} /> : <Eye size={14} />}
                 <span>{showAllAnswers ? "উত্তর লুকান" : "সব উত্তর দেখুন"}</span>
@@ -330,7 +330,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
             </button>
             <button 
               onClick={() => setFilterCategory('MEMORY')}
-              className={`px-4 py-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap border transition-all flex items-center gap-1.5 ${filterCategory === 'MEMORY' ? 'bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-200/50 dark:shadow-none' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
+              className={`px-4 py-2.5 rounded-xl text-[11px] font-bold whitespace-nowrap border transition-all flex items-center gap-1.5 ${filterCategory === 'MEMORY' ? 'bg-violet-500 text-white border-violet-500 shadow-lg shadow-violet-200/50 dark:shadow-none' : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'}`}
             >
               <span>🟡 Memory ভুল</span>
               <span className="text-[10px] opacity-75">({mistakes.filter(m => m.category === 'MEMORY').length})</span>
@@ -464,7 +464,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
             onClick={() => setShowAllAnswers(!showAllAnswers)}
             className={`px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-bold cursor-pointer select-none ${
               showAllAnswers 
-              ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-105 dark:shadow-none' 
+              ? 'bg-violet-500 border-violet-500 text-white shadow-lg shadow-violet-200 dark:shadow-none' 
               : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
             }`}
             title={showAllAnswers ? "সব উত্তর লুকান" : "সব উত্তর দেখুন"}
@@ -557,7 +557,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                         >
                           <span>{toBanglaDigits(itemIndexInTotal)}.</span>
                           {item.category === 'CONCEPT' && <span className="w-2 h-2 rounded-full bg-red-500" />}
-                          {item.category === 'MEMORY' && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+                          {item.category === 'MEMORY' && <span className="w-2 h-2 rounded-full bg-violet-500" />}
                           {item.category === 'SILLY' && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
                           <ChevronDown size={12} className="text-slate-400 dark:text-zinc-500 ml-0.5" />
                         </button>
@@ -584,9 +584,9 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleSelectCategory(item._id, 'MEMORY'); }}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/20 flex items-center gap-2 transition-all cursor-pointer"
+                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-violet-50 dark:hover:bg-violet-950/20 flex items-center gap-2 transition-all cursor-pointer"
                               >
-                                <span className="w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-[8px] text-white font-bold">🟡</span>
+                                <span className="w-3.5 h-3.5 rounded-full bg-violet-500 flex items-center justify-center text-[8px] text-white font-bold">🟡</span>
                                 <span>Memory ভুল (জানতাম কিন্তু ভুলে গেছি)</span>
                               </button>
                               <button
@@ -729,7 +729,7 @@ const WrongQuestions: React.FC<WrongQuestionsProps> = ({ embedded = false }) => 
                           </span>
                         )}
                         {item.category === 'MEMORY' && (
-                          <span className="text-[9px] font-black px-2 py-1 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-lg border border-amber-100 dark:border-amber-900/30 flex items-center gap-1">
+                          <span className="text-[9px] font-black px-2 py-1 bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400 rounded-lg border border-violet-100 dark:border-violet-900/30 flex items-center gap-1">
                             <span>🟡</span> Memory ভুল
                           </span>
                         )}

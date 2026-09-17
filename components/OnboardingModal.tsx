@@ -20,8 +20,8 @@ const Chip: React.FC<{
     aria-pressed={selected}
     className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all active:scale-95 ${
       selected
-        ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/25'
-        : 'bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:border-orange-300 dark:hover:border-orange-800'
+        ? 'bg-purple-500 border-purple-500 text-white shadow-lg shadow-purple-500/25'
+        : 'bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:border-purple-300 dark:hover:border-purple-800'
     }`}
   >
     {children}
@@ -99,7 +99,7 @@ const OnboardingModal: React.FC = () => {
       >
         {/* Decorative Background */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none"></div>
 
         {/* Header */}
         <div className="px-6 pt-6 pb-2 relative z-10">
@@ -119,7 +119,7 @@ const OnboardingModal: React.FC = () => {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? 'bg-orange-500' : 'bg-gray-200 dark:bg-zinc-800'}`}
+                className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? 'bg-purple-500' : 'bg-gray-200 dark:bg-zinc-800'}`}
               />
             ))}
           </div>
@@ -231,7 +231,7 @@ const OnboardingModal: React.FC = () => {
           {step === 0 && (
             <button
               onClick={nextFromName}
-              className="flex-1 py-3.5 bg-primary hover:bg-orange-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 active:scale-95 hover:-translate-y-0.5"
+              className="flex-1 py-3.5 bg-primary hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/20 active:scale-95 hover:-translate-y-0.5"
             >
               পরবর্তী ধাপ
             </button>
@@ -239,7 +239,7 @@ const OnboardingModal: React.FC = () => {
           {step === 1 && (
             <button
               onClick={nextFromStudy}
-              className="flex-1 py-3.5 bg-primary hover:bg-orange-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 active:scale-95 hover:-translate-y-0.5"
+              className="flex-1 py-3.5 bg-primary hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/20 active:scale-95 hover:-translate-y-0.5"
             >
               পরবর্তী ধাপ
             </button>
@@ -248,7 +248,7 @@ const OnboardingModal: React.FC = () => {
             <button
               onClick={handleFinish}
               disabled={loading}
-              className="flex-1 py-3.5 bg-primary hover:bg-orange-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed hover:-translate-y-0.5"
+              className="flex-1 py-3.5 bg-primary hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-500/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed hover:-translate-y-0.5"
             >
               {loading ? <Loader2 className="animate-spin" /> : <>যাত্রা শুরু করুন <Sparkles size={18} className="fill-yellow-400 text-yellow-400 animate-pulse" /></>}
             </button>

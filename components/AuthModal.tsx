@@ -214,7 +214,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-2 text-sm"
+              className="w-full bg-primary hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-2 text-sm"
             >
               {loading ? (
                 <Loader2 size={18} className="animate-spin" />

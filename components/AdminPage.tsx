@@ -414,7 +414,7 @@ const QuestionEditModal: React.FC<QuestionEditModalProps> = ({ editingQuestion, 
 
                 <div className="pt-4 border-t border-gray-100 dark:border-zinc-800 flex justify-end gap-3 mt-4">
                     <button onClick={() => setEditingQuestion(null)} className="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">বাতিল</button>
-                    <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-lg flex items-center gap-2">
+                    <button onClick={handleUpdateQuestion} className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-purple-700 transition-colors shadow-lg flex items-center gap-2">
                         {isEdit ? <Save size={18}/> : <Check size={18}/>} 
                         {isEdit ? 'আপডেট করুন' : 'প্রশ্নটি যুক্ত করুন'}
                     </button>
@@ -799,7 +799,7 @@ const AdminPage: React.FC = () => {
                  <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><FileText size={64}/></div>
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">মোট এক্সাম</p>
-                    <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.totalExams}</p>
+                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.totalExams}</p>
                     <p className="text-xs text-gray-400 mt-2">Quizzes Taken</p>
                  </div>
 
@@ -824,10 +824,10 @@ const AdminPage: React.FC = () => {
                             <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{stats.totalQuestions}</p>
                             <p className="text-xs text-purple-600/70 mt-1">Total Questions</p>
                         </div>
-                        <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800">
+                        <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">Enrollments</p>
-                            <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.totalEnrollments}</p>
-                            <p className="text-xs text-orange-700 dark:text-orange-400/70 mt-1">Active Students</p>
+                            <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{stats.totalEnrollments}</p>
+                            <p className="text-xs text-purple-700 dark:text-purple-400/70 mt-1">Active Students</p>
                         </div>
                     </div>
                     <div className="mt-6">
@@ -1060,7 +1060,7 @@ const AdminPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={() => setIsAddModalOpen(true)}
-                            className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg hover:bg-orange-700 transition-all flex items-center gap-2"
+                            className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg hover:bg-purple-700 transition-all flex items-center gap-2"
                         >
                             <Save size={16}/> Add Question
                         </button>
@@ -1144,7 +1144,7 @@ const AdminPage: React.FC = () => {
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex flex-wrap gap-2">
                                             {!isRepeatStimulus && (
-                                                <span className="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-[12px] font-bold rounded-lg border border-orange-100 dark:border-orange-800">
+                                                <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[12px] font-bold rounded-lg border border-purple-100 dark:border-purple-800">
                                                     {q.subject?.split('(')[0]}
                                                 </span>
                                             )}
@@ -1163,7 +1163,7 @@ const AdminPage: React.FC = () => {
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
                                                 onClick={() => setEditingQuestion(q)}
-                                                className="p-1.5 bg-orange-50 text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors" 
+                                                className="p-1.5 bg-purple-50 text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 rounded-lg transition-colors" 
                                                 title="Edit"
                                             >
                                                 <Edit2 size={16} />
@@ -1280,7 +1280,7 @@ const AdminPage: React.FC = () => {
            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm p-6 md:p-10 animate-in fade-in slide-in-from-bottom-2">
                <div className="max-w-2xl mx-auto">
                    <div className="text-center mb-8">
-                      <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
                          <Send size={32} />
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">গ্লোবাল নোটিফিকেশন</h2>
@@ -1328,7 +1328,7 @@ const AdminPage: React.FC = () => {
                          </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800 cursor-pointer" onClick={() => setSendPush(!sendPush)}>
+                      <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800 cursor-pointer" onClick={() => setSendPush(!sendPush)}>
                          <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${sendPush ? 'bg-primary border-primary text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-900'}`}>
                             {sendPush && <Check size={16} strokeWidth={3}/>}
                          </div>
@@ -1362,7 +1362,7 @@ const AdminPage: React.FC = () => {
                                                <span className={`px-2 py-0.5 text-[12px] font-bold rounded uppercase ${
                                                    n.type === 'SUCCESS' ? 'bg-green-100 text-green-700' :
                                                    n.type === 'WARNING' ? 'bg-yellow-100 text-yellow-700' :
-                                                   'bg-orange-100 text-orange-700'
+                                                   'bg-purple-100 text-purple-700'
                                                }`}>{n.type}</span>
                                                <span className="text-xs text-gray-400">{new Date(n.date).toLocaleDateString()}</span>
                                            </div>

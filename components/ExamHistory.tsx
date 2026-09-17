@@ -138,7 +138,7 @@ const ExamHistory: React.FC = () => {
             onClick={() => setActiveTab('SAVED')}
             className={`flex-1 py-4 text-center text-sm font-bold relative transition-colors ${
               activeTab === 'SAVED' 
-                ? 'text-primary dark:text-orange-400 font-extrabold' 
+                ? 'text-primary dark:text-purple-400 font-extrabold' 
                 : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200'
             }`}
           >
@@ -146,7 +146,7 @@ const ExamHistory: React.FC = () => {
             {activeTab === 'SAVED' && (
               <motion.div
                 layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-orange-500"
+                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-purple-500"
                 transition={{ type: 'spring', damping: 25, stiffness: 380 }}
               />
             )}
@@ -156,7 +156,7 @@ const ExamHistory: React.FC = () => {
             onClick={() => setActiveTab('WRONG')}
             className={`flex-1 py-4 text-center text-sm font-bold relative transition-colors ${
               activeTab === 'WRONG' 
-                ? 'text-primary dark:text-orange-400' 
+                ? 'text-primary dark:text-purple-400' 
                 : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200'
             }`}
           >
@@ -164,7 +164,7 @@ const ExamHistory: React.FC = () => {
             {activeTab === 'WRONG' && (
               <motion.div
                 layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-orange-500"
+                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-purple-500"
                 transition={{ type: 'spring', damping: 25, stiffness: 380 }}
               />
             )}
@@ -174,7 +174,7 @@ const ExamHistory: React.FC = () => {
             onClick={() => setActiveTab('EXAMS')}
             className={`flex-1 py-4 text-center text-sm font-bold relative transition-colors ${
               activeTab === 'EXAMS' 
-                ? 'text-primary dark:text-orange-400' 
+                ? 'text-primary dark:text-purple-400' 
                 : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200'
             }`}
           >
@@ -182,7 +182,7 @@ const ExamHistory: React.FC = () => {
             {activeTab === 'EXAMS' && (
               <motion.div
                 layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-orange-500"
+                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-purple-500"
                 transition={{ type: 'spring', damping: 25, stiffness: 380 }}
               />
             )}
@@ -207,15 +207,15 @@ const ExamHistory: React.FC = () => {
                   </div>
                 ) : attempts.length === 0 ? (
                   <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-gray-150 dark:border-zinc-800 shadow-sm">
-                    <div className="w-16 h-16 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
-                      <FileQuestion size={32} className="text-orange-700 dark:text-orange-400" />
+                    <div className="w-16 h-16 bg-purple-50 dark:bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+                      <FileQuestion size={32} className="text-purple-700 dark:text-purple-400" />
                     </div>
                     <p className="text-gray-900 dark:text-white font-bold text-base mb-1">কোনো পরীক্ষার রেকর্ড নেই</p>
                     <p className="text-gray-400 text-xs max-w-xs mx-auto leading-relaxed">আপনি এখনও কোনো পরীক্ষায় অংশ নেননি। পরীক্ষা দেওয়ার পর আপনার সকল ফলাফলের বিস্তারিত বিবরণ এখানে দেখতে পাবেন।</p>
                     <div className="mt-6">
                       <button
                         onClick={() => navigate('/exams')}
-                        className="px-6 py-3 bg-gradient-to-r from-primary to-orange-500 text-white font-bold rounded-xl shadow-md hover:scale-102 active:scale-98 transition-all text-xs"
+                        className="px-6 py-3 bg-gradient-to-r from-primary to-purple-500 text-white font-bold rounded-xl shadow-md hover:scale-102 active:scale-98 transition-all text-xs"
                       >
                         পরীক্ষা দেওয়া শুরু করুন
                       </button>

@@ -143,8 +143,8 @@ const AccountMenu: React.FC<{
             {currentUser?.email || ""}
           </p>
           <div className="flex items-center gap-2 mt-3">
-            <span className="inline-flex items-center gap-1 text-[11px] font-black text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/40 px-3 py-1 rounded-full">
-              <Flame size={12} className="fill-orange-500 text-orange-700 dark:text-orange-400" />
+            <span className="inline-flex items-center gap-1 text-[11px] font-black text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-900/40 px-3 py-1 rounded-full">
+              <Flame size={12} className="fill-purple-500 text-purple-700 dark:text-purple-400" />
               {toBengaliNumber(currentStreak)} দিনের স্ট্রিক
             </span>
             {rank && (
@@ -164,7 +164,7 @@ const AccountMenu: React.FC<{
 
         {/* Study group */}
         <div className="mt-3.5 bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
-          <Row icon={Bookmark} tile="bg-amber-500" label="সেভ করা প্রশ্ন" onClick={() => go("/saved-questions")} />
+          <Row icon={Bookmark} tile="bg-violet-500" label="সেভ করা প্রশ্ন" onClick={() => go("/saved-questions")} />
           <Row icon={AlertCircle} tile="bg-rose-500" label="ভুল প্রশ্ন" onClick={() => go("/wrong-questions")} />
           <Row
             icon={Clock}
@@ -186,7 +186,7 @@ const AccountMenu: React.FC<{
         <div className="mt-3.5 bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
           <Row icon={Shield} tile="bg-cyan-500" label="প্রাইভেসি পলিসি" onClick={() => go("/privacy")} />
           <Row icon={FileText} tile="bg-pink-500" label="ব্যবহারের শর্তাবলী" onClick={() => go("/terms")} />
-          <Row icon={RefreshCw} tile="bg-orange-500" label="রিফান্ড পলিসি" onClick={() => go("/refund")} />
+          <Row icon={RefreshCw} tile="bg-purple-500" label="রিফান্ড পলিসি" onClick={() => go("/refund")} />
         </div>
 
         {/* Logout */}

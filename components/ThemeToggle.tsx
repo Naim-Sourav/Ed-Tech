@@ -35,7 +35,7 @@ const ThemeToggle: React.FC<{
       }
       className={`relative ${btnSize} rounded-full flex items-center justify-center overflow-hidden border transition-colors duration-500 shrink-0 ${
         themeMode === "light"
-          ? "bg-gradient-to-br from-sky-100 via-amber-50 to-amber-100 border-amber-200/70 shadow-[0_2px_14px_rgba(251,191,36,0.4)]"
+          ? "bg-gradient-to-br from-sky-100 via-violet-50 to-violet-100 border-violet-200/70 shadow-[0_2px_14px_rgba(167,139,250,0.4)]"
           : themeMode === "dark"
           ? "bg-gradient-to-br from-slate-800 via-slate-900 to-indigo-950 border-indigo-900/60 shadow-[0_2px_16px_rgba(99,102,241,0.4)]"
           : "bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 border-gray-200/80 dark:border-zinc-700/60"
@@ -50,7 +50,7 @@ const ThemeToggle: React.FC<{
             animate={{ opacity: 0.55, scale: 1 }}
             exit={{ opacity: 0, scale: 0.3 }}
             transition={{ duration: 0.4 }}
-            className="absolute w-8 h-8 rounded-full bg-amber-300 blur-[6px] pointer-events-none"
+            className="absolute w-8 h-8 rounded-full bg-violet-300 blur-[6px] pointer-events-none"
           />
         )}
       </AnimatePresence>
@@ -99,7 +99,7 @@ const ThemeToggle: React.FC<{
               transition={{ repeat: Infinity, duration: 18, ease: "linear" }}
               className="flex"
             >
-              <Sun size={iconSize} className="text-amber-500" fill="currentColor" strokeWidth={1.2} />
+              <Sun size={iconSize} className="text-violet-500" fill="currentColor" strokeWidth={1.2} />
             </motion.span>
           ) : themeMode === "dark" ? (
             <Moon size={iconSize - 1} className="text-indigo-100" fill="currentColor" strokeWidth={1.2} />

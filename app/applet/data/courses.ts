@@ -42,7 +42,7 @@ export const SHARED_COURSES: Course[] = [
         exams: 100,
         icon: Swords,
         image: 'https://i.ibb.co/5x2fVrHC/Chat-GPT-Image-Jun-9-2026-12-43-54-AM.png',
-        color: 'from-orange-500 to-red-600',
+        color: 'from-purple-500 to-red-600',
         tags: ['Second Timer', 'University Admission'],
         price: 2500,
         originalPrice: 4000,

@@ -437,14 +437,14 @@ const AdminPublicExam = () => {
               </div>
 
               {/* JSON Upload */}
-              <div className="p-4 bg-orange-50 dark:bg-orange-900/10 rounded-xl border border-orange-100 dark:border-orange-800">
-                <h4 className="font-bold text-orange-800 dark:text-orange-300 mb-3 flex items-center gap-2">
+              <div className="p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800">
+                <h4 className="font-bold text-purple-800 dark:text-purple-300 mb-3 flex items-center gap-2">
                   <FileJson size={16}/> JSON Upload
                 </h4>
                 <div className="h-full flex flex-col justify-center">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-orange-300 border-dashed rounded-lg cursor-pointer bg-orange-50 dark:hover:bg-orange-800/30 dark:bg-orange-900/20 hover:bg-orange-100 transition-colors">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-purple-300 border-dashed rounded-lg cursor-pointer bg-purple-50 dark:hover:bg-purple-800/30 dark:bg-purple-900/20 hover:bg-purple-100 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <FileJson className="w-8 h-8 mb-2 text-orange-700 dark:text-orange-400" />
+                      <FileJson className="w-8 h-8 mb-2 text-purple-700 dark:text-purple-400" />
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {jsonFile ? jsonFile.name : "Click to upload JSON"}
                       </p>
@@ -518,7 +518,7 @@ const AdminPublicExam = () => {
           <button 
             onClick={handleCreateExam}
             disabled={loading}
-            className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="animate-spin" /> : <><Save size={20} /> Create Exam & Generate Link</>}
           </button>

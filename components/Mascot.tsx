@@ -52,7 +52,7 @@ const Mascot: React.FC<MascotProps> = ({ size = 120, className = '', mood = 'hap
 
         {/* Antenna */}
         <path d="M100 80 V60" stroke="#1565C0" strokeWidth="4" />
-        <circle cx="100" cy="55" r="8" fill="#F59E0B" className="animate-pulse" />
+        <circle cx="100" cy="55" r="8" fill="#8b5cf6" className="animate-pulse" />
         
         {/* Arms */}
         <path d="M60 100 H45 C40 100 40 110 45 115" stroke="#1565C0" strokeWidth="8" strokeLinecap="round" />

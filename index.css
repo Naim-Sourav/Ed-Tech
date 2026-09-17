@@ -14,49 +14,53 @@ mjx-container[jax="CHTML"] {
 }
 
 @layer base {
+  /* ------------------------------------------------------------------
+     PURPLE BRAND THEME (sampled from the home-dashboard promo banner:
+     deep violet #7C3AED on a soft lavender #F4F2FC field)
+     ------------------------------------------------------------------ */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 253 45% 97%;
+    --foreground: 255 45% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 255 45% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 19 100% 40%; /* darkened from 50%: white text now 4.86:1 (WCAG AA) */
+    --popover-foreground: 255 45% 12%;
+    --primary: 263 83% 58%; /* #7C3AED banner violet: white text 5.7:1 (WCAG AA) */
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --secondary: 253 45% 94%;
+    --secondary-foreground: 256 40% 15%;
+    --muted: 253 40% 94%;
+    --muted-foreground: 256 15% 45%;
+    --accent: 253 45% 93%;
+    --accent-foreground: 256 40% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 19 100% 50%;
+    --border: 253 35% 89%;
+    --input: 253 35% 89%;
+    --ring: 263 83% 58%;
     --radius: 0.85rem;
   }
- 
+
   .dark {
-    --background: 221 39% 11%;
-    --foreground: 0 0% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 0 0% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 19 100% 55%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 258 40% 9%;
+    --foreground: 253 60% 96%;
+    --card: 258 38% 12%;
+    --card-foreground: 253 60% 96%;
+    --popover: 258 38% 12%;
+    --popover-foreground: 253 60% 96%;
+    --primary: 256 92% 76%;
+    --primary-foreground: 258 45% 10%;
+    --secondary: 258 30% 17%;
+    --secondary-foreground: 253 60% 96%;
+    --muted: 258 30% 17%;
+    --muted-foreground: 256 20% 70%;
+    --accent: 258 30% 18%;
+    --accent-foreground: 253 60% 96%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 19 100% 55%;
+    --border: 258 28% 20%;
+    --input: 258 28% 22%;
+    --ring: 256 92% 76%;
   }
 }
 
@@ -72,7 +76,7 @@ mjx-container[jax="CHTML"] {
   }
 
   * {
-    @apply border-gray-200 dark:border-gray-800;
+    @apply border-purple-200/70 dark:border-purple-900/50;
   }
   body {
     @apply bg-background text-foreground;
@@ -93,10 +97,10 @@ mjx-container[jax="CHTML"] {
 }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #c4b5fd;
   border-radius: 4px;
 }
-.dark ::-webkit-scrollbar-thumb { background: #374151; }
+.dark ::-webkit-scrollbar-thumb { background: #4c1d95; }
 
 /* MJX Fix */
 mjx-container {
@@ -111,8 +115,8 @@ mjx-container {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background-color: var(--background); z-index: 9999; transition: opacity 0.5s ease-out;
 }
-.dark #app-loading { background-color: #111827; }
-.dark #app-loading p { color: #9ca3af !important; }
+.dark #app-loading { background-color: #120c22; }
+.dark #app-loading p { color: #a89fc7 !important; }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
@@ -260,7 +264,7 @@ mjx-container {
   @apply transition-transform duration-100 active:scale-[0.97];
 }
 
-/* Logo Dark Mode Fix: Inverts black to white but keeps orange hue */
+/* Logo Dark Mode Fix: Inverts black to white but keeps purple hue */
 .logo-dark-mode {
   @apply dark:[filter:invert(1)_hue-rotate(180deg)];
 }

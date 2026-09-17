@@ -31,7 +31,7 @@ interface NavigationProps {
 // Custom SVG Icon Component for Bottom Nav
 const CustomIcon = ({ src, active, className }: { src: string, active: boolean, className?: string }) => (
   <div 
-    className={`w-6 h-6 transition-all duration-300 ${active ? 'bg-primary dark:bg-orange-400' : 'bg-gray-400 dark:bg-zinc-500'} ${className}`}
+    className={`w-6 h-6 transition-all duration-300 ${active ? 'bg-primary dark:bg-purple-400' : 'bg-gray-400 dark:bg-zinc-500'} ${className}`}
     style={{ 
       maskImage: `url(${src})`, 
       WebkitMaskImage: `url(${src})`,
@@ -200,11 +200,11 @@ const Navigation: React.FC<NavigationProps> = ({
 
   const getNotificationIcon = (type: string) => {
       switch(type) {
-          case 'WARNING': return <AlertTriangle size={16} className="text-amber-600" />;
-          case 'SUCCESS': return <CheckCircle size={16} className="text-orange-700 dark:text-orange-400" />;
-          case 'BATTLE_CHALLENGE': return <Swords size={16} className="text-orange-700 dark:text-orange-400" />;
-          case 'BATTLE_RESULT': return <Trophy size={16} className="text-amber-600" />;
-          default: return <Info size={16} className="text-orange-700 dark:text-orange-400" />;
+          case 'WARNING': return <AlertTriangle size={16} className="text-violet-600" />;
+          case 'SUCCESS': return <CheckCircle size={16} className="text-purple-700 dark:text-purple-400" />;
+          case 'BATTLE_CHALLENGE': return <Swords size={16} className="text-purple-700 dark:text-purple-400" />;
+          case 'BATTLE_RESULT': return <Trophy size={16} className="text-violet-600" />;
+          default: return <Info size={16} className="text-purple-700 dark:text-purple-400" />;
       }
   };
 
@@ -215,7 +215,7 @@ const Navigation: React.FC<NavigationProps> = ({
         return <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />;
     }
     return (
-        <div className="w-full h-full flex items-center justify-center bg-orange-500 text-white font-bold text-lg">
+        <div className="w-full h-full flex items-center justify-center bg-purple-500 text-white font-bold text-lg">
             {currentUser?.displayName?.charAt(0).toUpperCase() || 'U'}
         </div>
     );
@@ -314,7 +314,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
                           isActive(item.path)
-                            ? 'bg-orange-50 dark:bg-primary/10 text-primary dark:text-orange-400 shadow-sm'
+                            ? 'bg-purple-50 dark:bg-primary/10 text-primary dark:text-purple-400 shadow-sm'
                             : 'text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
                         }`}
                       >
@@ -331,7 +331,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         visible: { opacity: 1, x: 0 }
                       }}
                       onClick={handleInstallClick}
-                      className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-700 dark:text-orange-400"
+                      className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-700 dark:text-purple-400"
                     >
                       {isIOS ? <Share size={18} /> : <Download size={18} />}
                       <span>অ্যাপ ইনস্টল করুন</span>
@@ -350,8 +350,8 @@ const Navigation: React.FC<NavigationProps> = ({
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold mt-6 text-sm ${
                           isActive('/admin')
-                            ? 'bg-orange-100 dark:bg-zinc-800 text-orange-700 dark:text-orange-300'
-                            : 'text-gray-500 dark:text-zinc-500 hover:bg-orange-50 dark:hover:bg-zinc-800/50 hover:text-orange-700 dark:hover:text-orange-300'
+                            ? 'bg-purple-100 dark:bg-zinc-800 text-purple-700 dark:text-purple-300'
+                            : 'text-gray-500 dark:text-zinc-500 hover:bg-purple-50 dark:hover:bg-zinc-800/50 hover:text-purple-700 dark:hover:text-purple-300'
                         }`}
                       >
                         <ShieldCheck size={18} />
@@ -445,10 +445,10 @@ const Navigation: React.FC<NavigationProps> = ({
                </div>
 
                 {!isPushSubscribed && (
-                    <div className="px-4 py-3 bg-orange-50 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-900/20">
+                    <div className="px-4 py-3 bg-purple-50 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20">
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-700 dark:text-orange-400">
+                                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-700 dark:text-purple-400">
                                     <Bell size={16} />
                                 </div>
                                 <div>
@@ -504,7 +504,7 @@ const Navigation: React.FC<NavigationProps> = ({
                                  }}
                                  key={n.id} 
                                  onClick={() => handleNotificationClick(n)}
-                                 className={`p-4 border-b border-gray-100 dark:border-white/[0.05] transition-colors cursor-pointer active:bg-gray-100 dark:active:bg-white/[0.03] relative ${isRead ? 'bg-white dark:bg-black' : 'bg-orange-50/40 dark:bg-orange-900/10'}`}
+                                 className={`p-4 border-b border-gray-100 dark:border-white/[0.05] transition-colors cursor-pointer active:bg-gray-100 dark:active:bg-white/[0.03] relative ${isRead ? 'bg-white dark:bg-black' : 'bg-purple-50/40 dark:bg-purple-900/10'}`}
                               >
                                  {!isRead && (
                                      <span className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full"></span>
@@ -512,10 +512,10 @@ const Navigation: React.FC<NavigationProps> = ({
                                  
                                  <div className="flex gap-3">
                                      <div className={`mt-1 shrink-0 w-8 h-8 rounded-full flex items-center justify-center border ${
-                                         n.type === 'SUCCESS' ? 'bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50' : 
+                                         n.type === 'SUCCESS' ? 'bg-purple-100 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800/50' : 
                                          n.type === 'WARNING' ? 'bg-yellow-100 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800/50' : 
-                                         n.type === 'BATTLE_CHALLENGE' ? 'bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50' : 
-                                         'bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50'
+                                         n.type === 'BATTLE_CHALLENGE' ? 'bg-purple-100 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800/50' : 
+                                         'bg-purple-100 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800/50'
                                      }`}>
                                          {getNotificationIcon(n.type)}
                                      </div>
@@ -588,7 +588,7 @@ const Navigation: React.FC<NavigationProps> = ({
               to={item.path}
               className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
                 isActive(item.path)
-                  ? 'bg-orange-50 dark:bg-primary/10 text-primary dark:text-orange-400 shadow-sm'
+                  ? 'bg-purple-50 dark:bg-primary/10 text-primary dark:text-purple-400 shadow-sm'
                   : 'text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -600,7 +600,7 @@ const Navigation: React.FC<NavigationProps> = ({
           {!isAppInstalled && (
             <button
               onClick={handleInstallClick}
-              className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-700 dark:text-orange-400"
+              className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-700 dark:text-purple-400"
             >
               {isIOS ? <Share size={18} /> : <Download size={18} />}
               <span>অ্যাপ ইনস্টল করুন</span>
@@ -612,8 +612,8 @@ const Navigation: React.FC<NavigationProps> = ({
               to="/admin"
               className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold mt-6 text-sm ${
                 isActive('/admin')
-                  ? 'bg-orange-100 dark:bg-zinc-800 text-orange-700 dark:text-orange-300'
-                  : 'text-gray-500 dark:text-zinc-500 hover:bg-orange-50 dark:hover:bg-zinc-800/50 hover:text-orange-700 dark:hover:text-orange-300'
+                  ? 'bg-purple-100 dark:bg-zinc-800 text-purple-700 dark:text-purple-300'
+                  : 'text-gray-500 dark:text-zinc-500 hover:bg-purple-50 dark:hover:bg-zinc-800/50 hover:text-purple-700 dark:hover:text-purple-300'
               }`}
             >
               <ShieldCheck size={18} />
@@ -654,13 +654,13 @@ const Navigation: React.FC<NavigationProps> = ({
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(10);
                 }}
-                className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-300 relative z-10 ${active ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
+                className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-300 relative z-10 ${active ? 'text-primary dark:text-purple-400' : 'text-gray-400 dark:text-zinc-500'}`}
               >
                 {/* 2px top-border indicator above the active icon */}
                 {active && (
                   <motion.div 
                     layoutId="activeNavIndicatorLine"
-                    className="absolute top-0 left-5 right-5 h-[2px] bg-primary dark:bg-orange-400 rounded-full"
+                    className="absolute top-0 left-5 right-5 h-[2px] bg-primary dark:bg-purple-400 rounded-full"
                     transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                   />
                 )}
@@ -671,7 +671,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     active={active} 
                   />
                   {active && (
-                    <span className="text-[12px] font-bold text-primary dark:text-orange-400 transition-all duration-300 tracking-tight font-sans">
+                    <span className="text-[12px] font-bold text-primary dark:text-purple-400 transition-all duration-300 tracking-tight font-sans">
                       {item.label}
                     </span>
                   )}

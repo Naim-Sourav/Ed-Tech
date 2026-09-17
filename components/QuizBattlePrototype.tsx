@@ -75,7 +75,7 @@ const BATTLE_SUBJECTS = [
     { id: 'ICT', label: 'আইসিটি', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
     { id: 'English', label: 'ইংরেজি', icon: BookOpen, color: 'text-pink-500', bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-200 dark:border-pink-800' },
     { id: 'Bangla', label: 'বাংলা', icon: Book, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-800' },
-    { id: 'General Knowledge', label: 'সাধারণ জ্ঞান', icon: Globe, color: 'text-orange-700 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
+    { id: 'General Knowledge', label: 'সাধারণ জ্ঞান', icon: Globe, color: 'text-purple-700 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
 ];
 
 // Consistent player avatar with graceful initial fallback (no external placeholder images)
@@ -624,7 +624,7 @@ const QuizBattlePrototype: React.FC = () => {
       </div>
 
       {/* Player Card */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-[#ff6a1a] to-red-600 p-6 text-white shadow-xl shadow-primary/20">
+      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-[#8b5cf6] to-red-600 p-6 text-white shadow-xl shadow-primary/20">
         <div aria-hidden className="absolute -top-16 -right-12 w-52 h-52 rounded-full bg-white/10 blur-2xl" />
         <div className="relative flex items-center gap-4">
           <div className="w-16 h-16 rounded-full border-2 border-white/40 p-0.5 shrink-0">
@@ -632,7 +632,7 @@ const QuizBattlePrototype: React.FC = () => {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-black truncate">{currentUser?.displayName || 'শিক্ষার্থী'}</h1>
-            <p className="text-xs font-medium text-orange-100/90 mt-0.5">রুম খুলো বা কোড দিয়ে ঢুকো — লড়াই শুরু করো</p>
+            <p className="text-xs font-medium text-purple-100/90 mt-0.5">রুম খুলো বা কোড দিয়ে ঢুকো — লড়াই শুরু করো</p>
           </div>
         </div>
 
@@ -644,7 +644,7 @@ const QuizBattlePrototype: React.FC = () => {
           ].map((chip, i) => (
             <div key={i} className="rounded-2xl bg-black/15 border border-white/10 backdrop-blur-sm px-3 py-2.5 text-center">
               <p className="text-lg font-black leading-none tabular-nums truncate">{chip.value}</p>
-              <p className="text-[10px] font-bold text-orange-100/80 mt-1">{chip.label}</p>
+              <p className="text-[10px] font-bold text-purple-100/80 mt-1">{chip.label}</p>
             </div>
           ))}
         </div>
@@ -655,17 +655,17 @@ const QuizBattlePrototype: React.FC = () => {
         <motion.button 
           whileTap={{ scale: 0.97 }}
           onClick={() => { triggerHaptic('medium'); setPhase('CREATE'); }}
-          className="group bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border-2 border-primary/70 hover:border-primary hover:bg-orange-50/40 dark:hover:bg-orange-950/10 transition-all text-left relative overflow-hidden shadow-sm"
+          className="group bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border-2 border-primary/70 hover:border-primary hover:bg-purple-50/40 dark:hover:bg-purple-950/10 transition-all text-left relative overflow-hidden shadow-sm"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3.5 bg-orange-50 dark:bg-orange-950/30 text-primary rounded-2xl flex items-center justify-center shrink-0 border border-orange-100 dark:border-orange-900/40">
+            <div className="p-3.5 bg-purple-50 dark:bg-purple-950/30 text-primary rounded-2xl flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40">
               <UserPlus size={24} />
             </div>
             <div className="min-w-0">
               <h3 className="text-lg font-black text-gray-900 dark:text-white">নতুন ব্যাটল তৈরি করুন</h3>
               <p className="text-xs text-gray-500 dark:text-zinc-400 font-medium mt-1 leading-relaxed">বিষয় ও অধ্যায় বেছে নিয়ে রুম খুলুন, কোড শেয়ার করুন</p>
             </div>
-            <div className="ml-auto p-2 rounded-full bg-orange-50 dark:bg-orange-950/30 text-primary shrink-0 transition-transform group-hover:translate-x-0.5">
+            <div className="ml-auto p-2 rounded-full bg-purple-50 dark:bg-purple-950/30 text-primary shrink-0 transition-transform group-hover:translate-x-0.5">
               <MoveRight size={16} />
             </div>
           </div>
@@ -743,7 +743,7 @@ const QuizBattlePrototype: React.FC = () => {
               </motion.div>
               <div className="text-center max-w-[140px]">
                 <p className="font-black text-gray-900 dark:text-white text-base truncate">{guest.name}</p>
-                <span className="inline-flex items-center gap-1.5 mt-1.5 px-3 py-1 bg-orange-50 dark:bg-orange-950/30 text-primary dark:text-orange-400 text-[11px] font-black rounded-full border border-orange-100 dark:border-orange-900/40">
+                <span className="inline-flex items-center gap-1.5 mt-1.5 px-3 py-1 bg-purple-50 dark:bg-purple-950/30 text-primary dark:text-purple-400 text-[11px] font-black rounded-full border border-purple-100 dark:border-purple-900/40">
                     <Swords size={11} /> চ্যালেঞ্জার
                 </span>
               </div>
@@ -839,7 +839,7 @@ const QuizBattlePrototype: React.FC = () => {
                                         triggerHaptic('light');
                                         setConfig({ ...config, chapters: [chap] });
                                     }}
-                                    className={`px-4 py-2.5 rounded-xl text-xs font-black border transition-all ${isChapSelected ? 'bg-orange-50 dark:bg-orange-950/30 text-primary dark:text-orange-400 border-orange-200 dark:border-orange-900/50' : 'bg-white dark:bg-zinc-900 text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-gray-300'}`}
+                                    className={`px-4 py-2.5 rounded-xl text-xs font-black border transition-all ${isChapSelected ? 'bg-purple-50 dark:bg-purple-950/30 text-primary dark:text-purple-400 border-purple-200 dark:border-purple-900/50' : 'bg-white dark:bg-zinc-900 text-gray-500 border-gray-100 dark:border-zinc-800 hover:border-gray-300'}`}
                                 >
                                     {chap}
                                 </button>
@@ -860,7 +860,7 @@ const QuizBattlePrototype: React.FC = () => {
                         type="range" min="5" max="20" step="5"
                         value={config.questionCount}
                         onChange={(e) => setConfig({...config, questionCount: parseInt(e.target.value)})}
-                        className="w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                        className="w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
                     />
                 </div>
 
@@ -873,7 +873,7 @@ const QuizBattlePrototype: React.FC = () => {
                         type="range" min="10" max="60" step="5"
                         value={config.timePerQuestion}
                         onChange={(e) => setConfig({...config, timePerQuestion: parseInt(e.target.value)})}
-                        className="w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                        className="w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
                     />
                 </div>
             </div>
@@ -1165,7 +1165,7 @@ const QuizBattlePrototype: React.FC = () => {
                     className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-white/5 mb-6 relative overflow-hidden"
                 >
                     {question.contextText && (
-                        <div className={`mb-5 p-4 bg-orange-50/50 dark:bg-orange-950/20 rounded-2xl border border-orange-100/60 dark:border-orange-900/30 text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap ${getFont(question.contextText)}`}>
+                        <div className={`mb-5 p-4 bg-purple-50/50 dark:bg-purple-950/20 rounded-2xl border border-purple-100/60 dark:border-purple-900/30 text-sm md:text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap ${getFont(question.contextText)}`}>
                             <SafeHtml html={question.contextText} />
                             {question.contextImage && (
                                 <img src={question.contextImage} alt="Context" className="mt-4 rounded-xl max-h-48 object-contain mx-auto border bg-white" referrerPolicy="no-referrer" />
@@ -1391,7 +1391,7 @@ const QuizBattlePrototype: React.FC = () => {
         <div className="fixed inset-0 z-[200] flex flex-col bg-[#0F172A] text-white p-6 items-center justify-center overflow-y-auto relative pb-20">
             {/* Ambient glows */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className={`absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[120px] ${isWinner ? 'bg-amber-500/15' : 'bg-primary/15'}`}></div>
+                <div className={`absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[120px] ${isWinner ? 'bg-violet-500/15' : 'bg-primary/15'}`}></div>
                 <div className="absolute -bottom-24 -right-16 w-72 h-72 bg-primary/10 rounded-full blur-[100px]"></div>
             </div>
             
@@ -1413,12 +1413,12 @@ const QuizBattlePrototype: React.FC = () => {
                             transition={{ delay: 0.2 }}
                             className="relative inline-block mb-8"
                         >
-                            <div className={`absolute inset-0 blur-[50px] opacity-30 ${isWinner ? 'bg-amber-400' : 'bg-primary'}`}></div>
-                            {isWinner && <Crown size={42} className="absolute -top-9 left-1/2 -translate-x-1/2 text-amber-400 fill-amber-400 z-20" />}
-                            <div className={`w-28 h-28 rounded-full p-1 shadow-2xl relative z-10 ${isWinner ? 'bg-gradient-to-tr from-amber-300 via-amber-500 to-orange-500' : 'bg-white/20'}`}>
+                            <div className={`absolute inset-0 blur-[50px] opacity-30 ${isWinner ? 'bg-violet-400' : 'bg-primary'}`}></div>
+                            {isWinner && <Crown size={42} className="absolute -top-9 left-1/2 -translate-x-1/2 text-violet-400 fill-violet-400 z-20" />}
+                            <div className={`w-28 h-28 rounded-full p-1 shadow-2xl relative z-10 ${isWinner ? 'bg-gradient-to-tr from-violet-300 via-violet-500 to-purple-500' : 'bg-white/20'}`}>
                                 <PlayerAvatar src={winner?.avatar} name={winner?.name} className="w-full h-full rounded-full border-4 border-[#0F172A]" />
                             </div>
-                            <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full font-black text-[11px] uppercase tracking-widest shadow-lg border-2 border-[#0F172A] whitespace-nowrap ${isWinner ? 'bg-amber-400 text-[#0F172A]' : 'bg-white/20 text-white'}`}>
+                            <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full font-black text-[11px] uppercase tracking-widest shadow-lg border-2 border-[#0F172A] whitespace-nowrap ${isWinner ? 'bg-violet-400 text-[#0F172A]' : 'bg-white/20 text-white'}`}>
                                 {isWinner ? 'বিজয়ী' : `${toBengaliNumber(2)}য় স্থান`}
                             </div>
                         </motion.div>
@@ -1446,7 +1446,7 @@ const QuizBattlePrototype: React.FC = () => {
                                         <PlayerAvatar src={p.avatar} name={p.name} className="w-8 h-8 rounded-full shrink-0" />
                                         <span className="font-bold text-sm truncate max-w-[140px]">{p.name}{p.uid === currentUser?.uid ? ' (আপনি)' : ''}</span>
                                     </div>
-                                    <span className="font-black font-mono text-amber-400 tabular-nums">{toBengaliNumber(p.score)}</span>
+                                    <span className="font-black font-mono text-violet-400 tabular-nums">{toBengaliNumber(p.score)}</span>
                                 </div>
                             ))}
                         </motion.div>

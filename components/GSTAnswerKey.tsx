@@ -155,7 +155,7 @@ const GSTAnswerKey: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors pb-20">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-orange-600 to-red-600 pt-12 pb-24 px-4 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-purple-600 to-fuchsia-600 pt-12 pb-24 px-4 overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         
@@ -191,7 +191,7 @@ const GSTAnswerKey: React.FC = () => {
               </button>
               <button 
                 onClick={handleTakeExam}
-                className="flex-1 md:flex-none px-8 py-4 bg-white text-orange-700 dark:text-orange-400 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-black/10 hover:scale-105 active:scale-95 transition-all"
+                className="flex-1 md:flex-none px-8 py-4 bg-white text-purple-700 dark:text-purple-400 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-black/10 hover:scale-105 active:scale-95 transition-all"
               >
                 <Play fill="currentColor" size={18} /> পরীক্ষা দিন
               </button>
@@ -204,20 +204,20 @@ const GSTAnswerKey: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 -mt-10 relative z-20">
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-white/5 p-4 md:p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-500/20">
-              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest mb-1">মোট প্রশ্ন</p>
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-500/20">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-widest mb-1">মোট প্রশ্ন</p>
               <p className="text-2xl font-black text-gray-800 dark:text-white">{questions.length}</p>
             </div>
-            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-500/20">
-              <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-1">পরীক্ষার তারিখ</p>
+            <div className="p-4 bg-violet-50 dark:bg-violet-900/20 rounded-2xl border border-violet-100 dark:border-violet-500/20">
+              <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-1">পরীক্ষার তারিখ</p>
               <p className="text-lg font-black text-gray-800 dark:text-white leading-tight">১০ এপ্রিল ২০২৬</p>
             </div>
             <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-500/20">
               <p className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-widest mb-1">নেগেটিভ মার্ক</p>
               <p className="text-2xl font-black text-gray-800 dark:text-white">০.২৫</p>
             </div>
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-500/20">
-              <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest mb-1">সময়</p>
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-500/20">
+              <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-widest mb-1">সময়</p>
               <p className="text-2xl font-black text-gray-800 dark:text-white">৬০ মি.</p>
             </div>
           </div>
@@ -230,7 +230,7 @@ const GSTAnswerKey: React.FC = () => {
                 placeholder="প্রশ্ন খুঁজুন..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all text-sm font-medium"
+                className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm font-medium"
               />
             </div>
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -238,7 +238,7 @@ const GSTAnswerKey: React.FC = () => {
                 <button
                   key={subject}
                   onClick={() => setSelectedSubject(subject)}
-                  className={`px-5 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all ${selectedSubject === subject ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/30' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                  className={`px-5 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all ${selectedSubject === subject ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                 >
                   {subject === 'All' ? 'সব বিষয়' : subject}
                 </button>
@@ -252,7 +252,7 @@ const GSTAnswerKey: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 mt-8 space-y-4">
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="animate-spin text-orange-700 dark:text-orange-400" size={40} />
+            <Loader2 className="animate-spin text-purple-700 dark:text-purple-400" size={40} />
             <p className="text-gray-500 font-bold">প্রশ্ন লোড হচ্ছে...</p>
           </div>
         ) : filteredQuestions.length > 0 ? (
@@ -266,7 +266,7 @@ const GSTAnswerKey: React.FC = () => {
               className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-white/5 p-5 md:p-6 shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-[10px] font-black uppercase tracking-widest rounded-full">
+                <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-[10px] font-black uppercase tracking-widest rounded-full">
                   {q.subject}
                 </span>
                 <span className="text-xs font-bold text-gray-400">Q. {idx + 1}</span>
@@ -336,7 +336,7 @@ const GSTAnswerKey: React.FC = () => {
       {/* CTA Section */}
       <div className="max-w-4xl mx-auto px-4 mt-12 mb-12">
         <div className="bg-gray-900 dark:bg-black rounded-[2.5rem] p-8 md:p-12 text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/20 rounded-full blur-[80px] -mr-20 -mt-20"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] -mr-20 -mt-20"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-500/20 rounded-full blur-[80px] -ml-20 -mb-20"></div>
           
           <div className="relative z-10 space-y-6">
@@ -349,7 +349,7 @@ const GSTAnswerKey: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <button 
                 onClick={handleTakeExam}
-                className="w-full sm:w-auto px-10 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-orange-500/20 transition-all active:scale-95"
+                className="w-full sm:w-auto px-10 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-purple-500/20 transition-all active:scale-95"
               >
                 পরীক্ষা শুরু করুন <ArrowRight size={20} />
               </button>

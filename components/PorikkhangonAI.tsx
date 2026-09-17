@@ -396,7 +396,7 @@ const PorikkhangonAI: React.FC = () => {
             </button>
             <div className="flex items-center gap-3">
                 <div className="relative">
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-orange-500/20 rotate-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-500/20 rotate-3">
                         <Bot size={22} />
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
@@ -404,7 +404,7 @@ const PorikkhangonAI: React.FC = () => {
                 <div>
                     <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2 leading-tight">
                         Porikkhangon AI 
-                        <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-700 dark:text-orange-400 rounded-md text-[9px] font-bold tracking-wider uppercase border border-orange-500/20">BETA</span>
+                        <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-md text-[9px] font-bold tracking-wider uppercase border border-purple-500/20">BETA</span>
                     </h3>
                     <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Active Now</p>
                 </div>
@@ -483,7 +483,7 @@ const PorikkhangonAI: React.FC = () => {
                     <div className="p-6 overflow-y-auto">
                         <div className="mb-6">
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center justify-between">
-                                <span className="flex items-center gap-2"><Key size={16} className="text-orange-700 dark:text-orange-400"/> Custom API Key</span>
+                                <span className="flex items-center gap-2"><Key size={16} className="text-purple-700 dark:text-purple-400"/> Custom API Key</span>
                                 {apiStatus === 'valid' && <span className="text-[12px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold uppercase tracking-wider">Active</span>}
                             </label>
                             <div className="flex gap-2">
@@ -495,7 +495,7 @@ const PorikkhangonAI: React.FC = () => {
                                         setApiStatus('idle');
                                     }}
                                     placeholder="AIzaSy..."
-                                    className="flex-1 px-4 py-3.5 bg-gray-50 dark:bg-zinc-900 border-2 border-transparent focus:border-orange-500 rounded-2xl outline-none transition-all text-sm text-gray-800 dark:text-white"
+                                    className="flex-1 px-4 py-3.5 bg-gray-50 dark:bg-zinc-900 border-2 border-transparent focus:border-purple-500 rounded-2xl outline-none transition-all text-sm text-gray-800 dark:text-white"
                                 />
                                 <button 
                                     onClick={testApiKey}
@@ -510,24 +510,24 @@ const PorikkhangonAI: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="p-4 bg-orange-500/5 dark:bg-orange-500/10 rounded-2xl border border-orange-500/10 mb-6">
+                        <div className="p-4 bg-purple-500/5 dark:bg-purple-500/10 rounded-2xl border border-purple-500/10 mb-6">
                             <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-widest">Usage Stats</h4>
                             <div className="flex justify-between items-end mb-2">
                                 <span className="text-2xl font-black text-gray-900 dark:text-white">{requestStats.count} <span className="text-xs font-normal text-gray-500">requests</span></span>
-                                <span className="text-xs font-bold text-orange-700 dark:text-orange-400">Daily Limit: 1,500</span>
+                                <span className="text-xs font-bold text-purple-700 dark:text-purple-400">Daily Limit: 1,500</span>
                             </div>
                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min((requestStats.count / 1500) * 100, 100)}%` }}
-                                    className="bg-orange-500 h-full rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"
+                                    className="bg-purple-500 h-full rounded-full shadow-[0_0_10px_rgba(139,92,246,0.5)]"
                                 />
                             </div>
                         </div>
 
                         <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800">
                             <h4 className="font-bold text-sm text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-                                <HelpCircle size={18} className="text-orange-700 dark:text-orange-400"/> API Key কীভাবে পাবেন?
+                                <HelpCircle size={18} className="text-purple-700 dark:text-purple-400"/> API Key কীভাবে পাবেন?
                             </h4>
                             <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                                 Google AI Studio থেকে ফ্রিতে API Key তৈরি করে এখানে ব্যবহার করতে পারেন।
@@ -546,7 +546,7 @@ const PorikkhangonAI: React.FC = () => {
                     <div className="p-5 bg-gray-50 dark:bg-zinc-900/50 flex justify-end">
                         <button 
                             onClick={() => setIsSettingsOpen(false)}
-                            className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-bold transition-all shadow-xl shadow-orange-500/20 active:scale-95"
+                            className="w-full py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-2xl font-bold transition-all shadow-xl shadow-purple-500/20 active:scale-95"
                         >
                             Save Settings
                         </button>
@@ -569,7 +569,7 @@ const PorikkhangonAI: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6"
                 >
-                    <div className="w-20 h-20 bg-orange-500/10 rounded-3xl flex items-center justify-center text-orange-700 dark:text-orange-400 mb-6 animate-bounce">
+                    <div className="w-20 h-20 bg-purple-500/10 rounded-3xl flex items-center justify-center text-purple-700 dark:text-purple-400 mb-6 animate-bounce">
                         <Bot size={40} />
                     </div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">আসসালামু আলাইকুম!</h2>
@@ -589,7 +589,7 @@ const PorikkhangonAI: React.FC = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 + 0.2 }}
                                 onClick={() => handleSuggestion(text)}
-                                className="p-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl text-sm text-gray-700 dark:text-gray-300 text-left hover:border-orange-500 dark:hover:border-orange-500 transition-all active:scale-95 shadow-sm"
+                                className="p-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl text-sm text-gray-700 dark:text-gray-300 text-left hover:border-purple-500 dark:hover:border-purple-500 transition-all active:scale-95 shadow-sm"
                             >
                                 {text}
                             </motion.button>
@@ -607,7 +607,7 @@ const PorikkhangonAI: React.FC = () => {
                         <div className={`max-w-[85%] flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                             {msg.role === 'model' && (
                                 <div className="flex items-center gap-2 mb-1.5 ml-1">
-                                    <div className="w-5 h-5 bg-orange-500 rounded-md flex items-center justify-center text-white">
+                                    <div className="w-5 h-5 bg-purple-500 rounded-md flex items-center justify-center text-white">
                                         <Bot size={12} />
                                     </div>
                                     <span className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">Porikkhangon AI</span>
@@ -617,7 +617,7 @@ const PorikkhangonAI: React.FC = () => {
                             <div className={`
                                 relative px-4 py-3 rounded-2xl text-[15px] leading-relaxed shadow-sm
                                 ${msg.role === 'user' 
-                                    ? 'bg-orange-500 text-white rounded-tr-none font-medium' 
+                                    ? 'bg-purple-500 text-white rounded-tr-none font-medium' 
                                     : 'bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-200 rounded-tl-none border border-gray-100 dark:border-zinc-800'
                                 }
                             `}>
@@ -649,9 +649,9 @@ const PorikkhangonAI: React.FC = () => {
                                                     const state = mcqStates[stateKey] || { selected: null, isCorrect: null };
                                                     
                                                     return (
-                                                        <div key={pIdx} className="bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/10 rounded-2xl p-4 my-4 shadow-sm">
+                                                        <div key={pIdx} className="bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/10 rounded-2xl p-4 my-4 shadow-sm">
                                                             <p className="font-bold text-sm mb-4 text-gray-900 dark:text-white leading-snug whitespace-pre-wrap">
-                                                                <span className="text-orange-700 dark:text-orange-400 mr-2">Q.</span>
+                                                                <span className="text-purple-700 dark:text-purple-400 mr-2">Q.</span>
                                                                 {mcq.question}
                                                             </p>
                                                             <div className="grid grid-cols-1 gap-2">
@@ -666,7 +666,7 @@ const PorikkhangonAI: React.FC = () => {
                                                                         else if (isSelected) btnClass = "bg-red-500/10 border-red-500 text-red-700 dark:text-red-400";
                                                                         else btnClass = "opacity-50 grayscale";
                                                                     } else {
-                                                                        btnClass += " hover:border-orange-500 active:bg-gray-50";
+                                                                        btnClass += " hover:border-purple-500 active:bg-gray-50";
                                                                     }
 
                                                                     return (
@@ -695,8 +695,8 @@ const PorikkhangonAI: React.FC = () => {
                                                                     className="mt-4 pt-4 border-t border-gray-200 dark:border-zinc-800"
                                                                 >
                                                                     <div className="flex items-center gap-2 mb-2">
-                                                                        <Sparkles size={14} className="text-orange-700 dark:text-orange-400" />
-                                                                        <span className="text-[12px] font-bold uppercase tracking-widest text-orange-700 dark:text-orange-400">Explanation</span>
+                                                                        <Sparkles size={14} className="text-purple-700 dark:text-purple-400" />
+                                                                        <span className="text-[12px] font-bold uppercase tracking-widest text-purple-700 dark:text-purple-400">Explanation</span>
                                                                     </div>
                                                                     <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed italic whitespace-pre-wrap">
                                                                         {mcq.explanation}
@@ -720,7 +720,7 @@ const PorikkhangonAI: React.FC = () => {
                                                 href={src.uri} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
-                                                className="flex items-center gap-1 text-[12px] px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full hover:bg-orange-500 hover:text-white transition-colors"
+                                                className="flex items-center gap-1 text-[12px] px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full hover:bg-purple-500 hover:text-white transition-colors"
                                             >
                                                 <ExternalLink size={10} /> {src.title.length > 15 ? src.title.substring(0, 15) + '...' : src.title}
                                             </a>
@@ -747,17 +747,17 @@ const PorikkhangonAI: React.FC = () => {
                             <motion.div 
                                 animate={{ scale: [1, 1.5, 1] }}
                                 transition={{ repeat: Infinity, duration: 1 }}
-                                className="w-1.5 h-1.5 bg-orange-500 rounded-full"
+                                className="w-1.5 h-1.5 bg-purple-500 rounded-full"
                             />
                             <motion.div 
                                 animate={{ scale: [1, 1.5, 1] }}
                                 transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
-                                className="w-1.5 h-1.5 bg-orange-500 rounded-full"
+                                className="w-1.5 h-1.5 bg-purple-500 rounded-full"
                             />
                             <motion.div 
                                 animate={{ scale: [1, 1.5, 1] }}
                                 transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
-                                className="w-1.5 h-1.5 bg-orange-500 rounded-full"
+                                className="w-1.5 h-1.5 bg-purple-500 rounded-full"
                             />
                         </div>
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest animate-pulse">Thinking...</span>
@@ -795,7 +795,7 @@ const PorikkhangonAI: React.FC = () => {
               <div className="bg-white dark:bg-zinc-900 rounded-[28px] shadow-xl shadow-gray-200/50 dark:shadow-black/20 border border-gray-200/50 dark:border-zinc-800/50 flex items-end p-1.5 gap-1.5">
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-3 text-gray-400 hover:text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-full transition-all active:scale-90"
+                    className="p-3 text-gray-400 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-full transition-all active:scale-90"
                   >
                       <ImageIcon size={22} />
                   </button>
@@ -833,7 +833,7 @@ const PorikkhangonAI: React.FC = () => {
                         p-3 rounded-full transition-all active:scale-90 shadow-lg
                         ${(!input.trim() && !selectedImage) || loading
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                            : 'bg-orange-500 text-white shadow-orange-500/30 hover:bg-orange-600'
+                            : 'bg-purple-500 text-white shadow-purple-500/30 hover:bg-purple-600'
                         }
                     `}
                   >

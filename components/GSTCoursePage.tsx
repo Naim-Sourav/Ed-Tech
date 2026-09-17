@@ -129,7 +129,7 @@ Discipline • Dedication • Domination
       <div className="relative bg-gray-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/20 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-600/20 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-600/20 rounded-full blur-[100px]"></div>
         
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-24 relative z-10 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/20 border border-red-500/50 text-red-400 font-bold text-xs uppercase tracking-widest mb-6 animate-pulse">
@@ -180,11 +180,11 @@ Discipline • Dedication • Domination
                 {/* ALL DAY */}
                 <div className="flex flex-col md:flex-row items-center justify-between mb-8 relative group">
                     <div className="md:w-1/2 md:pr-12 hidden md:flex justify-end">
-                        <BookOpen className="text-orange-700 dark:text-orange-400 opacity-50" size={32}/>
+                        <BookOpen className="text-purple-700 dark:text-purple-400 opacity-50" size={32}/>
                     </div>
-                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-orange-500 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
+                    <div className="absolute left-0 md:left-1/2 w-6 h-6 bg-white dark:bg-zinc-900 border-4 border-purple-500 rounded-full -ml-[14px] md:-ml-[12px] z-10"></div>
                     <div className="md:w-1/2 md:pl-12 text-left pl-6">
-                        <h4 className="text-lg font-bold text-orange-700 dark:text-orange-400">সারাদিন</h4>
+                        <h4 className="text-lg font-bold text-purple-700 dark:text-purple-400">সারাদিন</h4>
                         <p className="text-sm font-bold text-gray-800 dark:text-white">সেলফ স্টাডি (Study Time)</p>
                         <p className="text-xs text-gray-500">বই এবং প্রশ্নব্যাংক থেকে টপিকগুলো শেষ করবেন।</p>
                     </div>
@@ -236,10 +236,10 @@ Discipline • Dedication • Domination
             <h2 className="text-2xl font-black text-gray-900 dark:text-white text-center">৪৫ দিনের কমপ্লিট প্ল্যান</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-orange-50 dark:bg-orange-900/20 p-5 rounded-2xl border border-orange-100 dark:border-orange-800">
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-5 rounded-2xl border border-purple-100 dark:border-purple-800">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="bg-orange-100 dark:bg-orange-800 text-orange-700 dark:text-orange-200 text-xs font-bold px-3 py-1 rounded-full">Phase 1</span>
-                        <span className="text-orange-600 dark:text-orange-400 font-black text-xl">৩০ দিন</span>
+                        <span className="bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 text-xs font-bold px-3 py-1 rounded-full">Phase 1</span>
+                        <span className="text-purple-600 dark:text-purple-400 font-black text-xl">৩০ দিন</span>
                     </div>
                     <h3 className="font-bold text-gray-800 dark:text-white text-lg">চ্যাপ্টার ওয়াইজ মিশন</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">প্রতিদিন ২টি ভিন্ন বিষয়ের ২য়টি চ্যাপ্টার শেষ করা হবে।</p>
@@ -254,10 +254,10 @@ Discipline • Dedication • Domination
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Physics 1st, 2nd... এভাবে প্রতিটি পেপারের ওপর ৫০ মার্কের এক্সাম।</p>
                 </div>
 
-                <div className="bg-orange-50 dark:bg-orange-900/20 p-5 rounded-2xl border border-orange-100 dark:border-orange-800">
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-5 rounded-2xl border border-purple-100 dark:border-purple-800">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="bg-orange-100 dark:bg-orange-800 text-orange-700 dark:text-orange-200 text-xs font-bold px-3 py-1 rounded-full">Phase 3</span>
-                        <span className="text-orange-600 dark:text-orange-400 font-black text-xl">০৪ দিন</span>
+                        <span className="bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 text-xs font-bold px-3 py-1 rounded-full">Phase 3</span>
+                        <span className="text-purple-600 dark:text-purple-400 font-black text-xl">০৪ দিন</span>
                     </div>
                     <h3 className="font-bold text-gray-800 dark:text-white text-lg">সাবজেক্ট ফাইনাল</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">সম্পূর্ণ পদার্থবিজ্ঞান, রসায়ন... ১০০ মার্কের মেগা এক্সাম।</p>
@@ -306,7 +306,7 @@ Discipline • Dedication • Domination
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {/* Phase 1 */}
-                                <tr className="bg-orange-50/50 dark:bg-orange-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest">Phase 1: Chapter Wise</td></tr>
+                                <tr className="bg-purple-50/50 dark:bg-purple-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-widest">Phase 1: Chapter Wise</td></tr>
                                 {PHASE_1_ROUTINE.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <td className="p-4 font-bold text-gray-500">Day {row.day}</td>
@@ -325,11 +325,11 @@ Discipline • Dedication • Domination
                                 ))}
 
                                 {/* Phase 3 */}
-                                <tr className="bg-orange-50/50 dark:bg-orange-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest">Phase 3: Subject Final</td></tr>
+                                <tr className="bg-purple-50/50 dark:bg-purple-900/10"><td colSpan={3} className="p-2 text-center text-xs font-bold text-purple-700 dark:text-purple-400 uppercase tracking-widest">Phase 3: Subject Final</td></tr>
                                 {PHASE_3_ROUTINE.map((row, idx) => (
                                     <tr key={`p3-${idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <td className="p-4 font-bold text-gray-500">Day {row.day}</td>
-                                        <td colSpan={2} className="p-4 font-black text-orange-700 dark:text-orange-400">{row.exam}</td>
+                                        <td colSpan={2} className="p-4 font-black text-purple-700 dark:text-purple-400">{row.exam}</td>
                                     </tr>
                                 ))}
 

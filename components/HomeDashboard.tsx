@@ -34,7 +34,7 @@ const QUICK_LINKS = [
   { icon: "/icons/flash-card.svg", label: "ফ্ল্যাশ কার্ড", path: "/quiz", state: { mode: "RAPID_FIRE" }, tint: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-500/20" },
   { icon: "/icons/model-test.svg", label: "মডেল টেস্ট", path: "/quiz", tint: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20" },
   { icon: "/icons/battle-new.svg", label: "ব্যাটল", path: "/battle", tint: "bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20" },
-  { icon: "/icons/saved-questions.svg", label: "সেভ্ড", path: "/saved-questions", tint: "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20" },
+  { icon: "/icons/saved-questions.svg", label: "সেভ্ড", path: "/saved-questions", tint: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-500/20" },
   { icon: "/icons/wrong-questions.svg", label: "ভুল প্রশ্ন", path: "/wrong-questions", tint: "bg-cyan-50 dark:bg-cyan-500/10 border-cyan-100 dark:border-cyan-500/20" },
 ];
 
@@ -202,8 +202,8 @@ const HomeDashboard: React.FC = () => {
     <div className="min-h-full bg-gray-50 dark:bg-black transition-colors pb-32 md:pb-40 relative overflow-hidden">
       {/* Ambient page glow */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/[0.08] via-primary/[0.03] to-transparent" />
-      <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 bg-orange-400/10 rounded-full blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute top-72 -left-28 w-72 h-72 bg-amber-300/10 rounded-full blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute top-72 -left-28 w-72 h-72 bg-violet-300/10 rounded-full blur-3xl" />
 
       <div className="max-w-5xl mx-auto px-4 pt-3 md:px-6 md:pt-5 space-y-4 md:space-y-5 animate-page-enter relative z-10">
         {/* --- TOP BAR: Streak | Logo | Avatar --- */}
@@ -211,13 +211,13 @@ const HomeDashboard: React.FC = () => {
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setShowStreakModal(true)}
-            className="flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-orange-200/60 dark:border-orange-500/20 shadow-sm hover:shadow transition-all z-10"
+            className="flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-purple-200/60 dark:border-purple-500/20 shadow-sm hover:shadow transition-all z-10"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 256 256"
               fill="currentColor"
-              className="w-5 h-5 md:w-6 md:h-6 text-orange-700 dark:text-orange-400"
+              className="w-5 h-5 md:w-6 md:h-6 text-purple-700 dark:text-purple-400"
             >
               <rect width="256" height="256" fill="none"></rect>
               <path d="M197.12793,66.60449c-13.07471-20.82129-29.90967-38.67578-44.65332-53.39355a7.99863,7.99863,0,0,0-12.87451,2.22168L108.74951,80.21875,76.47363,58.70117a7.99925,7.99925,0,0,0-11.104,2.23438C45.88135,90.31348,36,116.915,36,140a92,92,0,0,0,184,0C220,115.12207,212.51855,91.11426,197.12793,66.60449Zm-9.8335,82.61621a59.69692,59.69692,0,0,1-50.07275,50.07422,8.11543,8.11543,0,0,1-1.231.09473,8.00055,8.00055,0,0,1-1.21142-15.90723,44.31739,44.31739,0,0,0,36.70263-36.70312,7.99993,7.99993,0,1,1,15.8125,2.4414Z"></path>
@@ -250,7 +250,7 @@ const HomeDashboard: React.FC = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-[#ff6a1a] to-amber-600 p-5 md:p-7 text-white shadow-xl shadow-primary/20"
+          className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-[#8b5cf6] to-violet-600 p-5 md:p-7 text-white shadow-xl shadow-primary/20"
         >
           {/* Decorations */}
           <div aria-hidden className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
@@ -261,14 +261,14 @@ const HomeDashboard: React.FC = () => {
 
           <div className="relative flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[11px] md:text-xs font-black uppercase tracking-[0.18em] text-orange-100 flex items-center gap-1.5">
+              <p className="text-[11px] md:text-xs font-black uppercase tracking-[0.18em] text-purple-100 flex items-center gap-1.5">
                 <Sparkles size={13} className="shrink-0" />
                 {getGreeting()}
               </p>
               <h1 className="mt-1.5 text-2xl md:text-3xl font-black tracking-tight leading-tight truncate">
                 {currentUser?.displayName || "শিক্ষার্থী"}
               </h1>
-              <p className="mt-1 text-xs md:text-sm font-medium text-orange-50/90 leading-relaxed">
+              <p className="mt-1 text-xs md:text-sm font-medium text-purple-50/90 leading-relaxed">
                 {"আজকের প্রস্তুতি শুরু হোক একটি পরীক্ষা দিয়ে!"}
               </p>
             </div>
@@ -279,7 +279,7 @@ const HomeDashboard: React.FC = () => {
               <span className="text-lg md:text-xl font-black leading-none">
                 {rank ? `#${toBengaliNumber(rank)}` : "-"}
               </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-orange-100 mt-0.5">র‍্যাঙ্ক</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-purple-100 mt-0.5">র‍্যাঙ্ক</span>
             </div>
           </div>
 
@@ -295,11 +295,11 @@ const HomeDashboard: React.FC = () => {
                 className="flex items-center gap-2.5 md:gap-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 px-3 py-2.5 md:py-3"
               >
                 <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-                  <chip.icon size={15} className="text-orange-100" />
+                  <chip.icon size={15} className="text-purple-100" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-base md:text-lg font-black leading-none tabular-nums truncate">{chip.value}</p>
-                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-orange-100/80 mt-1">{chip.label}</p>
+                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-purple-100/80 mt-1">{chip.label}</p>
                 </div>
               </div>
             ))}
@@ -330,12 +330,12 @@ const HomeDashboard: React.FC = () => {
         <section>
           <div className="flex items-center justify-between mb-2.5 md:mb-3 px-1">
             <h2 className="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-              <span className="w-1.5 h-4 md:h-5 rounded-full bg-gradient-to-b from-primary to-amber-500" />
+              <span className="w-1.5 h-4 md:h-5 rounded-full bg-gradient-to-b from-primary to-violet-500" />
               দ্রুত অ্যাক্সেস
             </h2>
             <button
               onClick={() => navigate("/exams")}
-              className="text-[11px] md:text-xs font-black text-primary hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 flex items-center gap-1 transition-colors"
+              className="text-[11px] md:text-xs font-black text-primary hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center gap-1 transition-colors"
             >
               পরীক্ষা জোন <ChevronRight size={13} />
             </button>
@@ -370,14 +370,14 @@ const HomeDashboard: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowStreakModal(true)}
-          className="w-full relative overflow-hidden rounded-3xl border border-orange-200/70 dark:border-orange-500/20 bg-gradient-to-r from-orange-50 via-amber-50 to-white dark:from-orange-500/10 dark:via-amber-500/5 dark:to-transparent p-4 md:p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all text-left group"
+          className="w-full relative overflow-hidden rounded-3xl border border-purple-200/70 dark:border-purple-500/20 bg-gradient-to-r from-purple-50 via-violet-50 to-white dark:from-purple-500/10 dark:via-violet-500/5 dark:to-transparent p-4 md:p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all text-left group"
         >
-          <div aria-hidden className="absolute -right-8 -top-10 w-36 h-36 bg-orange-400/10 rounded-full blur-2xl group-hover:bg-orange-400/20 transition-colors" />
-          <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 shrink-0">
-            <Flame size={26} className="text-white fill-orange-100/40" />
+          <div aria-hidden className="absolute -right-8 -top-10 w-36 h-36 bg-purple-400/10 rounded-full blur-2xl group-hover:bg-purple-400/20 transition-colors" />
+          <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center shadow-lg shadow-purple-500/30 shrink-0">
+            <Flame size={26} className="text-white fill-purple-100/40" />
           </div>
           <div className="flex-1 min-w-0 relative">
-            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.15em] text-orange-700 dark:text-orange-400">
+            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.15em] text-purple-700 dark:text-purple-400">
               ধারাবাহিকতা
             </p>
             <p className="text-sm md:text-base font-black text-gray-900 dark:text-white mt-0.5 leading-tight">
@@ -391,7 +391,7 @@ const HomeDashboard: React.FC = () => {
                   title={d.key}
                   className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-colors ${
                     d.active
-                      ? "bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.6)]"
+                      ? "bg-purple-500 shadow-[0_0_6px_rgba(139,92,246,0.6)]"
                       : "bg-gray-200 dark:bg-zinc-700"
                   }`}
                 />
@@ -401,7 +401,7 @@ const HomeDashboard: React.FC = () => {
               </span>
             </div>
           </div>
-          <div className="relative p-2 rounded-full bg-white/70 dark:bg-white/10 text-orange-700 dark:text-orange-400 group-hover:translate-x-0.5 transition-transform shrink-0">
+          <div className="relative p-2 rounded-full bg-white/70 dark:bg-white/10 text-purple-700 dark:text-purple-400 group-hover:translate-x-0.5 transition-transform shrink-0">
             <ChevronRight size={18} />
           </div>
         </motion.button>
@@ -526,7 +526,7 @@ const HomeDashboard: React.FC = () => {
                   let rankBadge = "bg-gray-100 text-gray-500 border-gray-200 dark:bg-white/5 dark:text-zinc-400 dark:border-white/5";
                   if (currentRank === 1) rankBadge = "bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm dark:bg-yellow-500/10 dark:text-yellow-500 dark:border-yellow-500/20";
                   else if (currentRank === 2) rankBadge = "bg-slate-50 text-slate-600 border-slate-200 shadow-sm dark:bg-zinc-500/10 dark:text-zinc-300 dark:border-white/10";
-                  else if (currentRank === 3) rankBadge = "bg-orange-50 text-orange-700 border-orange-200 shadow-sm dark:bg-orange-500/10 dark:text-orange-500 dark:border-orange-500/20";
+                  else if (currentRank === 3) rankBadge = "bg-purple-50 text-purple-700 border-purple-200 shadow-sm dark:bg-purple-500/10 dark:text-purple-500 dark:border-purple-500/20";
                   else if (isMe) rankBadge = "bg-blue-50 text-blue-600 border-blue-200 shadow-sm dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
 
                   return (
@@ -621,13 +621,13 @@ const HomeDashboard: React.FC = () => {
                   <div className="w-full px-8 mt-4 relative mb-12 flex justify-between items-start">
                     <div className="relative z-10 flex flex-col items-start mt-4">
                       <span
-                        className={`text-[6rem] leading-none font-black tracking-tighter drop-shadow-xl ${stats?.currentStreak ? "text-[#FF9600]" : "text-gray-500"}`}
-                        style={{ WebkitTextStroke: "3px rgba(255,150,0,0.2)" }}
+                        className={`text-[6rem] leading-none font-black tracking-tighter drop-shadow-xl ${stats?.currentStreak ? "text-[#8b5cf6]" : "text-gray-500"}`}
+                        style={{ WebkitTextStroke: "3px rgba(139,92,246,0.2)" }}
                       >
                         {toBengaliNumber(stats?.currentStreak || 0)}
                       </span>
                       <span
-                        className={`text-2xl font-bold mt-2 ${stats?.currentStreak ? "text-[#FF9600]" : "text-gray-500/80"}`}
+                        className={`text-2xl font-bold mt-2 ${stats?.currentStreak ? "text-[#8b5cf6]" : "text-gray-500/80"}`}
                       >
                         দিনের ধারাবাহিকতা
                       </span>
@@ -640,7 +640,7 @@ const HomeDashboard: React.FC = () => {
                           <Lottie
                             animationData={fireAnimation}
                             loop={true}
-                            className="w-full h-full drop-shadow-[0_0_30px_rgba(255,150,0,0.6)]"
+                            className="w-full h-full drop-shadow-[0_0_30px_rgba(139,92,246,0.6)]"
                           />
                         </div>
                       ) : (
@@ -659,19 +659,19 @@ const HomeDashboard: React.FC = () => {
 
                   <div className="w-full px-4 sm:px-6 z-20">
                     {/* Motivational Box */}
-                    <div className="bg-gradient-to-br from-[#202F36] to-[#1A262C] rounded-2xl p-5 mb-8 flex items-start gap-4 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-[#FF9600]/20 relative overflow-hidden">
-                      <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#FF9600]/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="bg-gradient-to-br from-[#202F36] to-[#1A262C] rounded-2xl p-5 mb-8 flex items-start gap-4 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-[#8b5cf6]/20 relative overflow-hidden">
+                      <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#8b5cf6]/10 rounded-full blur-3xl pointer-events-none"></div>
                       <div className="shrink-0 mt-1 relative z-10">
                         {stats?.currentStreak ? (
                           <div className="w-12 h-12 -ml-1 -mt-1 flex items-center justify-center">
                             <Lottie
                               animationData={fireAnimation}
                               loop={true}
-                              className="w-full h-full drop-shadow-[0_0_15px_rgba(255,150,0,0.8)] scale-150"
+                              className="w-full h-full drop-shadow-[0_0_15px_rgba(139,92,246,0.8)] scale-150"
                             />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-white">
+                          <div className="w-10 h-10 rounded-full bg-purple-400 flex items-center justify-center text-white">
                             <Flame size={24} />
                           </div>
                         )}
@@ -702,9 +702,9 @@ const HomeDashboard: React.FC = () => {
                     </h3>
 
                     {/* Calendar Card */}
-                    <div className="bg-gradient-to-b from-[#202F36] to-[#162127] rounded-3xl p-5 md:p-6 border border-[#FF9600]/20 shadow-[0_8px_30px_rgba(0,0,0,0.5)] mb-8 relative overflow-hidden">
-                      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#FF9600] to-transparent"></div>
-                      <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF9600]/10 rounded-full blur-[80px] pointer-events-none"></div>
+                    <div className="bg-gradient-to-b from-[#202F36] to-[#162127] rounded-3xl p-5 md:p-6 border border-[#8b5cf6]/20 shadow-[0_8px_30px_rgba(0,0,0,0.5)] mb-8 relative overflow-hidden">
+                      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#8b5cf6] to-transparent"></div>
+                      <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#8b5cf6]/10 rounded-full blur-[80px] pointer-events-none"></div>
 
                       <div className="flex justify-between items-center mb-6 px-2 relative z-10">
                         <button className="text-gray-400 hover:text-white transition-colors">
@@ -754,11 +754,11 @@ const HomeDashboard: React.FC = () => {
                             >
                               {isActive ? (
                                 <div
-                                  className={`relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shadow-sm transition-all duration-300 ${isToday ? "bg-gradient-to-br from-[#FFB800] to-[#FF9600] text-black ring-4 ring-[#FF9600]/30 shadow-[0_0_15px_rgba(255,150,0,0.6)] scale-110" : "bg-[#FF9600]/15 text-[#FFB800] border border-[#FF9600]/50 shadow-[0_0_10px_rgba(255,150,0,0.2)]"}`}
+                                  className={`relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shadow-sm transition-all duration-300 ${isToday ? "bg-gradient-to-br from-[#a78bfa] to-[#8b5cf6] text-black ring-4 ring-[#8b5cf6]/30 shadow-[0_0_15px_rgba(139,92,246,0.6)] scale-110" : "bg-[#8b5cf6]/15 text-[#a78bfa] border border-[#8b5cf6]/50 shadow-[0_0_10px_rgba(139,92,246,0.2)]"}`}
                                 >
                                   {toBengaliNumber(i + 1)}
                                   <div className="absolute -bottom-1 -right-1 bg-[#162127] rounded-full p-0.5">
-                                    <div className="bg-[#FF9600] text-black rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                                    <div className="bg-[#8b5cf6] text-black rounded-full w-3.5 h-3.5 flex items-center justify-center">
                                       <Check size={10} strokeWidth={4} />
                                     </div>
                                   </div>

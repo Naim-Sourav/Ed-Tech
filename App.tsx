@@ -346,19 +346,19 @@ const MainLayout: React.FC<{
             initial={{ opacity: 0, y: -50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white dark:bg-zinc-900 border-2 border-orange-500 rounded-3xl shadow-2xl p-5 z-[9999] overflow-hidden"
+            className="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white dark:bg-zinc-900 border-2 border-purple-500 rounded-3xl shadow-2xl p-5 z-[9999] overflow-hidden"
           >
             {/* Ambient fire glow in background */}
-            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-xl pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-xl pointer-events-none"></div>
             
             <div className="flex items-start gap-4">
               <div className="relative">
                 <img 
                   src={activeInvite.senderAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'} 
-                  className="w-12 h-12 rounded-2xl object-cover border-2 border-orange-500" 
+                  className="w-12 h-12 rounded-2xl object-cover border-2 border-purple-500" 
                   alt="Sender"
                 />
-                <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white p-1 rounded-lg">
+                <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white p-1 rounded-lg">
                   <Swords size={12} fill="currentColor"/>
                 </div>
               </div>
@@ -371,9 +371,9 @@ const MainLayout: React.FC<{
                   আপনাকে একটি ব্যাটেল চ্যালেঞ্জ পাঠিয়েছেন!
                 </p>
                 
-                <div className="mt-3 bg-orange-500/5 dark:bg-orange-500/10 p-2.5 rounded-xl border border-orange-500/10 text-xs space-y-1">
+                <div className="mt-3 bg-purple-500/5 dark:bg-purple-500/10 p-2.5 rounded-xl border border-purple-500/10 text-xs space-y-1">
                   <p className="text-gray-700 dark:text-gray-300 font-bold flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
                     বিষয়: {getSubjectBanglaName(activeInvite.subject)}
                   </p>
                   <p className="text-gray-500 dark:text-gray-400 font-medium truncate flex items-center gap-1.5">
@@ -387,7 +387,7 @@ const MainLayout: React.FC<{
             {/* Countdown / Time Limit indicator */}
             <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               <motion.div 
-                className="h-full bg-orange-500"
+                className="h-full bg-purple-500"
                 initial={{ width: '100%' }}
                 animate={{ width: `${(inviteTimeLeft / 45) * 100}%` }}
                 transition={{ duration: 1, ease: 'linear' }}
@@ -403,7 +403,7 @@ const MainLayout: React.FC<{
               </button>
               <button
                 onClick={handleAcceptInvite}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-black text-xs shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-red-600 hover:from-purple-600 hover:to-red-700 text-white font-black text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-1.5"
               >
                 <Swords size={14} fill="currentColor"/>
                 গ্রহণ করুন ({inviteTimeLeft}s)

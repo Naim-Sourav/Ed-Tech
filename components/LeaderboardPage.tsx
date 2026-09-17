@@ -138,7 +138,7 @@ const LeaderboardPage: React.FC = () => {
       return <img src={user.photoURL} className={className} alt={user.displayName} referrerPolicy="no-referrer" />;
     }
     return (
-      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold uppercase ${isRanked ? 'text-2xl' : 'text-lg'}`}>
+      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white font-bold uppercase ${isRanked ? 'text-2xl' : 'text-lg'}`}>
         {user.displayName?.charAt(0) || 'U'}
       </div>
     );
@@ -150,7 +150,7 @@ const LeaderboardPage: React.FC = () => {
     >
       {/* Premium Background Elements */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] bg-orange-500/5 dark:bg-orange-500/10 rounded-full blur-[120px]"></div>
+          <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] bg-purple-500/5 dark:bg-purple-500/10 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-[-10%] left-[-5%] w-[60%] h-[60%] bg-red-500/5 dark:bg-red-500/10 rounded-full blur-[120px]"></div>
       </div>
 
@@ -285,16 +285,16 @@ const LeaderboardPage: React.FC = () => {
                       onClick={() => handleUserClick(top3[2].uid)}
                     >
                         <div className="relative mb-1 md:mb-4">
-                          <div className="w-8 h-8 md:w-16 md:h-16 rounded-full p-0.5 md:p-1 bg-gradient-to-br from-amber-600 to-amber-800 shadow-xl relative z-10">
+                          <div className="w-8 h-8 md:w-16 md:h-16 rounded-full p-0.5 md:p-1 bg-gradient-to-br from-violet-600 to-violet-800 shadow-xl relative z-10">
                               {renderAvatar(top3[2], "w-full h-full object-cover rounded-full border-2 border-white dark:border-black", true)}
                           </div>
-                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-amber-700 text-white text-[8px] md:text-[12px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">3</div>
+                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-violet-700 text-white text-[8px] md:text-[12px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20">3</div>
                         </div>
-                        <p className="font-bold text-[8px] md:text-xs text-amber-700 dark:text-amber-500 text-center mb-0.5 md:mb-2 line-clamp-1">{top3[2].displayName}</p>
+                        <p className="font-bold text-[8px] md:text-xs text-violet-700 dark:text-violet-500 text-center mb-0.5 md:mb-2 line-clamp-1">{top3[2].displayName}</p>
                         <div className="w-full h-8 md:h-20 bg-white dark:bg-zinc-900/30 backdrop-blur-2xl rounded-t-xl md:rounded-t-2xl border-t border-x border-gray-100 dark:border-white/5 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-amber-600/30"></div>
-                            <span className="text-amber-700 dark:text-amber-600 font-black text-[12px] md:text-xs">{top3[2].points}</span>
-                            <span className="text-[6px] md:text-[8px] font-bold text-amber-600/60 uppercase">PTS</span>
+                            <div className="absolute top-0 left-0 w-full h-1 bg-violet-600/30"></div>
+                            <span className="text-violet-700 dark:text-violet-600 font-black text-[12px] md:text-xs">{top3[2].points}</span>
+                            <span className="text-[6px] md:text-[8px] font-bold text-violet-600/60 uppercase">PTS</span>
                         </div>
                     </motion.div>
                   )}
@@ -326,7 +326,7 @@ const LeaderboardPage: React.FC = () => {
                           <div className="w-8 md:w-10 flex flex-col items-center justify-center mr-1 md:mr-2">
                              {rank === 1 ? <Crown size={16} className="text-yellow-500" fill="currentColor" /> :
                               rank === 2 ? <Medal size={16} className="text-slate-400" fill="currentColor" /> :
-                              rank === 3 ? <Medal size={16} className="text-amber-600" fill="currentColor" /> :
+                              rank === 3 ? <Medal size={16} className="text-violet-600" fill="currentColor" /> :
                               <span className="font-mono font-black text-gray-400 dark:text-zinc-600 text-xs md:text-sm">{toBengaliNumber(rank)}</span>}
                           </div>
 

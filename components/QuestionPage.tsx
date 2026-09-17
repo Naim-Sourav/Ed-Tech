@@ -120,13 +120,13 @@ const QuestionPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <Link
             to="/qbank"
-            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-700 dark:text-orange-400"
+            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-purple-700 dark:text-purple-400"
           >
             <ArrowLeft size={16} /> প্রশ্নব্যাংকে ফিরে যাও
           </Link>
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-700 dark:text-orange-400"
+            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-purple-700 dark:text-purple-400"
           >
             <Share2 size={16} /> শেয়ার
           </button>
@@ -134,7 +134,7 @@ const QuestionPage: React.FC = () => {
 
         {state === 'loading' && (
           <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-sm font-semibold">প্রশ্ন লোড হচ্ছে…</p>
           </div>
         )}
@@ -146,7 +146,7 @@ const QuestionPage: React.FC = () => {
               লিংকটি পুরনো বা প্রশ্নটি মুছে ফেলা হয়ে থাকতে পারে। প্রশ্নব্যাংকে সার্চ করে দেখো।
             </p>
             <div className="flex justify-center gap-3">
-              <Link to="/qbank" className="px-5 py-2.5 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-xl">
+              <Link to="/qbank" className="px-5 py-2.5 bg-primary hover:bg-purple-600 text-white text-sm font-bold rounded-xl">
                 প্রশ্নব্যাংক খোলো
               </Link>
               <a href={`${import.meta.env.BASE_URL}hsc-syllabus/`} className="px-5 py-2.5 border border-gray-200 dark:border-zinc-700 text-sm font-bold rounded-xl text-gray-700 dark:text-gray-200">
@@ -160,7 +160,7 @@ const QuestionPage: React.FC = () => {
           <div ref={bodyRef} className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 md:p-8">
             <div className="flex flex-wrap gap-2 mb-4">
               {question.subject && (
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
                   {question.subject}
                 </span>
               )}
@@ -212,7 +212,7 @@ const QuestionPage: React.FC = () => {
             {!revealed ? (
               <button
                 onClick={() => setRevealed(true)}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-primary hover:bg-orange-600 text-white font-bold rounded-xl transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-primary hover:bg-purple-600 text-white font-bold rounded-xl transition-colors"
               >
                 <Eye size={18} /> উত্তর ও ব্যাখ্যা দেখো
               </button>
@@ -243,7 +243,7 @@ const QuestionPage: React.FC = () => {
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <Link
                 to={`/qbank?level=ACADEMIC&subject=${encodeURIComponent(question.subject || '')}&chapter=${encodeURIComponent(question.chapter || '')}`}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-xl"
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-primary hover:bg-purple-600 text-white text-sm font-bold rounded-xl"
               >
                 <BookOpen size={16} /> এই অধ্যায়ের আরও প্রশ্ন সলভ করো
               </Link>

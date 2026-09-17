@@ -315,7 +315,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
               </button>
               <button 
                 onClick={() => setShowAllAnswers(!showAllAnswers)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${showAllAnswers ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-100 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${showAllAnswers ? 'bg-violet-100 text-violet-700 dark:bg-violet-950/20 dark:text-violet-400' : 'bg-slate-100 text-slate-600 dark:bg-zinc-900 dark:text-zinc-400'}`}
               >
                 {showAllAnswers ? <EyeOff size={14} /> : <Eye size={14} />}
                 <span className="hidden sm:inline">{showAllAnswers ? "উত্তর লুকান" : "সব উত্তর দেখুন"}</span>
@@ -513,7 +513,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
             onClick={() => setShowAllAnswers(!showAllAnswers)}
             className={`px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-bold cursor-pointer select-none ${
               showAllAnswers 
-              ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-105 dark:shadow-none' 
+              ? 'bg-violet-500 border-violet-500 text-white shadow-lg shadow-violet-200 dark:shadow-none' 
               : 'bg-white text-slate-600 border-slate-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
             }`}
             title={showAllAnswers ? "সব উত্তর লুকান" : "সব উত্তর দেখুন"}
@@ -684,7 +684,7 @@ const SavedQuestions: React.FC<SavedQuestionsProps> = ({ embedded = false }) => 
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div id={`explanation-${item._id}`} className="mt-2 ml-0 md:ml-10 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl border border-orange-100/50 dark:border-orange-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
+                              <div id={`explanation-${item._id}`} className="mt-2 ml-0 md:ml-10 p-3 bg-purple-50/50 dark:bg-purple-900/10 rounded-xl border border-purple-100/50 dark:border-purple-900/30 flex flex-col gap-2 shadow-sm overflow-hidden">
                                 <SafeHtml html={q.explanation} className={`${questionFontSize === 'text-xl' ? 'text-lg' : questionFontSize === 'text-lg' ? 'text-base' : 'text-sm'} text-slate-800 dark:text-gray-200 leading-relaxed ${getFont(q.explanation)} whitespace-pre-wrap overflow-x-auto max-w-full break-words py-1 scrollbar-thin`} />
                                 {q.explanationImage && (
                                   <img src={q.explanationImage} alt="Explanation" className="mt-2 rounded-lg max-h-40 object-contain border bg-transparent mr-auto" referrerPolicy="no-referrer" />

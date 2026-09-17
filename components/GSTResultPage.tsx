@@ -107,7 +107,7 @@ const GSTResultPage: React.FC = () => {
       {/* 2. Hero Section */}
       <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-12 pb-32 px-4 overflow-hidden">
         {/* Animated Background Elements */}
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,#f97316_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,#8b5cf6_0%,transparent_50%)]"></div>
         <motion.div 
           animate={{ 
             scale: [1, 1.2, 1],
@@ -122,7 +122,7 @@ const GSTResultPage: React.FC = () => {
             opacity: [0.1, 0.3, 0.1]
           }}
           transition={{ duration: 15, repeat: Infinity, delay: 2 }}
-          className="absolute -bottom-24 -right-24 w-96 h-96 bg-orange-600/20 rounded-full blur-[100px]"
+          className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px]"
         />
 
         <div className="max-w-4xl mx-auto relative z-10">
@@ -139,7 +139,7 @@ const GSTResultPage: React.FC = () => {
           <div className="flex flex-col items-center text-center space-y-6">
             <h1 className="text-4xl md:text-7xl font-black text-white leading-[1.1] tracking-tight font-tiro">
               গুচ্ছ ক ইউনিট <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">ফলাফল ২০২৫-২৬</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">ফলাফল ২০২৫-২৬</span>
             </h1>
 
             <p className="text-gray-400 font-medium max-w-2xl text-sm md:text-lg leading-relaxed font-tiro">
@@ -187,7 +187,7 @@ const GSTResultPage: React.FC = () => {
           {/* Status Card */}
           <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-white/5 p-8 flex flex-col md:flex-row items-center gap-8">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-primary">
+              <div className="w-24 h-24 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center text-primary">
                 <Clock size={40} className="animate-pulse" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full border-4 border-white dark:border-gray-800 flex items-center justify-center">
@@ -281,7 +281,7 @@ const GSTResultPage: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'মোট পরীক্ষার্থী', value: '১,৬৬,১৬২ জন', icon: Users, color: 'text-blue-500 bg-blue-50' },
-            { label: 'মোট আসন', value: '৮৫০০টি', icon: Trophy, color: 'text-orange-700 dark:text-orange-400 bg-orange-50' },
+            { label: 'মোট আসন', value: '৮৫০০টি', icon: Trophy, color: 'text-purple-700 dark:text-purple-400 bg-purple-50' },
             { label: 'আসন প্রতি লড়ছে', value: '২০জন', icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50' },
             { label: 'বিশ্ববিদ্যালয় সংখ্যা', value: '২০টি', icon: Zap, color: 'text-purple-500 bg-purple-50' },
           ].map((stat, i) => (
@@ -351,7 +351,7 @@ const GSTResultPage: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 mt-12">
         <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 md:p-12 border border-gray-100 dark:border-white/5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-4 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-primary text-[10px] font-black uppercase tracking-widest rounded-full">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-primary text-[10px] font-black uppercase tracking-widest rounded-full">
               <Zap size={14} fill="currentColor" /> Question Bank
             </div>
             <h2 className="text-3xl font-black text-gray-900 dark:text-white font-tiro">GST ক ইউনিট প্রশ্ন ২০২৫-২৬</h2>
