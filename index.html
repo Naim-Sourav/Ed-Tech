@@ -58,97 +58,141 @@
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "WebSite",
-            "@id": "https://www.porikkhangon.app/#website",
-            "name": "Porikkhangon",
-            "alternateName": ["পরীক্ষাঙ্গন", "Porikkhangon App"],
-            "url": "https://www.porikkhangon.app/",
-            "inLanguage": "bn-BD",
-            "publisher": { "@id": "https://www.porikkhangon.app/#organization" }
-          },
-          {
-            "@type": ["Organization", "EducationalOrganization"],
-            "@id": "https://www.porikkhangon.app/#organization",
-            "name": "Porikkhangon",
-            "alternateName": "পরীক্ষাঙ্গন",
-            "url": "https://www.porikkhangon.app/",
-            "logo": {
-              "@type": "ImageObject",
-              "url": "https://www.porikkhangon.app/og-image.jpg",
-              "width": 1200,
-              "height": 630
-            },
-            "description": "AI-powered comprehensive learning assistant for Bangladeshi HSC and university admission students.",
-            "areaServed": { "@type": "Country", "name": "Bangladesh" },
-            "knowsAbout": ["HSC Preparation", "University Admission Test", "Medical Admission", "BUET Admission", "MCQ Practice", "AI Tutor"]
-          },
-          {
-            "@type": "WebApplication",
-            "@id": "https://www.porikkhangon.app/#app",
-            "name": "Porikkhangon",
-            "url": "https://www.porikkhangon.app/",
-            "applicationCategory": "EducationalApplication",
-            "operatingSystem": "Web, Android, iOS",
-            "browserRequirements": "Requires JavaScript",
-            "inLanguage": "bn-BD",
-            "isAccessibleForFree": true,
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "BDT",
-              "availability": "https://schema.org/InStock"
-            },
-            "featureList": "AI Tutor, Question Bank, Model Tests, Quiz Battle, Study Planner, Leaderboard, Wrong-question revision",
-            "audience": {
-              "@type": "EducationalAudience",
-              "educationalRole": "student"
-            },
-            "publisher": { "@id": "https://www.porikkhangon.app/#organization" }
-          },
-          {
-            "@type": "FAQPage",
-            "@id": "https://www.porikkhangon.app/#faq",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "পরীক্ষাঙ্গন কি সবার জন্য ফ্রি?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "হ্যাঁ, আমাদের অনেক ফিচার সবার জন্য উন্মুক্ত। তবে বিশেষ কিছু প্রিমিয়াম ফিচারের জন্য সাবস্ক্রিপশন প্রয়োজন হতে পারে।"
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "এখানে কি কি বিষয়ের প্রস্তুতি নেওয়া যায়?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "এখানে বিজ্ঞান বিভাগের সকল বিষয়সহ HSC একাডেমিক এবং এডমিশন প্রস্তুতির সব রিসোর্স রয়েছে।"
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "AI টিউটর কিভাবে কাজ করে?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "যেকোনো প্রশ্নের ছবি তুলে বা টেক্সট লিখে পাঠালে আমাদের AI টিউটর মুহূর্তেই তার ব্যাখ্যাসহ সমাধান দিয়ে দেয়।"
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "কুইজ ব্যাটল কি?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "কুইজ ব্যাটল হলো একটি রিয়েল-টাইম মাল্টিপ্লেয়ার গেম যেখানে আপনি অন্য শিক্ষার্থীদের সাথে সরাসরি প্রতিযোগিতায় অংশ নিতে পারেন।"
-                }
-              }
-            ]
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://www.porikkhangon.app/#website",
+          "name": "Porikkhangon",
+          "alternateName": [
+            "পরীক্ষাঙ্গন",
+            "Porikkhangon App"
+          ],
+          "url": "https://www.porikkhangon.app/",
+          "inLanguage": "bn-BD",
+          "publisher": {
+            "@id": "https://www.porikkhangon.app/#organization"
           }
-        ]
-      }
+        },
+        {
+          "@type": [
+            "Organization",
+            "EducationalOrganization"
+          ],
+          "@id": "https://www.porikkhangon.app/#organization",
+          "name": "Porikkhangon",
+          "alternateName": "পরীক্ষাঙ্গন",
+          "url": "https://www.porikkhangon.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.porikkhangon.app/og-image.jpg",
+            "width": 1200,
+            "height": 630
+          },
+          "description": "AI-powered comprehensive learning assistant for Bangladeshi HSC and university admission students.",
+          "areaServed": {
+            "@type": "Country",
+            "name": "Bangladesh"
+          },
+          "knowsAbout": [
+            "HSC Preparation",
+            "University Admission Test",
+            "Medical Admission",
+            "BUET Admission",
+            "MCQ Practice",
+            "AI Tutor"
+          ]
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://www.porikkhangon.app/#app",
+          "name": "Porikkhangon",
+          "url": "https://www.porikkhangon.app/",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Web, Android, iOS",
+          "browserRequirements": "Requires JavaScript",
+          "inLanguage": "bn-BD",
+          "isAccessibleForFree": true,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "BDT",
+            "availability": "https://schema.org/InStock"
+          },
+          "featureList": "AI Tutor, Question Bank, Model Tests, Quiz Battle, Study Planner, Leaderboard, Wrong-question revision",
+          "audience": {
+            "@type": "EducationalAudience",
+            "educationalRole": "student"
+          },
+          "publisher": {
+            "@id": "https://www.porikkhangon.app/#organization"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://www.porikkhangon.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "পরীক্ষাঙ্গন কি সত্যিই ফ্রি?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "হ্যাঁ! ফ্রি প্ল্যানে প্রতিদিন প্রশ্ন প্র্যাকটিস, সাপ্তাহিক লাইভ মডেল টেস্ট আর বেসিক অ্যানালিটিক্স চিরকালের জন্য ফ্রি। কোনো কার্ড লাগবে না — মোবাইল নম্বর দিয়ে সাইন আপ করলেই শুরু।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "কোন কোন পরীক্ষার প্রস্তুতি আছে?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SSC ও HSC বোর্ড, মেডিকেল ভর্তি, BUET ও ইঞ্জিনিয়ারিং গুচ্ছ, ঢাবি কা/খ/গ এবং GST গুচ্ছ — সব ট্র্যাকের আলাদা সিলেবাস-ভিত্তিক প্রশ্নরুট আছে।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "প্রশ্নগুলো কি সিলেবাস অনুযায়ী?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "হ্যাঁ। NCTB ও বোর্ড সিলেবাস ধরে অধ্যায়-টপিক ভিত্তিক প্রশ্ন, সাথে বিগত ১০+ বছরের বোর্ড ও ভর্তি প্রশ্নের সলভড আর্কাইভ।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "ইন্টারনেট না থাকলে চর্চা করা যাবে?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "যাবে। প্রো প্ল্যানে পুরো অধ্যায়ের অফলাইন প্রশ্ন প্যাক নামিয়ে নিতে পারো — নেট এলে স্কোর অটো-সিংক হয়ে যাবে।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "AI টিউটর কীভাবে কাজ করে?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "যেকোনো প্রশ্নের ছবি তুলে বা টেক্সট লিখে পাঠাও — AI টিউটর বাংলায় ধাপে ধাপে সমাধান, চিত্র ও কনসেপ্ট ব্যাখ্যা দেয়, ২৪/৭।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "সাবস্ক্রিপশন বাতিল বা রিফান্ড করা যায়?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "হ্যাঁ। যেকোনো সময় এক ট্যাপে বাতিল করা যায়, আর কেনার পর ৩ দিনের মধ্যে রিফান্ড পলিসি প্রযোজ্য — বিস্তারিত রিফান্ড পলিসি পেজে।"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "কুইজ ব্যাটল আসলে কী?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "বন্ধুকে ১v১ চ্যালেঞ্জ জানিয়ে রিয়েল-টাইমে কুইজ খেলা — পয়েন্ট, স্ট্রিক আর জাতীয় লিডারবোর্ডসহ, যেন প্রস্তুতিটা খেলার মতো লাগে।"
+              }
+            }
+          ]
+        }
+      ]
+    }
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

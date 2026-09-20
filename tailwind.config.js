@@ -17,6 +17,23 @@ export default {
         display: ['Outfit', 'Inter', 'sans-serif'],
         noto: ['Noto Sans Bengali', 'sans-serif'],
       },
+      // Extra opacity steps used by the landing page color modifiers
+      // (e.g. border-white/8, bg-[#FF5200]/14) which are not in the
+      // default Tailwind opacity scale.
+      opacity: {
+        4: '0.04',
+        6: '0.06',
+        8: '0.08',
+        12: '0.12',
+        14: '0.14',
+        15: '0.15',
+        18: '0.18',
+        35: '0.35',
+        45: '0.45',
+        55: '0.55',
+        65: '0.65',
+        85: '0.85',
+      },
       fontSize: {
         xs: '0.75rem',
         sm: '0.875rem',
