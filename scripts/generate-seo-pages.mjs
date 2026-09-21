@@ -109,6 +109,12 @@ function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+/** Root-relative form of an internal URL (keeps canonical/OG absolute). */
+function rel(u) {
+  const v = String(u);
+  return v.startsWith(SITE) ? (v.slice(SITE.length) || '/') : v;
+}
+
 function topicsOf(chapterValue) {
   return (chapterValue || []).map((item) =>
     typeof item === 'string' ? { title: item, subTopics: [] } : { title: item.title, subTopics: item.subTopics || [] }
@@ -186,7 +192,7 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
       const isLast = i === breadcrumbs.length - 1;
       return isLast
         ? `<span class="cur">${esc(label)}</span>`
-        : `<a href="${href}">${esc(label)}</a><span class="sep">›</span>`;
+        : `<a href="${rel(href)}">${esc(label)}</a><span class="sep">›</span>`;
     })
     .join(' ');
 
@@ -301,8 +307,8 @@ footer a:hover{color:var(--lime)}
 </head>
 <body>
 <header><div class="header-in">
-  <a class="brand" href="${SITE}/"><img src="${SITE}/Pshape.svg" alt="পরীক্ষাঙ্গন লোগো"> পরীক্ষাঙ্গন</a>
-  <a class="cta" href="${SITE}/auth">ফ্রি শুরু করো</a>
+  <a class="brand" href="/"><img src="${SITE}/Pshape.svg" alt="পরীক্ষাঙ্গন লোগো"> পরীক্ষাঙ্গন</a>
+  <a class="cta" href="/auth">ফ্রি শুরু করো</a>
 </div></header>
 <main>
   <nav class="crumb" aria-label="breadcrumb">${crumbHtml}</nav>
@@ -311,10 +317,10 @@ footer a:hover{color:var(--lime)}
 <footer><div class="footer-in">
   <span>© ${new Date().getFullYear()} পরীক্ষাঙ্গন (Porikkhangon) — HSC ও এডমিশন প্রস্তুতির AI প্ল্যাটফর্ম</span>
   <span>
-    <a href="${SITE}/">হোম</a> ·
-    <a href="${SITE}/hsc-syllabus/">সিলেবাস গাইড</a> ·
-    <a href="${SITE}/privacy">প্রাইভেসি</a> ·
-    <a href="${SITE}/terms">টার্মস</a>
+    <a href="/">হোম</a> ·
+    <a href="/hsc-syllabus/">সিলেবাস গাইড</a> ·
+    <a href="/privacy">প্রাইভেসি</a> ·
+    <a href="/terms">টার্মস</a>
   </span>
 </div></footer>
 </body>
@@ -489,7 +495,7 @@ console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
     .map(([subject, chapters]) => {
       const slug = slugify(subject);
       const n = Object.keys(chapters).length;
-      return `<a class="card" href="${SITE}${HUB}${slug}/"><b>${esc(subject)}</b><span>${n}টি অধ্যায় · সম্পূর্ণ সিলেবাস ও টপিক লিস্ট</span></a>`;
+      return `<a class="card" href="${HUB}${slug}/"><b>${esc(subject)}</b><span>${n}টি অধ্যায় · সম্পূর্ণ সিলেবাস ও টপিক লিস্ট</span></a>`;
     })
     .join('\n');
 
@@ -551,7 +557,7 @@ for (const [subject, chapters] of subjects) {
       .map(([chapter, value], i) => {
         const n = countTopics(topicsOf(value));
         const qCount = (byChapterKey.get(`${subject}||${chapter}`) || []).length;
-        return `<a class="card" href="${SITE}${HUB}${subjectSlug}/${slugify(chapter)}/"><b>${i + 1}. ${esc(chapter)}</b><span>${n}টি টপিক${qCount ? ` · ${qCount}টি সলভড প্রশ্ন` : ''}</span></a>`;
+        return `<a class="card" href="${HUB}${subjectSlug}/${slugify(chapter)}/"><b>${i + 1}. ${esc(chapter)}</b><span>${n}টি টপিক${qCount ? ` · ${qCount}টি সলভড প্রশ্ন` : ''}</span></a>`;
       })
       .join('\n');
 
@@ -564,7 +570,7 @@ for (const [subject, chapters] of subjects) {
 <ul class="topics">${tips.map((t) => `<li>${esc(t)}</li>`).join('\n')}</ul></div>
 <div class="banner"><h2>${esc(subject)}-এর MCQ প্র্যাকটিস করো ফ্রিতে</h2>
 <p>অধ্যায়ভিত্তিক প্রশ্নব্যাংক, ব্যাখ্যাসহ উত্তর ও প্রোগ্রেস ট্র্যাকিং।</p>
-<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}">প্রশ্নব্যাংক খোলো</a></div>`;
+<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}">প্রশ্নব্যাংক খোলো</a></div>`;
 
     const jsonLd = [
       breadcrumbLd([
@@ -614,14 +620,14 @@ for (const [subject, chapters] of subjects) {
 
     const sampleHtml = chapterQuestions.length
       ? `<h2>এই অধ্যায়ের সলভড প্রশ্ন</h2>
-<div class="qlist">${chapterQuestions.slice(0, 8).map((q) => `<a href="${q.url}">${esc(plain(q.question).slice(0, 110))}</a>`).join('\n')}</div>`
+<div class="qlist">${chapterQuestions.slice(0, 8).map((q) => `<a href="${rel(q.url)}">${esc(plain(q.question).slice(0, 110))}</a>`).join('\n')}</div>`
       : '';
 
     const prev = chapterEntries[idx - 1];
     const next = chapterEntries[idx + 1];
     const pager = `<div class="pager">
-      ${prev ? `<a href="${SITE}${HUB}${subjectSlug}/${slugify(prev[0])}/">← ${esc(prev[0])}</a>` : '<span></span>'}
-      ${next ? `<a href="${SITE}${HUB}${subjectSlug}/${slugify(next[0])}/">${esc(next[0])} →</a>` : `<a href="${SITE}${HUB}${subjectSlug}/">সব অধ্যায়</a>`}
+      ${prev ? `<a href="${HUB}${subjectSlug}/${slugify(prev[0])}/">← ${esc(prev[0])}</a>` : '<span></span>'}
+      ${next ? `<a href="${HUB}${subjectSlug}/${slugify(next[0])}/">${esc(next[0])} →</a>` : `<a href="${HUB}${subjectSlug}/">সব অধ্যায়</a>`}
     </div>`;
 
     const body = `
@@ -636,7 +642,7 @@ ${sampleHtml}
 ${pager}
 <div class="banner"><h2>"${esc(chapter)}" এর প্রশ্ন প্র্যাকটিস করবে?</h2>
 <p>ব্যাখ্যাসহ উত্তর, টাইমার ও ইনস্ট্যান্ট রেজাল্ট — একদম ফ্রি।</p>
-<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}">এই অধ্যায়ের প্রশ্ন সলভ করো</a></div>`;
+<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}">এই অধ্যায়ের প্রশ্ন সলভ করো</a></div>`;
 
     const jsonLd = [
       breadcrumbLd([
@@ -701,7 +707,7 @@ for (const q of allQuestions) {
   const siblings = (byChapterKey.get(`${q.subject}||${q.chapter}`) || []).filter((x) => x.slug !== q.slug).slice(0, 5);
   const moreHtml = siblings.length
     ? `<h2>একই অধ্যায়ের আরও প্রশ্ন</h2>
-<div class="qlist">${siblings.map((s) => `<a href="${s.url}">${esc(plain(s.question).slice(0, 110))}</a>`).join('\n')}</div>`
+<div class="qlist">${siblings.map((s) => `<a href="${rel(s.url)}">${esc(plain(s.question).slice(0, 110))}</a>`).join('\n')}</div>`
     : '';
 
   const chips = [q.subject, q.chapter, q.level === 'ADMISSION' ? 'ভর্তি পরীক্ষা' : q.level === 'MAINBOOK' ? 'মূল বই' : q.level === 'ACADEMIC' ? 'HSC একাডেমিক' : '', ...(q.tags || []).slice(0, 2)]
@@ -725,7 +731,7 @@ ${explHtml}
 ${moreHtml}
 <div class="banner"><h2>একই ধরনের আরও প্রশ্ন সলভ করো</h2>
 <p>৫০,০০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>
-<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
+<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
 
   const jsonLd = [
     breadcrumbLd(crumbs),
