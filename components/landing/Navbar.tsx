@@ -1,15 +1,52 @@
+import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { ArrowUpRight, Menu, X, LogOut, Flame } from "lucide-react";
-import { navLinks } from "./data";
-import { Logo } from "./ui";
-import { useAuth } from "./authBridge";
-import UserMenu from "./UserMenu";
+import { EASE } from "./helpers";
+import LogoMark from "./Logo";
+import { useLandingThemeContext } from "./useLandingTheme";
 
-export default function Navbar() {
+const LINKS = [
+  { href: "#features", label: "ফিচারস" },
+  { href: "#showcase", label: "প্রশ্ন প্রদর্শন" },
+  { href: "#reviews", label: "রিভিউ" },
+  { href: "#pricing", label: "মূল্য" },
+  { href: "#faq", label: "জিজ্ঞাসা" },
+];
+
+/** Sun/moon switch — flips the landing between the light and warm-dark theme. */
+function ThemeToggle({ className = "" }: { className?: string }) {
+  const { theme, toggle } = useLandingThemeContext();
+  const dark = theme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={dark ? "লাইট মোডে যাও" : "ডার্ক মোডে যাও"}
+      aria-pressed={dark}
+      title={dark ? "লাইট মোডে যাও" : "ডার্ক মোডে যাও"}
+      className={`focus-ring grid size-10 shrink-0 place-items-center rounded-xl border border-ink-200 bg-white/70 text-ink-800 backdrop-blur transition-colors duration-300 hover:border-brand-300 hover:text-brand-600 ${className}`}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={dark ? "moon" : "sun"}
+          initial={{ opacity: 0, rotate: -70, scale: 0.6 }}
+          animate={{ opacity: 1, rotate: 0, scale: 1 }}
+          exit={{ opacity: 0, rotate: 70, scale: 0.6 }}
+          transition={{ duration: 0.28, ease: EASE }}
+          className="grid place-items-center"
+        >
+          {dark ? <Moon className="size-[18px]" /> : <Sun className="size-[18px]" />}
+        </motion.span>
+      </AnimatePresence>
+    </button>
+  );
+}
+
+export default function Navbar({ onStart }: { onStart?: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const { user, profile, logOut } = useAuth();
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 26, mass: 0.4 });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -18,185 +55,121 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  const displayName = profile?.name || user?.displayName || "শিক্ষার্থী";
-
   return (
-    <>
-      <motion.header
-        initial={{ y: -70, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-        className="fixed inset-x-0 top-0 z-50"
+    <header className="fixed inset-x-0 top-0 z-50">
+      {/* scroll progress */}
+      <motion.div
+        style={{ scaleX: progress }}
+        className="absolute inset-x-0 top-0 h-[3px] origin-left bg-gradient-to-r from-brand-500 via-amber-500 to-gold-400"
+      />
+      <div
+        className={`mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-500 sm:px-6 ${
+          scrolled ? "py-3" : "py-5"
+        }`}
       >
         <div
-          className={`mx-auto flex max-w-7xl items-center justify-between px-4 transition-all duration-500 sm:px-6 ${
-            scrolled ? "py-2.5" : "py-4"
+          className={`absolute inset-0 -z-10 border-b transition-all duration-500 ${
+            scrolled ? "glass border-brand-500/10 shadow-[0_10px_40px_-18px_rgba(255,82,0,0.35)]" : "border-transparent bg-transparent"
           }`}
-        >
-          <div
-            className={`pointer-events-none absolute inset-0 transition-all duration-500 ${
-              scrolled ? "glass shadow-[0_12px_40px_-16px_rgba(22,18,16,0.22)]" : "opacity-0"
-            }`}
-            aria-hidden="true"
-          />
-          <div className="relative z-10">
-            <Logo />
-          </div>
+        />
 
-          {/* Desktop links */}
-          <nav className="relative z-10 hidden items-center gap-1 lg:flex" aria-label="Primary">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="focus-ring group relative rounded-full px-4 py-2 text-[14.5px] font-medium text-ink/75 transition-colors hover:text-ink"
-              >
-                {link.label}
-                <span className="pointer-events-none absolute inset-x-4 -bottom-px h-px origin-left scale-x-0 bg-brand transition-transform duration-300 ease-out group-hover:scale-x-100" />
-              </a>
-            ))}
-          </nav>
+        {/* logo */}
+        <a href="#top" className="group flex items-center gap-2.5">
+          <span className="transition-transform duration-500 group-hover:rotate-6 group-hover:scale-105">
+            <LogoMark className="size-10" />
+          </span>
+          <span className="font-display text-xl font-bold tracking-tight">
+            পরীক্ষা<span className="text-gradient">ঙ্গন</span>
+          </span>
+        </a>
 
-          <div className="relative z-10 hidden items-center gap-3 lg:flex">
-            {user ? (
-              <UserMenu />
-            ) : (
-              <>
-                <a
-                  href="#/login"
-                  className="focus-ring rounded-full px-4 py-2 text-[14.5px] font-medium text-ink/75 transition-colors hover:text-brand"
-                >
-                  লগইন
-                </a>
-                <a
-                  href="#/signup"
-                  className="focus-ring group inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[14.5px] font-semibold text-paper shadow-[0_10px_26px_-10px_rgba(22,18,16,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-deep hover:shadow-[0_16px_34px_-10px_rgba(224,68,0,0.5)]"
-                >
-                  শুরু করো
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-              </>
-            )}
-          </div>
-
-          {/* Mobile toggle */}
-          <div className="relative z-10 flex items-center gap-2.5 lg:hidden">
-            {user && (
-              <span className="ring-conic grid h-9 w-9 place-items-center rounded-full font-bangla text-[14px] font-bold text-white">
-                {displayName.trim().charAt(0)}
-              </span>
-            )}
-            <button
-              onClick={() => setOpen(!open)}
-              className="focus-ring grid h-11 w-11 place-items-center rounded-full bg-white/70 ring-1 ring-ink/8"
-              aria-expanded={open}
-              aria-label={open ? "Close menu" : "Open menu"}
+        {/* desktop links */}
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="প্রধান মেনু">
+          {LINKS.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="relative rounded-full px-4 py-2 text-[15px] font-medium text-ink-700 transition-colors duration-300 hover:bg-brand-50 hover:text-brand-700"
             >
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
-        </div>
-      </motion.header>
+              {l.label}
+            </a>
+          ))}
+        </nav>
 
-      {/* Mobile menu */}
+        <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={onStart}
+            className="rounded-full px-4 py-2 text-[15px] font-semibold text-ink-700 transition hover:text-brand-700"
+          >
+            লগ ইন
+          </button>
+          <button
+            type="button"
+            onClick={onStart}
+            className="btn-shine group inline-flex items-center gap-2 rounded-full bg-ink-950 px-5 py-2.5 text-[15px] font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-500/40"
+          >
+            ফ্রি শুরু করো
+            <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+          </button>
+        </div>
+
+        {/* mobile: theme + menu */}
+        <span className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="grid size-10 place-items-center rounded-xl border border-ink-200 bg-white/70 text-ink-800"
+            aria-label={open ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
+            aria-expanded={open}
+          >
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </span>
+      </div>
+
+      {/* mobile menu */}
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm lg:hidden"
-            onClick={() => setOpen(false)}
+          <motion.nav
+            initial={{ opacity: 0, y: -16, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -16, filter: "blur(6px)" }}
+            transition={{ duration: 0.45, ease: EASE }}
+            className="glass mx-4 rounded-3xl border border-white/60 p-3 shadow-xl shadow-brand-500/10 lg:hidden"
+            aria-label="মোবাইল মেনু"
           >
-            <motion.nav
-              initial={{ y: -24, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: -24, opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="mx-4 mt-20 rounded-3xl bg-paper p-4 shadow-2xl ring-1 ring-ink/8"
-              aria-label="Mobile"
-              onClick={(e) => e.stopPropagation()}
+            {LINKS.map((l, i) => (
+              <motion.a
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                initial={{ opacity: 0, x: -14 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 + i * 0.05, duration: 0.4, ease: EASE }}
+                className="block rounded-2xl px-4 py-3 text-base font-medium text-ink-800 transition hover:bg-brand-50 hover:text-brand-700"
+              >
+                {l.label}
+              </motion.a>
+            ))}
+            <motion.button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onStart?.();
+              }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.32, duration: 0.4, ease: EASE }}
+              className="mt-2 block w-full rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 px-4 py-3 text-center text-base font-bold text-white shadow-lg shadow-brand-500/30"
             >
-              <ul className="flex flex-col">
-                {navLinks.map((link, i) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ opacity: 0, x: -14 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.08 + i * 0.05, duration: 0.4 }}
-                  >
-                    <a
-                      href={link.href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center justify-between border-b border-ink/6 px-3 py-4 text-[17px] font-semibold text-ink"
-                    >
-                      {link.label}
-                      <span className="font-bangla text-sm font-medium text-mist">{link.bn}</span>
-                    </a>
-                  </motion.li>
-                ))}
-              </ul>
-              <div className="mt-4 grid gap-2.5">
-                {user ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        setOpen(false);
-                        window.location.hash = "#/dashboard";
-                      }}
-                      className="focus-ring flex w-full items-center gap-3 rounded-2xl bg-mint px-4 py-3 text-left ring-1 ring-brand/15"
-                    >
-                      <span className="ring-conic grid h-10 w-10 shrink-0 place-items-center rounded-full font-bangla text-[16px] font-bold text-white">
-                        {displayName.trim().charAt(0)}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate text-[14.5px] font-bold text-ink">{displayName}</p>
-                        <p className="flex items-center gap-1 text-[11.5px] font-semibold text-brand-deep">
-                          <Flame className="h-3 w-3" fill="currentColor" /> ড্যাশবোর্ডে যাও →
-                        </p>
-                      </div>
-                    </button>
-                    <button
-                      onClick={async () => {
-                        setOpen(false);
-                        await logOut();
-                      }}
-                      className="flex items-center justify-center gap-2 rounded-2xl bg-flag/8 py-3.5 text-[15px] font-bold text-flag ring-1 ring-flag/15"
-                    >
-                      <LogOut className="h-4 w-4" /> লগ আউট
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <a
-                      href="#/signup"
-                      onClick={() => setOpen(false)}
-                      className="flex items-center justify-center gap-2 rounded-2xl bg-ink py-3.5 text-[15px] font-bold text-paper"
-                    >
-                      ফ্রিতে চর্চা শুরু করো <ArrowUpRight className="h-4 w-4" />
-                    </a>
-                    <a
-                      href="#/login"
-                      onClick={() => setOpen(false)}
-                      className="flex items-center justify-center rounded-2xl bg-white py-3 text-[14.5px] font-bold text-ink ring-1 ring-ink/10"
-                    >
-                      লগইন
-                    </a>
-                  </>
-                )}
-              </div>
-            </motion.nav>
-          </motion.div>
+              ফ্রি শুরু করো →
+            </motion.button>
+          </motion.nav>
         )}
       </AnimatePresence>
-    </>
+    </header>
   );
 }

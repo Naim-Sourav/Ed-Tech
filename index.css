@@ -105,14 +105,14 @@ mjx-container {
   vertical-align: middle !important;
 }
 
-/* Loader */
+/* Loader — the markup + brand artwork live in index.html so the splash paints
+   before React (and before this stylesheet) is ready. It simply inherits the
+   page background, which keeps it correct in both themes. */
 #app-loading {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background-color: var(--background); z-index: 9999; transition: opacity 0.5s ease-out;
+  background: inherit; z-index: 9999; transition: opacity 0.5s ease-out;
 }
-.dark #app-loading { background-color: #111827; }
-.dark #app-loading p { color: #9ca3af !important; }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
@@ -185,7 +185,6 @@ mjx-container {
     transform-box: fill-box;
     animation: shadow-pulse 1.5s infinite;
 }
-
 
 /* 1. Page Transitions (Slide Up & Fade) */
 .animate-page-enter,
@@ -372,6 +371,7 @@ html.dark .pk-landing.dash ::selection {
 }
 
 .pk-landing .glass-dark {
+  background: rgba(32, 26, 22, 0.62);
   background: color-mix(in srgb, #201a16 62%, transparent);
   backdrop-filter: blur(18px) saturate(1.3);
   -webkit-backdrop-filter: blur(18px) saturate(1.3);
@@ -410,5 +410,545 @@ html.dark .pk-landing.dash ::selection {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+}
+
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   PREMIUM LANDING DESIGN — components/LandingPage.tsx + components/landing/*
+   Ported 1:1 from `premium-edtech-landing-page.zip` (src/index.css @theme +
+   utilities). Scoped to `.pk-landing:not(.dash)` so the dashboard, exam and
+   auth screens keep their own treatment.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* The design is authored against a 16px base; the app shell drops the root to
+   15px (13.5px on phones) for screen density. LandingPage adds this class to
+   <html> while it is mounted so type & spacing match the source design. */
+html.pk-landing-root {
+  font-size: 16px;
+}
+
+.pk-landing:not(.dash) {
+  font-family: 'Hind Siliguri', 'Anek Bangla', ui-sans-serif, system-ui, sans-serif;
+  background: #fafaf9;
+  color: #101018;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.pk-landing:not(.dash) .font-display {
+  font-family: 'Anek Bangla', 'Hind Siliguri', ui-sans-serif, system-ui, sans-serif;
+}
+
+.pk-landing:not(.dash) section[id] {
+  scroll-margin-top: 92px;
+}
+
+.pk-landing:not(.dash) ::selection {
+  background: #ff5200;
+  color: #fff;
+}
+
+/* ---------- utilities ---------- */
+.pk-landing:not(.dash) .text-gradient {
+  background: linear-gradient(100deg, #ff5200 10%, #ff7a1a 50%, #ffb020 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pk-landing:not(.dash) .text-gradient-dark {
+  background: linear-gradient(100deg, #ffc9a8 0%, #ff7a36 45%, #ffb020 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pk-landing:not(.dash) .glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+}
+
+.pk-landing:not(.dash) .glass-dark {
+  background: rgba(18, 16, 32, 0.62);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}
+
+.pk-landing:not(.dash) .dot-grid {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 82, 0, 0.11) 1px, transparent 0);
+  background-size: 26px 26px;
+}
+
+.pk-landing:not(.dash) .dot-grid-dark {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 163, 117, 0.13) 1px, transparent 0);
+  background-size: 26px 26px;
+}
+
+/* Hairline + soft brand glow used by the design's elevated cards
+   (named `card-ring` here so the app-wide conic `.ring-conic` stays intact). */
+.pk-landing:not(.dash) .card-ring {
+  border: 1px solid rgba(255, 82, 0, 0.1);
+  box-shadow:
+    0 1px 2px rgba(69, 19, 7, 0.04),
+    0 8px 24px -8px rgba(255, 82, 0, 0.12),
+    0 24px 64px -24px rgba(255, 82, 0, 0.2);
+}
+
+.pk-landing:not(.dash) .card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.pk-landing:not(.dash) .card-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.35) 48%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform 0.9s ease;
+  pointer-events: none;
+}
+
+.pk-landing:not(.dash) .card-shine:hover::after {
+  transform: translateX(120%);
+}
+
+.pk-landing:not(.dash) .btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.pk-landing:not(.dash) .btn-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: translateX(-160%) skewX(-18deg);
+  transition: transform 0.8s ease;
+}
+
+.pk-landing:not(.dash) .btn-shine:hover::after {
+  transform: translateX(260%) skewX(-18deg);
+}
+
+.pk-landing:not(.dash) .glow-brand {
+  box-shadow: 0 0 0 1px rgba(255, 82, 0, 0.28), 0 18px 50px -12px rgba(230, 71, 0, 0.55);
+}
+
+/* Seamless marquee for short strips: the track is rendered 3×, so shifting by
+   one third loops perfectly and never runs out of cards on wide screens. */
+@keyframes marquee-third {
+  from { transform: translateX(0);
+}
+
+to {
+  transform: translateX(-33.3333%);
+}
+
+}
+.pk-landing:not(.dash) .marquee-third {
+  animation: marquee-third 42s linear infinite;
+}
+
+.pk-landing:not(.dash) .marquee-third-slow {
+  animation: marquee-third 64s linear infinite;
+}
+
+.marquee-third-reverse {
+  animation-direction: reverse;
+}
+
+/* ---------- motion ---------- */
+.pk-landing:not(.dash) .animate-marquee {
+  animation: marquee 36s linear infinite;
+}
+
+.pk-landing:not(.dash) .animate-marquee-slow {
+  animation: marquee 64s linear infinite;
+}
+
+.marquee-reverse {
+  animation-direction: reverse;
+}
+
+.marquee-paused:hover .animate-marquee,
+.marquee-paused:hover .animate-marquee-slow,
+.pk-landing:not(.dash) .marquee-paused:hover .animate-marquee,
+.pk-landing:not(.dash) .marquee-paused:hover .animate-marquee-slow {
+  animation-play-state: paused;
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
   }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 5s ease-in-out infinite;
+}
+
+/* Mobile density overrides in the app shell (`@layer utilities`, !important)
+   shrink p-4/p-6/…, gap-4/… and space-y-4/… on phones. The landing design is
+   authored with Tailwind's default scale — restore it inside the page. */
+@media (max-width: 767px) {
+  .pk-landing:not(.dash) .p-4 {
+    padding: 1rem !important;
+  }
+  .pk-landing:not(.dash) .p-6 {
+    padding: 1.5rem !important;
+  }
+  .pk-landing:not(.dash) .px-4 {
+    padding-left: 1rem !important; padding-right: 1rem !important;
+  }
+  .pk-landing:not(.dash) .px-6 {
+    padding-left: 1.5rem !important; padding-right: 1.5rem !important;
+  }
+  .pk-landing:not(.dash) .py-4 {
+    padding-top: 1rem !important; padding-bottom: 1rem !important;
+  }
+  .pk-landing:not(.dash) .py-6 {
+    padding-top: 1.5rem !important; padding-bottom: 1.5rem !important;
+  }
+  .pk-landing:not(.dash) .gap-4 {
+    gap: 1rem !important;
+  }
+  .pk-landing:not(.dash) .gap-6 {
+    gap: 1.5rem !important;
+  }
+  .pk-landing:not(.dash) .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1rem !important;
+  }
+  .pk-landing:not(.dash) .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.5rem !important;
+  }
+  .pk-landing:not(.dash) .mb-6 {
+    margin-bottom: 1.5rem !important;
+  }
+  .pk-landing:not(.dash) .mt-6 {
+    margin-top: 1.5rem !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   LANDING — DARK THEME
+   The section components are authored light, so the warm palette is remapped
+   here instead of touching every class. Scoped to `html.dark .pk-landing:not(.dash)`
+   so the dashboard / exam / auth screens keep their own `.dash` treatment.
+   Toggled by components/landing/useLandingTheme.tsx (class on <html>).
+   Written with plain selectors — no `:is()` — for maximum engine support.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+html.dark .pk-landing:not(.dash) {
+  background: #0e0b09;
+  color: #f3ede7;
+  color-scheme: dark;
+}
+
+html.dark .pk-landing:not(.dash) ::selection {
+  background: #ff5200;
+  color: #fff;
+}
+
+html.dark .pk-landing:not(.dash) .bg-paper {
+  background-color: transparent;
+}
+
+/* ---------- surfaces ---------- */
+html.dark .pk-landing:not(.dash) .bg-white,
+html.dark .pk-landing:not(.dash) .bg-white\/95,
+html.dark .pk-landing:not(.dash) .bg-white\/85,
+html.dark .pk-landing:not(.dash) .bg-white\/80,
+html.dark .pk-landing:not(.dash) .bg-white\/70 {
+  background-color: #1d1714;
+}
+
+html.dark .pk-landing:not(.dash) .bg-white\/60,
+html.dark .pk-landing:not(.dash) .bg-white\/50 {
+  background-color: rgba(29, 23, 20, 0.6);
+}
+
+html.dark .pk-landing:not(.dash) .bg-cream\/60 {
+  background-color: rgba(42, 35, 29, 0.6);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink-50,
+html.dark .pk-landing:not(.dash) .bg-ink-50\/60 {
+  background-color: #14100e;
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink-100,
+html.dark .pk-landing:not(.dash) .bg-ink-200 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink,
+html.dark .pk-landing:not(.dash) .bg-ink-950 {
+  background-color: #241d18;
+}
+
+/* ---------- type ---------- */
+html.dark .pk-landing:not(.dash) .text-ink-950,
+html.dark .pk-landing:not(.dash) .text-ink-900,
+html.dark .pk-landing:not(.dash) .text-ink-800,
+html.dark .pk-landing:not(.dash) .text-ink {
+  color: #f5f0ea;
+}
+
+html.dark .pk-landing:not(.dash) .text-ink-700 {
+  color: #cfc6bc;
+}
+
+html.dark .pk-landing:not(.dash) .text-ink-600 {
+  color: #b4a99e;
+}
+
+html.dark .pk-landing:not(.dash) .text-ink-500 {
+  color: #9a8f83;
+}
+
+html.dark .pk-landing:not(.dash) .text-ink-400 {
+  color: #837769;
+}
+
+html.dark .pk-landing:not(.dash) .text-ink-300 {
+  color: #6c6155;
+}
+
+html.dark .pk-landing:not(.dash) .text-ink\/70,
+html.dark .pk-landing:not(.dash) .text-ink\/75 {
+  color: rgba(243, 237, 231, 0.75);
+}
+
+html.dark .pk-landing:not(.dash) .text-mist {
+  color: #a99e91;
+}
+
+html.dark .pk-landing:not(.dash) .text-amber-900 {
+  color: #ffd9a3;
+}
+
+html.dark .pk-landing:not(.dash) .text-emerald-600,
+html.dark .pk-landing:not(.dash) .text-emerald-700 {
+  color: #4ade80;
+}
+
+html.dark .pk-landing:not(.dash) .text-flag {
+  color: #ff6f61;
+}
+
+html.dark .pk-landing:not(.dash) .text-brand-700,
+html.dark .pk-landing:not(.dash) .text-brand-deep {
+  color: #ffab72;
+}
+
+html.dark .pk-landing:not(.dash) .text-brand-600 {
+  color: #ff8c47;
+}
+
+/* bright chips keep their dark ink (they stay bright in dark mode) */
+html.dark .pk-landing:not(.dash) .bg-lime .text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-lime .text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-lime .text-ink,
+html.dark .pk-landing:not(.dash) .bg-gold-400 .text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-gold-400 .text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-gold-400 .text-ink,
+html.dark .pk-landing:not(.dash) .bg-gold-300\/40 .text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-gold-300\/40 .text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-gold-300\/40 .text-ink,
+html.dark .pk-landing:not(.dash) .bg-amber-100 .text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-amber-100 .text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-amber-100 .text-ink,
+html.dark .pk-landing:not(.dash) .bg-amber-soft .text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-amber-soft .text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-amber-soft .text-ink,
+html.dark .pk-landing:not(.dash) .bg-gold-50 .text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-gold-50 .text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-gold-50 .text-ink,
+html.dark .pk-landing:not(.dash) .bg-lime.text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-lime.text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-lime.text-ink,
+html.dark .pk-landing:not(.dash) .bg-gold-400.text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-gold-400.text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-gold-400.text-ink,
+html.dark .pk-landing:not(.dash) .bg-gold-300\/40.text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-gold-300\/40.text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-gold-300\/40.text-ink,
+html.dark .pk-landing:not(.dash) .bg-amber-100.text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-amber-100.text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-amber-100.text-ink,
+html.dark .pk-landing:not(.dash) .bg-amber-soft.text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-amber-soft.text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-amber-soft.text-ink,
+html.dark .pk-landing:not(.dash) .bg-gold-50.text-ink-950,
+html.dark .pk-landing:not(.dash) .bg-gold-50.text-ink-900,
+html.dark .pk-landing:not(.dash) .bg-gold-50.text-ink {
+  color: #161210;
+}
+
+/* ---------- hairlines & rings ---------- */
+html.dark .pk-landing:not(.dash) .border-ink-100,
+html.dark .pk-landing:not(.dash) .border-ink-100\/70,
+html.dark .pk-landing:not(.dash) .border-ink-200,
+html.dark .pk-landing:not(.dash) .border-ink,
+html.dark .pk-landing:not(.dash) .border-ink\/6 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/8,
+html.dark .pk-landing:not(.dash) .border-ink\/10 {
+  border-color: rgba(255, 255, 255, 0.13);
+}
+
+html.dark .pk-landing:not(.dash) .ring-ink-100,
+html.dark .pk-landing:not(.dash) .ring-ink-200\/70,
+html.dark .pk-landing:not(.dash) .ring-ink\/6,
+html.dark .pk-landing:not(.dash) .ring-ink-8,
+html.dark .pk-landing:not(.dash) .ring-ink\/8,
+html.dark .pk-landing:not(.dash) .ring-ink\/10,
+html.dark .pk-landing:not(.dash) .ring-ink-950\/5,
+html.dark .pk-landing:not(.dash) .ring-ink {
+  --tw-ring-color: rgba(255, 255, 255, 0.12);
+}
+
+html.dark .pk-landing:not(.dash) .hover\:border-ink-200:hover,
+html.dark .pk-landing:not(.dash) .hover\:border-brand-200:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+html.dark .pk-landing:not(.dash) .border-white\/70,
+html.dark .pk-landing:not(.dash) .ring-white\/70 {
+  border-color: rgba(255, 255, 255, 0.11);
+}
+
+html.dark .pk-landing:not(.dash) .divide-ink-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- tinted chips / panels ---------- */
+html.dark .pk-landing:not(.dash) .bg-brand-50,
+html.dark .pk-landing:not(.dash) .bg-brand-50\/40,
+html.dark .pk-landing:not(.dash) .bg-brand-50\/50,
+html.dark .pk-landing:not(.dash) .bg-brand-50\/60,
+html.dark .pk-landing:not(.dash) .bg-brand-50\/70,
+html.dark .pk-landing:not(.dash) .hover\:bg-brand-50:hover {
+  background-color: rgba(255, 82, 0, 0.12);
+}
+
+html.dark .pk-landing:not(.dash) .bg-brand-100,
+html.dark .pk-landing:not(.dash) .bg-brand-100\/70,
+html.dark .pk-landing:not(.dash) .bg-brand-200\/40,
+html.dark .pk-landing:not(.dash) .bg-brand-200\/80 {
+  background-color: rgba(255, 82, 0, 0.17);
+}
+
+html.dark .pk-landing:not(.dash) .bg-mint,
+html.dark .pk-landing:not(.dash) .bg-mint\/60,
+html.dark .pk-landing:not(.dash) .hover\:bg-mint\/60:hover {
+  background-color: rgba(255, 82, 0, 0.15);
+}
+
+/* NB: `bg-amber-soft`, `bg-amber-100`, `bg-gold-50` and the `bg-gold-300/*`
+   tints are deliberately NOT dimmed — they carry dark ink (streak chip, medals,
+   pricing badges), so they must stay bright on the dark surface. Only the very
+   pale show-case panel keeps a translucent warm wash. */
+html.dark .pk-landing:not(.dash) .bg-amber-50\/80 {
+  background-color: rgba(255, 185, 46, 0.12);
+}
+
+html.dark .pk-landing:not(.dash) .bg-rose-50 {
+  background-color: rgba(244, 63, 94, 0.14);
+}
+
+html.dark .pk-landing:not(.dash) .bg-emerald-50,
+html.dark .pk-landing:not(.dash) .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.14);
+}
+
+html.dark .pk-landing:not(.dash) .border-emerald-200,
+html.dark .pk-landing:not(.dash) .border-emerald-200\/70 {
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+html.dark .pk-landing:not(.dash) .border-amber-200\/70 {
+  border-color: rgba(255, 185, 46, 0.3);
+}
+
+/* ---------- hover surfaces ---------- */
+html.dark .pk-landing:not(.dash) .hover\:bg-white:hover,
+html.dark .pk-landing:not(.dash) .hover\:bg-white\/95:hover {
+  background-color: #1b1613;
+}
+
+html.dark .pk-landing:not(.dash) .hover\:bg-ink-950\/\[0\.03\]:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- translucent ink surfaces ---------- */
+html.dark .pk-landing:not(.dash) .bg-ink\/10,
+html.dark .pk-landing:not(.dash) .bg-ink\/15 {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink\/\[0\.03\],
+html.dark .pk-landing:not(.dash) .bg-ink\/\[0\.04\],
+html.dark .pk-landing:not(.dash) .bg-ink\/\[0\.05\],
+html.dark .pk-landing:not(.dash) .bg-ink-950\/\[0\.03\],
+html.dark .pk-landing:not(.dash) .bg-ink-950\/\[0\.05\] {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+
+/* ---------- ink gradients (icon tiles) ---------- */
+html.dark .pk-landing:not(.dash) .from-ink-950\/70 {
+  --tw-gradient-from: rgba(48, 39, 32, 0.7) var(--tw-gradient-from-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+html.dark .pk-landing:not(.dash) .from-ink-800 {
+  --tw-gradient-from: #362b23 var(--tw-gradient-from-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+html.dark .pk-landing:not(.dash) .from-ink-700 {
+  --tw-gradient-from: #3d3129 var(--tw-gradient-from-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+html.dark .pk-landing:not(.dash) .to-ink-950 {
+  --tw-gradient-to: #201a15 var(--tw-gradient-to-position);
+}
+
+/* ---------- design utilities ---------- */
+html.dark .pk-landing:not(.dash) .glass {
+  background: rgba(20, 16, 13, 0.72);
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+html.dark .pk-landing:not(.dash) .dot-grid {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 163, 117, 0.13) 1px, transparent 0);
+}
+
+html.dark .pk-landing:not(.dash) .card-ring {
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 18px 48px -22px rgba(0, 0, 0, 0.75);
+}
+
+html.dark .pk-landing:not(.dash) .shadow-brand-500\/25 {
+  --tw-shadow-color: rgba(255, 82, 0, 0.18);
+}
+
+/* the logo's black tile must stay readable on dark surfaces (navbar / dark mode) */
+html.dark .pk-landing:not(.dash) .logo-tile {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 8px 24px -10px rgba(255, 82, 0, 0.35);
 }

@@ -2,14 +2,14 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, ArrowRight, Timer, TrendingUp } from "lucide-react";
 import { showcaseTabs } from "./data";
-import { Reveal, SectionTag, toBn } from "./ui";
+import { Reveal, toBn } from "./helpers";
 
 export default function Showcase() {
   const [active, setActive] = useState(showcaseTabs[0].id);
   const tab = showcaseTabs.find((t) => t.id === active)!;
 
   return (
-    <section id="showcase" className="noise relative overflow-hidden bg-ink py-24 sm:py-32">
+    <section id="showcase" aria-label="প্রশ্ন প্রদর্শন" className="noise relative overflow-hidden bg-ink py-24 sm:py-32">
       {/* Ambient */}
       <div className="pointer-events-none absolute -top-40 left-1/3 h-[500px] w-[700px] rounded-full bg-brand/20 blur-3xl" aria-hidden="true" />
       <div className="pointer-events-none absolute -bottom-48 -right-32 h-[420px] w-[520px] rounded-full bg-lime/10 blur-3xl" aria-hidden="true" />
@@ -17,7 +17,13 @@ export default function Showcase() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
           <Reveal className="max-w-2xl">
-            <SectionTag dark>লাইভ প্রোডাক্ট ট্যুর · Showcase</SectionTag>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-4 py-1.5 text-[13px] font-semibold tracking-wide text-lime ring-1 ring-white/12">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-lime animate-pulse-ring" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-lime" />
+              </span>
+              লাইভ প্রোডাক্ট ট্যুর · Showcase
+            </span>
             <h2 className="mt-5 font-display text-[34px] font-bold leading-[1.05] tracking-[-0.02em] text-white sm:text-[52px]">
               One app.
               <br />

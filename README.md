@@ -45,6 +45,8 @@ npm run dev                  # → http://localhost:3000
 ```
 App.tsx                 → routes (public: /, /auth, /exam/*, /q/*, legal pages)
 components/             → UI screens (HomeDashboard, QuestionBank, ExamPage, ...)
+components/landing/     → public landing page sections + content data
+                          (design ported from premium-edtech-landing-page.zip)
 services/               → api.ts (backend), firebase.ts, geminiService.ts, ...
 contexts/               → Auth, Admin, Language, Preferences, Cache
 utils/                  → logger, sanitize, adminConfig, normalization, ...

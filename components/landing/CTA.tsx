@@ -1,89 +1,74 @@
 import { motion } from "motion/react";
-import { ArrowRight, Sparkle, Smartphone } from "lucide-react";
-import { Reveal, toBn } from "./ui";
+import { ArrowRight, Heart, ShieldCheck, Sparkles } from "lucide-react";
+import { Reveal } from "./helpers";
 
-const words = ["প্র্যাকটিস", "মক এক্সাম", "অ্যানালাইজ", "রিভিশন", "জয়"];
-
-export default function CTA() {
+export default function CTA({ onStart }: { onStart?: () => void }) {
   return (
-    <section id="cta" className="relative pb-24 pt-4 sm:pb-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section id="cta" className="relative px-4 pb-24 pt-6 sm:px-6" aria-label="শুরু করুন">
+      <div className="mx-auto max-w-7xl">
         <Reveal>
-          <div className="noise relative overflow-hidden rounded-[32px] bg-ink shadow-[0_60px_120px_-50px_rgba(22,18,16,0.9)] sm:rounded-[44px]">
-            {/* Ambient */}
-            <div
-              className="pointer-events-none absolute left-1/2 top-1/2 h-[640px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl animate-spin-slow"
-              style={{
-                background:
-                  "conic-gradient(from 90deg, rgba(255,82,0,0.0), rgba(255,82,0,0.38), rgba(255,185,46,0.3), rgba(255,82,0,0.0))",
-              }}
-              aria-hidden="true"
-            />
+          <div className="noise relative overflow-hidden rounded-[2.5rem] bg-ink-950 px-6 py-16 text-center text-white sm:px-12 sm:py-24">
+            {/* ambience */}
+            <div className="dot-grid-dark absolute inset-0 opacity-60" />
+            <div className="absolute -left-24 -top-28 size-96 rounded-full bg-brand-600/45 blur-3xl" />
+            <div className="absolute -bottom-32 -right-16 size-[26rem] rounded-full bg-amber-600/35 blur-3xl" />
+            <div className="absolute left-1/2 top-1/2 size-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-500/15 blur-3xl" />
+            <motion.span
+              animate={{ y: [0, -14, 0], rotate: [0, 14, 0] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute left-[12%] top-[18%] text-gold-400/70"
+            >
+              <Sparkles className="size-8" />
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, 12, 0], rotate: [0, -12, 0] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+              className="absolute right-[14%] top-[24%] text-brand-300/70"
+            >
+              <Sparkles className="size-6" />
+            </motion.span>
+            <motion.span
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+              className="absolute bottom-[20%] right-[22%] text-amber-300/60"
+            >
+              <Sparkles className="size-5" />
+            </motion.span>
 
-            <div className="relative px-6 pb-24 pt-20 text-center sm:px-12 sm:pt-28">
-              <motion.span
-                initial={{ opacity: 0, scale: 0.6 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-                className="mx-auto inline-flex items-center gap-2 rounded-full bg-lime/12 px-4 py-1.5 text-[12.5px] font-bold uppercase tracking-[0.18em] text-lime ring-1 ring-lime/25"
-              >
-                <Sparkle className="h-3.5 w-3.5" fill="currentColor" />
-                পরীক্ষা হল দেখবে তোমার নতুন রূপ
-              </motion.span>
+            <div className="relative">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-semibold text-brand-200 backdrop-blur">
+                <ShieldCheck className="size-4 text-emerald-400" /> শুরু করা সম্পূর্ণ ফ্রি · ৩০ সেকেন্ডে সাইন আপ
+              </span>
 
-              <h2 className="mx-auto mt-7 max-w-3xl text-balance font-display text-[38px] font-bold leading-[1.02] tracking-[-0.025em] text-white sm:text-[64px]">
-                Your GPA-5 era
+              <h2 className="font-display mx-auto mt-7 max-w-3xl text-4xl font-bold leading-[1.12] tracking-tight sm:text-6xl">
+                আজই প্রথম প্রশ্নটা সলভ করো —
                 <br />
-                starts <span className="bg-gradient-to-r from-lime to-brand-bright bg-clip-text text-transparent">tonight.</span>
+                <span className="text-gradient-dark">বোর্ড আর ভর্তি লড়াইয়ে এগিয়ে থাকো</span>
               </h2>
-
-              <p className="mx-auto mt-5 max-w-xl font-bangla text-[18px] font-semibold leading-relaxed text-white/75 sm:text-[21px]">
-                আজ রাতেই প্রথম ১০টা প্রশ্ন শেষ করো — আগামীকাল সকালে তুমি আজকের চেয়ে এগিয়ে।
+              <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/60">
+                ২,৩৪,০০০+ শিক্ষার্থী প্রতিদিন সকালে পরীক্ষাঙ্গন খুলে। আজ থেকেই তুমি আর একা নও — পুরো কমিউনিটি তোমার সাথে।
               </p>
 
-              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <a
-                  href="#/signup"
-                  className="focus-ring group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-lime px-9 py-4.5 text-[16.5px] font-extrabold text-ink shadow-[0_24px_54px_-16px_rgba(255,185,46,0.5)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_64px_-16px_rgba(255,185,46,0.65)] sm:w-auto"
+              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={onStart}
+                  className="btn-shine group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-brand-500 to-amber-500 px-9 py-4.5 text-lg font-bold text-white shadow-2xl shadow-brand-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-brand-400/60 sm:w-auto"
                 >
                   ফ্রি অ্যাকাউন্ট খোলো
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-ink text-lime transition-transform duration-300 group-hover:translate-x-1">
-                    <ArrowRight className="h-3.5 w-3.5" strokeWidth={3} />
-                  </span>
-                </a>
-                <a
-                  href="#top"
-                  className="focus-ring group inline-flex w-full items-center justify-center gap-3 rounded-full bg-white/8 px-9 py-4.5 text-[16.5px] font-bold text-white ring-1 ring-white/15 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:bg-white/12 sm:w-auto"
-                >
-                  <Smartphone className="h-5 w-5 text-lime" />
-                  অ্যাপ ডাউনলোড করো
-                </a>
+                  <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1.5" />
+                </button>
               </div>
 
-              <p className="mt-6 text-[13px] font-medium text-white/45">
-                <span className="font-bold text-lime">{toBn("2,40,000")}+</span> শিক্ষার্থী ইতিমধ্যে অঙ্গনে · কোনো কার্ড লাগবে না
+              <p className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-semibold text-white/45">
+                <span className="inline-flex items-center gap-1.5">
+                  <Heart className="size-4 fill-rose-400 text-rose-400" /> Made with love for students
+                </span>
+                <span className="hidden size-1 rounded-full bg-white/25 sm:block" />
+                <span>দৈনিক ৫০ প্রশ্ন চিরকাল ফ্রি</span>
+                <span className="hidden size-1 rounded-full bg-white/25 sm:block" />
+                <span>ফোনেই সম্পূর্ণ প্রস্তুতি — আলাদা অ্যাপ লাগবে না</span>
               </p>
-            </div>
-
-            {/* Outline marquee */}
-            <div className="relative overflow-hidden pb-8" aria-hidden="true">
-              <div className="flex w-max animate-marquee-slow opacity-80">
-                {[0, 1].map((dup) => (
-                  <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup === 1}>
-                    {[...words, ...words].map((w, i) => (
-                      <span
-                        key={w + i + dup}
-                        className="flex items-center gap-6 whitespace-nowrap pr-6 font-bangla text-[42px] font-extrabold leading-none sm:text-[56px]"
-                        style={{ WebkitTextStroke: "1px rgba(255,255,255,0.16)", color: "transparent" }}
-                      >
-                        {w}
-                        <Sparkle className="h-5 w-5 text-lime/30" fill="currentColor" />
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </Reveal>
