@@ -322,3 +322,77 @@ mjx-container {
 .dark .rounded-xl.bg-gray-950 {
   background-color: rgba(255, 255, 255, 0.05) !important;
 }
+
+/* Premium landing page tokens and motion */
+:root {
+  --landing-paper: #faf9f6;
+  --landing-cream: #fff1e8;
+  --landing-ink: #161210;
+  --landing-mist: #6f655c;
+  --landing-brand: #ff5200;
+  --landing-brand-deep: #e04400;
+  --landing-lime: #ffb92e;
+}
+
+.font-body { font-family: 'Hind Siliguri', 'Inter', sans-serif; }
+.font-bangla { font-family: 'Noto Serif Bengali', 'Hind Siliguri', serif; }
+.text-balance { text-wrap: balance; }
+
+.glass {
+  background: color-mix(in srgb, white 62%, transparent);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid color-mix(in srgb, white 65%, transparent);
+}
+
+.ring-conic {
+  background: conic-gradient(from 140deg, #ff5200 0%, #ffb92e 42%, #ff7a35 78%, #ff5200 100%);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid #ff5200;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+}
+
+@keyframes premium-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes premium-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes premium-pulse-ring {
+  0% { transform: scale(1); opacity: .9; }
+  70% { transform: scale(1.9); opacity: 0; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@keyframes premium-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.animate-marquee { animation: premium-marquee 42s linear infinite; }
+.animate-marquee-slow { animation: premium-marquee 64s linear infinite; }
+.animate-float { animation: premium-float 7s ease-in-out infinite; }
+.animate-float-slow { animation: premium-float 10s ease-in-out infinite; }
+.animate-spin-slow { animation: spin 22s linear infinite; }
+.animate-pulse-ring { animation: premium-pulse-ring 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+.animate-shimmer { animation: premium-shimmer 2.8s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee, .animate-marquee-slow, .animate-float, .animate-float-slow, .animate-spin-slow, .animate-pulse-ring, .animate-shimmer {
+    animation: none !important;
+  }
+}
