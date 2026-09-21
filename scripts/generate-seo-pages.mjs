@@ -254,6 +254,8 @@ p.lede{color:var(--mist);font-size:16.5px;margin:0 0 8px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 .chip{background:#fff;border:1px solid rgba(255,82,0,.22);color:var(--deep);border-radius:999px;padding:5px 14px;font-size:13px;font-weight:700;box-shadow:0 2px 6px -2px rgba(22,18,16,.08)}
 .chip::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brand);margin-right:7px;vertical-align:2px}
+.chip.src{background:#ffedc2;border-color:rgba(255,185,46,.5);color:#7a4d00}
+.chip.src::before{background:#c47f00}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin:22px 0}
 .card{border:1px solid var(--line);border-radius:20px;padding:18px 20px;text-decoration:none;color:var(--ink);background:#fff;transition:all .2s;box-shadow:0 1px 2px rgba(22,18,16,.04)}
 .card:hover{border-color:rgba(255,82,0,.4);transform:translateY(-3px);box-shadow:0 22px 44px -20px rgba(22,18,16,.28)}
@@ -382,7 +384,7 @@ async function pool(tasks, concurrency = 8) {
 async function collectQuestions(syllabusSubjects) {
   /** @type {Map<string, any>} */
   const byId = new Map();
-  const add = (q, source) => {
+  const add = (q, source, sourceLabel = '') => {
     if (!q || !q.question || !Array.isArray(q.options) || q.options.length < 2) return;
     const id = q._id || q.id || `local-${bnSlug(q.question)}-${q.options.length}`;
     if (byId.has(id)) return;
@@ -402,6 +404,7 @@ async function collectQuestions(syllabusSubjects) {
       explanationImage: q.explanationImage || '',
       slug: safePath(q.slug || bnSlug(q.question)),
       source,
+      sourceLabel: sourceLabel || (q.examRef ? String(q.examRef) : ''),
     });
     const rec = byId.get(id);
     if (rec && rec.slug.length < 12) {
@@ -409,11 +412,15 @@ async function collectQuestions(syllabusSubjects) {
     }
   };
 
-  // 4a. Bundled datasets (always available)
-  for (const f of ['data/gst_a_23_24_questions.json', 'data/medical_24_25_questions.json']) {
+  // 4a. Bundled datasets (always available) — label = where the question came from
+  const BUNDLED_LABELS = {
+    'data/gst_a_23_24_questions.json': 'GST-A ভর্তি পরীক্ষা ২০২৩-২৪',
+    'data/medical_24_25_questions.json': 'মেডিকেল ভর্তি পরীক্ষা ২০২৪-২৫',
+  };
+  for (const f of Object.keys(BUNDLED_LABELS)) {
     try {
       const arr = JSON.parse(readFileSync(join(ROOT, f), 'utf8'));
-      (Array.isArray(arr) ? arr : []).forEach((q) => add(q, 'bundled'));
+      (Array.isArray(arr) ? arr : []).forEach((q) => add(q, 'bundled', BUNDLED_LABELS[f]));
     } catch (e) {
       console.warn(`[seo] could not read ${f}: ${e.message}`);
     }
@@ -426,13 +433,13 @@ async function collectQuestions(syllabusSubjects) {
   for (const [subject, chapters] of syllabusSubjects) {
     for (const chapter of Object.keys(chapters)) {
       tasks.push(async () => {
-        const u = `${API}/admin/questions?page=1&limit=10&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}`;
+        const u = `${API}/admin/questions?page=1&limit=25&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}`;
         const data = await fetchJson(u);
         return (data?.questions || []).map((q) => ({ ...q, _subject: subject, _chapter: chapter }));
       });
     }
   }
-  for (let p = 1; p <= 10; p++) {
+  for (let p = 1; p <= 40; p++) {
     tasks.push(async () => {
       const data = await fetchJson(`${API}/admin/questions?page=${p}&limit=100&level=ADMISSION`);
       return data?.questions || [];
@@ -450,7 +457,7 @@ async function collectQuestions(syllabusSubjects) {
   for (const list of results) {
     if (!list) continue;
     for (const q of list) {
-      add(q, 'api');
+      add(q, 'api', q.level === 'ADMISSION' && !q.examRef ? 'ভর্তি পরীক্ষা' : '');
       apiCount++;
     }
   }
@@ -710,8 +717,10 @@ for (const q of allQuestions) {
 <div class="qlist">${siblings.map((s) => `<a href="${rel(s.url)}">${esc(plain(s.question).slice(0, 110))}</a>`).join('\n')}</div>`
     : '';
 
-  const chips = [q.subject, q.chapter, q.level === 'ADMISSION' ? 'ভর্তি পরীক্ষা' : q.level === 'MAINBOOK' ? 'মূল বই' : q.level === 'ACADEMIC' ? 'HSC একাডেমিক' : '', ...(q.tags || []).slice(0, 2)]
-    .filter(Boolean)
+  const levelLabel = q.level === 'ADMISSION' ? 'ভর্তি পরীক্ষা' : q.level === 'MAINBOOK' ? 'মূল বই' : q.level === 'ACADEMIC' ? 'HSC একাডেমিক' : '';
+  const srcChip = q.sourceLabel ? `<span class="chip src">সূত্র: ${esc(String(q.sourceLabel))}</span>` : '';
+  const chips = srcChip + [q.subject, q.chapter, levelLabel, ...(q.tags || []).slice(0, 2)]
+    .filter((c) => c && c !== q.sourceLabel)
     .map((c) => `<span class="chip">${esc(String(c))}</span>`)
     .join('');
 
@@ -723,7 +732,7 @@ for (const q of allQuestions) {
 <div class="chips">${chips}</div>
 <h1>${esc(q.question)}</h1>
 ${q.questionImage ? `<img class="qimg" src="${esc(q.questionImage)}" alt="প্রশ্নের চিত্র">` : ''}
-<h2>বিকল্পসমূহ</h2>
+<h2>অপশন</h2>
 <ol class="opts">${optsHtml}</ol>
 <div class="answer"><span class="amed">✓</span><div><b>সঠিক উত্তর:</b> ${LETTERS[q.correctAnswerIndex] || ''}. ${esc(correctText)}</div></div>
 ${explHtml}

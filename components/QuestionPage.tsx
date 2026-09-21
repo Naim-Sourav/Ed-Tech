@@ -195,6 +195,11 @@ const QuestionPage: React.FC = () => {
           >
             <div aria-hidden className="absolute top-0 inset-x-0 h-[5px] bg-gradient-to-r from-brand via-lime to-brand" />
             <div className="flex flex-wrap gap-2 mb-4">
+              {question.examRef && (
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-lime-soft text-[#7a4d00] ring-1 ring-lime/40 dark:bg-gold/20 dark:text-gold dark:ring-gold/30">
+                  সূত্র: {question.examRef}
+                </span>
+              )}
               {question.subject && (
                 <span className="text-xs font-bold px-3 py-1 rounded-full bg-mint text-brand-deep dark:bg-brand/20 dark:text-brand-bright ring-1 ring-brand/15 dark:ring-brand/30">
                   {question.subject}
