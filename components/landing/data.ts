@@ -4,6 +4,7 @@
 
 export const navLinks = [
   { label: "Features", bn: "ফিচার", href: "#features" },
+  { label: "Past papers", bn: "প্রশ্ন সমাধান", href: "#past-papers" },
   { label: "Exams", bn: "এক্সাম", href: "#showcase" },
   { label: "Results", bn: "রেজাল্ট", href: "#testimonials" },
   { label: "Pricing", bn: "প্রাইসিং", href: "#pricing" },
@@ -368,21 +369,51 @@ export const faqs = [
   },
 ];
 
-export const footerCols = [
+export interface FooterLink {
+  label: string;
+  /** Root-relative URL. Static SEO pages (/hsc-syllabus/, /admission-questions/…) are plain full-page links. */
+  href: string;
+}
+
+export const footerCols: { title: string; links: FooterLink[] }[] = [
   {
     title: "প্রোডাক্ট",
-    links: ["প্রশ্ন ব্যাংক", "লাইভ মক এক্সাম", "অ্যানালিটিক্স", "বোর্ড আর্কাইভ", "মোবাইল অ্যাপ"],
+    links: [
+      { label: "প্রশ্ন ব্যাংক", href: "/qbank" },
+      { label: "বিগত বছরের ভর্তি প্রশ্ন", href: "/admission-questions/" },
+      { label: "HSC সিলেবাস গাইড", href: "/hsc-syllabus/" },
+      { label: "AI টিউটর", href: "/bot" },
+      { label: "লিডারবোর্ড", href: "/leaderboard" },
+    ],
   },
   {
-    title: "এক্সাম",
-    links: ["SSC ২০২৬", "HSC ২০২৬", "ঢাবি ক-ইউনিট", "মেডিকেল", "GST ক্লাস্টার"],
+    title: "প্রশ্ন সমাধান",
+    links: [
+      { label: "মেডিকেল ভর্তি পরীক্ষা", href: "/admission-questions/medical/" },
+      { label: "ডেন্টাল ভর্তি পরীক্ষা", href: "/admission-questions/dental/" },
+      { label: "ঢাবি ক ইউনিট", href: "/admission-questions/du-a/" },
+      { label: "বুয়েট", href: "/admission-questions/buet/" },
+      { label: "GST গুচ্ছ ক ইউনিট", href: "/admission-questions/gst-a/" },
+    ],
   },
   {
-    title: "কোম্পানি",
-    links: ["আমাদের গল্প", "ক্যারিয়ার", "শিক্ষক পার্টনার", "প্রেস কিট", "ব্লগ"],
+    title: "সিলেবাস",
+    links: [
+      { label: "পদার্থবিজ্ঞান ১ম পত্র", href: "/hsc-syllabus/physics-1st-paper/" },
+      { label: "রসায়ন ১ম পত্র", href: "/hsc-syllabus/chemistry-1st-paper/" },
+      { label: "জীববিজ্ঞান ১ম পত্র", href: "/hsc-syllabus/biology-1st-paper/" },
+      { label: "উচ্চতর গণিত ১ম পত্র", href: "/hsc-syllabus/higher-math-1st-paper/" },
+      { label: "সব বিষয়", href: "/hsc-syllabus/" },
+    ],
   },
   {
     title: "সাপোর্ট",
-    links: ["হেল্প সেন্টার", "যোগাযোগ", "রিফান্ড নীতি", "প্রাইভেসি", "টার্মস"],
+    links: [
+      { label: "লগইন / রেজিস্ট্রেশন", href: "/auth" },
+      { label: "ডেইলি চ্যালেঞ্জ", href: "/challenges" },
+      { label: "রিফান্ড নীতি", href: "/refund" },
+      { label: "প্রাইভেসি", href: "/privacy" },
+      { label: "টার্মস", href: "/terms" },
+    ],
   },
 ];

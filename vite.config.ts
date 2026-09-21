@@ -13,7 +13,7 @@ const serveStaticSeo = {
     server.middlewares.use((req: any, res: any, next: any) => {
       try {
         const url = decodeURIComponent((req.url || '').split('?')[0]);
-        if (/^\/(q|hsc-syllabus)(\/|$)/.test(url)) {
+        if (/^\/(q|hsc-syllabus|admission-questions)(\/|$)/.test(url)) {
           const root = path.resolve(process.cwd(), 'dist');
           const rel = url.replace(/\/+$/, '').replace(/^\/+/, '');
           const file = path.join(root, rel, 'index.html');

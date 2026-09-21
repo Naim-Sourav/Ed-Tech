@@ -4,7 +4,9 @@ import Navbar from './landing/Navbar';
 import Hero from './landing/Hero';
 import SocialProof from './landing/SocialProof';
 import Features from './landing/Features';
+import PastPapers from './landing/PastPapers';
 import Showcase from './landing/Showcase';
+import Spotlight from './landing/Spotlight';
 import Benefits from './landing/Benefits';
 import Testimonials from './landing/Testimonials';
 import Pricing from './landing/Pricing';
@@ -24,6 +26,11 @@ interface LandingPageProps {
  * typography come straight from the zip; only integration glue differs
  * (framer-motion → motion/react, auth bridge, hash CTAs resolved by the
  * app's HashCompatRedirect). Styling is scoped under `.pk-landing`.
+ *
+ * Two sections were added on top of the zip design to re-home the Lottie
+ * illustrations of the previous landing page (lazy-loaded, see LazyLottie):
+ *   - PastPapers (hero-animation.json) → links to /admission-questions/… SEO pages
+ *   - Spotlight  (learning.json + CALENDER.json) → AI টিউটর / ডেইলি চ্যালেঞ্জ
  */
 const LandingPage: React.FC<LandingPageProps> = (_props) => {
   return (
@@ -55,7 +62,7 @@ const LandingPage: React.FC<LandingPageProps> = (_props) => {
         <meta name="twitter:title" content="পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম" />
         <meta
           name="twitter:description"
-          content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।"
+          content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।"
         />
         <meta name="twitter:image" content="https://www.porikkhangon.app/og-image.jpg" />
       </Helmet>
@@ -72,7 +79,9 @@ const LandingPage: React.FC<LandingPageProps> = (_props) => {
         <Hero />
         <SocialProof />
         <Features />
+        <PastPapers />
         <Showcase />
+        <Spotlight />
         <Benefits />
         <Testimonials />
         <Pricing />

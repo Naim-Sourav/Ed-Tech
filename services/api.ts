@@ -1,6 +1,6 @@
 
 // ... (imports from types.ts)
-import { PaymentRequest, Notification, LeaderboardUser, ExamPack, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
+import { PaymentRequest, Notification, LeaderboardUser, ExamPack, QuestType, QuestTemplate, QuestionPaperMetadata, QuizQuestion } from "../types";
 import { logger } from '../utils/logger';
 import { normalizeBangla } from "../utils/normalization";
 import { auth } from "./firebase";
@@ -556,6 +556,60 @@ export const fetchReportedQuestionsAPI = async () => {
   return fetchWithFallback('/admin/questions/reports', {}, []);
 };
 
+/** `Medical '21-22`, `DU-A '19-20`, … — the exam-session tag format used in `tags`. */
+const EXAM_SESSION_TAG = /^[A-Za-z][A-Za-z0-9 .&-]*?\s*'\d{2}-\d{2}$/;
+
+/**
+ * Every question of one previous-year paper, straight from the question bank.
+ * The exam a question appeared in is stored in its `tags` array
+ * (e.g. `["Medical '21-22", "ChB '2023"]`) and `GET /admin/questions?board=`
+ * filters on that array, so this is the canonical way to load a paper.
+ * Rows are re-checked against the exact tag (the server match is partial)
+ * and returned sorted by subject → orderIndex.
+ */
+export const fetchExamPaperQuestionsAPI = async (
+  examTag: string,
+  opts: { pageSize?: number; maxPages?: number } = {}
+): Promise<{ questions: QuizQuestion[]; total: number }> => {
+  const pageSize = opts.pageSize ?? 100;
+  const maxPages = opts.maxPages ?? 5;
+  const tag = examTag.trim();
+  const out: QuizQuestion[] = [];
+  const seen = new Set<string>();
+  let total = 0;
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await fetchWithFallback(
+      `/admin/questions?page=${page}&limit=${pageSize}&board=${encodeURIComponent(tag)}`,
+      {},
+      { questions: [], total: 0 }
+    );
+    const rows: QuizQuestion[] = Array.isArray(res?.questions) ? res.questions : [];
+    total = Number(res?.total) || total;
+    for (const q of rows) {
+      const tags = Array.isArray(q.tags) ? q.tags : [];
+      if (tags.length && !tags.includes(tag)) continue; // partial server match → keep exact only
+      const id = q._id || q.id || q.question;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      out.push(q);
+    }
+    if (rows.length < pageSize || out.length >= total) break;
+  }
+  // subject → upload batch (≈ chapter order) → serial within batch; stable otherwise
+  const created = (q: QuizQuestion) => Number((q as QuizQuestion & { createdAt?: number }).createdAt) || 0;
+  const sorted = out
+    .map((q, i) => ({ q, i }))
+    .sort(
+      ({ q: a, i: ia }, { q: b, i: ib }) =>
+        (a.subject || '').localeCompare(b.subject || '') ||
+        created(a) - created(b) ||
+        (a.orderIndex || 0) - (b.orderIndex || 0) ||
+        ia - ib
+    )
+    .map(({ q }) => q);
+  return { questions: sorted, total: sorted.length };
+};
+
 export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
   // If examRef is gst_a_23_24, we load from our newly added JSON
   if (examRef === 'gst_a_23_24') {
@@ -568,7 +622,16 @@ export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
        return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
      }
   }
-  return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
+  const direct = await fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
+  const directList = Array.isArray(direct) ? direct : direct?.questions;
+  if (Array.isArray(directList) && directList.length > 0) return direct;
+  // Session-style refs ("Medical '21-22") live in `tags`, not `examRef` — fall
+  // back to the tag filter so "সকল সেশন" papers in the question bank load.
+  if (EXAM_SESSION_TAG.test(examRef.trim())) {
+    const { questions } = await fetchExamPaperQuestionsAPI(examRef);
+    if (questions.length) return questions;
+  }
+  return direct;
 };
 
 export const deleteQuestionFromBankAPI = async (id: string) => {

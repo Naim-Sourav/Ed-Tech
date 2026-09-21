@@ -68,6 +68,7 @@ const ExamHub = lazyWithRetry(() => import('./components/ExamHub'));
 const ExamBatchPage = lazyWithRetry(() => import('./components/ExamBatchPage'));
 const PaymentPage = lazyWithRetry(() => import('./components/PaymentPage'));
 const QuestionPage = lazyWithRetry(() => import('./components/QuestionPage'));
+const PastPaperPage = lazyWithRetry(() => import('./components/PastPaperPage'));
 const PrivacyPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.TermsOfService })));
 const RefundPolicy = lazyWithRetry(() => import('./components/LegalPages').then(m => ({ default: m.RefundPolicy })));
@@ -537,6 +538,13 @@ const AppRoutes: React.FC<{
             {/* Short alias: static /q/<slug>/ files serve first when they exist;
                 this catches share links for questions without a static page. */}
             <Route path="/q/:slug/*" element={<QuestionPage />} />
+
+            {/* Public previous-year admission papers (বিগত বছরের প্রশ্ন) — in-app
+                twin of the static /admission-questions/… SEO pages; loads the
+                paper live from the question bank via the exam-session tag. */}
+            <Route path="/admission-questions" element={<PastPaperPage />} />
+            <Route path="/admission-questions/:inst" element={<PastPaperPage />} />
+            <Route path="/admission-questions/:inst/:session/*" element={<PastPaperPage />} />
 
             {/* Legal pages are PUBLIC (trust + SEO): no login required. */}
             <Route path="/privacy" element={<PrivacyPolicy />} />

@@ -8,6 +8,12 @@
  *   /hsc-syllabus/                          syllabus hub
  *   /hsc-syllabus/<subject>/                14 subject pages
  *   /hsc-syllabus/<subject>/<chapter>/      95 chapter pages
+ *   /admission-questions/                   previous-year admission papers hub
+ *   /admission-questions/<institution>/     e.g. /admission-questions/medical/
+ *   /admission-questions/<institution>/<session>/
+ *                                           e.g. /admission-questions/medical/2021-22/
+ *                                           = "মেডিকেল ভর্তি পরীক্ষা ২০২১-২২" — the
+ *                                           full paper with answers + explanations
  *   /q/<slug>/                              PUBLIC QUESTION PAGES
  *                                           (Sattacademy-style: question +
  *                                           options + answer + explanation,
@@ -16,7 +22,10 @@
  *
  * Question sources (merged, de-duplicated):
  *   1. Live question bank API (anonymous read): per-chapter sample +
- *      admission-level questions with explanations.
+ *      admission-level questions with explanations + every question tagged
+ *      with an exam session (`GET /admin/questions?board=<Institution> '`,
+ *      the API matches the `tags` array) — grouped into exam papers by the
+ *      exact `<Institution> 'YY-YY` tag.
  *   2. Bundled datasets in /data (*.json) — guaranteed fallback so question
  *      pages exist even if the API is unreachable at build time.
  *
@@ -42,19 +51,41 @@ const outArg = process.argv.indexOf('--out');
 const OUT = outArg !== -1 ? process.argv[outArg + 1] : join(ROOT, 'dist');
 
 // ---------------------------------------------------------------------------
-// 1. Load SYLLABUS_DB from TypeScript without adding runtime deps
+// 1. Load SYLLABUS_DB + admission exam catalog from TypeScript (no runtime deps)
 // ---------------------------------------------------------------------------
 const tmp = mkdtempSync(join(tmpdir(), 'seo-syllabus-'));
-const bundlePath = join(tmp, 'syllabus.mjs');
 buildSync({
-  entryPoints: [join(ROOT, 'services', 'syllabusData.ts')],
+  entryPoints: [join(ROOT, 'services', 'syllabusData.ts'), join(ROOT, 'data', 'admissionExams.ts')],
   bundle: true,
   format: 'esm',
-  outfile: bundlePath,
+  outdir: tmp,
+  outbase: ROOT,
+  outExtension: { '.js': '.mjs' },
   logLevel: 'silent',
 });
-const { SYLLABUS_DB } = await import(pathToFileURL(bundlePath).href);
+const { SYLLABUS_DB } = await import(pathToFileURL(join(tmp, 'services', 'syllabusData.mjs')).href);
+const EXAMS = await import(pathToFileURL(join(tmp, 'data', 'admissionExams.mjs')).href);
 rmSync(tmp, { recursive: true, force: true });
+const {
+  ADMISSION_INSTITUTIONS,
+  ADMISSION_HUB_PATH,
+  ADMISSION_CATEGORY_LABELS,
+  ADMISSION_CATEGORY_ORDER,
+  parseExamTag,
+  buildExamTag,
+  findInstitutionByTag,
+  sessionToBangla,
+  sessionToSlug,
+  paperTitle,
+  paperPath,
+  institutionPath,
+  qbankPaperLink,
+  compareSessionsDesc,
+  subjectFamilyOf,
+  subjectToBangla,
+  subjectOrderFor,
+  toBanglaDigits,
+} = EXAMS;
 
 // ---------------------------------------------------------------------------
 // 2. Helpers
@@ -186,7 +217,7 @@ const GROUP_TIPS = {
 // ---------------------------------------------------------------------------
 // 3. Page shell
 // ---------------------------------------------------------------------------
-function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathjax = false }) {
+function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathjax = false, script = '' }) {
   const crumbHtml = breadcrumbs
     .map(([label, href], i) => {
       const isLast = i === breadcrumbs.length - 1;
@@ -293,6 +324,7 @@ ol.opts li.correct .tick{display:block}
 .answer b{color:var(--ok)}
 .expl{margin:16px 0;padding:18px 22px;border-radius:18px;background:var(--cream);border:1px solid rgba(255,82,0,.16);border-left:5px solid var(--brand)}
 .expl h2{margin:0 0 8px;font-size:18px}
+.expl>div{white-space:pre-wrap}
 .expl h2::before{width:9px;height:9px}
 .qimg{max-width:100%;border-radius:12px;margin:10px 0}
 .qlist{display:grid;gap:10px;margin:16px 0}
@@ -304,7 +336,62 @@ footer{background:var(--ink);color:rgba(250,249,246,.65);margin-top:56px}
 .footer-in{max-width:1000px;margin:0 auto;padding:28px 20px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;justify-content:space-between;font-size:14px}
 footer a{color:rgba(250,249,246,.65);text-decoration:none}
 footer a:hover{color:var(--lime)}
-@media (max-width:640px){article.qcard{padding:22px 16px}}
+/* --- previous-year paper pages --- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0 6px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:0 1px 2px rgba(22,18,16,.04)}
+.stat b{display:block;font-family:'Noto Serif Bengali',serif;font-size:24px;line-height:1.2;color:var(--deep)}
+.stat span{font-size:13px;color:var(--mist);font-weight:600}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+.toc a{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:13.5px;font-weight:700;text-decoration:none;color:var(--ink)}
+.toc a:hover{border-color:rgba(255,82,0,.4);color:var(--deep)}
+.toc a small{color:var(--mist);font-weight:600;margin-left:4px}
+.toolbar{position:sticky;top:64px;z-index:4;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:20px 0 8px;padding:10px 14px;border-radius:16px;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border:1px solid var(--line);box-shadow:0 12px 30px -20px rgba(22,18,16,.35)}
+.toolbar span{font-size:13px;color:var(--mist);font-weight:600}
+.toolbar .tb{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar button,.toolbar a.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;text-decoration:none}
+.toolbar button:hover,.toolbar a.btn:hover{border-color:rgba(255,82,0,.4);color:var(--deep)}
+.toolbar a.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.toolbar a.btn.primary:hover{background:var(--deep);border-color:var(--deep);color:#fff}
+h2.sub{margin-top:40px;padding-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h2.sub small{font-size:13px;color:var(--mist);font-weight:600;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 12px}
+article.pq{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px 22px 18px;margin:14px 0;box-shadow:0 1px 2px rgba(22,18,16,.04);scroll-margin-top:130px}
+article.pq .pq-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+article.pq .num{flex:none;min-width:34px;height:34px;padding:0 10px;border-radius:12px;background:var(--ink);color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px}
+article.pq .meta{font-size:12.5px;color:var(--mist);font-weight:600}
+article.pq h3{margin:0 0 6px;font-size:17.5px;line-height:1.7;font-weight:700;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
+article.pq h3 a{color:var(--ink);text-decoration:none}
+article.pq h3 a:hover{color:var(--deep)}
+article.pq ol.opts{margin:12px 0;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+article.pq ol.opts li{padding:9px 12px;border-radius:14px;font-size:15px}
+article.pq ol.opts li .lt{width:30px;height:30px;border-radius:10px;font-size:14px}
+article.pq ol.opts li .tick{display:none!important}
+article.pq .answer{margin:10px 0 6px;padding:10px 14px;font-size:14.5px}
+article.pq .answer .amed{width:30px;height:30px;font-size:15px}
+article.pq details.expl{margin:8px 0 0;padding:0;background:var(--cream);border:1px solid rgba(255,82,0,.16);border-left:5px solid var(--brand)}
+article.pq details.expl summary{cursor:pointer;padding:11px 16px;font-weight:700;color:var(--deep);list-style:none;font-size:14.5px}
+article.pq details.expl summary::-webkit-details-marker{display:none}
+article.pq details.expl summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:#fff;margin-right:8px;font-weight:800}
+article.pq details.expl[open] summary::before{content:"−"}
+article.pq details.expl .expl-body{padding:0 16px 14px;font-size:15px;white-space:pre-wrap}
+body.hide-ans article.pq ol.opts li.correct{border-color:var(--line);background:var(--paper);font-weight:400}
+body.hide-ans article.pq ol.opts li.correct .lt{background:var(--mint);color:var(--deep);box-shadow:inset 0 -2px 0 rgba(224,68,0,.25)}
+body.hide-ans article.pq .answer,body.hide-ans article.pq details.expl{display:none}
+.format{width:100%;border-collapse:separate;border-spacing:0;margin:14px 0 6px;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;font-size:15px}
+.format th,.format td{padding:11px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.format tr:last-child th,.format tr:last-child td{border-bottom:0}
+.format th{width:34%;background:var(--cream);font-weight:700;color:var(--deep)}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:16px;padding:0;margin:10px 0}
+.faq summary{cursor:pointer;padding:13px 18px;font-weight:700;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq details div{padding:0 18px 14px;color:var(--mist)}
+.card .yr{font-family:'Noto Serif Bengali',serif;font-size:20px;color:var(--deep)}
+.card .tagline{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;color:#7a4d00;background:#ffedc2;border-radius:999px;padding:2px 10px}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.pill-row a{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:13.5px;font-weight:700;text-decoration:none;color:var(--ink)}
+.pill-row a:hover{border-color:rgba(255,82,0,.4);color:var(--deep)}
+.pill-row a.cur{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media (max-width:640px){article.qcard{padding:22px 16px}article.pq{padding:16px 14px}.toolbar{top:58px}}
+@media print{header,footer,.toolbar,.banner,.pager,nav.crumb{display:none!important}body{background:#fff}article.pq{break-inside:avoid;box-shadow:none}article.pq details.expl{display:block}article.pq details.expl .expl-body{display:block}}
 </style>
 </head>
 <body>
@@ -321,10 +408,12 @@ footer a:hover{color:var(--lime)}
   <span>
     <a href="/">হোম</a> ·
     <a href="/hsc-syllabus/">সিলেবাস গাইড</a> ·
+    <a href="${ADMISSION_HUB_PATH}">বিগত বছরের ভর্তি প্রশ্ন</a> ·
     <a href="/privacy">প্রাইভেসি</a> ·
     <a href="/terms">টার্মস</a>
   </span>
 </div></footer>
+${script ? `<script>${script}</script>` : ''}
 </body>
 </html>
 `;
@@ -397,14 +486,18 @@ async function collectQuestions(syllabusSubjects) {
       explanation: q.explanation || '',
       subject: q.subject || '',
       chapter: q.chapter || '',
+      topic: q.topic || '',
       level: q.level || '',
       examRef: q.examRef || '',
-      tags: q.tags || [],
+      tags: Array.isArray(q.tags) ? q.tags.map(String) : [],
+      orderIndex: Number(q.orderIndex) || 0,
+      createdAt: Number(q.createdAt) || 0,
       questionImage: q.questionImage || '',
       explanationImage: q.explanationImage || '',
       slug: safePath(q.slug || bnSlug(q.question)),
       source,
       sourceLabel: sourceLabel || (q.examRef ? String(q.examRef) : ''),
+      seq: byId.size, // insertion order = file/API order, last-resort tiebreaker
     });
     const rec = byId.get(id);
     if (rec && rec.slug.length < 12) {
@@ -412,21 +505,66 @@ async function collectQuestions(syllabusSubjects) {
     }
   };
 
-  // 4a. Bundled datasets (always available) — label = where the question came from
-  const BUNDLED_LABELS = {
-    'data/gst_a_23_24_questions.json': 'GST-A ভর্তি পরীক্ষা ২০২৩-২৪',
-    'data/medical_24_25_questions.json': 'মেডিকেল ভর্তি পরীক্ষা ২০২৪-২৫',
+  // 4a. Bundled datasets (always available) — label = where the question came
+  //     from; `tag` = the exam-session tag so the paper pages can include them
+  //     even when the API is down (they are de-duplicated against API rows).
+  const BUNDLED = {
+    'data/gst_a_23_24_questions.json': { label: 'GST-A ভর্তি পরীক্ষা ২০২৩-২৪', tag: "GST-A '23-24" },
+    'data/medical_24_25_questions.json': { label: 'মেডিকেল ভর্তি পরীক্ষা ২০২৪-২৫', tag: "Medical '24-25" },
   };
-  for (const f of Object.keys(BUNDLED_LABELS)) {
+  for (const [f, meta] of Object.entries(BUNDLED)) {
     try {
       const arr = JSON.parse(readFileSync(join(ROOT, f), 'utf8'));
-      (Array.isArray(arr) ? arr : []).forEach((q) => add(q, 'bundled', BUNDLED_LABELS[f]));
+      (Array.isArray(arr) ? arr : []).forEach((q) =>
+        add({ ...q, level: q.level || 'ADMISSION', tags: [...new Set([...(q.tags || []), meta.tag])] }, 'bundled', meta.label)
+      );
     } catch (e) {
       console.warn(`[seo] could not read ${f}: ${e.message}`);
     }
   }
 
   if (SKIP_FETCH) return [...byId.values()];
+
+  // 4b'. Exam papers: every question tagged "<Institution> 'YY-YY".
+  //      `board=` filters the `tags` array with a partial match, so one query
+  //      per institution ("Medical '") returns all of its sessions at once;
+  //      the exact tag is used later to split them into papers.
+  {
+    const PAGE = 100;
+    const MAX_PAGES = 60; // 6,000 questions per institution is plenty
+    const paperDeadline = Date.now() + 300000;
+    const perInstitution = ADMISSION_INSTITUTIONS.map((inst) => async () => {
+      if (Date.now() > paperDeadline) return null;
+      const q = encodeURIComponent(`${inst.tag} '`);
+      const first = await fetchJson(`${API}/admin/questions?page=1&limit=${PAGE}&board=${q}`, 30000);
+      const rows = [...(first?.questions || [])];
+      const total = Number(first?.total) || rows.length;
+      const pages = Math.min(Math.ceil(total / PAGE), MAX_PAGES);
+      if (pages > 1) {
+        const more = await pool(
+          Array.from({ length: pages - 1 }, (_, i) => async () => {
+            if (Date.now() > paperDeadline) return null;
+            const d = await fetchJson(`${API}/admin/questions?page=${i + 2}&limit=${PAGE}&board=${q}`, 30000);
+            return d?.questions || [];
+          }),
+          4
+        );
+        for (const list of more) if (list) rows.push(...list);
+      }
+      return { inst: inst.tag, total, rows };
+    });
+    const results = await pool(perInstitution, 2);
+    let paperRows = 0;
+    for (const r of results) {
+      if (!r) continue;
+      for (const q of r.rows) {
+        add(q, 'api', '');
+        paperRows++;
+      }
+      console.log(`[seo] exam tags "${r.inst} '…": ${r.rows.length}/${r.total} rows`);
+    }
+    if (paperRows === 0) console.warn('[seo] WARNING: no exam-tagged questions fetched — paper pages will use bundled data only');
+  }
 
   // 4b. Live API: per-chapter sample + admission questions with explanations
   const tasks = [];
@@ -495,6 +633,82 @@ for (const q of allQuestions) {
 }
 console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
 
+// --- Group exam-tagged questions into previous-year papers -----------------
+// A question tagged ["Medical '21-22", "Dental '22-23"] appears in both papers.
+// Within a paper, near-identical rows (bundled JSON vs API) are collapsed by
+// their normalised question text; API rows win because they carry real ids,
+// slugs and images.
+const MIN_PAPER_QUESTIONS = 10;
+const papers = new Map(); // "inst.id|session" -> paper
+const textKey = (q) => bnSlug(plain(q.question)).toLowerCase();
+for (const q of [...allQuestions].sort((a, b) => (a.source === 'api' ? 0 : 1) - (b.source === 'api' ? 0 : 1))) {
+  for (const tag of q.tags) {
+    const parsed = parseExamTag(tag);
+    if (!parsed) continue;
+    const inst = findInstitutionByTag(parsed.prefix);
+    if (!inst) continue;
+    const key = `${inst.id}|${parsed.session}`;
+    if (!papers.has(key)) {
+      papers.set(key, {
+        inst,
+        session: parsed.session,
+        tag: buildExamTag(inst.tag, parsed.session),
+        title: paperTitle(inst, parsed.session),
+        path: paperPath(inst, parsed.session),
+        questions: [],
+        _seen: new Set(),
+      });
+    }
+    const p = papers.get(key);
+    const tk = textKey(q);
+    if (p._seen.has(tk)) continue;
+    p._seen.add(tk);
+    p.questions.push(q);
+  }
+}
+for (const [key, p] of [...papers]) {
+  if (p.questions.length < MIN_PAPER_QUESTIONS) {
+    papers.delete(key);
+    continue;
+  }
+  const famOrder = subjectOrderFor(p.inst);
+  const famRank = (q) => {
+    const i = famOrder.indexOf(subjectFamilyOf(q.subject).key);
+    return i === -1 ? 99 : i;
+  };
+  // exam subject order → paper (1st/2nd) → upload batch (≈ chapter order) → serial within batch
+  p.questions.sort(
+    (a, b) =>
+      famRank(a) - famRank(b) ||
+      a.subject.localeCompare(b.subject) ||
+      a.createdAt - b.createdAt ||
+      a.orderIndex - b.orderIndex ||
+      a.seq - b.seq
+  );
+  p.url = `${SITE}${p.path}`;
+  p.explained = p.questions.filter((q) => q.explanation).length;
+  // subject-family breakdown, in exam order
+  const fam = new Map();
+  for (const q of p.questions) {
+    const f = subjectFamilyOf(q.subject);
+    if (!fam.has(f.key)) fam.set(f.key, { ...f, count: 0 });
+    fam.get(f.key).count++;
+  }
+  p.families = [...fam.values()];
+  delete p._seen;
+  for (const q of p.questions) (q.papers ||= []).push(p);
+}
+const paperList = [...papers.values()].sort(
+  (a, b) =>
+    ADMISSION_INSTITUTIONS.indexOf(a.inst) - ADMISSION_INSTITUTIONS.indexOf(b.inst) || compareSessionsDesc(a.session, b.session)
+);
+const papersByInst = new Map(); // inst.id -> papers (newest first)
+for (const p of paperList) {
+  if (!papersByInst.has(p.inst.id)) papersByInst.set(p.inst.id, []);
+  papersByInst.get(p.inst.id).push(p);
+}
+console.log(`[seo] previous-year papers: ${paperList.length} (${[...papersByInst.keys()].join(', ') || 'none'})`);
+
 // --- Hub page -------------------------------------------------------------
 {
   const totalChapters = subjects.reduce((n, [, ch]) => n + Object.keys(ch).length, 0);
@@ -511,6 +725,15 @@ console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
 <p class="lede">পরীক্ষাঙ্গন (Porikkhangon)-এর অধ্যায়ভিত্তিক সিলেবাস গাইডে HSC ও ভর্তি পরীক্ষার ${subjects.length}টি বিষয়ের ${totalChapters}টি অধ্যায়ের সম্পূর্ণ টপিক তালিকা, প্রস্তুতি টিপস এবং ফ্রি MCQ প্র্যাকটিসের সুবিধা একসাথে পাবে। নিজের বিষয় বেছে নাও, অধ্যায় খুলে দেখো কোন কোন টপিক থেকে প্রশ্ন আসে — এবং সাথে সাথেই প্রশ্নব্যাংকে প্র্যাকটিস শুরু করো।</p>
 <h2>বিষয় বেছে নাও</h2>
 <div class="grid">${cards}</div>
+${paperList.length ? `<div class="tips"><h2>বিগত বছরের ভর্তি পরীক্ষার প্রশ্ন সমাধান</h2>
+<p style="margin:0 0 8px;color:var(--mist)">সিলেবাস শেষ? এবার আসল প্রশ্নে নিজেকে যাচাই করো — ${paperList.length}টি সেশনের পূর্ণাঙ্গ প্রশ্নপত্র ব্যাখ্যাসহ।</p>
+<div class="pill-row">
+<a href="${ADMISSION_HUB_PATH}">সব ভর্তি পরীক্ষা</a>
+${[...papersByInst.keys()].slice(0, 6).map((id) => {
+  const ps = papersByInst.get(id);
+  return `<a href="${institutionPath(ps[0].inst)}">${esc(ps[0].inst.short)} (${toBanglaDigits(ps.length)} সেশন)</a>`;
+}).join('\n')}
+</div></div>` : ''}
 <div class="tips"><h2>কীভাবে এই গাইড ব্যবহার করবে?</h2>
 <ul class="topics">
 <li>প্রথমে নিজের বিষয়ের পেজে যাও — সেখানে সব অধ্যায়ের তালিকা পাবে।</li>
@@ -685,8 +908,282 @@ ${pager}
   });
 }
 
-// --- Public question pages (Sattacademy-style) ----------------------------
+// ===========================================================================
+// Previous-year admission papers  (/admission-questions/…)
+// Same recipe as the HSC syllabus pages that already rank: one hub, one page
+// per institution, one page per session — every page fully server-rendered,
+// interlinked, with breadcrumbs + structured data.
+// ===========================================================================
 const LETTERS = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ'];
+const PAPER_HUB_URL = `${SITE}${ADMISSION_HUB_PATH}`;
+const HUB_CRUMB = ['বিগত বছরের ভর্তি প্রশ্ন', PAPER_HUB_URL];
+const bn = (n) => toBanglaDigits(n);
+const familyList = (p) => p.families.map((f) => `${f.bn} ${bn(f.count)}`).join(' · ');
+
+const PAPER_TIPS = [
+  'প্রথমবার সময় ধরে সলভ করো (১০০ প্রশ্নে ৬০ মিনিট ধরে নাও) — তারপর উত্তর মিলাও।',
+  'ভুল হওয়া প্রশ্নের ব্যাখ্যা পড়ে সেই অধ্যায়টা আবার রিভিশন দাও; শুধু উত্তর মুখস্থ করো না।',
+  'কোন অধ্যায় থেকে বারবার প্রশ্ন আসছে সেটা টুকে রাখো — পরের বছরের প্রশ্নের সবচেয়ে ভালো ইঙ্গিত এটাই।',
+  'একই সেশনের প্রশ্ন ২–৩ সপ্তাহ পর আবার সলভ করো; দ্বিতীয়বারে ৯০%+ না হলে অধ্যায়টা কাঁচা আছে।',
+];
+
+// --- Hub -------------------------------------------------------------------
+if (paperList.length) {
+  const totalQ = paperList.reduce((n, p) => n + p.questions.length, 0);
+  const instIds = [...papersByInst.keys()];
+  const sections = ADMISSION_CATEGORY_ORDER.map((cat) => {
+    const ids = instIds.filter((id) => papersByInst.get(id)[0].inst.category === cat);
+    if (!ids.length) return '';
+    const cards = ids
+      .map((id) => {
+        const ps = papersByInst.get(id);
+        const inst = ps[0].inst;
+        const n = ps.reduce((s, p) => s + p.questions.length, 0);
+        const pills = ps
+          .slice(0, 4)
+          .map((p) => `<a href="${p.path}">${sessionToBangla(p.session)}</a>`)
+          .join('');
+        return `<div class="card"><a href="${institutionPath(inst)}" style="text-decoration:none;color:inherit"><b>${esc(inst.name)}</b><span>${esc(inst.nameEn)} · ${bn(ps.length)}টি সেশন · ${bn(n)}টি প্রশ্ন ব্যাখ্যাসহ</span></a><div class="pill-row">${pills}${ps.length > 4 ? `<a href="${institutionPath(inst)}">সব সেশন →</a>` : ''}</div></div>`;
+      })
+      .join('\n');
+    return `<h2 id="${cat}">${esc(ADMISSION_CATEGORY_LABELS[cat])}</h2><div class="grid">${cards}</div>`;
+  }).join('\n');
+
+  const latest = paperList.slice().sort((a, b) => compareSessionsDesc(a.session, b.session)).slice(0, 8);
+
+  const body = `
+<h1>বিগত বছরের ভর্তি পরীক্ষার প্রশ্ন ও সমাধান — মেডিকেল, ঢাবি, বুয়েট, GST</h1>
+<p class="lede">বাংলাদেশের প্রধান ভর্তি পরীক্ষাগুলোর বিগত বছরের প্রশ্নপত্র (Previous Year Question) — প্রতিটি প্রশ্নের সঠিক উত্তর ও ব্যাখ্যাসহ, বিষয় অনুযায়ী সাজানো। পরীক্ষাঙ্গনের প্রশ্নব্যাংক থেকে সরাসরি আসা ${bn(instIds.length)}টি প্রতিষ্ঠানের ${bn(paperList.length)}টি সেশনের মোট ${bn(totalQ)}টি প্রশ্ন এখানে ফ্রিতে পড়া ও প্র্যাকটিস করা যায়।</p>
+<div class="stats">
+<div class="stat"><b>${bn(instIds.length)}</b><span>ভর্তি পরীক্ষা</span></div>
+<div class="stat"><b>${bn(paperList.length)}</b><span>সেশন / প্রশ্নপত্র</span></div>
+<div class="stat"><b>${bn(totalQ)}</b><span>প্রশ্ন, উত্তরসহ</span></div>
+<div class="stat"><b>${bn(paperList.reduce((n, p) => n + p.explained, 0))}</b><span>ব্যাখ্যাসহ প্রশ্ন</span></div>
+</div>
+<h2>সাম্প্রতিক প্রশ্নপত্র</h2>
+<div class="pill-row">${latest.map((p) => `<a href="${p.path}">${esc(p.title)}</a>`).join('')}</div>
+${sections}
+<div class="tips"><h2>বিগত বছরের প্রশ্ন কীভাবে সলভ করবে?</h2>
+<ul class="topics">${PAPER_TIPS.map((t) => `<li>${esc(t)}</li>`).join('\n')}</ul></div>
+<div class="banner"><h2>পুরো প্রশ্নপত্রে টাইমার সহ পরীক্ষা দাও</h2>
+<p>যেকোনো সেশন বেছে নাও, অ্যাপে মডেল টেস্ট দাও, ভুলগুলো অটো-সেভ হবে রিভিশনের জন্য — ফ্রি।</p>
+<a href="/qbank?level=ADMISSION">প্রশ্নব্যাংকে যাও</a></div>`;
+
+  const jsonLd = [
+    breadcrumbLd([['পরীক্ষাঙ্গন', `${SITE}/`], HUB_CRUMB]),
+    {
+      '@type': 'ItemList',
+      name: 'বিগত বছরের ভর্তি পরীক্ষার প্রশ্নপত্র',
+      numberOfItems: paperList.length,
+      itemListElement: paperList.map((p, i) => ({ '@type': 'ListItem', position: i + 1, name: p.title, url: p.url })),
+    },
+  ];
+
+  const path = writePage('admission-questions/index.html', shell({
+    title: 'বিগত বছরের ভর্তি পরীক্ষার প্রশ্ন ও সমাধান — মেডিকেল, ঢাবি, বুয়েট, GST | পরীক্ষাঙ্গন',
+    description: `মেডিকেল, ডেন্টাল, ঢাবি ক ইউনিট, বুয়েট, GST সহ ${instIds.length}টি ভর্তি পরীক্ষার বিগত বছরের প্রশ্ন — ${paperList.length}টি সেশনের ${totalQ}টি MCQ সঠিক উত্তর ও ব্যাখ্যাসহ। পরীক্ষাঙ্গনে ফ্রি প্র্যাকটিস করো।`,
+    canonical: PAPER_HUB_URL,
+    breadcrumbs: [['পরীক্ষাঙ্গন', `${SITE}/`], HUB_CRUMB],
+    jsonLd,
+    body,
+  }));
+  urls.push([path, '0.9']);
+}
+
+// --- Institution pages -----------------------------------------------------
+for (const ps of papersByInst.values()) {
+  const inst = ps[0].inst;
+  const instUrl = `${SITE}${institutionPath(inst)}`;
+  const totalQ = ps.reduce((n, p) => n + p.questions.length, 0);
+  const sessionsBn = ps.map((p) => sessionToBangla(p.session));
+
+  const cards = ps
+    .map(
+      (p) => `<a class="card" href="${p.path}"><span class="yr">${sessionToBangla(p.session)}</span><b>${esc(p.title)} — প্রশ্ন ও সমাধান</b><span>${bn(p.questions.length)}টি প্রশ্ন · ${familyList(p)}</span>${p.explained ? `<span class="tagline">${bn(p.explained)}টি ব্যাখ্যাসহ</span>` : ''}</a>`
+    )
+    .join('\n');
+
+  const formatHtml = inst.format?.length
+    ? `<h2>${esc(inst.name)} — পরীক্ষার ধরন</h2>
+<table class="format">${inst.format.map((r) => `<tr><th>${esc(r.label)}</th><td>${esc(r.value)}</td></tr>`).join('')}</table>`
+    : '';
+
+  const faqHtml = inst.faqs?.length
+    ? `<h2>সাধারণ প্রশ্ন</h2><div class="faq">${inst.faqs.map((f) => `<details><summary>${esc(f.q)}</summary><div>${esc(f.a)}</div></details>`).join('')}</div>`
+    : '';
+
+  // Chapter frequency across all sessions — genuinely useful "যে অধ্যায় থেকে বেশি প্রশ্ন আসে"
+  const chapterFreq = new Map();
+  for (const p of ps) for (const q of p.questions) {
+    if (!q.chapter) continue;
+    const k = `${q.subject}||${q.chapter}`;
+    chapterFreq.set(k, (chapterFreq.get(k) || 0) + 1);
+  }
+  const topChapters = [...chapterFreq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+  const topChaptersHtml = topChapters.length
+    ? `<h2>যে অধ্যায়গুলো থেকে সবচেয়ে বেশি প্রশ্ন এসেছে</h2>
+<p class="lede">${esc(inst.short)}-এর ${bn(ps.length)}টি সেশনের ${bn(totalQ)}টি প্রশ্ন বিশ্লেষণ করে পাওয়া শীর্ষ অধ্যায়:</p>
+<div class="pill-row">${topChapters.map(([k, n]) => {
+  const [subject, chapter] = k.split('||');
+  const hasChapterPage = SYLLABUS_DB[subject] && SYLLABUS_DB[subject][chapter];
+  const label = `${esc(chapter)} <small style="color:var(--mist)">(${esc(subjectToBangla(subject))}) · ${bn(n)}</small>`;
+  return hasChapterPage ? `<a href="${HUB}${slugify(subject)}/${slugify(chapter)}/">${label}</a>` : `<a href="/qbank?level=ADMISSION&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}">${label}</a>`;
+}).join('')}</div>`
+    : '';
+
+  const body = `
+<h1>${esc(inst.name)} — বিগত বছরের প্রশ্ন ও সমাধান (${esc(inst.shortEn)} Question Bank)</h1>
+<p class="lede">${esc(inst.description)}</p>
+<div class="chips"><span class="chip">${bn(ps.length)}টি সেশন</span><span class="chip">${bn(totalQ)}টি প্রশ্ন</span><span class="chip">সঠিক উত্তর ও ব্যাখ্যাসহ</span><span class="chip">${ps.length > 1 ? `${esc(sessionsBn[sessionsBn.length - 1])} থেকে ${esc(sessionsBn[0])}` : `সেশন ${esc(sessionsBn[0])}`}</span></div>
+<h2>সেশন অনুযায়ী প্রশ্নপত্র</h2>
+<div class="grid">${cards}</div>
+${formatHtml}
+${topChaptersHtml}
+<div class="tips"><h2>${esc(inst.short)}-এর বিগত প্রশ্ন সলভ করার কৌশল</h2>
+<ul class="topics">${PAPER_TIPS.map((t) => `<li>${esc(t)}</li>`).join('\n')}</ul></div>
+${faqHtml}
+<div class="banner"><h2>${esc(inst.short)}-এর প্রশ্নে টাইমার সহ মডেল টেস্ট দাও</h2>
+<p>সেশন বেছে নাও, ${bn(100)} প্রশ্নে ৬০ মিনিট — রেজাল্ট, ভুলের তালিকা ও ব্যাখ্যা সাথে সাথে।</p>
+<a href="/qbank?level=ADMISSION&institution=${encodeURIComponent(inst.qbankInstitution)}&unit=all">অ্যাপে প্র্যাকটিস শুরু করো</a></div>`;
+
+  const jsonLd = [
+    breadcrumbLd([['পরীক্ষাঙ্গন', `${SITE}/`], HUB_CRUMB, [inst.name, instUrl]]),
+    {
+      '@type': 'ItemList',
+      name: `${inst.name} — বিগত বছরের প্রশ্নপত্র`,
+      numberOfItems: ps.length,
+      itemListElement: ps.map((p, i) => ({ '@type': 'ListItem', position: i + 1, name: p.title, url: p.url })),
+    },
+    ...(inst.faqs?.length
+      ? [{
+          '@type': 'FAQPage',
+          mainEntity: inst.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+        }]
+      : []),
+  ];
+
+  const path = writePage(`admission-questions/${inst.id}/index.html`, shell({
+    title: `${inst.name} — বিগত বছরের প্রশ্ন ও সমাধান (${inst.shortEn} Question Bank) | পরীক্ষাঙ্গন`,
+    description: `${inst.name} ${ps.length > 1 ? `${sessionsBn[sessionsBn.length - 1]} থেকে ${sessionsBn[0]}` : sessionsBn[0]} — ${ps.length}টি সেশনের ${totalQ}টি প্রশ্ন সঠিক উত্তর ও ব্যাখ্যাসহ। ${inst.shortEn} previous year questions with solutions — পরীক্ষাঙ্গনে ফ্রি।`,
+    canonical: instUrl,
+    breadcrumbs: [['পরীক্ষাঙ্গন', `${SITE}/`], HUB_CRUMB, [inst.name, instUrl]],
+    jsonLd,
+    body,
+  }));
+  urls.push([path, '0.8']);
+}
+
+// --- Paper pages (one per session) ----------------------------------------
+const TOGGLE_SCRIPT = `(function(){var b=document.getElementById('toggle-ans');if(!b)return;var k='pk-hide-ans';var on=localStorage.getItem(k)==='1';function apply(){document.body.classList.toggle('hide-ans',on);b.textContent=on?'উত্তর দেখাও':'উত্তর লুকাও';b.setAttribute('aria-pressed',on?'true':'false');if(!on){document.querySelectorAll('article.pq ol.opts li').forEach(function(x){x.classList.remove('picked');x.style.borderColor='';x.style.background=''})}}b.addEventListener('click',function(){on=!on;try{localStorage.setItem(k,on?'1':'0')}catch(e){}apply()});apply();document.querySelectorAll('article.pq ol.opts li').forEach(function(li){li.addEventListener('click',function(){if(!document.body.classList.contains('hide-ans'))return;var art=li.closest('article');art.querySelectorAll('li').forEach(function(x){x.classList.remove('picked')});li.classList.add('picked');li.style.borderColor=li.classList.contains('correct')?'#16a34a':'#dc2626';li.style.background=li.classList.contains('correct')?'#f2fbf5':'#fef2f2'})})})();`;
+
+for (const p of paperList) {
+  const inst = p.inst;
+  const siblings = papersByInst.get(inst.id);
+  const idx = siblings.indexOf(p);
+  const newer = siblings[idx - 1];
+  const older = siblings[idx + 1];
+  const instUrl = `${SITE}${institutionPath(inst)}`;
+
+  // Sections per subject family, continuous numbering across the page
+  let n = 0;
+  const sections = p.families
+    .map((f) => {
+      const qs = p.questions.filter((q) => subjectFamilyOf(q.subject).key === f.key);
+      const items = qs
+        .map((q) => {
+          n++;
+          const correctText = q.options[q.correctAnswerIndex] || '';
+          const opts = q.options
+            .map((opt, i) => `<li${i === q.correctAnswerIndex ? ' class="correct"' : ''}><span class="lt">${LETTERS[i] || i + 1}</span><span class="txt">${esc(opt)}${q.optionsImages?.[i] ? `<br><img class="qimg" loading="lazy" src="${esc(q.optionsImages[i])}" alt="বিকল্প ${i + 1}">` : ''}</span></li>`)
+            .join('');
+          const expl = q.explanation || q.explanationImage
+            ? `<details class="expl"><summary>ব্যাখ্যা</summary><div class="expl-body">${esc(q.explanation)}${q.explanationImage ? `<img class="qimg" loading="lazy" src="${esc(q.explanationImage)}" alt="ব্যাখ্যার চিত্র">` : ''}</div></details>`
+            : '';
+          const meta = [subjectToBangla(q.subject), q.chapter].filter(Boolean).map(esc).join(' · ');
+          return `<article class="pq" id="q${n}">
+<div class="pq-head"><span class="num">${bn(n)}</span><span class="meta">${meta}</span></div>
+<h3><a href="${rel(q.url)}">${esc(q.question)}</a></h3>
+${q.questionImage ? `<img class="qimg" loading="lazy" src="${esc(q.questionImage)}" alt="প্রশ্নের চিত্র">` : ''}
+<ol class="opts">${opts}</ol>
+<div class="answer"><span class="amed">✓</span><div><b>সঠিক উত্তর:</b> ${LETTERS[q.correctAnswerIndex] || ''}. ${esc(correctText)}</div></div>
+${expl}
+</article>`;
+        })
+        .join('\n');
+      return `<h2 class="sub" id="${slugify(f.key)}">${esc(f.bn)} <small>${esc(f.en)} · ${bn(qs.length)}টি প্রশ্ন</small></h2>\n${items}`;
+    })
+    .join('\n');
+
+  const toc = p.families.map((f) => `<a href="#${slugify(f.key)}">${esc(f.bn)}<small>${bn(f.count)}</small></a>`).join('');
+  const sessionPills = siblings
+    .map((s) => `<a href="${s.path}"${s === p ? ' class="cur" aria-current="page"' : ''}>${sessionToBangla(s.session)}</a>`)
+    .join('');
+
+  const pager = `<div class="pager">
+${older ? `<a href="${older.path}">← ${esc(older.title)}</a>` : '<span></span>'}
+${newer ? `<a href="${newer.path}">${esc(newer.title)} →</a>` : `<a href="${institutionPath(inst)}">সব সেশন</a>`}
+</div>`;
+
+  const body = `
+<h1>${esc(p.title)} — প্রশ্ন ও সমাধান</h1>
+<p class="lede">${esc(inst.name)} ${sessionToBangla(p.session)} সেশনের (${esc(inst.shortEn)} ${sessionToSlug(p.session)}) প্রশ্নপত্রের ${bn(p.questions.length)}টি MCQ — প্রতিটির সঠিক উত্তর${p.explained ? ` এবং ${bn(p.explained)}টি প্রশ্নের বিস্তারিত ব্যাখ্যা` : ''}, বিষয় অনুযায়ী সাজানো (${familyList(p)})। প্রশ্নগুলো পরীক্ষাঙ্গনের প্রশ্নব্যাংক থেকে সরাসরি আনা; কোনো প্রশ্ন আলাদা করে পড়তে তার উপর ক্লিক করো।</p>
+<div class="chips"><span class="chip src">${esc(p.tag)}</span><span class="chip">${bn(p.questions.length)}টি প্রশ্ন</span>${p.explained ? `<span class="chip">${bn(p.explained)}টি ব্যাখ্যাসহ</span>` : ''}<span class="chip">ভর্তি পরীক্ষা</span></div>
+${siblings.length > 1 ? `<h2>অন্যান্য সেশন</h2>
+<div class="pill-row">${sessionPills}</div>` : ''}
+<h2>বিষয়ভিত্তিক সূচি</h2>
+<div class="toc">${toc}</div>
+<div class="toolbar"><span>নিজে সলভ করতে চাও? উত্তর লুকিয়ে অপশনে ট্যাপ করো।</span><div class="tb"><button id="toggle-ans" type="button" aria-pressed="false">উত্তর লুকাও</button><a class="btn primary" href="${qbankPaperLink(inst, p.session)}">টাইমার সহ পরীক্ষা দাও</a></div></div>
+${sections}
+<div class="tips"><h2>এই প্রশ্নপত্র থেকে সর্বোচ্চ ফল পেতে</h2>
+<ul class="topics">${PAPER_TIPS.map((t) => `<li>${esc(t)}</li>`).join('\n')}
+<li>${esc(inst.short)}-এর <a href="${institutionPath(inst)}">অন্য সেশনগুলোও</a> একইভাবে সলভ করো — ৫ বছরের প্রশ্ন শেষ করলে ধরন পুরোপুরি চেনা হয়ে যাবে।</li></ul></div>
+${pager}
+<div class="banner"><h2>${esc(p.title)} — টাইমার সহ পুরো পরীক্ষা দাও</h2>
+<p>অ্যাপে এই সেশনের প্রশ্নে মডেল টেস্ট দাও; রেজাল্ট, ভুলের তালিকা ও ব্যাখ্যা সাথে সাথে পাবে — ফ্রি।</p>
+<a href="${qbankPaperLink(inst, p.session)}">পরীক্ষা শুরু করো</a></div>`;
+
+  const crumbs = [['পরীক্ষাঙ্গন', `${SITE}/`], HUB_CRUMB, [inst.name, instUrl], [sessionToBangla(p.session), p.url]];
+  const jsonLd = [
+    breadcrumbLd(crumbs),
+    {
+      '@type': 'LearningResource',
+      '@id': p.url,
+      name: `${p.title} — প্রশ্ন ও সমাধান`,
+      alternateName: `${inst.nameEn} ${sessionToSlug(p.session)} question with solution`,
+      inLanguage: 'bn-BD',
+      learningResourceType: 'Previous year question paper with solutions',
+      educationalLevel: 'University admission',
+      educationalUse: 'practice',
+      teaches: p.families.map((f) => f.en),
+      about: { '@type': 'Thing', name: `${inst.nameEn} ${sessionToSlug(p.session)}` },
+      numberOfItems: p.questions.length,
+      isPartOf: { '@type': 'CollectionPage', name: `${inst.name} — বিগত বছরের প্রশ্নপত্র`, url: instUrl },
+      provider: { '@type': 'Organization', name: 'Porikkhangon', sameAs: SITE },
+      isAccessibleForFree: true,
+      hasPart: p.questions.slice(0, 100).map((q) => ({
+        '@type': 'Question',
+        name: plain(q.question).slice(0, 150),
+        url: q.url,
+        eduQuestionType: 'Multiple choice',
+        acceptedAnswer: { '@type': 'Answer', text: plain(q.options[q.correctAnswerIndex] || '') },
+      })),
+    },
+  ];
+
+  const path = writePage(`admission-questions/${inst.id}/${sessionToSlug(p.session)}/index.html`, shell({
+    title: `${p.title} প্রশ্ন ও সমাধান (${inst.shortEn} Question ${sessionToSlug(p.session)}) | পরীক্ষাঙ্গন`,
+    description: `${p.title} সেশনের ${p.questions.length}টি প্রশ্নের সঠিক উত্তর ও ব্যাখ্যাসহ সমাধান — ${p.families.map((f) => f.bn).join(', ')}। ${inst.shortEn} ${sessionToSlug(p.session)} question solve — পরীক্ষাঙ্গনে ফ্রি প্র্যাকটিস করো।`,
+    canonical: p.url,
+    breadcrumbs: crumbs,
+    jsonLd,
+    body,
+    mathjax: true,
+    script: TOGGLE_SCRIPT,
+  }));
+  urls.push([path, '0.8']);
+}
+
+// --- Public question pages (Sattacademy-style) ----------------------------
 let qPages = 0;
 for (const q of allQuestions) {
   const subjectSlug = q.subject ? slugify(q.subject) : '';
@@ -717,15 +1214,31 @@ for (const q of allQuestions) {
 <div class="qlist">${siblings.map((s) => `<a href="${rel(s.url)}">${esc(plain(s.question).slice(0, 110))}</a>`).join('\n')}</div>`
     : '';
 
+  // Previous-year paper(s) this question appeared in → link up to the paper
+  // page and sideways to the next questions of the same paper.
+  const qPapers = q.papers || [];
+  const mainPaper = qPapers[0];
+  let paperHtml = '';
+  if (mainPaper) {
+    const pos = mainPaper.questions.indexOf(q);
+    const around = mainPaper.questions.filter((x, i) => x !== q && Math.abs(i - pos) <= 3).slice(0, 5);
+    paperHtml = `<h2>এই প্রশ্নটি যে পরীক্ষায় এসেছে</h2>
+<div class="pill-row">${qPapers.map((pp) => `<a href="${pp.path}">${esc(pp.title)} — সম্পূর্ণ প্রশ্ন ও সমাধান</a>`).join('')}</div>
+${around.length ? `<h2>${esc(mainPaper.title)}-এর আরও প্রশ্ন</h2>
+<div class="qlist">${around.map((s) => `<a href="${rel(s.url)}">${esc(plain(s.question).slice(0, 110))}</a>`).join('\n')}</div>` : ''}`;
+  }
+
   const levelLabel = q.level === 'ADMISSION' ? 'ভর্তি পরীক্ষা' : q.level === 'MAINBOOK' ? 'মূল বই' : q.level === 'ACADEMIC' ? 'HSC একাডেমিক' : '';
-  const srcChip = q.sourceLabel ? `<span class="chip src">সূত্র: ${esc(String(q.sourceLabel))}</span>` : '';
-  const chips = srcChip + [q.subject, q.chapter, levelLabel, ...(q.tags || []).slice(0, 2)]
+  const srcChip = mainPaper
+    ? `<a class="chip src" href="${mainPaper.path}">সূত্র: ${esc(mainPaper.title)}</a>`
+    : q.sourceLabel ? `<span class="chip src">সূত্র: ${esc(String(q.sourceLabel))}</span>` : '';
+  const chips = srcChip + [q.subject, q.chapter, levelLabel, ...(q.tags || []).filter((t) => !qPapers.some((pp) => pp.tag === t)).slice(0, 2)]
     .filter((c) => c && c !== q.sourceLabel)
     .map((c) => `<span class="chip">${esc(String(c))}</span>`)
     .join('');
 
   const descSource = plain(q.question);
-  const description = `${descSource.slice(0, 120)} — সঠিক উত্তর ও ব্যাখ্যা${q.subject ? ` · ${q.subject}` : ''}${q.chapter ? `, ${q.chapter}` : ''}। পরীক্ষাঙ্গনে ফ্রি MCQ প্র্যাকটিস করো।`;
+  const description = `${descSource.slice(0, 120)} — সঠিক উত্তর ও ব্যাখ্যা${mainPaper ? ` · ${mainPaper.title}` : ''}${q.subject ? ` · ${q.subject}` : ''}${q.chapter ? `, ${q.chapter}` : ''}। পরীক্ষাঙ্গনে ফ্রি MCQ প্র্যাকটিস করো।`;
 
   const body = `
 <article class="qcard">
@@ -737,10 +1250,11 @@ ${q.questionImage ? `<img class="qimg" src="${esc(q.questionImage)}" alt="প্
 <div class="answer"><span class="amed">✓</span><div><b>সঠিক উত্তর:</b> ${LETTERS[q.correctAnswerIndex] || ''}. ${esc(correctText)}</div></div>
 ${explHtml}
 </article>
+${paperHtml}
 ${moreHtml}
 <div class="banner"><h2>একই ধরনের আরও প্রশ্ন সলভ করো</h2>
 <p>৫০,০০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>
-<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
+<a href="${mainPaper ? qbankPaperLink(mainPaper.inst, mainPaper.session) : `/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}`}">${mainPaper ? `${esc(mainPaper.title)} — পুরো প্রশ্নপত্রে পরীক্ষা দাও` : 'প্রশ্নব্যাংকে প্র্যাকটিস করো'}</a></div>`;
 
   const jsonLd = [
     breadcrumbLd(crumbs),
@@ -752,9 +1266,11 @@ ${moreHtml}
       learningResourceType: 'MCQ question with solution',
       teaches: q.subject || 'HSC ও ভর্তি পরস্তুতি',
       educationalLevel: q.level === 'ADMISSION' ? 'University admission' : 'Higher Secondary',
-      isPartOf: hasChapterPage
-        ? { '@type': 'Course', name: `${q.subject} — HSC প্রস্তুতি কোর্স`, url: `${SITE}${HUB}${subjectSlug}/` }
-        : { '@type': 'Course', name: 'HSC ও ভর্তি প্রস্তুতি', url: `${SITE}${HUB}` },
+      isPartOf: mainPaper
+        ? { '@type': 'LearningResource', name: `${mainPaper.title} — প্রশ্ন ও সমাধান`, url: mainPaper.url }
+        : hasChapterPage
+          ? { '@type': 'Course', name: `${q.subject} — HSC প্রস্তুতি কোর্স`, url: `${SITE}${HUB}${subjectSlug}/` }
+          : { '@type': 'Course', name: 'HSC ও ভর্তি প্রস্তুতি', url: `${SITE}${HUB}` },
       provider: { '@type': 'Organization', name: 'Porikkhangon', sameAs: SITE },
       hasPart: {
         '@type': 'Question',
@@ -773,7 +1289,7 @@ ${moreHtml}
   ];
 
   writePage(`q/${q.slug}/index.html`, shell({
-    title: `${plain(q.question).slice(0, 70)} | ${q.subject || 'MCQ'} সমাধান | পরীক্ষাঙ্গন`,
+    title: `${plain(q.question).slice(0, 70)} | ${mainPaper ? mainPaper.title : `${q.subject || 'MCQ'} সমাধান`} | পরীক্ষাঙ্গন`,
     description,
     canonical: q.url,
     breadcrumbs: crumbs,
