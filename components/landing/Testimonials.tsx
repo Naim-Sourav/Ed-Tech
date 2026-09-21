@@ -1,115 +1,95 @@
-import { motion } from "motion/react";
-import { Star, Quote, BadgeCheck } from "lucide-react";
-import { testimonials } from "./data";
-import { Reveal, SectionTag, staggerParent, staggerChild } from "./ui";
+import { Quote, Star } from "lucide-react";
+import { Reveal, SectionTag } from "./helpers";
 
-const avatarColors = ["bg-brand", "bg-ink", "bg-gold", "bg-flag", "bg-brand-deep"];
+import type { Testimonial } from "./data";
+import { testimonials } from "./data";
+
+const GRADS = [
+  "from-brand-500 to-brand-700",
+  "from-amber-400 to-orange-600",
+  "from-amber-500 to-orange-600",
+  "from-emerald-500 to-teal-600",
+  "from-rose-500 to-orange-500",
+];
+
+type TM = Testimonial & { grad: string };
+
+const ROWS: TM[][] = [
+  testimonials.slice(0, 3).map((t, i) => ({ ...t, grad: GRADS[i % GRADS.length] })),
+  testimonials.slice(3).map((t, i) => ({ ...t, grad: GRADS[(i + 3) % GRADS.length] })),
+];
+
+function TCard({ t }: { t: TM }) {
+  return (
+    <figure className="card-shine group relative mx-2.5 w-[21rem] shrink-0 rounded-3xl border border-ink-100 bg-white p-6 shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-500/15 sm:w-[24rem]">
+      <Quote className="absolute right-6 top-6 size-8 text-brand-100 transition-colors duration-500 group-hover:text-brand-200" />
+      <div className="flex gap-1">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star key={i} className="size-4 fill-gold-400 text-gold-400" />
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span className="rounded-full bg-brand-50 px-3 py-1 text-[11.5px] font-bold text-brand-700 ring-1 ring-brand-500/15">
+          {t.result}
+        </span>
+        <span className="rounded-full bg-ink-50 px-3 py-1 text-[11.5px] font-semibold text-ink-600 ring-1 ring-ink-200/70">
+          {t.exam}
+        </span>
+      </div>
+      <blockquote className="mt-4 min-h-[7.5rem] text-[14.5px] leading-relaxed text-ink-700">“{t.quote}”</blockquote>
+      <figcaption className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
+        <span className={`grid size-11 place-items-center rounded-2xl bg-gradient-to-br ${t.grad} font-display text-base font-bold text-white shadow-md`}>
+          {t.name.slice(0, 1)}
+        </span>
+        <span>
+          <span className="block text-[15px] font-bold text-ink-900">{t.name}</span>
+          <span className="block text-[12.5px] font-medium text-ink-500">{t.org}</span>
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function Row({ items, reverse }: { items: TM[]; reverse?: boolean }) {
+  return (
+    <div className="flex w-max">
+      <div className={`flex ${reverse ? "marquee-third-slow marquee-third-reverse" : "marquee-third-slow"}`}>
+        {[0, 1, 2].flatMap((dup) =>
+          items.map((t, i) => <TCard key={`${t.name}-${dup}-${i}`} t={t} />),
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Testimonials() {
-  const [featured, ...rest] = testimonials;
-
   return (
-    <section id="testimonials" className="relative overflow-hidden bg-cream/50 py-20 sm:py-28">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-ink/8" aria-hidden="true" />
+    <section id="reviews" className="relative overflow-hidden py-20 sm:py-28" aria-label="শিক্ষার্থীদের মতামত">
+      <div className="absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-brand-50/80 to-transparent" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <SectionTag>রেজাল্ট বলেই কথা · Testimonials</SectionTag>
-          <h2 className="mt-5 font-display text-[34px] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[52px]">
-            Results speak
-            <br />
-            <span className="bg-gradient-to-r from-brand-deep to-brand-bright bg-clip-text text-transparent">
-              louder than promises.
-            </span>
-          </h2>
-          <p className="mt-4 text-[16px] leading-relaxed text-mist">
-            ভিকারুননিসা থেকে ময়মনসিংহ ক্যাডেট, ঢাবি ক-ইউনিট থেকে ঢামেক — তোমাদের গল্পই আমাদের সেরা মার্কেটিং।
-          </p>
-        </Reveal>
-
-        <motion.div
-          variants={staggerParent}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-60px" }}
-          className="mt-14 grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3"
-        >
-          {/* Featured */}
-          <motion.blockquote
-            variants={staggerChild}
-            whileHover={{ y: -6 }}
-            className="noise relative flex flex-col justify-between overflow-hidden rounded-[26px] bg-ink p-7 text-white shadow-[0_40px_80px_-36px_rgba(22,18,16,0.8)] lg:col-span-2 sm:p-9"
-          >
-            <span
-              className="pointer-events-none absolute -bottom-8 right-2 select-none font-bangla text-[150px] font-extrabold leading-none text-white/[0.045] sm:text-[200px]"
-              aria-hidden="true"
-            >
-              GPA-5
-            </span>
-            <div className="relative">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-gold" fill="currentColor" />
-                  ))}
-                </span>
-                <span className="rounded-full bg-lime px-3 py-1 text-[12px] font-bold text-ink">{featured.result}</span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold text-white/70 ring-1 ring-white/15">
-                  {featured.exam}
-                </span>
-              </div>
-              <p className="mt-6 max-w-xl font-bangla text-[20px] font-semibold leading-relaxed text-white/95 sm:text-[24px]">
-                “{featured.quote}”
-              </p>
-            </div>
-            <footer className="relative mt-8 flex items-center gap-4">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-lime font-display text-[15px] font-bold text-ink">
-                {featured.initials}
-              </span>
-              <div>
-                <p className="flex items-center gap-1.5 text-[15.5px] font-bold">
-                  {featured.name}
-                  <BadgeCheck className="h-4 w-4 text-lime" />
-                </p>
-                <p className="text-[13px] font-medium text-white/55">{featured.org}</p>
-              </div>
-            </footer>
-          </motion.blockquote>
-
-          {/* Rest */}
-          {rest.map((t, i) => (
-            <motion.blockquote
-              key={t.name}
-              variants={staggerChild}
-              whileHover={{ y: -6 }}
-              transition={{ duration: 0.3 }}
-              className="group relative flex flex-col justify-between rounded-[26px] bg-white p-6 ring-1 ring-ink/8 transition-shadow duration-500 hover:shadow-[0_28px_56px_-28px_rgba(22,18,16,0.3)] sm:p-7"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="rounded-full bg-lime-soft px-3 py-1 text-[11.5px] font-bold text-ink">{t.result}</span>
-                  <span className="rounded-full bg-paper px-3 py-1 text-[11.5px] font-semibold text-mist ring-1 ring-ink/8">
-                    {t.exam}
-                  </span>
-                </div>
-                <Quote className="mt-5 h-5 w-5 text-brand/30 transition-colors duration-500 group-hover:text-brand" fill="currentColor" />
-                <p className="mt-3 font-bangla text-[15.5px] font-medium leading-relaxed text-ink/85">“{t.quote}”</p>
-              </div>
-              <footer className="mt-6 flex items-center gap-3 border-t border-ink/6 pt-5">
-                <span className={`grid h-10 w-10 place-items-center rounded-full font-display text-[13px] font-bold text-white ${avatarColors[i % avatarColors.length]}`}>
-                  {t.initials}
-                </span>
-                <div>
-                  <p className="flex items-center gap-1.5 text-[14.5px] font-bold text-ink">
-                    {t.name}
-                    <BadgeCheck className="h-3.5 w-3.5 text-brand" />
-                  </p>
-                  <p className="text-[12.5px] font-medium text-mist">{t.org}</p>
-                </div>
-              </footer>
-            </motion.blockquote>
-          ))}
-        </motion.div>
+        <div className="mx-auto max-w-2xl text-center">
+          <Reveal>
+            <SectionTag icon={<Star className="size-4 fill-current" />} label="সাক্ষাৎ সাফল্য" />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h2 className="font-display mt-5 text-4xl font-bold leading-[1.15] tracking-tight text-ink-950 sm:text-5xl">
+              যারা জিতেছে, <span className="text-gradient">তারাই বলছে</span>
+            </h2>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="mt-5 text-lg leading-relaxed text-ink-600">
+              এসএসসি, এইচএসসি আর ভর্তি যোদ্ধাদের প্রতিদিনের সাথী — শোনো তাদের নিজের মুখেই।
+            </p>
+          </Reveal>
+        </div>
       </div>
+
+      <Reveal delay={0.15} className="marquee-paused mt-14">
+        <div className="space-y-5 [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
+          <Row items={ROWS[0]} />
+          <Row items={ROWS[1]} reverse />
+        </div>
+      </Reveal>
     </section>
   );
 }

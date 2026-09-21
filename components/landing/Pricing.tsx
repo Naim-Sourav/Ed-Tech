@@ -2,11 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Crown, ShieldCheck, ArrowRight } from "lucide-react";
 import { plans } from "./data";
-import { Reveal, SectionTag, toBn, staggerParent, staggerChild } from "./ui";
+import { Reveal, toBn, staggerParent, staggerChild } from "./helpers";
 
 const formatBDT = (n: number) => toBn(n.toLocaleString("en-IN"));
 
-export default function Pricing() {
+export default function Pricing({ onStart }: { onStart?: () => void }) {
   const [yearly, setYearly] = useState(true);
 
   return (
@@ -17,13 +17,19 @@ export default function Pricing() {
       />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <SectionTag>সাধ্যের মধ্যে · Pricing</SectionTag>
+          <span className="inline-flex items-center gap-2 rounded-full bg-mint px-4 py-1.5 text-[13px] font-semibold tracking-wide text-brand-deep ring-1 ring-brand/15">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-brand animate-pulse-ring" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
+            </span>
+            সাধ্যের মধ্যে · Pricing
+          </span>
           <h2 className="mt-5 font-display text-[34px] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[52px]">
             Cheaper than
             <span className="bg-gradient-to-r from-brand-deep to-brand-bright bg-clip-text text-transparent"> one guidebook.</span>
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-mist">
-            একটা অভ্যাসের গাইডের দামে মাসভর আনলিমিটেড চর্চা, লাইভ মক আর AI অ্যানালিটিক্স।
+            একটা অভ্যাসের গাইডের দামে মাসভর আনলিমিটেড অনুশীলন, লাইভ মক আর AI অ্যানালিটিক্স।
           </p>
         </Reveal>
 
@@ -139,9 +145,10 @@ export default function Pricing() {
                   ))}
                 </ul>
 
-                <a
-                  href="#/signup"
-                  className={`focus-ring group mt-8 inline-flex items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-bold transition-all duration-300 hover:-translate-y-0.5 ${
+                <button
+                  type="button"
+                  onClick={onStart}
+                  className={`focus-ring group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-bold transition-all duration-300 hover:-translate-y-0.5 ${
                     dark
                       ? "bg-lime text-ink shadow-[0_16px_36px_-14px_rgba(255,185,46,0.55)] hover:shadow-[0_20px_44px_-14px_rgba(255,185,46,0.65)]"
                       : "bg-ink text-paper hover:bg-brand-deep"
@@ -149,7 +156,7 @@ export default function Pricing() {
                 >
                   {plan.cta}
                   <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </a>
+                </button>
               </motion.article>
             );
           })}
@@ -163,7 +170,7 @@ export default function Pricing() {
             </span>
             <span className="hidden h-4 w-px bg-ink/15 sm:block" aria-hidden="true" />
             <div className="flex flex-wrap items-center justify-center gap-2">
-              {["bKash", "Nagad", "Rocket", "Upay", "কার্ড"].map((p) => (
+              {["বিকাশ", "নগদ", "রকেট"].map((p) => (
                 <span key={p} className="rounded-full bg-white px-3.5 py-1.5 text-[12px] font-bold text-ink/70 ring-1 ring-ink/10">
                   {p}
                 </span>
@@ -171,7 +178,7 @@ export default function Pricing() {
             </div>
           </div>
           <p className="text-center text-[12.5px] text-mist">
-            কার্ড ছাড়াই শুরু করো · যেকোনো সময় এক ট্যাপে বাতিল
+বিকাশ · নগদ · রকেট — যেকোনো সময় এক ট্যাপে বাতিল
           </p>
         </Reveal>
       </div>

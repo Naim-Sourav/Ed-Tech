@@ -1,15 +1,30 @@
 /* ─────────────────────────────────────────────────────────────
-   Porikkhangon (পরীক্ষাঙ্গন) — Landing content
+   Porikkhangon (পরীক্ষাঙ্গন) — landing content
+   SSC · HSC · Admission ONLY — the landing never talks about
+   government-job exams (no BCS / bank / NTRCA / primary-teacher copy).
+
+   The question + showcase + testimonial content comes from the previous
+   landing page (`git show HEAD:components/landing/data.ts`); the design
+   layer that renders it comes from premium-edtech-landing-page.zip.
    ───────────────────────────────────────────────────────────── */
 
-export const navLinks = [
-  { label: "Features", bn: "ফিচার", href: "#features" },
-  { label: "Exams", bn: "এক্সাম", href: "#showcase" },
-  { label: "Results", bn: "রেজাল্ট", href: "#testimonials" },
-  { label: "Pricing", bn: "প্রাইসিং", href: "#pricing" },
-  { label: "FAQ", bn: "জিজ্ঞাসা", href: "#faq" },
+/* ── Exam strip: the marquee right under the hero ── */
+export const EXAM_STRIP = [
+  "এসএসসি বোর্ড প্রস্তুতি",
+  "এইচএসসি বোর্ড প্রস্তুতি",
+  "ঢাবি ‘ক’ ইউনিট",
+  "ঢাবি ‘খ’ ইউনিট",
+  "চট্টগ্রাম বিশ্ববিদ্যালয়",
+  "রাজশাহী বিশ্ববিদ্যালয়",
+  "জাহাঙ্গীরনগর ‘ক’ ইউনিট",
+  "মেডিকেল ভর্তি পরীক্ষা",
+  "বুয়েট প্রশ্ন প্রস্তুতি",
+  "ইঞ্জিনিয়ারিং ভর্তি",
+  "GST গুচ্ছ ভর্তি",
+  "কৃষি গুচ্ছ ভর্তি",
 ];
 
+/* ── Subjects that scroll under the exam strip ── */
 export const subjects = [
   "Physics পদার্থবিজ্ঞান",
   "Chemistry রসায়ন",
@@ -18,20 +33,12 @@ export const subjects = [
   "Bangla বাংলা",
   "English ইংরেজি",
   "ICT তথ্য ও যোগাযোগ প্রযুক্তি",
-  "Accounting হিসাববিজ্ঞান",
-  "Economics অর্থনীতি",
-  "Geography ভূগোল",
-  "History ইতিহাস",
+  "Botany উদ্ভিদবিজ্ঞান",
+  "Zoology প্রাণিবিজ্ঞান",
   "General Knowledge সাধারণ জ্ঞান",
 ];
 
-export const stats = [
-  { value: 2.4, suffix: " লাখ+", decimals: 1, labelBn: "জন সক্রিয় শিক্ষার্থী", label: "Active students" },
-  { value: 1.2, suffix: " লাখ+", decimals: 1, labelBn: "সলভড প্রশ্ন", label: "Solved questions" },
-  { value: 38, suffix: " লাখ+", decimals: 0, labelBn: "মক এক্সাম সম্পন্ন", label: "Mock exams taken" },
-  { value: 4.9, suffix: "/৫", decimals: 1, labelBn: "শিক্ষার্থীদের রেটিং", label: "Student rating" },
-];
-
+/* ── Institutions our students come from ── */
 export const schools = [
   "Notre Dame College",
   "Dhaka Residential Model",
@@ -45,7 +52,7 @@ export const schools = [
   "BAF Shaheen College",
 ];
 
-/* ── Interactive question demo ── */
+/* ── Interactive question demo (hero) ── */
 export interface DemoQuestion {
   tag: string;
   tagBn: string;
@@ -62,9 +69,9 @@ export const demoQuestions: DemoQuestion[] = [
     tagBn: "পদার্থবিজ্ঞান · ১ম অধ্যায়",
     subject: "SSC",
     question: "নিচের কোনটি ভেক্টর রাশি?",
-    options: ["দ্রুতি", "দূরত্ব", "তাপমাত্রা", "কাজ"],
-    answer: 0,
-    solution: "দ্রুতির মান ও দিক উভয়ই আছে — তাই এটি ভেক্টর রাশি। দূরত্ব, তাপমাত্রা ও কাজ স্কেলার।",
+    options: ["দ্রুতি", "বেগ", "তাপমাত্রা", "কাজ"],
+    answer: 1,
+    solution: "বেগের মান ও দিক — দুটোই আছে, তাই এটি ভেক্টর রাশি। দ্রুতি, তাপমাত্রা ও কাজ স্কেলার রাশি।",
   },
   {
     tag: "HSC · Chemistry",
@@ -82,7 +89,7 @@ export const demoQuestions: DemoQuestion[] = [
     question: "Choose the correct synonym of “Candid” —",
     options: ["Rude", "Frank", "Silent", "Clever"],
     answer: 1,
-    solution: "Candid অর্থ স্পষ্টভাষী (frank) — ঢাবি ক ইউনিট ২০২২-২৩ প্রশ্ন।",
+    solution: "Candid অর্থ স্পষ্টভাষী (frank) — ঢাবি ‘ক’ ইউনিট ২০২২-২৩ ভর্তি পরীক্ষার প্রশ্ন।",
   },
   {
     tag: "SSC · Bangla",
@@ -95,12 +102,7 @@ export const demoQuestions: DemoQuestion[] = [
   },
 ];
 
-/* ── Bento features ── */
-export const marqueeMini = [
-  "লাইভ মক", "প্রশ্ন ব্যাংক", "অ্যানালিটিক্স", "লিডারবোর্ড", "বোর্ড আর্কাইভ", "অফলাইন প্যাক",
-];
-
-/* ── Showcase tabs ── */
+/* ── Showcase tabs: SSC · HSC · Admission ── */
 export interface ShowcaseTab {
   id: string;
   label: string;
@@ -126,7 +128,7 @@ export const showcaseTabs: ShowcaseTab[] = [
     headline: "Board-ready before the board knows it",
     copy: "Chapter-wise practice, school test papers and full-length মডেল টেস্ট that mirror every board's interface and timing.",
     bullets: [
-      { title: "অধ্যায়ভিত্তিক চর্চা", desc: "NCTB-ভিত্তিক প্রতিটি অধ্যায় থেকে হাজারো MCQ, সহজ থেকে কঠিন — ধাপে ধাপে।" },
+      { title: "অধ্যায়ভিত্তিক অনুশীলন", desc: "NCTB-ভিত্তিক প্রতিটি অধ্যায় থেকে হাজারো MCQ, সহজ থেকে কঠিন — ধাপে ধাপে।" },
       { title: "১৫ বছরের বোর্ড প্রশ্ন", desc: "সব বোর্ডের পুরনো প্রশ্ন, ব্যাখ্যাসহ সমাধান ও চিত্র-সহ ধাপে ধাপে বোর্ড উত্তর।" },
       { title: "GPA ক্যালকুলেটর", desc: "প্রতিটি মকের পর অনুমান করা GPA, subject-wise দুর্বলতার ম্যাপসহ।" },
     ],
@@ -151,7 +153,7 @@ export const showcaseTabs: ShowcaseTab[] = [
     headline: "Turn huge syllabus into tiny daily wins",
     copy: "Paper-1 ও Paper-2 আলাদা ট্র্যাক, কলেজ টেস্ট পেপার আর MCQ+লিখিত কম্বো প্র্যাকটিস — syllabus শেষ হবে সময়ের আগেই।",
     bullets: [
-      { title: "MCQ + লিখিত কম্বো", desc: "একই অধ্যায়ে দুই ফরম্যাটে চর্চা — CQ গঠন মনে রাখার স্মার্ট নোটসহ।" },
+      { title: "MCQ + লিখিত কম্বো", desc: "একই অধ্যায়ে দুই ফরম্যাটে অনুশীলন — CQ গঠন মনে রাখার স্মার্ট নোটসহ।" },
       { title: "টপ কলেজ টেস্ট পেপার", desc: "নটর ডেম, ঢাকা কলেজ, হলি ক্রস-সহ ৫০+ কলেজের টেস্ট পেপার এক জায়গায়।" },
       { title: "সংক্ষিপ্ত সিলেবাস মোড", desc: "সিলেবাস কমলে অটো-আপডেট — কোন প্রশ্ন বাদ যাবে সেটাও চিহ্নিত।" },
     ],
@@ -196,56 +198,40 @@ export const showcaseTabs: ShowcaseTab[] = [
   },
 ];
 
-/* ── Benefits ── */
-export const benefits = [
-  {
-    titleBn: "দুর্বলতার X-ray",
-    title: "Know exactly what you don't know",
-    desc: "প্রতিটি ভুল উত্তরকে AI অধ্যায়, টপিক আর ভুলের ধরন অনুযায়ী ম্যাপ করে। পরের রিভিশনে শুধু সেই দুর্বল অংশটাই ফেরত আসে।",
-  },
-  {
-    titleBn: "হল-টেস্টড ইন্টারফেস",
-    title: "The exam hall, rehearsed 100 times",
-    desc: "টাইমার, OMR-স্টাইল বাবল, negative marking — সবকিছু রিয়েল এক্সামের মতো। পরীক্ষা হলে প্রথমবারের মতো কিছুই লাগবে না।",
-  },
-  {
-    titleBn: "বাংলায় ব্যাখ্যা",
-    title: "Solutions that actually teach",
-    desc: "মোটামুটি সব প্রশ্নে বাংলায় ধাপে ধাপে সমাধান, চিত্র, শর্টকাট ট্রিক আর বোর্ড-স্ট্যান্ডার্ড উত্তরের ফরম্যাট।",
-  },
-  {
-    titleBn: "প্রতিদিনের অভ্যাস",
-    title: "Streaks that turn prep into a game",
-    desc: "ডেইলি স্ট্রিক, weekly লিডারবোর্ড আর বন্ধুদের সাথে ১v১ ব্যাটল — প্রস্তুতি হবে addicting, বাধ্য করা নয়।",
-  },
-];
-
+/* ── Guidebook comparison (previous landing page's fair-comparison table) ── */
 export const comparisonRows = [
-  { label: "প্রশ্নের পরিমাণ", old: "গাইডবুকে ২-৩ হাজার", new: "১,২০,০০০+ সলভড প্রশ্ন" },
-  { label: "ভুলের বিশ্লেষণ", old: "নিজে খাতায় হিসাব", new: "AI অধ্যায়-ভিত্তিক রিপোর্ট" },
-  { label: "মক এক্সাম", old: "মাসে ১-২টা, খাতায়", new: "প্রতিদিন live, instant রেজাল্ট" },
-  { label: "সমাধান", old: "সিরিয়াল ভুল সহ ছাপা", new: "বাংলায় ধাপে ধাপে, ট্রিকসহ" },
-  { label: "খরচ", old: "গাইড+কোচিং = ৳৫০০০+/মাস", new: "ফ্রিতেই শুরু, Pro মাত্র ৳২৯৯" },
+  { label: "প্রশ্নের পরিমাণ", old: "গাইডবুকে ২–৩ হাজার প্রশ্ন", new: "৫২,০০০+ যাচাই করা প্রশ্ন" },
+  { label: "ভুলের বিশ্লেষণ", old: "নিজে খাতায় হিসাব রাখা", new: "AI অধ্যায়-ভিত্তিক রিপোর্ট" },
+  { label: "মক এক্সাম", old: "মাসে ১–২টা, খাতায়", new: "প্রতিদিন live, instant রেজাল্ট" },
+  { label: "সমাধান", old: "সিরিয়াল ভুলসহ ছাপা উত্তর", new: "বই-রেফারেন্সসহ বাংলায় ধাপে ধাপে" },
+  { label: "খরচ", old: "গাইড + কোচিং = ৳৫০০০+/মাস", new: "ফ্রিতেই শুরু, Pro মাত্র ৳২৯৯" },
 ];
 
-/* ── Testimonials ── */
-export const testimonials = [
+/* ── Testimonials (SSC / HSC / Admission students only) ── */
+export interface Testimonial {
+  quote: string;
+  name: string;
+  org: string;
+  result: string;
+  exam: string;
+}
+
+export const testimonials: Testimonial[] = [
   {
-    quote: "অ্যানালিটিক্স ড্যাশবোর্ড দেখে জানলাম পদার্থের 'চুম্বক' অধ্যায়ে আমার ৬৮% ভুল। এক সপ্তাহ শুধু সেটা ঠিক করলাম — বাকিটা ইতিহাস।",
+    quote:
+      "অ্যানালিটিক্স ড্যাশবোর্ড দেখে জানলাম পদার্থের 'চুম্বক' অধ্যায়ে আমার ৬৮% ভুল। এক সপ্তাহ শুধু সেটা ঠিক করলাম — বাকিটা ইতিহাস।",
     name: "নুসরাত জাহান মিম",
     org: "ভিকারুননিসা নুন স্কুল",
     result: "GPA-5 · Golden",
     exam: "SSC '25",
-    featured: true,
-    initials: "NM",
   },
   {
-    quote: "Porikkhangon-এর মক টেস্টের ইন্টারফেস দেখে বোর্ড পরীক্ষার MCQ খাতা একদম চেনা চেনা লেগেছিল। চাপটাই কমে গিয়েছিল।",
+    quote:
+      "Porikkhangon-এর মক টেস্টের ইন্টারফেস দেখে বোর্ড পরীক্ষার MCQ খাতা একদম চেনা চেনা লেগেছিল। চাপটাই কমে গিয়েছিল।",
     name: "আরিফুল ইসলাম",
     org: "নটর ডেম কলেজ",
     result: "GPA-5",
     exam: "HSC '24",
-    initials: "AI",
   },
   {
     quote: "টাইম-অ্যাটাক মোডে ৪ মাস প্র্যাকটিস করেছি। হলে ১২০ প্রশ্ন শেষ করে আমার ৯ মিনিট বাকি ছিল।",
@@ -253,15 +239,13 @@ export const testimonials = [
     org: "ঢাকা বিশ্ববিদ্যালয়",
     result: "ক-ইউনিট · Merit ৩৭",
     exam: "Admission '25",
-    initials: "SS",
   },
   {
-    quote: "গ্রামে ভালো কোচিং নেই। ফোন আর Porikkhangon-ই আমার পুরো প্রস্তুতি — অফলাইন প্যাক নামিয়ে রাতে চর্চা করতাম।",
+    quote: "মফস্বলে ভালো কোচিং নেই। ফোন আর Porikkhangon-ই আমার পুরো প্রস্তুতি — অফলাইন প্যাক নামিয়ে রাতে অনুশীলন করতাম।",
     name: "তানিয়া আক্তার",
     org: "ময়মনসিংহ গার্লস ক্যাডেট",
     result: "A+ · সব বিষয়ে",
     exam: "SSC '25",
-    initials: "TA",
   },
   {
     quote: "বন্ধুদের সাথে ১v১ ব্যাটল করতে করতে বুঝতেই পারিনি ৪০ হাজার প্রশ্ন প্র্যাকটিস হয়ে গেছে।",
@@ -269,11 +253,10 @@ export const testimonials = [
     org: "ঢাকা মেডিকেল কলেজ",
     result: "MBBS · Merit ২১১",
     exam: "Medical '25",
-    initials: "RH",
   },
 ];
 
-/* ── Pricing ── */
+/* ── Pricing (previous landing page's plans & amounts) ── */
 export interface Plan {
   name: string;
   nameEn: string;
@@ -291,7 +274,7 @@ export const plans: Plan[] = [
     nameEn: "Free",
     monthly: 0,
     yearly: 0,
-    tagline: "চর্চা শুরু করার জন্যে সব",
+    tagline: "অনুশীলন শুরু করার জন্যে সব",
     cta: "ফ্রিতে শুরু করো",
     features: [
       "প্রতিদিন ৫০টি প্রশ্ন প্র্যাকটিস",
@@ -320,7 +303,7 @@ export const plans: Plan[] = [
     ],
   },
   {
-    name: "অ্যাডমিশন বান্ড্ডেল",
+    name: "অ্যাডমিশন বান্ডেল",
     nameEn: "Admission",
     monthly: 499,
     yearly: 3990,
@@ -337,10 +320,15 @@ export const plans: Plan[] = [
 ];
 
 /* ── FAQ ── */
-export const faqs = [
+export interface Faq {
+  q: string;
+  a: string;
+}
+
+export const faqs: Faq[] = [
   {
     q: "Porikkhangon কি সত্যিই ফ্রি?",
-    a: "হ্যাঁ! ফ্রি প্ল্যানে প্রতিদিন ৫০টি প্রশ্ন, সপ্তাহে ২টি লাইভ মক আর বেসিক অ্যানালিটিক্স চিরকালের জন্য ফ্রি। কোনো কার্ড লাগবে না — নম্বর দিয়ে সাইন আপ করলেই শুরু।",
+    a: "হ্যাঁ! ফ্রি প্ল্যানে প্রতিদিন ৫০টি প্রশ্ন, সাপ্তাহিক লাইভ মক আর বেসিক অ্যানালিটিক্স চিরকালের জন্য ফ্রি। শুরু করা সম্পূর্ণ ফ্রি — ইমেইল দিয়ে সাইন আপ করলেই শুরু।",
   },
   {
     q: "কোন বোর্ড ও সিলেবাস কভার করা আছে?",
@@ -351,8 +339,8 @@ export const faqs = [
     a: "পুরোপুরি। প্রতিটি প্রশ্নে NCTB অধ্যায় ও টপিক ট্যাগ করা থাকে, আর সিলেবাস বা শর্ট-সিলেবাস বদলালে ৭২ ঘণ্টার মধ্যে প্রশ্ন ব্যাংক আপডেট হয়।",
   },
   {
-    q: "ইন্টারনেট না থাকলে চর্চা করা যাবে?",
-    a: "Pro প্ল্যানে যেকোনো অধ্যায়ের প্রশ্ন প্যাক অফলাইনে ডাউনলোড করা যায়। চর্চা শেষে নেট আসলে স্কোর ও অ্যানালিটিক্স অটো-সিংক হয়ে যাবে।",
+    q: "ইন্টারনেট না থাকলে অনুশীলন করা যাবে?",
+    a: "Pro প্ল্যানে যেকোনো অধ্যায়ের প্রশ্ন প্যাক অফলাইনে ডাউনলোড করা যায়। অনুশীলন শেষে নেট আসলে স্কোর ও অ্যানালিটিক্স অটো-সিংক হয়ে যাবে।",
   },
   {
     q: "অ্যাডমিশন বান্ডেলে কোন কোন ইউনিট আছে?",
@@ -360,29 +348,10 @@ export const faqs = [
   },
   {
     q: "বাবা-মা কি আমার প্রোগ্রেস দেখতে পারবেন?",
-    a: "পারবেন! প্রতি শুক্রবার অভিভাবকের নম্বরে বাঁটাছাট করা প্রোগ্রেস SMS যায় — সাপ্তাহিক স্কোর, দুর্বল অধ্যায় আর স্ট্রিক সহ।",
+    a: "পারবেন! প্রতি শুক্রবার অভিভাবকের মেইলে সাপ্তাহিক প্রোগ্রেস রিপোর্ট যায় — সাপ্তাহিক স্কোর, দুর্বল অধ্যায় আর স্ট্রিক সহ।",
   },
   {
     q: "সাবস্ক্রিপশন বাতিল করা যায়?",
     a: "যেকোনো সময় এক ট্যাপে বাতিল। বাকি দিনগুলোও পুরো Pro এক্সেস থাকবে, আর ৭ দিনের মধ্যে বাতিল করলে সম্পূর্ণ টাকা ফেরত।",
-  },
-];
-
-export const footerCols = [
-  {
-    title: "প্রোডাক্ট",
-    links: ["প্রশ্ন ব্যাংক", "লাইভ মক এক্সাম", "অ্যানালিটিক্স", "বোর্ড আর্কাইভ", "মোবাইল অ্যাপ"],
-  },
-  {
-    title: "এক্সাম",
-    links: ["SSC ২০২৬", "HSC ২০২৬", "ঢাবি ক-ইউনিট", "মেডিকেল", "GST ক্লাস্টার"],
-  },
-  {
-    title: "কোম্পানি",
-    links: ["আমাদের গল্প", "ক্যারিয়ার", "শিক্ষক পার্টনার", "প্রেস কিট", "ব্লগ"],
-  },
-  {
-    title: "সাপোর্ট",
-    links: ["হেল্প সেন্টার", "যোগাযোগ", "রিফান্ড নীতি", "প্রাইভেসি", "টার্মস"],
   },
 ];

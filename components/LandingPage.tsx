@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { LandingThemeProvider } from './landing/useLandingTheme';
 import Navbar from './landing/Navbar';
 import Hero from './landing/Hero';
-import SocialProof from './landing/SocialProof';
+import Trust from './landing/Trust';
 import Features from './landing/Features';
 import Showcase from './landing/Showcase';
 import Benefits from './landing/Benefits';
@@ -20,67 +21,83 @@ interface LandingPageProps {
  * Public landing page (route "/").
  *
  * Pixel-faithful port of the design shipped in
- * `premium-ed-tech-landing-page.zip` (src/). All sections, copy and
- * typography come straight from the zip; only integration glue differs
- * (framer-motion → motion/react, auth bridge, hash CTAs resolved by the
- * app's HashCompatRedirect). Styling is scoped under `.pk-landing`.
+ * `premium-edtech-landing-page.zip` (src/): Navbar → Hero → Trust → Features
+ * → Showcase → Benefits → Testimonials → Pricing → FAQ → CTA → Footer.
+ *
+ * Integration glue only:
+ *  - `motion/react` instead of `framer-motion` (the repo already depends on `motion`)
+ *  - every "লগ ইন / ফ্রি শুরু করো" style CTA calls `onLoginClick` → /auth
+ *  - styling scoped under `.pk-landing`, and while the landing is mounted the
+ *    document root is switched to the design's 16px base (the app shell uses
+ *    15px / 13.5px density) so type & spacing match the source design
  */
-const LandingPage: React.FC<LandingPageProps> = (_props) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
+  // The app shell sets `html { font-size: 15px }` (13.5px on phones) for dense
+  // app screens. The landing design is authored against a 16px base, so scope
+  // that back to 16px only while this page is on screen.
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.classList.add('pk-landing-root');
+    return () => root.classList.remove('pk-landing-root');
+  }, []);
+
   return (
-    <div className="pk-landing min-h-screen bg-paper font-body text-ink antialiased">
+    <LandingThemeProvider>
+      <div className="pk-landing min-h-screen overflow-x-clip bg-paper font-body text-ink-950 antialiased">
       <Helmet>
-        <title>পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম</title>
+        <title>পরীক্ষাঙ্গন Porikkhangon | SSC, HSC ও ভর্তি পরীক্ষার AI প্রস্তুতি প্ল্যাটফর্ম</title>
         <meta
           name="description"
-          content="পরীক্ষাঙ্গন (Porikkhangon) — HSC, ভর্তি পরীক্ষা ও MCQ প্রস্তুতির AI-চালিত প্ল্যাটফর্ম। ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং — সব ফ্রিতে।"
+          content="পরীক্ষাঙ্গন (Porikkhangon) — SSC, HSC এবং ঢাবি, বুয়েট, মেডিকেল, GST সহ বিশ্ববিদ্যালয় ভর্তি পরীক্ষার AI-চালিত প্রস্তুতি প্ল্যাটফর্ম। ৫২,০০০+ নির্ভুল প্রশ্ন, বই-রেফারেন্সসহ ব্যাখ্যা, লাইভ মক ও স্মার্ট অ্যানালিটিক্স — শুরু সম্পূর্ণ ফ্রি।"
         />
         <meta
           name="keywords"
-          content="Porikkhangon, পরীক্ষাঙ্গন, HSC প্রস্তুতি, HSC Preparation, University Admission, BUET Admission, Medical Admission, DU Admission, GST ভর্তি, AI Tutor Bangladesh, HSC MCQ Practice, Question Bank Bangladesh, Admission Test Bangladesh, মডেল টেস্ট, প্রশ্নব্যাংক"
+          content="Porikkhangon, পরীক্ষাঙ্গন, SSC প্রস্তুতি, HSC প্রস্তুতি, HSC Preparation, University Admission, BUET Admission, Medical Admission, DU Admission, চট্টগ্রাম বিশ্ববিদ্যালয় ভর্তি, GST ভর্তি, প্রশ্ন ব্যাংক, মডেল টেস্ট, MCQ Practice, Question Bank Bangladesh, বোর্ড প্রশ্ন আর্কাইভ"
         />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
         <link rel="canonical" href="https://www.porikkhangon.app/" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.porikkhangon.app/" />
         <meta property="og:locale" content="bn_BD" />
-        <meta property="og:title" content="পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম" />
+        <meta property="og:title" content="পরীক্ষাঙ্গন Porikkhangon | SSC, HSC ও ভর্তি পরীক্ষার AI প্রস্তুতি প্ল্যাটফর্ম" />
         <meta
           property="og:description"
-          content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।"
+          content="SSC ও HSC বোর্ড, ঢাবি-চাবি-রাবি, বুয়েট, মেডিকেল ও GST ভর্তি — ৫২,০০০+ নির্ভুল প্রশ্ন, পূর্ণ ব্যাখ্যা, লাইভ মক আর রিয়েল-টাইম মেধাতালিকা এক জায়গায়।"
         />
         <meta property="og:image" content="https://www.porikkhangon.app/og-image.jpg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম" />
+        <meta name="twitter:title" content="পরীক্ষাঙ্গন Porikkhangon | SSC, HSC ও ভর্তি পরীক্ষার AI প্রস্তুতি প্ল্যাটফর্ম" />
         <meta
           name="twitter:description"
-          content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।"
+          content="৫২,০০০+ নির্ভুল প্রশ্ন, বই-রেফারেন্সসহ ব্যাখ্যা, লাইভ এক্সাম ও স্মার্ট অ্যানালিটিক্স — শুরু সম্পূর্ণ ফ্রি।"
         />
         <meta name="twitter:image" content="https://www.porikkhangon.app/og-image.jpg" />
       </Helmet>
 
       <a
         href="#features"
-        className="sr-only z-[60] rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-paper focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-[60] rounded-full bg-ink-950 px-5 py-2.5 text-sm font-bold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
-        Skip to content
+        মূল কনটেন্টে যাও
       </a>
 
-      <Navbar />
+      <Navbar onStart={onLoginClick} />
       <main>
-        <Hero />
-        <SocialProof />
+        <Hero onStart={onLoginClick} />
+        <Trust />
         <Features />
         <Showcase />
         <Benefits />
         <Testimonials />
-        <Pricing />
+        <Pricing onStart={onLoginClick} />
         <FAQ />
-        <CTA />
+        <CTA onStart={onLoginClick} />
       </main>
       <Footer />
-    </div>
+      </div>
+    </LandingThemeProvider>
   );
 };
 

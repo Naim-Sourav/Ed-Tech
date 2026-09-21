@@ -23,7 +23,7 @@ import {
 import { auth } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { syncUserToMongoDB } from '../services/api';
-import { Logo } from './landing/ui';
+import { Logo } from './landing/Logo';
 import { notifyAuthSuccess } from './AuthSuccessOverlay';
 
 /*
@@ -262,7 +262,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
 
             <ul className="mt-10 space-y-6">
               {[
-                { n: '০', t: 'ফ্রিতে অ্যাকাউন্ট খোলো', d: '৩০ সেকেন্ডেই — কার্ড লাগবে না' },
+                { n: '০১', t: 'ফ্রিতে অ্যাকাউন্ট খোলো', d: '৩০ সেকেন্ডেই — কার্ড লাগবে না' },
                 { n: '০২', t: 'প্রথম লাইভ মক টা দাও', d: 'রিয়েল এক্সাম ইন্টারফেসে, instant রেজাল্ট' },
                 { n: '০৩', t: 'দুর্বলতা জেনে এগিয়ে যাও', d: 'AI রিপোর্ট বলে দেবে কোথায় ফোকাস' },
               ].map((s, i) => (
