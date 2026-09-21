@@ -27,16 +27,55 @@ import Lottie from "lottie-react";
 import fireAnimation from "../assets/lottie/fire.json";
 
 // --- QUICK ACCESS CONFIG (warm editorial tints; dark surfaces appended) ---
+// Each item is presented as a polished "app tile": the colourful illustration
+// fills a rounded app-icon surface, framed by a soft warm card + tinted hover glow.
 
 const DARK_TILE = "dark:bg-white/[0.06] dark:border-white/10";
 
 const QUICK_LINKS = [
-  { icon: "/icons/question-bank.svg", label: "প্রশ্ন ব্যাংক", path: "/qbank", tint: `bg-mint/70 border-brand/15 ${DARK_TILE}` },
-  { icon: "/icons/flash-card.svg", label: "ফ্ল্যাশ কার্ড", path: "/quiz", state: { mode: "RAPID_FIRE" }, tint: `bg-lime-soft/70 border-lime/25 ${DARK_TILE}` },
-  { icon: "/icons/model-test.svg", label: "মডেল টেস্ট", path: "/quiz", tint: `bg-cream border-brand/15 ${DARK_TILE}` },
-  { icon: "/icons/battle-new.svg", label: "ব্যাটল", path: "/battle", tint: `bg-amber-soft/80 border-gold/25 ${DARK_TILE}` },
-  { icon: "/icons/saved-questions.svg", label: "সেভ্ড", path: "/saved-questions", tint: `bg-mint/70 border-brand/15 ${DARK_TILE}` },
-  { icon: "/icons/wrong-questions.svg", label: "ভুল প্রশ্ন", path: "/wrong-questions", tint: `bg-cream border-brand/15 ${DARK_TILE}` },
+  {
+    icon: "/icons/question-bank.svg",
+    label: "প্রশ্ন ব্যাংক",
+    path: "/qbank",
+    tint: `bg-mint/70 border-brand/15 ${DARK_TILE}`,
+    glow: "hover:shadow-[0_18px_36px_-14px_rgba(255,82,0,0.45)]",
+  },
+  {
+    icon: "/icons/flash-card.svg",
+    label: "ফ্ল্যাশ কার্ড",
+    path: "/quiz",
+    state: { mode: "RAPID_FIRE" },
+    tint: `bg-lime-soft/70 border-lime/25 ${DARK_TILE}`,
+    glow: "hover:shadow-[0_18px_36px_-14px_rgba(255,185,46,0.5)]",
+  },
+  {
+    icon: "/icons/model-test.svg",
+    label: "মডেল টেস্ট",
+    path: "/quiz",
+    tint: `bg-cream border-brand/15 ${DARK_TILE}`,
+    glow: "hover:shadow-[0_18px_36px_-14px_rgba(255,82,0,0.4)]",
+  },
+  {
+    icon: "/icons/battle-new.svg",
+    label: "ব্যাটল",
+    path: "/battle",
+    tint: `bg-amber-soft/80 border-gold/25 ${DARK_TILE}`,
+    glow: "hover:shadow-[0_18px_36px_-14px_rgba(230,59,46,0.45)]",
+  },
+  {
+    icon: "/icons/saved-questions.svg",
+    label: "সেভ্ড",
+    path: "/saved-questions",
+    tint: `bg-mint/70 border-brand/15 ${DARK_TILE}`,
+    glow: "hover:shadow-[0_18px_36px_-14px_rgba(255,82,0,0.4)]",
+  },
+  {
+    icon: "/icons/wrong-questions.svg",
+    label: "ভুল প্রশ্ন",
+    path: "/wrong-questions",
+    tint: `bg-cream border-brand/15 ${DARK_TILE}`,
+    glow: "hover:shadow-[0_18px_36px_-14px_rgba(230,59,46,0.4)]",
+  },
 ];
 
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
@@ -171,9 +210,9 @@ const HomeDashboard: React.FC = () => {
       </div>
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="bg-white dark:bg-ink-2 border border-ink/8 dark:border-white/10 rounded-3xl p-4 space-y-3">
-            <div className="w-12 h-12 bg-mint dark:bg-white/10 rounded-2xl"></div>
-            <div className="h-3 w-3/4 bg-ink/10 dark:bg-white/10 rounded"></div>
+          <div key={i} className="bg-white dark:bg-ink-2 border border-ink/8 dark:border-white/10 rounded-[1.4rem] p-2.5 space-y-2">
+            <div className="w-full aspect-square bg-mint dark:bg-white/10 rounded-[1rem]"></div>
+            <div className="h-3 w-3/4 mx-auto bg-ink/10 dark:bg-white/10 rounded"></div>
           </div>
         ))}
       </div>
@@ -224,10 +263,18 @@ const HomeDashboard: React.FC = () => {
           </motion.button>
 
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* Light wordmark (black text + orange mark) for light mode */}
             <img
               src={`${import.meta.env.BASE_URL}letterlogo.svg`}
               alt="Porikkhangon Logo"
-              className="h-10 md:h-12"
+              className="h-10 md:h-12 dark:hidden"
+            />
+            {/* Warm-white wordmark (orange mark kept) so it stays visible on dark */}
+            <img
+              src={`${import.meta.env.BASE_URL}letterlogo-white.svg`}
+              alt=""
+              aria-hidden="true"
+              className="h-10 md:h-12 hidden dark:block"
             />
           </div>
 
@@ -348,20 +395,25 @@ const HomeDashboard: React.FC = () => {
                 key={i}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(item.path, { state: (item as any).state })}
-                className={`focus-ring group flex flex-col items-center gap-2.5 rounded-3xl border p-3 md:p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(22,18,16,0.3)] hover:ring-1 hover:ring-brand/25 active:scale-95 ${item.tint}`}
+                className={`focus-ring group relative overflow-hidden rounded-[1.4rem] border p-2 md:p-2.5 shadow-sm transition-all duration-300 hover:-translate-y-1 active:scale-95 ${item.tint} ${item.glow}`}
               >
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-ink-3 shadow-sm flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                {/* App-tile surface: the illustration fills a rounded icon, like a launcher tile */}
+                <div className="relative w-full aspect-square overflow-hidden rounded-[1rem] bg-white dark:bg-ink-3 shadow-sm ring-1 ring-ink/5 dark:ring-white/10 transition-transform duration-300 group-hover:scale-[1.06]">
                   <img
                     src={item.icon}
                     alt={item.label}
-                    className="w-9 h-9 md:w-11 md:h-11 object-contain"
+                    className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                     draggable={false}
                   />
+                  {/* soft top-light sheen */}
+                  <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <span className="font-bold text-ink/80 dark:text-white/80 text-[11px] md:text-xs text-center leading-tight">
-                  {item.label}
-                </span>
+                <div className="pt-2 pb-0.5 text-center">
+                  <span className="font-bold text-ink/80 dark:text-white/80 text-[11px] md:text-xs leading-tight transition-colors group-hover:text-brand-deep dark:group-hover:text-brand-bright">
+                    {item.label}
+                  </span>
+                </div>
               </motion.button>
             ))}
           </div>
