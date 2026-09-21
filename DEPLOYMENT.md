@@ -15,7 +15,7 @@ Once deployed, your website will be available at:
 
 > The app uses clean URLs (BrowserRouter). Deep links work on GitHub Pages
 > through the `public/404.html` → `?p=` redirect trick restored in `index.html`.
-> `npm run build` also generates static SEO pages (`/hsc-syllabus/...`, `/q/...`)
+> `npm run build` also generates static SEO pages (`/hsc-syllabus/...`, `/admission-questions/...`, `/q/...`)
 > plus `sitemap.xml` into `dist/` — see `SEO-AUDIT.md`.
 
 ## How It Works / এটি কীভাবে কাজ করে

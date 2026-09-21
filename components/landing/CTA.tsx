@@ -1,6 +1,9 @@
 import { motion } from "motion/react";
 import { ArrowRight, Sparkle, Smartphone } from "lucide-react";
 import { Reveal, toBn } from "./ui";
+import LazyLottie from "./LazyLottie";
+
+const loadPlannerLottie = () => import("../../assets/lottie/CALENDER.json");
 
 const words = ["প্র্যাকটিস", "মক এক্সাম", "অ্যানালাইজ", "রিভিশন", "জয়"];
 
@@ -21,6 +24,24 @@ export default function CTA() {
             />
 
             <div className="relative px-6 pb-24 pt-20 text-center sm:px-12 sm:pt-28">
+              {/* Study-planner scene — Lottie from the original landing, framed as a
+                  tilted paper "sticker" in the desktop gutter (lazy-loaded, decorative) */}
+              <div
+                className="pointer-events-none absolute right-5 top-1/2 hidden w-48 -translate-y-1/2 xl:block 2xl:right-6 2xl:w-56"
+                aria-hidden="true"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 24, rotate: 0 }}
+                  whileInView={{ opacity: 1, y: 0, rotate: -4 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className="animate-float-slow rounded-[28px] bg-paper p-2.5 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)] ring-1 ring-white/15">
+                    <LazyLottie load={loadPlannerLottie} className="aspect-square w-full rounded-[20px] bg-white" />
+                  </div>
+                </motion.div>
+              </div>
+
               <motion.span
                 initial={{ opacity: 0, scale: 0.6 }}
                 whileInView={{ opacity: 1, scale: 1 }}

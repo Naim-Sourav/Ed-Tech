@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Dev-only middleware: serve the generated static SEO pages (dist/q/<slug>/,
-// dist/hsc-syllabus/…) straight from the dev server, mirroring production
+// dist/hsc-syllabus/…, dist/admission-questions/…) straight from the dev server, mirroring production
 // where the static host answers these paths before the SPA fallback.
 const serveStaticSeo = {
   name: 'serve-static-seo-pages',
@@ -13,7 +13,7 @@ const serveStaticSeo = {
     server.middlewares.use((req: any, res: any, next: any) => {
       try {
         const url = decodeURIComponent((req.url || '').split('?')[0]);
-        if (/^\/(q|hsc-syllabus)(\/|$)/.test(url)) {
+        if (/^\/(q|hsc-syllabus|admission-questions)(\/|$)/.test(url)) {
           const root = path.resolve(process.cwd(), 'dist');
           const rel = url.replace(/\/+$/, '').replace(/^\/+/, '');
           const file = path.join(root, rel, 'index.html');

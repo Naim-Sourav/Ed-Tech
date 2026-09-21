@@ -121,12 +121,12 @@ export default function Footer() {
                 <h3 className="font-bangla text-[14px] font-bold text-lime/90">{col.title}</h3>
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((l) => (
-                    <li key={l}>
+                    <li key={l.label}>
                       <a
-                        href="#top"
+                        href={l.href}
                         className="focus-ring text-[13.5px] font-medium text-white/55 transition-colors hover:text-white"
                       >
-                        {l}
+                        {l.label}
                       </a>
                     </li>
                   ))}

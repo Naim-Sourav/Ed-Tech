@@ -8,6 +8,11 @@
  *   /hsc-syllabus/                          syllabus hub
  *   /hsc-syllabus/<subject>/                14 subject pages
  *   /hsc-syllabus/<subject>/<chapter>/      95 chapter pages
+ *   /admission-questions/                   PREVIOUS-YEAR ADMISSION PAPERS hub
+ *   /admission-questions/<exam>/            one page per exam (Medical, DU-A …)
+ *   /admission-questions/<exam>/<YYYY-YY>/  full paper with answers +
+ *                                           explanations, e.g.
+ *                                           "মেডিকেল ভর্তি পরীক্ষা ২০২১-২২"
  *   /q/<slug>/                              PUBLIC QUESTION PAGES
  *                                           (Sattacademy-style: question +
  *                                           options + answer + explanation,
@@ -16,9 +21,14 @@
  *
  * Question sources (merged, de-duplicated):
  *   1. Live question bank API (anonymous read): per-chapter sample +
- *      admission-level questions with explanations.
+ *      admission-level questions with explanations + one request per
+ *      exam sitting (`board=<tag>` is an exact tag filter, e.g.
+ *      "Medical '21-22") for the past-paper pages.
  *   2. Bundled datasets in /data (*.json) — guaranteed fallback so question
  *      pages exist even if the API is unreachable at build time.
+ *
+ * The exam catalogue (names, tag prefixes, subject order) lives in
+ * data/admissionExams.ts and is shared with the in-app fallback route.
  *
  * Usage:
  *   node scripts/generate-seo-pages.mjs                 # dist/, fetches API
@@ -33,6 +43,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const SITE = 'https://www.porikkhangon.app';
+const HUB = '/hsc-syllabus/';        // HSC syllabus hub
+const ADM = '/admission-questions/'; // previous-year admission papers hub
 const API = 'https://mongodb-hb6b.onrender.com/api';
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -42,19 +54,32 @@ const outArg = process.argv.indexOf('--out');
 const OUT = outArg !== -1 ? process.argv[outArg + 1] : join(ROOT, 'dist');
 
 // ---------------------------------------------------------------------------
-// 1. Load SYLLABUS_DB from TypeScript without adding runtime deps
+// 1. Load TypeScript data modules without adding runtime deps
 // ---------------------------------------------------------------------------
-const tmp = mkdtempSync(join(tmpdir(), 'seo-syllabus-'));
-const bundlePath = join(tmp, 'syllabus.mjs');
-buildSync({
-  entryPoints: [join(ROOT, 'services', 'syllabusData.ts')],
-  bundle: true,
-  format: 'esm',
-  outfile: bundlePath,
-  logLevel: 'silent',
-});
-const { SYLLABUS_DB } = await import(pathToFileURL(bundlePath).href);
-rmSync(tmp, { recursive: true, force: true });
+async function loadTsModule(entry) {
+  const tmp = mkdtempSync(join(tmpdir(), 'seo-ts-'));
+  const bundlePath = join(tmp, 'bundle.mjs');
+  buildSync({ entryPoints: [entry], bundle: true, format: 'esm', outfile: bundlePath, logLevel: 'silent' });
+  try {
+    return await import(pathToFileURL(bundlePath).href);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+}
+const { SYLLABUS_DB } = await loadTsModule(join(ROOT, 'services', 'syllabusData.ts'));
+const {
+  ADMISSION_EXAMS,
+  BUNDLED_PAPERS,
+  CATEGORY_LABELS_BN,
+  candidateSessions,
+  sessionTag,
+  sessionSlug,
+  sessionLabelBn,
+  subjectLabelBn,
+  subjectBase,
+  subjectRank,
+  toBnDigits,
+} = await loadTsModule(join(ROOT, 'data', 'admissionExams.ts'));
 
 // ---------------------------------------------------------------------------
 // 2. Helpers
@@ -186,7 +211,7 @@ const GROUP_TIPS = {
 // ---------------------------------------------------------------------------
 // 3. Page shell
 // ---------------------------------------------------------------------------
-function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathjax = false }) {
+function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathjax = false, section = 'syllabus', head = '' }) {
   const crumbHtml = breadcrumbs
     .map(([label, href], i) => {
       const isLast = i === breadcrumbs.length - 1;
@@ -225,6 +250,7 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
 <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
 ${mathjax ? `<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']],processEscapes:true},options:{enableMenu:false},chtml:{scale:1,minScale:0.5},startup:{typeset:true}};</script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>` : ''}
+${head}
 <style>
 /* Warm editorial v2 — dark ink chrome, dot-grid paper, gradient flourishes */
 :root{--paper:#faf9f6;--ink:#161210;--ink2:#201a16;--brand:#ff5200;--deep:#e04400;--lime:#ffb92e;--mint:#ffeade;--cream:#fff1e8;--mist:#6f655c;--line:rgba(22,18,16,.09);--ok:#16a34a;--okbg:#f2fbf5}
@@ -293,6 +319,7 @@ ol.opts li.correct .tick{display:block}
 .answer b{color:var(--ok)}
 .expl{margin:16px 0;padding:18px 22px;border-radius:18px;background:var(--cream);border:1px solid rgba(255,82,0,.16);border-left:5px solid var(--brand)}
 .expl h2{margin:0 0 8px;font-size:18px}
+.expl>div{white-space:pre-line}
 .expl h2::before{width:9px;height:9px}
 .qimg{max-width:100%;border-radius:12px;margin:10px 0}
 .qlist{display:grid;gap:10px;margin:16px 0}
@@ -305,11 +332,93 @@ footer{background:var(--ink);color:rgba(250,249,246,.65);margin-top:56px}
 footer a{color:rgba(250,249,246,.65);text-decoration:none}
 footer a:hover{color:var(--lime)}
 @media (max-width:640px){article.qcard{padding:22px 16px}}
+/* header nav */
+.topnav{display:flex;gap:2px;margin-left:auto;margin-right:10px}
+.topnav a{color:rgba(250,249,246,.72);text-decoration:none;font-size:13.5px;font-weight:600;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.topnav a:hover,.topnav a[aria-current]{background:rgba(255,255,255,.09);color:#fff}
+@media (max-width:600px){.topnav{display:none}}
+/* subtitle under h1 (bilingual keyword line) */
+p.sub{margin:-4px 0 14px;color:var(--mist);font-size:14.5px;font-weight:600;letter-spacing:.01em}
+/* quick facts */
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0 6px}
+.meta div{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:0 1px 2px rgba(22,18,16,.04)}
+.meta b{display:block;font-size:22px;font-family:'Noto Serif Bengali',serif;line-height:1.3}
+.meta span{font-size:12.5px;color:var(--mist);font-weight:600}
+/* jump links */
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.jump a{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;text-decoration:none;color:var(--ink);transition:all .15s}
+.jump a:hover{border-color:rgba(255,82,0,.45);color:var(--deep)}
+.jump a small{color:var(--mist);font-weight:600;margin-left:4px}
+/* toolbar (JS-enhanced show/hide all answers) */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:20px 0 4px}
+.tog{display:none;border:1px solid rgba(22,163,74,.4);background:var(--okbg);color:var(--ok);font-weight:800;font-size:13.5px;padding:8px 16px;border-radius:999px;cursor:pointer;font-family:inherit}
+.tog:hover{background:#e6f7ec}
+.js .tog{display:inline-block}
+/* paper question blocks */
+.qbox{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px 16px;margin:12px 0;box-shadow:0 1px 2px rgba(22,18,16,.04);scroll-margin-top:80px}
+.qbox .qh{display:flex;gap:12px;align-items:flex-start}
+.qbox .qn{flex:none;width:34px;height:34px;border-radius:12px;background:var(--ink);color:var(--lime);font-weight:800;display:grid;place-items:center;font-size:13.5px;text-decoration:none;margin-top:3px}
+.qbox .qn:hover{background:var(--deep);color:#fff}
+.qbox h3{margin:0;font-size:16.5px;font-weight:700;line-height:1.75;font-family:inherit;flex:1}
+.qbox .ctx{background:var(--paper);border:1px dashed var(--line);border-radius:14px;padding:10px 14px;margin:0 0 10px;font-size:14.5px;color:var(--ink)}
+.qbox ol.opts{margin:12px 0 0;gap:8px}
+.qbox ol.opts li{padding:9px 13px;border-radius:14px;font-size:15px}
+.qbox ol.opts li .lt{width:30px;height:30px;border-radius:10px;font-size:13.5px}
+.qbox .plink{font-size:12.5px;font-weight:700;color:var(--mist);text-decoration:none;white-space:nowrap;margin-top:8px}
+.qbox .plink:hover{color:var(--deep)}
+details.sol{margin-top:12px;border-radius:16px;border:1px solid rgba(22,163,74,.3);background:var(--okbg);overflow:hidden}
+details.sol summary{cursor:pointer;list-style:none;padding:10px 16px;font-weight:800;color:var(--ok);display:flex;align-items:center;gap:8px;font-size:14.5px;user-select:none}
+details.sol summary::-webkit-details-marker{display:none}
+details.sol summary::before{content:"▸";display:inline-block;transition:transform .2s}
+details.sol[open] summary::before{transform:rotate(90deg)}
+details.sol .sol-in{padding:6px 16px 14px;border-top:1px dashed rgba(22,163,74,.3)}
+details.sol .ansl{font-weight:800;margin:6px 0 4px}
+details.sol .ansl b{color:var(--ok)}
+details.sol .ex{margin-top:6px;font-size:15px;color:var(--ink);white-space:pre-line}
+details.sol .ex .lbl{display:block;font-size:12.5px;font-weight:800;color:var(--deep);letter-spacing:.04em;margin-bottom:2px}
+/* chapter-frequency table */
+.freq{overflow-x:auto;margin:14px 0}
+.freq table{width:100%;border-collapse:collapse;font-size:14.5px;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.freq th,.freq td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--line)}
+.freq th{background:var(--cream);font-size:12.5px;color:var(--mist);letter-spacing:.03em}
+.freq tr:last-child td{border-bottom:0}
+.freq td.n{font-weight:800;text-align:right;width:90px}
+/* session cards */
+.sessions{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:18px 0}
+.sessions a{display:block;background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 18px;text-decoration:none;color:var(--ink);transition:all .2s;box-shadow:0 1px 2px rgba(22,18,16,.04)}
+.sessions a:hover{border-color:rgba(255,82,0,.4);transform:translateY(-3px);box-shadow:0 22px 44px -20px rgba(22,18,16,.28)}
+.sessions b{display:block;font-family:'Noto Serif Bengali',serif;font-size:24px;line-height:1.3}
+.sessions span{display:block;color:var(--mist);font-size:13px;margin-top:2px}
+.sessions em{display:inline-block;margin-top:8px;font-style:normal;font-size:12px;font-weight:800;color:var(--deep);background:var(--mint);border-radius:999px;padding:2px 10px}
+/* exam cards on the hub */
+.exams{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:18px 0 26px}
+.exams a{display:block;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px;text-decoration:none;color:var(--ink);transition:all .2s}
+.exams a:hover{border-color:rgba(255,82,0,.4);transform:translateY(-3px);box-shadow:0 22px 44px -20px rgba(22,18,16,.28)}
+.exams b{display:block;font-size:16.5px;line-height:1.5}
+.exams span{display:block;color:var(--mist);font-size:13px;margin-top:4px}
+.exams .yrs{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.exams .yrs i{font-style:normal;font-size:11.5px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--ink)}
+/* cross-promo card */
+.xlink{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:linear-gradient(135deg,#fff1e8,#ffedc2);border:1px solid rgba(255,82,0,.18);border-radius:22px;padding:18px 22px;margin:26px 0}
+.xlink b{display:block;font-size:17px}
+.xlink span{color:var(--mist);font-size:14px}
+.xlink a{background:var(--ink);color:#fff;text-decoration:none;font-weight:800;padding:10px 20px;border-radius:999px;font-size:14px;white-space:nowrap}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:16px;padding:0 18px;margin:10px 0}
+.faq summary{cursor:pointer;font-weight:700;padding:13px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--brand);font-weight:800;font-size:18px;line-height:1}
+.faq details[open] summary::after{content:"−"}
+.faq details p{margin:0 0 14px;color:var(--mist)}
+@media print{header,footer,.banner,.toolbar,.jump,.pager,.xlink{display:none!important}details.sol{display:block}details.sol summary{display:none}details.sol .sol-in{display:block!important;border-top:0}details.sol:not([open]) .sol-in{display:block}}
 </style>
 </head>
 <body>
 <header><div class="header-in">
   <a class="brand" href="/"><img src="${SITE}/Pshape.svg" alt="পরীক্ষাঙ্গন লোগো"> পরীক্ষাঙ্গন</a>
+  <nav class="topnav" aria-label="সেকশন">
+    <a href="${HUB}"${section === 'syllabus' ? ' aria-current="page"' : ''}>HSC সিলেবাস</a>
+    <a href="${ADM}"${section === 'admission' ? ' aria-current="page"' : ''}>ভর্তি প্রশ্নব্যাংক</a>
+  </nav>
   <a class="cta" href="/auth">ফ্রি শুরু করো</a>
 </div></header>
 <main>
@@ -320,7 +429,8 @@ footer a:hover{color:var(--lime)}
   <span>© ${new Date().getFullYear()} পরীক্ষাঙ্গন (Porikkhangon) — HSC ও এডমিশন প্রস্তুতির AI প্ল্যাটফর্ম</span>
   <span>
     <a href="/">হোম</a> ·
-    <a href="/hsc-syllabus/">সিলেবাস গাইড</a> ·
+    <a href="${HUB}">সিলেবাস গাইড</a> ·
+    <a href="${ADM}">ভর্তি প্রশ্নব্যাংক</a> ·
     <a href="/privacy">প্রাইভেসি</a> ·
     <a href="/terms">টার্মস</a>
   </span>
@@ -381,12 +491,130 @@ async function pool(tasks, concurrency = 8) {
   return results;
 }
 
-async function collectQuestions(syllabusSubjects) {
+/** Stable identity for a question row (API `_id`, else derived from its text). */
+function questionId(q) {
+  return q._id || q.id || `local-${bnSlug(q.question)}-${(q.options || []).length}`;
+}
+
+/** Normalised text key used to spot the same question coming from two sources. */
+function textKey(q) {
+  return plain(q.question).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().slice(0, 160);
+}
+
+// ---------------------------------------------------------------------------
+// 4-pre. Previous-year admission papers (one exact-tag query per sitting)
+// ---------------------------------------------------------------------------
+const PAPER_MIN_QUESTIONS = 10;   // skip sittings with too little data (thin pages)
+const PAPER_PAGE_LIMIT = 200;
+const PAPER_MAX_QUESTIONS = 400;
+const PAPER_SANITY_TOTAL = 2000;  // a "paper" bigger than this means the filter was ignored
+
+/** One retry for transient failures (Render free tier hiccups). */
+async function fetchJsonRetry(url, timeoutMs) {
+  try {
+    return await fetchJson(url, timeoutMs);
+  } catch {
+    await new Promise((r) => setTimeout(r, 1500));
+    return fetchJson(url, timeoutMs);
+  }
+}
+
+async function fetchPaper(tag) {
+  const url = (page) => `${API}/admin/questions?page=${page}&limit=${PAPER_PAGE_LIMIT}&board=${encodeURIComponent(tag)}`;
+  const first = await fetchJsonRetry(url(1));
+  let rows = first?.questions || [];
+  const total = Number(first?.total) || rows.length;
+  if (!rows.length || total > PAPER_SANITY_TOTAL) return [];
+  for (let page = 2; rows.length < Math.min(total, PAPER_MAX_QUESTIONS) && page <= 3; page++) {
+    const more = await fetchJson(url(page));
+    const list = more?.questions || [];
+    if (!list.length) break;
+    rows = rows.concat(list);
+  }
+  // Defensive: keep only rows that really carry the tag (tolerates case/space drift)
+  const want = tag.toLowerCase().replace(/\s+/g, ' ');
+  return rows.filter((q) => !Array.isArray(q.tags) || q.tags.some((t) => String(t).toLowerCase().replace(/\s+/g, ' ') === want));
+}
+
+/**
+ * @returns {Promise<Map<string, Map<number, {tag:string, questions:any[], sources:Set<string>}>>>}
+ *          examId -> startYear -> paper
+ */
+async function collectPastPapers() {
+  const papers = new Map();
+  const put = (examId, year, tag, rows, source) => {
+    if (!papers.has(examId)) papers.set(examId, new Map());
+    const byYear = papers.get(examId);
+    if (!byYear.has(year)) byYear.set(year, { tag, questions: [], sources: new Set(), seen: new Set() });
+    const paper = byYear.get(year);
+    let added = 0;
+    for (const q of rows) {
+      if (!q || !q.question || !Array.isArray(q.options) || q.options.length < 2) continue;
+      const key = textKey(q);
+      if (paper.seen.has(key)) continue;
+      paper.seen.add(key);
+      paper.questions.push({ ...q, tags: Array.isArray(q.tags) && q.tags.length ? q.tags : [tag], level: q.level || 'ADMISSION' });
+      added++;
+    }
+    if (added) paper.sources.add(source);
+  };
+
+  const ordered = [...ADMISSION_EXAMS].sort((a, b) => a.priority - b.priority);
+
+  if (!SKIP_FETCH) {
+    // Wake the API up first (free-tier hosts cold-start slowly) so the short
+    // per-request timeouts below don't all trip on the very first call.
+    await fetchJson(`${API}/admin/questions?page=1&limit=1`, 60000).catch(() => {});
+
+    const sessions = candidateSessions();
+    const tasks = [];
+    for (const exam of ordered) {
+      for (const year of sessions) {
+        const tag = sessionTag(exam.tagPrefix, year);
+        tasks.push(async () => ({ examId: exam.id, year, tag, rows: await fetchPaper(tag) }));
+      }
+    }
+    const deadline = Date.now() + 150000; // hard cap so CI never hangs
+    const results = await pool(tasks.map((t) => async () => (Date.now() > deadline ? null : t())), 6);
+    let hits = 0;
+    for (const r of results) {
+      if (!r || !r.rows.length) continue;
+      put(r.examId, r.year, r.tag, r.rows, 'api');
+      hits++;
+    }
+    if (hits === 0) console.warn('[seo] WARNING: no past papers returned by the API — using bundled papers only');
+    else console.log(`[seo] past papers from API: ${hits} sittings`);
+  }
+
+  // Bundled papers complete (or replace) what the API returned for that sitting
+  for (const b of BUNDLED_PAPERS) {
+    const exam = ADMISSION_EXAMS.find((e) => e.id === b.examId);
+    if (!exam) continue;
+    try {
+      const arr = JSON.parse(readFileSync(join(ROOT, b.file), 'utf8'));
+      put(exam.id, b.startYear, sessionTag(exam.tagPrefix, b.startYear), Array.isArray(arr) ? arr : [], 'bundled');
+    } catch (e) {
+      console.warn(`[seo] could not read ${b.file}: ${e.message}`);
+    }
+  }
+
+  // Drop thin sittings and empty exams
+  for (const [examId, byYear] of papers) {
+    for (const [year, paper] of byYear) {
+      delete paper.seen;
+      if (paper.questions.length < PAPER_MIN_QUESTIONS) byYear.delete(year);
+    }
+    if (!byYear.size) papers.delete(examId);
+  }
+  return papers;
+}
+
+async function collectQuestions(syllabusSubjects, preloaded = []) {
   /** @type {Map<string, any>} */
   const byId = new Map();
   const add = (q, source, sourceLabel = '') => {
     if (!q || !q.question || !Array.isArray(q.options) || q.options.length < 2) return;
-    const id = q._id || q.id || `local-${bnSlug(q.question)}-${q.options.length}`;
+    const id = questionId(q);
     if (byId.has(id)) return;
     byId.set(id, {
       _id: id,
@@ -402,6 +630,7 @@ async function collectQuestions(syllabusSubjects) {
       tags: q.tags || [],
       questionImage: q.questionImage || '',
       explanationImage: q.explanationImage || '',
+      contextText: q.contextText || '',
       slug: safePath(q.slug || bnSlug(q.question)),
       source,
       sourceLabel: sourceLabel || (q.examRef ? String(q.examRef) : ''),
@@ -411,6 +640,9 @@ async function collectQuestions(syllabusSubjects) {
       rec.slug = safePath(`${bnSlug(rec.chapter || rec.subject || 'mcq')}-${rec.slug}`);
     }
   };
+
+  // 4-pre. Past-paper questions first so their exam label wins the de-dup
+  for (const { q, label } of preloaded) add(q, 'paper', label);
 
   // 4a. Bundled datasets (always available) — label = where the question came from
   const BUNDLED_LABELS = {
@@ -474,10 +706,20 @@ async function collectQuestions(syllabusSubjects) {
 // ---------------------------------------------------------------------------
 const urls = []; // [path, priority]
 const subjects = Object.entries(SYLLABUS_DB);
-const HUB = '/hsc-syllabus/';
+
+console.log('[seo] collecting previous-year admission papers…');
+const papers = await collectPastPapers();
+const paperLabel = (exam, year) => `${exam.shortBn} ভর্তি পরীক্ষা ${sessionLabelBn(year)}`;
+const preloaded = [];
+for (const exam of ADMISSION_EXAMS) {
+  for (const [year, paper] of papers.get(exam.id) || []) {
+    for (const q of paper.questions) preloaded.push({ q, label: paperLabel(exam, year) });
+  }
+}
+console.log(`[seo] past papers: ${[...papers.values()].reduce((n, m) => n + m.size, 0)} sittings, ${preloaded.length} questions`);
 
 console.log('[seo] collecting questions…');
-const allQuestions = await collectQuestions(subjects);
+const allQuestions = await collectQuestions(subjects, preloaded);
 
 // De-duplicate slugs & index by chapter
 const seenSlug = new Map();
@@ -494,6 +736,375 @@ for (const q of allQuestions) {
   byChapterKey.get(key).push(q);
 }
 console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
+const recById = new Map(allQuestions.map((r) => [r._id, r]));
+
+// ---------------------------------------------------------------------------
+// 5a. Previous-year admission papers  (/admission-questions/**)
+// ---------------------------------------------------------------------------
+const LETTERS = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ'];
+const examUrl = (exam) => `${SITE}${ADM}${exam.id}/`;
+const paperUrl = (exam, year) => `${SITE}${ADM}${exam.id}/${sessionSlug(year)}/`;
+const paperTitleBn = (exam, year) => `${exam.nameBn} ${sessionLabelBn(year)}`;
+const paperTitleEn = (exam, year) => `${exam.nameEn} ${sessionSlug(year)}`;
+const bnCount = (n) => toBnDigits(n);
+
+/** tag (lower-case) -> { exam, year } so /q/ pages can link back to their paper */
+const paperByTag = new Map();
+for (const exam of ADMISSION_EXAMS) {
+  for (const [year, paper] of papers.get(exam.id) || []) {
+    paperByTag.set(paper.tag.toLowerCase(), { exam, year });
+  }
+}
+
+/** Sort a paper into its natural reading order: subject blocks, then original order. */
+function orderPaper(exam, questions) {
+  return questions
+    .map((q, i) => ({ q, i }))
+    .sort((a, b) =>
+      subjectRank(a.q.subject || '', exam.subjectOrder) - subjectRank(b.q.subject || '', exam.subjectOrder) ||
+      (Number(a.q.orderIndex) || 1e9) - (Number(b.q.orderIndex) || 1e9) ||
+      a.i - b.i
+    )
+    .map((x) => x.q);
+}
+
+/** Group consecutive questions by base subject (1st + 2nd paper merged). */
+function groupBySubject(questions) {
+  const groups = [];
+  for (const q of questions) {
+    const base = subjectBase(q.subject || '');
+    const label = subjectLabelBn(base) || 'অন্যান্য';
+    let g = groups[groups.length - 1];
+    if (!g || g.label !== label) {
+      g = { label, subject: base, id: slugify(base || label), items: [] };
+      groups.push(g);
+    }
+    g.items.push(q);
+  }
+  return groups;
+}
+
+function renderPaperQuestion(q, n) {
+  const rec = recById.get(questionId(q));
+  const qLink = rec ? rel(rec.url) : '';
+  const opts = q.options
+    .map((opt, i) => `<li><span class="lt">${LETTERS[i] || i + 1}</span><span class="txt">${esc(opt)}${q.optionsImages?.[i] ? `<br><img class="qimg" src="${esc(q.optionsImages[i])}" alt="বিকল্প ${i + 1}" loading="lazy">` : ''}</span></li>`)
+    .join('');
+  const ci = Number(q.correctAnswerIndex) || 0;
+  const correct = q.options[ci] ?? '';
+  const expl = q.explanation
+    ? `<div class="ex"><span class="lbl">ব্যাখ্যা</span>${esc(q.explanation)}${q.explanationImage ? `<br><img class="qimg" src="${esc(q.explanationImage)}" alt="ব্যাখ্যার চিত্র" loading="lazy">` : ''}</div>`
+    : '';
+  return `<article class="qbox" id="q${n}">
+${q.contextText ? `<div class="ctx">${esc(q.contextText)}</div>` : ''}<div class="qh">${qLink ? `<a class="qn" href="${qLink}" title="এই প্রশ্নের আলাদা পেজ">${bnCount(n)}</a>` : `<span class="qn">${bnCount(n)}</span>`}<h3>${esc(q.question)}</h3></div>
+${q.questionImage ? `<img class="qimg" src="${esc(q.questionImage)}" alt="প্রশ্ন ${bnCount(n)} এর চিত্র" loading="lazy">` : ''}
+<ol class="opts">${opts}</ol>
+<details class="sol"><summary>উত্তর ও ব্যাখ্যা দেখো</summary><div class="sol-in">
+<p class="ansl">সঠিক উত্তর: <b>(${LETTERS[ci] || ci + 1}) ${esc(correct)}</b></p>${expl}
+${qLink ? `<a class="plink" href="${qLink}">এই প্রশ্নের আলাদা পেজ →</a>` : ''}
+</div></details>
+</article>`;
+}
+
+const PAPER_TOGGLE_JS = `<script>document.documentElement.classList.add('js');(function(){var b=document.querySelector('[data-toggle-all]');if(!b)return;var open=false;b.addEventListener('click',function(){open=!open;document.querySelectorAll('details.sol').forEach(function(d){d.open=open;});b.textContent=open?'সব উত্তর লুকাও':'সব উত্তর দেখাও';});})();</script>`;
+
+const examsWithPapers = ADMISSION_EXAMS
+  .filter((e) => papers.has(e.id))
+  .sort((a, b) => a.priority - b.priority);
+
+let paperPages = 0;
+for (const exam of examsWithPapers) {
+  const byYear = papers.get(exam.id);
+  const years = [...byYear.keys()].sort((a, b) => b - a); // newest first
+  const examCrumbs = [['পরীক্ষাঙ্গন', `${SITE}/`], ['ভর্তি প্রশ্নব্যাংক', `${SITE}${ADM}`], [exam.shortBn, examUrl(exam)]];
+
+  // ---- one page per sitting ------------------------------------------------
+  years.forEach((year, yi) => {
+    const paper = byYear.get(year);
+    const ordered = orderPaper(exam, paper.questions);
+    const groups = groupBySubject(ordered);
+    const total = ordered.length;
+    const withExpl = ordered.filter((q) => q.explanation).length;
+    const titleBn = paperTitleBn(exam, year);
+    const titleEn = paperTitleEn(exam, year);
+    const url = paperUrl(exam, year);
+
+    // chapter frequency (data-driven "which chapters mattered" table)
+    const freq = new Map();
+    for (const q of ordered) {
+      if (!q.chapter) continue;
+      const key = `${subjectLabelBn(q.subject)}||${q.chapter}`;
+      freq.set(key, (freq.get(key) || 0) + 1);
+    }
+    const freqRows = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15);
+
+    let n = 0;
+    const sections = groups
+      .map((g) => {
+        const items = g.items.map((q) => renderPaperQuestion(q, ++n)).join('\n');
+        return `<section id="${g.id}"><h2>${esc(g.label)} <small style="font-weight:600;color:var(--mist);font-size:14px">(${bnCount(g.items.length)}টি প্রশ্ন)</small></h2>\n${items}</section>`;
+      })
+      .join('\n');
+
+    const jump = groups.map((g) => `<a href="#${g.id}">${esc(g.label)}<small>${bnCount(g.items.length)}</small></a>`).join('');
+    const prevYear = years[yi + 1];
+    const nextYear = years[yi - 1];
+    const pager = `<div class="pager">
+      ${prevYear ? `<a href="${rel(paperUrl(exam, prevYear))}">← ${esc(exam.shortBn)} ${sessionLabelBn(prevYear)}</a>` : '<span></span>'}
+      ${nextYear ? `<a href="${rel(paperUrl(exam, nextYear))}">${esc(exam.shortBn)} ${sessionLabelBn(nextYear)} →</a>` : `<a href="${rel(examUrl(exam))}">সব সেশন</a>`}
+    </div>`;
+    const otherYears = years.filter((y) => y !== year);
+    const otherHtml = otherYears.length
+      ? `<h2>${esc(exam.shortBn)} — অন্যান্য বছরের প্রশ্ন</h2><div class="jump">${otherYears.map((y) => `<a href="${rel(paperUrl(exam, y))}">${sessionLabelBn(y)}</a>`).join('')}</div>`
+      : '';
+    const formatHtml = exam.formatBn?.length
+      ? `<div class="tips"><h2>পরীক্ষার ধরন</h2><ul class="topics">${exam.formatBn.map((f) => `<li>${esc(f)}</li>`).join('')}</ul></div>`
+      : '';
+    const freqHtml = freqRows.length
+      ? `<h2>কোন অধ্যায় থেকে কয়টি প্রশ্ন এসেছে</h2>
+<p class="lede">এই প্রশ্নপত্রের প্রশ্নগুলো যে অধ্যায় থেকে এসেছে তার ভিত্তিতে তৈরি তালিকা — রিভিশনের অগ্রাধিকার ঠিক করতে কাজে লাগাও।</p>
+<div class="freq"><table><thead><tr><th>বিষয়</th><th>অধ্যায়</th><th style="text-align:right">প্রশ্ন</th></tr></thead><tbody>
+${freqRows.map(([k, c]) => { const [sub, ch] = k.split('||'); return `<tr><td>${esc(sub)}</td><td>${esc(ch)}</td><td class="n">${bnCount(c)}টি</td></tr>`; }).join('\n')}
+</tbody></table></div>`
+      : '';
+
+    const subjectsBn = groups.map((g) => g.label).join(', ');
+    const shortTitleBn = `${exam.shortBn} ভর্তি পরীক্ষা ${sessionLabelBn(year)}`;
+    const shortTitleEn = `${exam.nameEn.replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+/g, ' ').trim()} ${sessionSlug(year)}`;
+    const body = `
+<h1>${esc(titleBn)} — প্রশ্ন ও সমাধান</h1>
+<p class="sub">${esc(titleEn)} · Question with Answers &amp; Explanations</p>
+<p class="lede">${esc(titleBn)} এ আসা ${bnCount(total)}টি প্রশ্ন সঠিক উত্তর${withExpl ? ' ও ব্যাখ্যা' : ''}সহ এক পেজে। বিষয়: ${esc(subjectsBn)}। প্রতিটি প্রশ্ন আগে নিজে চেষ্টা করো, তারপর "উত্তর ও ব্যাখ্যা দেখো"-তে ক্লিক করে মিলিয়ে নাও — এভাবেই বিগত বছরের প্রশ্ন থেকে সবচেয়ে বেশি শেখা যায়।</p>
+<div class="chips"><span class="chip src">${esc(exam.shortBn)}</span><span class="chip">সেশন ${sessionLabelBn(year)}</span><span class="chip">${bnCount(total)}টি প্রশ্ন</span>${withExpl ? `<span class="chip">${bnCount(withExpl)}টি ব্যাখ্যাসহ</span>` : ''}</div>
+<div class="meta">
+  <div><b>${bnCount(total)}</b><span>মোট প্রশ্ন</span></div>
+  <div><b>${bnCount(groups.length)}</b><span>বিষয়</span></div>
+  <div><b>${bnCount(withExpl)}</b><span>ব্যাখ্যাসহ সমাধান</span></div>
+  <div><b>${sessionLabelBn(year)}</b><span>শিক্ষাবর্ষ</span></div>
+</div>
+<div class="toolbar"><div class="jump">${jump}</div><button type="button" class="tog" data-toggle-all>সব উত্তর দেখাও</button></div>
+${sections}
+${freqHtml}
+${formatHtml}
+${otherHtml}
+${pager}
+<div class="banner"><h2>${esc(exam.shortBn)} প্রস্তুতি এখানেই শেষ নয়</h2>
+<p>পরীক্ষাঙ্গনে ${esc(exam.shortBn)}সহ সব ভর্তি পরীক্ষার প্রশ্নব্যাংক, টাইমারসহ মডেল টেস্ট ও AI দুর্বলতা রিপোর্ট — একদম ফ্রি।</p>
+<a href="/qbank?level=ADMISSION&admissionCategory=${encodeURIComponent(exam.category)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
+
+    const crumbs = [...examCrumbs, [sessionLabelBn(year), url]];
+    const jsonLd = [
+      breadcrumbLd(crumbs),
+      {
+        '@type': 'Quiz',
+        '@id': url,
+        name: `${titleBn} — প্রশ্ন ও সমাধান`,
+        alternateName: `${titleEn} question solution`,
+        inLanguage: 'bn-BD',
+        url,
+        about: { '@type': 'Thing', name: exam.nameEn },
+        educationalLevel: 'University admission',
+        educationalAlignment: { '@type': 'AlignmentObject', alignmentType: 'educationalSubject', targetName: groups.map((g) => g.subject || g.label).join(', ') },
+        numberOfQuestions: total,
+        provider: { '@type': 'Organization', name: 'Porikkhangon', sameAs: SITE },
+        isAccessibleForFree: true,
+        hasPart: ordered.slice(0, 100).map((q) => ({
+          '@type': 'Question',
+          eduQuestionType: 'Multiple choice',
+          name: plain(q.question).slice(0, 150),
+          text: plain(q.question).slice(0, 300),
+          acceptedAnswer: { '@type': 'Answer', text: plain(q.options[Number(q.correctAnswerIndex) || 0] ?? '') },
+          suggestedAnswer: q.options.map((o) => ({ '@type': 'Answer', text: plain(o) })),
+        })),
+      },
+    ];
+
+    const path = writePage(`admission-questions/${exam.id}/${sessionSlug(year)}/index.html`, shell({
+      title: `${shortTitleBn} প্রশ্ন সমাধান — ${shortTitleEn} Question Solution | পরীক্ষাঙ্গন`,
+      description: `${titleBn} এর ${bnCount(total)}টি প্রশ্নের সঠিক উত্তর${withExpl ? ' ও ব্যাখ্যা' : ''}সহ সম্পূর্ণ সমাধান — ${subjectsBn}। ${shortTitleEn} question bank with answers, পরীক্ষাঙ্গনে ফ্রি।`.slice(0, 300),
+      canonical: url,
+      breadcrumbs: crumbs,
+      jsonLd,
+      body,
+      mathjax: true,
+      section: 'admission',
+      head: PAPER_TOGGLE_JS,
+    }));
+    urls.push([path, '0.8']);
+    paperPages++;
+  });
+
+  // ---- exam page (all sittings) --------------------------------------------
+  {
+    const url = examUrl(exam);
+    const totalQ = years.reduce((n, y) => n + byYear.get(y).questions.length, 0);
+    const cards = years
+      .map((y) => {
+        const paper = byYear.get(y);
+        const subs = [...new Set(orderPaper(exam, paper.questions).map((q) => subjectLabelBn(subjectBase(q.subject))).filter(Boolean))];
+        return `<a href="${rel(paperUrl(exam, y))}"><b>${sessionLabelBn(y)}</b><span>${bnCount(paper.questions.length)}টি প্রশ্ন${subs.length ? ` · ${esc(subs.slice(0, 4).join(', '))}${subs.length > 4 ? ' …' : ''}` : ''}</span><em>প্রশ্ন ও সমাধান →</em></a>`;
+      })
+      .join('\n');
+    const formatHtml = exam.formatBn?.length
+      ? `<div class="tips"><h2>${esc(exam.shortBn)} ভর্তি পরীক্ষার ধরন</h2><ul class="topics">${exam.formatBn.map((f) => `<li>${esc(f)}</li>`).join('')}</ul></div>`
+      : '';
+    const others = examsWithPapers.filter((e) => e.id !== exam.id).slice(0, 8);
+    const faqs = [
+      [`${exam.shortBn} ভর্তি পরীক্ষার বিগত বছরের প্রশ্ন কোথায় পাব?`, `এই পেজে ${exam.nameBn} এর ${bnCount(years.length)}টি সেশনের (${years.length > 1 ? `${sessionLabelBn(years[years.length - 1])} থেকে ${sessionLabelBn(years[0])}` : sessionLabelBn(years[0])}) প্রশ্ন সেশন অনুযায়ী সাজানো আছে। যেকোনো সেশনে ক্লিক করলে সেই বছরের সব প্রশ্ন সঠিক উত্তরসহ এক পেজে পাবে।`],
+      ['প্রশ্নগুলোর ব্যাখ্যা আছে কি?', 'প্রতিটি প্রশ্নের সঠিক উত্তর দেওয়া আছে এবং যেসব প্রশ্নে ব্যাখ্যা যুক্ত হয়েছে সেগুলো "উত্তর ও ব্যাখ্যা দেখো" অংশে দেখানো হয়। প্রতিটি প্রশ্নের আলাদা পেজও আছে।'],
+      ['এই প্রশ্নগুলো দিয়ে কি মডেল টেস্ট দেওয়া যায়?', 'হ্যাঁ। পরীক্ষাঙ্গন অ্যাপে ফ্রি একাউন্ট খুলে ভর্তি প্রশ্নব্যাংক থেকে টাইমারসহ মডেল টেস্ট দেওয়া যায় এবং ভুল প্রশ্নগুলো সেভ করে পরে রিভিশন করা যায়।'],
+      ['বিগত বছরের প্রশ্ন সলভ করা কেন জরুরি?', 'বিগত বছরের প্রশ্ন থেকে প্রশ্নের ধরন, বারবার আসা টপিক ও সময় ব্যবস্থাপনার ধারণা পাওয়া যায়। প্রতিটি সেশনের পেজে "কোন অধ্যায় থেকে কয়টি প্রশ্ন এসেছে" তালিকা দেওয়া আছে, যা রিভিশনের অগ্রাধিকার ঠিক করতে সাহায্য করে।'],
+    ];
+    const faqHtml = `<h2>সাধারণ জিজ্ঞাসা</h2><div class="faq">${faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>`;
+
+    const body = `
+<h1>${esc(exam.nameBn)} — বিগত বছরের প্রশ্ন ও সমাধান</h1>
+<p class="sub">${esc(exam.nameEn)} · Previous Years' Question Bank with Solutions</p>
+<p class="lede">${esc(exam.descriptionBn)}</p>
+<div class="meta">
+  <div><b>${bnCount(years.length)}</b><span>সেশনের প্রশ্নপত্র</span></div>
+  <div><b>${bnCount(totalQ)}</b><span>মোট প্রশ্ন</span></div>
+  <div><b>${sessionLabelBn(years[0])}</b><span>সর্বশেষ সেশন</span></div>
+</div>
+<h2>সেশন বেছে নাও</h2>
+<div class="sessions">${cards}</div>
+${formatHtml}
+<div class="tips"><h2>বিগত বছরের প্রশ্ন দিয়ে কীভাবে প্রস্তুতি নেবে?</h2>
+<ul class="topics">
+<li>প্রথমে সময় ধরে পুরো প্রশ্নপত্র নিজে সলভ করো — উত্তর না দেখে।</li>
+<li>তারপর "উত্তর ও ব্যাখ্যা দেখো" দিয়ে মিলিয়ে নাও; ভুলগুলোর অধ্যায় আলাদা করে নোট করো।</li>
+<li>প্রতিটি সেশনের পেজে থাকা "কোন অধ্যায় থেকে কয়টি প্রশ্ন" তালিকা দেখে রিভিশনের অগ্রাধিকার ঠিক করো।</li>
+<li>পরীক্ষাঙ্গন অ্যাপে একই প্রশ্নব্যাংক থেকে মডেল টেস্ট দাও এবং ভুল প্রশ্ন সেভ করে রাখো।</li>
+</ul></div>
+${faqHtml}
+${others.length ? `<h2>অন্যান্য ভর্তি পরীক্ষার প্রশ্নব্যাংক</h2><div class="jump">${others.map((e) => `<a href="${rel(examUrl(e))}">${esc(e.shortBn)}</a>`).join('')}<a href="${ADM}">সব পরীক্ষা →</a></div>` : ''}
+<div class="banner"><h2>${esc(exam.shortBn)} প্রস্তুতির জন্য মডেল টেস্ট দাও</h2>
+<p>বিগত বছরের প্রশ্নসহ পূর্ণাঙ্গ প্রশ্নব্যাংক, টাইমার, ইনস্ট্যান্ট রেজাল্ট ও AI দুর্বলতা রিপোর্ট — ফ্রি।</p>
+<a href="/qbank?level=ADMISSION&admissionCategory=${encodeURIComponent(exam.category)}">প্রশ্নব্যাংক খোলো</a></div>`;
+
+    const jsonLd = [
+      breadcrumbLd(examCrumbs),
+      {
+        '@type': 'CollectionPage',
+        '@id': url,
+        name: `${exam.nameBn} — বিগত বছরের প্রশ্ন ও সমাধান`,
+        alternateName: `${exam.nameEn} previous year questions`,
+        inLanguage: 'bn-BD',
+        url,
+        isPartOf: { '@type': 'WebSite', name: 'Porikkhangon', url: SITE },
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: years.length,
+          itemListElement: years.map((y, i) => ({ '@type': 'ListItem', position: i + 1, name: `${paperTitleBn(exam, y)} প্রশ্ন ও সমাধান`, url: paperUrl(exam, y) })),
+        },
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+      },
+    ];
+
+    const path = writePage(`admission-questions/${exam.id}/index.html`, shell({
+      title: `${exam.shortBn} ভর্তি পরীক্ষার বিগত বছরের প্রশ্ন ও সমাধান — ${exam.nameEn.replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+/g, ' ').trim()} Question Bank | পরীক্ষাঙ্গন`,
+      description: `${exam.nameBn} এর ${bnCount(years.length)}টি সেশনের (${years.length > 1 ? `${sessionLabelBn(years[years.length - 1])}–${sessionLabelBn(years[0])}` : sessionLabelBn(years[0])}) ${bnCount(totalQ)}টি প্রশ্ন সঠিক উত্তর ও ব্যাখ্যাসহ। ${exam.nameEn} previous year question solve — পরীক্ষাঙ্গনে ফ্রি।`.slice(0, 300),
+      canonical: url,
+      breadcrumbs: examCrumbs,
+      jsonLd,
+      body,
+      section: 'admission',
+    }));
+    urls.push([path, '0.8']);
+  }
+}
+
+// ---- admission hub --------------------------------------------------------
+if (examsWithPapers.length) {
+  const url = `${SITE}${ADM}`;
+  const crumbs = [['পরীক্ষাঙ্গন', `${SITE}/`], ['ভর্তি প্রশ্নব্যাংক', url]];
+  const byCat = new Map();
+  for (const e of examsWithPapers) {
+    if (!byCat.has(e.category)) byCat.set(e.category, []);
+    byCat.get(e.category).push(e);
+  }
+  const catOrder = ['medical', 'varsity', 'engineering', 'krishi', 'others'];
+  const catSections = catOrder
+    .filter((c) => byCat.has(c))
+    .map((c) => {
+      const cards = byCat
+        .get(c)
+        .map((e) => {
+          const byYear = papers.get(e.id);
+          const years = [...byYear.keys()].sort((a, b) => b - a);
+          const totalQ = years.reduce((n, y) => n + byYear.get(y).questions.length, 0);
+          return `<a href="${rel(examUrl(e))}"><b>${esc(e.nameBn)}</b><span>${bnCount(years.length)}টি সেশন · ${bnCount(totalQ)}টি প্রশ্ন সমাধানসহ</span><div class="yrs">${years.slice(0, 6).map((y) => `<i>${sessionLabelBn(y)}</i>`).join('')}${years.length > 6 ? `<i>+${bnCount(years.length - 6)}</i>` : ''}</div></a>`;
+        })
+        .join('\n');
+      return `<h2>${esc(CATEGORY_LABELS_BN[c] || c)}</h2><div class="exams">${cards}</div>`;
+    })
+    .join('\n');
+
+  const recent = examsWithPapers
+    .flatMap((e) => [...papers.get(e.id).keys()].map((y) => ({ e, y, n: papers.get(e.id).get(y).questions.length })))
+    .sort((a, b) => b.y - a.y || a.e.priority - b.e.priority)
+    .slice(0, 12);
+  const totalSittings = examsWithPapers.reduce((n, e) => n + papers.get(e.id).size, 0);
+  const totalQ = examsWithPapers.reduce((n, e) => n + [...papers.get(e.id).values()].reduce((m, p) => m + p.questions.length, 0), 0);
+
+  const topNames = examsWithPapers.slice(0, 4).map((e) => e.shortBn).join(', ');
+  const topNamesEn = examsWithPapers.slice(0, 4).map((e) => e.nameEn.replace(/\s*\(.*?\)\s*/g, ' ').replace(/ Admission Test.*$/i, '').trim()).join(', ');
+  const body = `
+<h1>ভর্তি পরীক্ষার বিগত বছরের প্রশ্ন ও সমাধান — ${esc(topNames)}</h1>
+<p class="sub">Previous Years' Admission Test Questions with Solutions (${esc(topNamesEn)} &amp; more)</p>
+<p class="lede">পরীক্ষাঙ্গনের ভর্তি প্রশ্নব্যাংকে ${bnCount(examsWithPapers.length)}টি ভর্তি পরীক্ষার ${bnCount(totalSittings)}টি সেশনের ${bnCount(totalQ)}টি প্রশ্ন সঠিক উত্তর ও ব্যাখ্যাসহ সাজানো আছে — সেশন অনুযায়ী, বিষয় অনুযায়ী। প্রশ্নগুলো আমাদের ডেটাবেস থেকে সরাসরি নেওয়া, তাই অ্যাপের প্রশ্নব্যাংক ও মডেল টেস্টেও একই প্রশ্ন প্র্যাকটিস করতে পারবে।</p>
+<div class="meta">
+  <div><b>${bnCount(examsWithPapers.length)}</b><span>ভর্তি পরীক্ষা</span></div>
+  <div><b>${bnCount(totalSittings)}</b><span>সেশনের প্রশ্নপত্র</span></div>
+  <div><b>${bnCount(totalQ)}</b><span>প্রশ্ন, উত্তরসহ</span></div>
+</div>
+${catSections}
+<h2>সাম্প্রতিক প্রশ্নপত্র</h2>
+<div class="sessions">${recent.map(({ e, y, n }) => `<a href="${rel(paperUrl(e, y))}"><b>${sessionLabelBn(y)}</b><span>${esc(e.shortBn)} · ${bnCount(n)}টি প্রশ্ন</span><em>প্রশ্ন ও সমাধান →</em></a>`).join('\n')}</div>
+<div class="tips"><h2>কীভাবে ব্যবহার করবে?</h2>
+<ul class="topics">
+<li>নিজের টার্গেট পরীক্ষা বেছে নাও — সেখানে সব সেশনের প্রশ্নপত্র পাবে।</li>
+<li>প্রতিটি সেশনের পেজে প্রশ্নগুলো বিষয় অনুযায়ী সাজানো; আগে নিজে সলভ করো, তারপর উত্তর মেলাও।</li>
+<li>"কোন অধ্যায় থেকে কয়টি প্রশ্ন" তালিকা দেখে রিভিশনের অগ্রাধিকার ঠিক করো।</li>
+<li>HSC সিলেবাস ধরে অধ্যায়ভিত্তিক পড়তে চাইলে <a href="${HUB}">HSC সিলেবাস গাইড</a> দেখো।</li>
+</ul></div>
+<div class="banner"><h2>বিগত বছরের প্রশ্ন দিয়ে মডেল টেস্ট দাও</h2>
+<p>টাইমার, নেগেটিভ মার্কিং, ইনস্ট্যান্ট রেজাল্ট ও AI দুর্বলতা রিপোর্ট — পরীক্ষাঙ্গনে ফ্রি।</p>
+<a href="${SITE}/auth">এখনই ফ্রি একাউন্ট খোলো</a></div>`;
+
+  const jsonLd = [
+    breadcrumbLd(crumbs),
+    {
+      '@type': 'CollectionPage',
+      '@id': url,
+      name: 'ভর্তি পরীক্ষার বিগত বছরের প্রশ্ন ও সমাধান',
+      alternateName: 'Bangladesh admission test previous year question bank',
+      inLanguage: 'bn-BD',
+      url,
+      isPartOf: { '@type': 'WebSite', name: 'Porikkhangon', url: SITE },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: examsWithPapers.length,
+        itemListElement: examsWithPapers.map((e, i) => ({ '@type': 'ListItem', position: i + 1, name: `${e.nameBn} — বিগত বছরের প্রশ্ন`, url: examUrl(e) })),
+      },
+    },
+  ];
+
+  const path = writePage('admission-questions/index.html', shell({
+    title: `ভর্তি পরীক্ষার বিগত বছরের প্রশ্ন ও সমাধান — ${topNames} | পরীক্ষাঙ্গন`,
+    description: `${topNames}সহ ${bnCount(examsWithPapers.length)}টি ভর্তি পরীক্ষার ${bnCount(totalSittings)}টি সেশনের প্রশ্ন সঠিক উত্তর ও ব্যাখ্যাসহ। Previous year admission question solve (${topNamesEn}) — পরীক্ষাঙ্গনে ফ্রি।`.slice(0, 300),
+    canonical: url,
+    breadcrumbs: crumbs,
+    jsonLd,
+    body,
+    section: 'admission',
+  }));
+  urls.push([path, '0.9']);
+}
+console.log(`[seo] admission pages: ${examsWithPapers.length} exams, ${paperPages} sittings`);
 
 // --- Hub page -------------------------------------------------------------
 {
@@ -511,6 +1122,7 @@ console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
 <p class="lede">পরীক্ষাঙ্গন (Porikkhangon)-এর অধ্যায়ভিত্তিক সিলেবাস গাইডে HSC ও ভর্তি পরীক্ষার ${subjects.length}টি বিষয়ের ${totalChapters}টি অধ্যায়ের সম্পূর্ণ টপিক তালিকা, প্রস্তুতি টিপস এবং ফ্রি MCQ প্র্যাকটিসের সুবিধা একসাথে পাবে। নিজের বিষয় বেছে নাও, অধ্যায় খুলে দেখো কোন কোন টপিক থেকে প্রশ্ন আসে — এবং সাথে সাথেই প্রশ্নব্যাংকে প্র্যাকটিস শুরু করো।</p>
 <h2>বিষয় বেছে নাও</h2>
 <div class="grid">${cards}</div>
+${examsWithPapers.length ? `<div class="xlink"><div><b>ভর্তি পরীক্ষার বিগত বছরের প্রশ্ন ও সমাধান</b><span>${esc(examsWithPapers.slice(0, 5).map((e) => e.shortBn).join(', '))} — সেশন অনুযায়ী পূর্ণাঙ্গ প্রশ্নপত্র, উত্তর ও ব্যাখ্যাসহ।</span></div><a href="${ADM}">প্রশ্নব্যাংক দেখো</a></div>` : ''}
 <div class="tips"><h2>কীভাবে এই গাইড ব্যবহার করবে?</h2>
 <ul class="topics">
 <li>প্রথমে নিজের বিষয়ের পেজে যাও — সেখানে সব অধ্যায়ের তালিকা পাবে।</li>
@@ -686,7 +1298,6 @@ ${pager}
 }
 
 // --- Public question pages (Sattacademy-style) ----------------------------
-const LETTERS = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ'];
 let qPages = 0;
 for (const q of allQuestions) {
   const subjectSlug = q.subject ? slugify(q.subject) : '';
@@ -694,9 +1305,14 @@ for (const q of allQuestions) {
   const hasSubjectPage = q.subject && SYLLABUS_DB[q.subject];
   const hasChapterPage = hasSubjectPage && SYLLABUS_DB[q.subject][q.chapter];
 
-  const crumbs = [['পরীক্ষাঙ্গন', `${SITE}/`], ['HSC সিলেবাস গাইড', `${SITE}${HUB}`]];
-  if (hasSubjectPage) crumbs.push([q.subject, `${SITE}${HUB}${subjectSlug}/`]);
-  if (hasChapterPage) crumbs.push([q.chapter, `${SITE}${HUB}${subjectSlug}/${chapterSlug}/`]);
+  // Which previous-year paper (if any) this question belongs to
+  const paperHit = (q.tags || []).map((t) => paperByTag.get(String(t).toLowerCase())).find(Boolean) || null;
+
+  const crumbs = paperHit
+    ? [['পরীক্ষাঙ্গন', `${SITE}/`], ['ভর্তি প্রশ্নব্যাংক', `${SITE}${ADM}`], [paperHit.exam.shortBn, examUrl(paperHit.exam)], [sessionLabelBn(paperHit.year), paperUrl(paperHit.exam, paperHit.year)]]
+    : [['পরীক্ষাঙ্গন', `${SITE}/`], ['HSC সিলেবাস গাইড', `${SITE}${HUB}`]];
+  if (!paperHit && hasSubjectPage) crumbs.push([q.subject, `${SITE}${HUB}${subjectSlug}/`]);
+  if (!paperHit && hasChapterPage) crumbs.push([q.chapter, `${SITE}${HUB}${subjectSlug}/${chapterSlug}/`]);
   crumbs.push([plain(q.question).slice(0, 60), q.url]);
 
   const optsHtml = q.options
@@ -718,7 +1334,9 @@ for (const q of allQuestions) {
     : '';
 
   const levelLabel = q.level === 'ADMISSION' ? 'ভর্তি পরীক্ষা' : q.level === 'MAINBOOK' ? 'মূল বই' : q.level === 'ACADEMIC' ? 'HSC একাডেমিক' : '';
-  const srcChip = q.sourceLabel ? `<span class="chip src">সূত্র: ${esc(String(q.sourceLabel))}</span>` : '';
+  const srcChip = paperHit
+    ? `<a class="chip src" href="${rel(paperUrl(paperHit.exam, paperHit.year))}" style="text-decoration:none">সূত্র: ${esc(paperLabel(paperHit.exam, paperHit.year))} — পুরো প্রশ্নপত্র →</a>`
+    : q.sourceLabel ? `<span class="chip src">সূত্র: ${esc(String(q.sourceLabel))}</span>` : '';
   const chips = srcChip + [q.subject, q.chapter, levelLabel, ...(q.tags || []).slice(0, 2)]
     .filter((c) => c && c !== q.sourceLabel)
     .map((c) => `<span class="chip">${esc(String(c))}</span>`)
@@ -738,9 +1356,10 @@ ${q.questionImage ? `<img class="qimg" src="${esc(q.questionImage)}" alt="প্
 ${explHtml}
 </article>
 ${moreHtml}
+${paperHit ? `<div class="xlink"><div><b>${esc(paperLabel(paperHit.exam, paperHit.year))} — সম্পূর্ণ প্রশ্নপত্র</b><span>এই সেশনের সব প্রশ্ন সঠিক উত্তর ও ব্যাখ্যাসহ এক পেজে, বিষয় অনুযায়ী সাজানো।</span></div><a href="${rel(paperUrl(paperHit.exam, paperHit.year))}">পুরো প্রশ্নপত্র দেখো</a></div>` : ''}
 <div class="banner"><h2>একই ধরনের আরও প্রশ্ন সলভ করো</h2>
 <p>৫০,০০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>
-<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
+<a href="${paperHit ? `/qbank?level=ADMISSION&admissionCategory=${encodeURIComponent(paperHit.exam.category)}` : `/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}`}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
 
   const jsonLd = [
     breadcrumbLd(crumbs),
@@ -752,7 +1371,9 @@ ${moreHtml}
       learningResourceType: 'MCQ question with solution',
       teaches: q.subject || 'HSC ও ভর্তি পরস্তুতি',
       educationalLevel: q.level === 'ADMISSION' ? 'University admission' : 'Higher Secondary',
-      isPartOf: hasChapterPage
+      isPartOf: paperHit
+        ? { '@type': 'Quiz', name: `${paperTitleBn(paperHit.exam, paperHit.year)} — প্রশ্ন ও সমাধান`, url: paperUrl(paperHit.exam, paperHit.year) }
+        : hasChapterPage
         ? { '@type': 'Course', name: `${q.subject} — HSC প্রস্তুতি কোর্স`, url: `${SITE}${HUB}${subjectSlug}/` }
         : { '@type': 'Course', name: 'HSC ও ভর্তি প্রস্তুতি', url: `${SITE}${HUB}` },
       provider: { '@type': 'Organization', name: 'Porikkhangon', sameAs: SITE },
@@ -780,6 +1401,7 @@ ${moreHtml}
     jsonLd,
     body,
     mathjax: true,
+    section: paperHit ? 'admission' : 'syllabus',
   }));
   urls.push([`q/${q.slug}`, '0.6']);
   qPages++;
@@ -801,7 +1423,7 @@ ${urls
     ([p, pr]) => `  <url>
     <loc>${p === '/' ? `${SITE}/` : NO_TRAILING_SLASH.has(p) ? `${SITE}/${p}` : `${SITE}/${p}/`}</loc>
     <lastmod>${TODAY}</lastmod>
-    <changefreq>${pr === '0.6' ? 'monthly' : 'weekly'}</changefreq>
+    <changefreq>${pr === '0.6' || p.startsWith('admission-questions/') && p.split('/').length === 3 ? 'monthly' : 'weekly'}</changefreq>
     <priority>${pr}</priority>
   </url>`
   )
@@ -811,4 +1433,4 @@ ${urls
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, 'sitemap.xml'), sitemap, 'utf8');
 
-console.log(`[seo] Generated ${urls.length - 1} static pages (${qPages} question pages) + sitemap.xml into ${OUT}`);
+console.log(`[seo] Generated ${urls.length - 1} static pages (${qPages} question pages, ${paperPages} past-paper pages) + sitemap.xml into ${OUT}`);

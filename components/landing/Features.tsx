@@ -1,3 +1,4 @@
+import type React from "react";
 import { motion } from "motion/react";
 import {
   Radio,
@@ -208,7 +209,14 @@ function OfflineVisual() {
   );
 }
 
-const features = [
+const features: {
+  icon: typeof Radio;
+  title: string;
+  desc: string;
+  span: string;
+  visual: React.ReactNode;
+  link?: { href: string; label: string };
+}[] = [
   {
     icon: Radio,
     title: "লাইভ মক এক্সাম",
@@ -236,6 +244,8 @@ const features = [
     desc: "গত ১৫ বছরের সব বোর্ড ও টপ কলেজের টেস্ট পেপার — প্রতিটা প্রশ্নে বোর্ড-স্ট্যান্ডার্ড সমাধান ও মার্কিং হিন্টস।",
     span: "lg:col-span-4",
     visual: <ArchiveVisual />,
+    // Static, crawlable hub with previous-year admission papers (Medical, DU, BUET …)
+    link: { href: "/admission-questions/", label: "বিগত বছরের ভর্তি প্রশ্ন সমাধান দেখো" },
   },
   {
     icon: Swords,
@@ -315,6 +325,15 @@ export default function Features() {
                 <ArrowUpRight className="mt-1 h-5 w-5 shrink-0 text-ink/20 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand" />
               </div>
               {f.visual}
+              {f.link && (
+                <a
+                  href={f.link.href}
+                  className="focus-ring relative mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-bold text-brand-deep transition-colors hover:text-brand"
+                >
+                  {f.link.label}
+                  <ArrowUpRight className="h-4 w-4" />
+                </a>
+              )}
             </motion.article>
           ))}
         </motion.div>

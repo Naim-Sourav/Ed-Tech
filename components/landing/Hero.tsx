@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { subjects } from "./data";
 import QuestionDemo from "./QuestionDemo";
+import LazyLottie from "./LazyLottie";
+
+const loadHeroLottie = () => import("../../assets/lottie/hero-animation.json");
 
 const line = {
   hidden: { y: "112%" },
@@ -74,6 +77,19 @@ export default function Hero() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        {/* ── Exam-prep illustration (Lottie from the original landing) — lives in the
+               empty desktop gutter beside the headline, lazy-loaded, decorative ── */}
+        <motion.div
+          initial={{ opacity: 0, x: 28, scale: 0.94 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          transition={{ duration: 1.1, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="pointer-events-none absolute -right-2 top-16 hidden w-[260px] xl:block 2xl:-right-16 2xl:w-[320px]"
+          aria-hidden="true"
+        >
+          <div className="absolute inset-4 rounded-full bg-[radial-gradient(closest-side,rgba(255,185,46,0.32),transparent)] blur-2xl" />
+          <LazyLottie load={loadHeroLottie} className="relative aspect-square w-full animate-float-slow" />
+        </motion.div>
+
         {/* ── Editorial eyebrow — text only, no pill ── */}
         <motion.p
           variants={rise}

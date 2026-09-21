@@ -43,12 +43,13 @@ npm run dev                  # → http://localhost:3000
 ## Project layout
 
 ```
-App.tsx                 → routes (public: /, /auth, /exam/*, /q/*, legal pages)
+App.tsx                 → routes (public: /, /auth, /exam/*, /q/*, /admission-questions/*, legal pages)
 components/             → UI screens (HomeDashboard, QuestionBank, ExamPage, ...)
 services/               → api.ts (backend), firebase.ts, geminiService.ts, ...
 contexts/               → Auth, Admin, Language, Preferences, Cache
 utils/                  → logger, sanitize, adminConfig, normalization, ...
-scripts/generate-seo-pages.mjs → static /hsc-syllabus/* + /q/* pages + sitemap
+scripts/generate-seo-pages.mjs → static /hsc-syllabus/*, /admission-questions/* (previous-year papers) + /q/* pages + sitemap
+data/admissionExams.ts  → admission exam catalogue (tag prefixes, names) shared by the generator + in-app fallback
 public/                 → copied to dist/ (manifest, icons, 404.html, CNAME, ...)
 ```
 

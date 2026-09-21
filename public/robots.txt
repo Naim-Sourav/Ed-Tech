@@ -4,5 +4,7 @@ Disallow: /admin
 
 # Static, crawlable content hubs
 Allow: /hsc-syllabus/
+Allow: /admission-questions/
+Allow: /q/
 
 Sitemap: https://www.porikkhangon.app/sitemap.xml

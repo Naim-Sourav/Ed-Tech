@@ -27,6 +27,12 @@
     var path = location.pathname.replace(/\/+$/, '') || '/';
     var seg = path.split('/')[1] || '';
     if (seg === 'hsc-syllabus') { location.replace('/hsc-syllabus/'); return; }
+    // Previous-year admission papers: static pages exist for every sitting we
+    // have data for; anything else is rendered live by the SPA from the DB.
+    if (seg === 'admission-questions') {
+      location.replace('/?p=' + encodeURIComponent(path + location.search));
+      return;
+    }
     if (seg && known.indexOf(seg) !== -1) {
       location.replace('/?p=' + encodeURIComponent(path + location.search));
       return;
@@ -43,6 +49,7 @@
     <a class="btn" href="/">হোমপেজে যান</a>
     <div>
       <a class="link" href="/hsc-syllabus/">HSC সিলেবাস গাইড</a>
+      <a class="link" href="/admission-questions/">ভর্তি প্রশ্নব্যাংক</a>
       <a class="link" href="/auth">লগইন / রেজিস্ট্রেশন</a>
       <a class="link" href="/privacy">প্রাইভেসি পলিসি</a>
     </div>

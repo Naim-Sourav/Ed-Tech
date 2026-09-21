@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { Plus, MessageCircle, Clock } from "lucide-react";
 import { faqs } from "./data";
 import { Reveal, SectionTag, toBn } from "./ui";
+import LazyLottie from "./LazyLottie";
+
+const loadLearningLottie = () => import("../../assets/lottie/learning.json");
 
 function FaqItem({ q, a, open, onToggle, index }: { q: string; a: string; open: boolean; onToggle: () => void; index: number }) {
   return (
@@ -91,6 +94,18 @@ export default function FAQ() {
                     <Clock className="h-3.5 w-3.5" /> প্রতিদিন সকাল ৯টা – রাত ১১টা
                   </span>
                 </div>
+              </div>
+            </Reveal>
+
+            {/* "Student at the laptop, messages popping up" — Lottie from the original
+                landing, sits under the help card on desktop (lazy-loaded, decorative) */}
+            <Reveal delay={0.25} className="mt-6 hidden lg:block">
+              <div className="relative mx-auto max-w-[360px]">
+                <div
+                  className="absolute inset-x-8 bottom-4 top-10 rounded-[40px] bg-[radial-gradient(closest-side,rgba(255,82,0,0.12),transparent)] blur-2xl"
+                  aria-hidden="true"
+                />
+                <LazyLottie load={loadLearningLottie} className="relative aspect-[1330/920] w-full" />
               </div>
             </Reveal>
           </div>

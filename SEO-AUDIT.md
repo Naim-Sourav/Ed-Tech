@@ -33,6 +33,18 @@
 - `package.json` — `npm run build` এখন বিল্ডের শেষে পেজগুলো জেনারেট করে (GitHub Actions deploy-তেও স্বয়ংক্রিয়ভাবে চলবে); আলাদা চালানোর জন্য `npm run seo:pages`।
 - `public/404.html` — GitHub Pages-এ SPA ডিপ-লিংক ফিক্স: `/privacy`-এর মতো লিংক এখন `/#/privacy`-তে ফেরত যায় (আগে raw 404 দেখাত), সাথে ব্র্যান্ডেড 404 পেজ ও SEO লিংক।
 
+### ক-২) বিগত বছরের ভর্তি প্রশ্নপত্র — স্ট্যাটিক পেজ (`/admission-questions/**`)
+`hsc-syllabus` পেজগুলো যেভাবে র‍্যাংক করছে, ঠিক সেই প্যাটার্নে (বিল্ড-টাইমে জেনারেট করা, JS-বিহীন, সম্পূর্ণ ক্রলযোগ্য HTML) এখন **প্রতিষ্ঠান + সেশন অনুযায়ী বিগত বছরের প্রশ্ন সমাধান** পেজ তৈরি হয়। প্রশ্ন আসে সরাসরি ডেটাবেস থেকে — `GET /admin/questions?board=<tag>` (exact tag ফিল্টার, যেমন `Medical '21-22`), তাই ডেটাবেসে নতুন সেশন ট্যাগ হলেই পরের বিল্ডে পেজ আপনাআপনি যুক্ত হবে।
+
+- হাব: `/admission-questions/` — সব পরীক্ষা ক্যাটাগরি অনুযায়ী (মেডিকেল ও ডেন্টাল / বিশ্ববিদ্যালয় / ইঞ্জিনিয়ারিং / কৃষি) + সাম্প্রতিক প্রশ্নপত্র।
+- পরীক্ষা পেজ: `/admission-questions/medical/` — সব সেশনের কার্ড, পরীক্ষার ধরন, প্রস্তুতি টিপস, FAQ (FAQPage JSON-LD)।
+- সেশন পেজ: `/admission-questions/medical/2021-22/` — **"মেডিকেল ভর্তি পরীক্ষা ২০২১-২২ — প্রশ্ন ও সমাধান"**: পুরো প্রশ্নপত্র বিষয় অনুযায়ী সাজানো, প্রতিটি প্রশ্নে অপশন + `<details>`-এ সঠিক উত্তর ও ব্যাখ্যা (JS ছাড়াই কাজ করে; JS থাকলে "সব উত্তর দেখাও" টগল), "কোন অধ্যায় থেকে কয়টি প্রশ্ন" টেবিল, আগের/পরের সেশন লিংক, প্রতিটি প্রশ্ন থেকে `/q/<slug>/` পেজে লিংক, MathJax, BreadcrumbList + Quiz JSON-LD।
+- `/q/<slug>/` পেজগুলো এখন নিজের প্রশ্নপত্রে ব্যাক-লিংক করে (breadcrumb + "পুরো প্রশ্নপত্র দেখো" কার্ড) — ইন্টারনাল লিংকিং দুই দিকেই।
+- ক্যাটালগ (কোন ট্যাগ-প্রিফিক্স = কোন প্রতিষ্ঠান, বাংলা/ইংরেজি নাম, বিষয়ের ক্রম): `data/admissionExams.ts` — ২০টি প্রতিষ্ঠান (Medical, Dental, DU-A, BUET, CKRUET, GST-A, RUET, BUTex, JnU-A, CU-A, KU-A, RU-C, JUST-C, SUST-B, MBSTU-A, HSTU-A/B, BSMRSTU-B, SAU, SBAU), সেশন ২০১০-১১ থেকে চলতি বছর পর্যন্ত। ১০টির কম প্রশ্ন থাকলে সেই সেশনের পেজ তৈরি হয় না (thin content এড়াতে)।
+- API না পেলে (বা `--skip-fetch`) `data/*.json`-এর বান্ডেল করা প্রশ্নপত্র (Medical ২০২৪-২৫, GST-A ২০২৩-২৪) থেকে পেজ তৈরি হয় — বিল্ড কখনো ভাঙে না।
+- ইন-অ্যাপ ফলব্যাক: `components/PastPaperPage.tsx` (`/admission-questions/*` রাউট, `noindex`, canonical → স্ট্যাটিক URL) — যে সেশনের স্ট্যাটিক পেজ নেই সেটিও লাইভ ডেটাবেস থেকে দেখায়।
+- লিংকিং: `index.html` `<noscript>`, ল্যান্ডিং ফুটার ("এক্সাম" কলাম), ফিচার কার্ড, স্ট্যাটিক পেজগুলোর হেডার/ফুটার, `hsc-syllabus` হাবের ক্রস-লিংক কার্ড, `robots.txt` Allow, `sitemap.xml` (priority 0.8–0.9), `404.html` রাউটিং।
+
 ### খ) অন-পেজ SEO
 - `index.html` — নতুন কীওয়ার্ড-রিচ title/description, `robots` meta, favicon লিংক, 1200×630 `og-image.jpg` (SVG-এর বদলে, ৯৯KB), og:locale, Twitter card, এবং `@graph` JSON-LD: WebSite + EducationalOrganization + WebApplication (free offer সহ) + FAQPage (ল্যান্ডিংয়ের আসল FAQ-এর সাথে হুবহু মিল)। ভুল SearchAction বাদ।
 - `<noscript>` ব্লক — JS-বিহীন ক্রলার/ইউজারের জন্য কীওয়ার্ড-রিচ fallback কনটেন্ট ও লিংক।
@@ -59,7 +71,7 @@
 1. https://search.google.com/search-console → ডোমেইন প্রপার্টি `porikkhangon.app` যোগ করো (DNS TXT ভেরিফিকেশন)।
 2. Sitemaps সেকশনে `https://www.porikkhangon.app/sitemap.xml` সাবমিট করো।
 3. Bing Webmaster Tools-এও একই সাইট যোগ করো (GSC থেকে ইমপোর্ট করা যায়) — Bing/ChatGPT সার্চ ট্রাফিকের জন্য।
-4. URL Inspection → হোমপেজ ও `/hsc-syllabus/` এর জন্য "Request indexing"।
+4. URL Inspection → হোমপেজ, `/hsc-syllabus/`, `/admission-questions/` ও `/admission-questions/medical/` এর জন্য "Request indexing"।
 5. ১ সপ্তাহ পর Coverage রিপোর্টে দেখো কত URL ইনডেক্স হলো; sitemap-এর ভুল থাকলে সেখানে দেখাবে।
 
 ### ধাপ ৩ — কনটেন্ট ইঞ্জিন (সপ্তাহ ১–৮, সবচেয়ে বেশি ইমপ্যাক্ট)

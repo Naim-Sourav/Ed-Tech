@@ -368,21 +368,48 @@ export const faqs = [
   },
 ];
 
-export const footerCols = [
+/* Footer link columns. Real destinations where a page exists (static SEO hubs,
+   legal pages, in-app routes); everything else scrolls back to the top for now. */
+export type FooterLink = { label: string; href: string };
+export const footerCols: { title: string; links: FooterLink[] }[] = [
   {
     title: "প্রোডাক্ট",
-    links: ["প্রশ্ন ব্যাংক", "লাইভ মক এক্সাম", "অ্যানালিটিক্স", "বোর্ড আর্কাইভ", "মোবাইল অ্যাপ"],
+    links: [
+      { label: "প্রশ্ন ব্যাংক", href: "/qbank" },
+      { label: "লাইভ মক এক্সাম", href: "/exams" },
+      { label: "অ্যানালিটিক্স", href: "#features" },
+      { label: "বোর্ড আর্কাইভ", href: "/admission-questions/" },
+      { label: "মোবাইল অ্যাপ", href: "#cta" },
+    ],
   },
   {
     title: "এক্সাম",
-    links: ["SSC ২০২৬", "HSC ২০২৬", "ঢাবি ক-ইউনিট", "মেডিকেল", "GST ক্লাস্টার"],
+    links: [
+      { label: "HSC সিলেবাস গাইড", href: "/hsc-syllabus/" },
+      { label: "মেডিকেল প্রশ্ন সমাধান", href: "/admission-questions/medical/" },
+      { label: "ঢাবি ক-ইউনিট প্রশ্ন", href: "/admission-questions/du-a/" },
+      { label: "বুয়েট প্রশ্ন", href: "/admission-questions/buet/" },
+      { label: "গুচ্ছ (GST) ক-ইউনিট", href: "/admission-questions/gst-a/" },
+    ],
   },
   {
     title: "কোম্পানি",
-    links: ["আমাদের গল্প", "ক্যারিয়ার", "শিক্ষক পার্টনার", "প্রেস কিট", "ব্লগ"],
+    links: [
+      { label: "আমাদের গল্প", href: "#top" },
+      { label: "ক্যারিয়ার", href: "#top" },
+      { label: "শিক্ষক পার্টনার", href: "#top" },
+      { label: "প্রেস কিট", href: "#top" },
+      { label: "ব্লগ", href: "#top" },
+    ],
   },
   {
     title: "সাপোর্ট",
-    links: ["হেল্প সেন্টার", "যোগাযোগ", "রিফান্ড নীতি", "প্রাইভেসি", "টার্মস"],
+    links: [
+      { label: "হেল্প সেন্টার", href: "#faq" },
+      { label: "যোগাযোগ", href: "#cta" },
+      { label: "রিফান্ড নীতি", href: "/refund" },
+      { label: "প্রাইভেসি", href: "/privacy" },
+      { label: "টার্মস", href: "/terms" },
+    ],
   },
 ];
