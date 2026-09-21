@@ -9,7 +9,6 @@ import {
   X,
   Share2,
   Sparkles,
-  Clock,
   ChevronRight,
   Check,
   Award,
@@ -27,22 +26,24 @@ import { toBengaliNumber } from "../utils/numberUtils";
 import Lottie from "lottie-react";
 import fireAnimation from "../assets/lottie/fire.json";
 
-// --- QUICK ACCESS CONFIG ---
+// --- QUICK ACCESS CONFIG (warm editorial tints; dark surfaces appended) ---
+const DARK_TILE = "dark:bg-white/[0.06] dark:border-white/10";
 
 const QUICK_LINKS = [
-  { icon: "/icons/question-bank.svg", label: "প্রশ্ন ব্যাংক", path: "/qbank", tint: "bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20" },
-  { icon: "/icons/flash-card.svg", label: "ফ্ল্যাশ কার্ড", path: "/quiz", state: { mode: "RAPID_FIRE" }, tint: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-500/20" },
-  { icon: "/icons/model-test.svg", label: "মডেল টেস্ট", path: "/quiz", tint: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20" },
-  { icon: "/icons/battle-new.svg", label: "ব্যাটল", path: "/battle", tint: "bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20" },
-  { icon: "/icons/saved-questions.svg", label: "সেভ্ড", path: "/saved-questions", tint: "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20" },
-  { icon: "/icons/wrong-questions.svg", label: "ভুল প্রশ্ন", path: "/wrong-questions", tint: "bg-cyan-50 dark:bg-cyan-500/10 border-cyan-100 dark:border-cyan-500/20" },
+  { icon: "/icons/question-bank.svg", label: "প্রশ্ন ব্যাংক", path: "/qbank", tint: `bg-mint/70 border-brand/15 ${DARK_TILE}` },
+  { icon: "/icons/flash-card.svg", label: "ফ্ল্যাশ কার্ড", path: "/quiz", state: { mode: "RAPID_FIRE" }, tint: `bg-lime-soft/70 border-lime/25 ${DARK_TILE}` },
+  { icon: "/icons/model-test.svg", label: "মডেল টেস্ট", path: "/quiz", tint: `bg-cream border-brand/15 ${DARK_TILE}` },
+  { icon: "/icons/battle-new.svg", label: "ব্যাটল", path: "/battle", tint: `bg-amber-soft/80 border-gold/25 ${DARK_TILE}` },
+  { icon: "/icons/saved-questions.svg", label: "সেভ্ড", path: "/saved-questions", tint: `bg-mint/70 border-brand/15 ${DARK_TILE}` },
+  { icon: "/icons/wrong-questions.svg", label: "ভুল প্রশ্ন", path: "/wrong-questions", tint: `bg-cream border-brand/15 ${DARK_TILE}` },
 ];
+
+const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
 const HomeDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser, userAvatar, logout } = useAuth();
+  const { currentUser, userAvatar } = useAuth();
   const { getCache, setCache } = useCache();
-  const [isQuestionDisplayExpanded, setIsQuestionDisplayExpanded] = useState(false);
 
   const cacheKey = `dashboard_${currentUser?.uid}`;
   const cachedData = getCache(cacheKey) || {};
@@ -145,7 +146,7 @@ const HomeDashboard: React.FC = () => {
       );
     }
     return (
-      <div className="w-full h-full rounded-full flex items-center justify-center bg-primary text-white font-bold text-2xl">
+      <div className="w-full h-full rounded-full flex items-center justify-center ring-conic text-white font-bold text-2xl">
         {currentUser?.displayName?.charAt(0).toUpperCase() || "U"}
       </div>
     );
@@ -153,57 +154,57 @@ const HomeDashboard: React.FC = () => {
 
   const DashboardSkeleton = () => (
     <div className="max-w-5xl mx-auto px-4 pt-4 pb-20 md:px-6 md:pt-6 space-y-4 md:space-y-5 animate-pulse">
-      {/* Top bar */}
       <div className="flex items-center justify-between mb-2">
-        <div className="w-16 h-8 bg-gray-200 dark:bg-white/[0.05] rounded-full"></div>
-        <div className="w-28 h-10 bg-gray-200 dark:bg-white/[0.05] rounded-xl"></div>
-        <div className="w-11 h-11 bg-gray-200 dark:bg-white/[0.05] rounded-full"></div>
+        <div className="w-16 h-8 bg-ink/10 dark:bg-white/10 rounded-full"></div>
+        <div className="w-28 h-10 bg-ink/10 dark:bg-white/10 rounded-xl"></div>
+        <div className="w-11 h-11 bg-ink/10 dark:bg-white/10 rounded-full"></div>
       </div>
-      {/* Hero */}
-      <div className="bg-gray-200 dark:bg-white/[0.05] rounded-[2rem] p-6 md:p-7">
-        <div className="h-4 w-28 bg-white/40 dark:bg-white/10 rounded mb-3"></div>
-        <div className="h-7 w-48 bg-white/40 dark:bg-white/10 rounded mb-2"></div>
+      <div className="bg-ink/90 dark:bg-ink-2 rounded-[2rem] p-6 md:p-7">
+        <div className="h-4 w-28 bg-white/20 rounded mb-3"></div>
+        <div className="h-7 w-48 bg-white/20 rounded mb-2"></div>
         <div className="grid grid-cols-3 gap-3 mt-6">
-          <div className="h-16 bg-white/30 dark:bg-white/10 rounded-2xl"></div>
-          <div className="h-16 bg-white/30 dark:bg-white/10 rounded-2xl"></div>
-          <div className="h-16 bg-white/30 dark:bg-white/10 rounded-2xl"></div>
+          <div className="h-16 bg-white/10 rounded-2xl"></div>
+          <div className="h-16 bg-white/10 rounded-2xl"></div>
+          <div className="h-16 bg-white/10 rounded-2xl"></div>
         </div>
       </div>
-      {/* Quick access */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 rounded-3xl p-4 space-y-3">
-            <div className="w-12 h-12 bg-gray-100 dark:bg-white/5 rounded-2xl"></div>
-            <div className="h-3 w-3/4 bg-gray-100 dark:bg-white/5 rounded"></div>
+          <div key={i} className="bg-white dark:bg-ink-2 border border-ink/8 dark:border-white/10 rounded-3xl p-4 space-y-3">
+            <div className="w-12 h-12 bg-mint dark:bg-white/10 rounded-2xl"></div>
+            <div className="h-3 w-3/4 bg-ink/10 dark:bg-white/10 rounded"></div>
           </div>
         ))}
       </div>
-      {/* Streak strip */}
-      <div className="bg-gray-200 dark:bg-white/[0.05] rounded-3xl h-24"></div>
-      {/* Leaderboard */}
-      <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-white/5 p-4 space-y-3">
+      <div className="bg-ink/10 dark:bg-white/10 rounded-3xl h-24"></div>
+      <div className="bg-white dark:bg-ink-2 rounded-3xl border border-ink/8 dark:border-white/10 p-4 space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 p-2">
-            <div className="w-9 h-9 bg-gray-200 dark:bg-white/5 rounded-xl"></div>
+            <div className="w-9 h-9 bg-ink/10 dark:bg-white/10 rounded-xl"></div>
             <div className="flex-1 space-y-2">
-              <div className="h-3.5 w-32 bg-gray-200 dark:bg-white/5 rounded"></div>
-              <div className="h-2.5 w-20 bg-gray-100 dark:bg-white/5 rounded"></div>
+              <div className="h-3.5 w-32 bg-ink/10 dark:bg-white/10 rounded"></div>
+              <div className="h-2.5 w-20 bg-ink/10 dark:bg-white/10 rounded"></div>
             </div>
-            <div className="h-3.5 w-10 bg-gray-200 dark:bg-white/5 rounded"></div>
+            <div className="h-3.5 w-10 bg-ink/10 dark:bg-white/10 rounded"></div>
           </div>
         ))}
       </div>
     </div>
   );
 
-  if (isLoading && !stats) return <DashboardSkeleton />;
+  if (isLoading && !stats)
+    return (
+      <div className="pk-landing dash min-h-full bg-paper dark:bg-ink text-ink dark:text-paper">
+        {<DashboardSkeleton />}
+      </div>
+    );
 
   return (
-    <div className="min-h-full bg-gray-50 dark:bg-black transition-colors pb-32 md:pb-40 relative overflow-hidden">
-      {/* Ambient page glow */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/[0.08] via-primary/[0.03] to-transparent" />
-      <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 bg-orange-400/10 rounded-full blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute top-72 -left-28 w-72 h-72 bg-amber-300/10 rounded-full blur-3xl" />
+    <div className="pk-landing dash min-h-full bg-paper dark:bg-ink text-ink dark:text-paper pb-32 md:pb-40 relative overflow-hidden">
+      {/* Ambient warm washes */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,82,0,0.10),transparent)] dark:opacity-70 blur-2xl" />
+      <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 bg-[radial-gradient(closest-side,rgba(255,185,46,0.16),transparent)] dark:opacity-60 blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute top-72 -left-28 w-72 h-72 bg-[radial-gradient(closest-side,rgba(255,122,53,0.10),transparent)] dark:opacity-70 blur-3xl" />
 
       <div className="max-w-5xl mx-auto px-4 pt-3 md:px-6 md:pt-5 space-y-4 md:space-y-5 animate-page-enter relative z-10">
         {/* --- TOP BAR: Streak | Logo | Avatar --- */}
@@ -211,75 +212,82 @@ const HomeDashboard: React.FC = () => {
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setShowStreakModal(true)}
-            className="flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-orange-200/60 dark:border-orange-500/20 shadow-sm hover:shadow transition-all z-10"
+            className="focus-ring flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-full bg-white/70 dark:bg-white/10 backdrop-blur-md ring-1 ring-ink/10 dark:ring-white/15 shadow-sm hover:shadow transition-all z-10"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 256 256"
-              fill="currentColor"
-              className="w-5 h-5 md:w-6 md:h-6 text-orange-700 dark:text-orange-400"
-            >
-              <rect width="256" height="256" fill="none"></rect>
-              <path d="M197.12793,66.60449c-13.07471-20.82129-29.90967-38.67578-44.65332-53.39355a7.99863,7.99863,0,0,0-12.87451,2.22168L108.74951,80.21875,76.47363,58.70117a7.99925,7.99925,0,0,0-11.104,2.23438C45.88135,90.31348,36,116.915,36,140a92,92,0,0,0,184,0C220,115.12207,212.51855,91.11426,197.12793,66.60449Zm-9.8335,82.61621a59.69692,59.69692,0,0,1-50.07275,50.07422,8.11543,8.11543,0,0,1-1.231.09473,8.00055,8.00055,0,0,1-1.21142-15.90723,44.31739,44.31739,0,0,0,36.70263-36.70312,7.99993,7.99993,0,1,1,15.8125,2.4414Z"></path>
-            </svg>
-            <span className="font-black text-gray-800 dark:text-gray-100 text-sm md:text-base tracking-tight tabular-nums">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-brand/10 text-brand-deep dark:bg-brand/20 dark:text-brand-bright">
+              <Flame size={15} fill="currentColor" />
+            </span>
+            <span className="font-black text-ink dark:text-paper text-sm md:text-base tracking-tight tabular-nums">
               {toBengaliNumber(currentStreak)}
             </span>
           </motion.button>
 
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* Light wordmark (black text + orange mark) for light mode */}
             <img
               src={`${import.meta.env.BASE_URL}letterlogo.svg`}
               alt="Porikkhangon Logo"
-              className="h-10 md:h-12 logo-dark-mode"
+              className="h-10 md:h-12 dark:hidden"
+            />
+            {/* Warm-white wordmark (orange mark kept) so it stays visible on dark */}
+            <img
+              src={`${import.meta.env.BASE_URL}letterlogo-white.svg`}
+              alt=""
+              aria-hidden="true"
+              className="h-10 md:h-12 hidden dark:block"
             />
           </div>
 
           <motion.button
             whileTap={{ scale: 0.9 }}
-            className="relative w-10 h-10 md:w-12 md:h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white dark:border-zinc-800 shadow-md ring-2 ring-primary/30 z-10 bg-white dark:bg-zinc-900"
+            className="focus-ring relative w-10 h-10 md:w-12 md:h-12 rounded-full cursor-pointer overflow-hidden shadow-md ring-2 ring-brand/40 z-10 bg-white dark:bg-ink-2"
             onClick={() => navigate("/account")}
+            aria-label="অ্যাকাউন্ট"
           >
             {renderHeaderAvatar()}
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-900" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-lime rounded-full border-2 border-paper dark:border-ink" />
           </motion.button>
         </div>
 
-        {/* --- HERO: Greeting + Stats --- */}
+        {/* --- HERO: Greeting + Stats (dark editorial panel) --- */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-[#ff6a1a] to-amber-600 p-5 md:p-7 text-white shadow-xl shadow-primary/20"
+          transition={{ duration: 0.4, ease: EASE }}
+          className="noise relative overflow-hidden rounded-[2rem] bg-ink dark:bg-ink-2 p-5 md:p-7 text-white shadow-[0_40px_80px_-40px_rgba(22,18,16,0.7)] dark:ring-1 dark:ring-white/10"
         >
-          {/* Decorations */}
-          <div aria-hidden className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
-          <div aria-hidden className="absolute -bottom-20 left-1/4 w-44 h-44 rounded-full bg-yellow-200/20 blur-3xl" />
+          {/* conic glow */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl"
+            style={{ background: "conic-gradient(from 120deg, rgba(255,82,0,0.0), rgba(255,82,0,0.45), rgba(255,185,46,0.3), rgba(255,82,0,0.0))" }}
+          />
+          <div aria-hidden className="pointer-events-none absolute -bottom-20 left-1/4 w-44 h-44 rounded-full bg-lime/10 blur-3xl" />
           <svg aria-hidden className="absolute right-3 top-3 w-16 h-16 md:w-20 md:h-20 text-white/10" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 17.75l-6.172 3.245 1.179-6.873-4.993-4.867 6.9-1.002L12 2l3.086 6.253 6.9 1.002-4.993 4.867 1.179 6.873z" />
           </svg>
 
           <div className="relative flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[11px] md:text-xs font-black uppercase tracking-[0.18em] text-orange-100 flex items-center gap-1.5">
+              <p className="text-[11px] md:text-xs font-black uppercase tracking-[0.18em] text-lime flex items-center gap-1.5">
                 <Sparkles size={13} className="shrink-0" />
                 {getGreeting()}
               </p>
-              <h1 className="mt-1.5 text-2xl md:text-3xl font-black tracking-tight leading-tight truncate">
+              <h1 className="mt-1.5 font-bangla text-2xl md:text-3xl font-extrabold tracking-tight leading-tight truncate">
                 {currentUser?.displayName || "শিক্ষার্থী"}
               </h1>
-              <p className="mt-1 text-xs md:text-sm font-medium text-orange-50/90 leading-relaxed">
-                {"আজকের প্রস্তুতি শুরু হোক একটি পরীক্ষা দিয়ে!"}
+              <p className="mt-1 text-xs md:text-sm font-medium text-white/60 leading-relaxed">
+                {"আজকের প্রস্তুতি শুরু হোক একটি পরীক্ষা দিয়ে!"}
               </p>
             </div>
 
             {/* Rank medallion */}
-            <div className="shrink-0 flex flex-col items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/25 shadow-lg">
-              <Trophy size={16} className="text-yellow-200 mb-0.5" />
-              <span className="text-lg md:text-xl font-black leading-none">
+            <div className="shrink-0 flex flex-col items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-white/8 backdrop-blur-sm border border-white/15 shadow-lg">
+              <Trophy size={16} className="text-lime mb-0.5" />
+              <span className="font-display text-lg md:text-xl font-bold leading-none">
                 {rank ? `#${toBengaliNumber(rank)}` : "-"}
               </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-orange-100 mt-0.5">র‍্যাঙ্ক</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 mt-0.5">র‍্যাঙ্ক</span>
             </div>
           </div>
 
@@ -292,14 +300,14 @@ const HomeDashboard: React.FC = () => {
             ].map((chip, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2.5 md:gap-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 px-3 py-2.5 md:py-3"
+                className="flex items-center gap-2.5 md:gap-3 rounded-2xl bg-white/8 backdrop-blur-sm border border-white/10 px-3 py-2.5 md:py-3"
               >
-                <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-                  <chip.icon size={15} className="text-orange-100" />
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-brand/20 text-lime flex items-center justify-center shrink-0">
+                  <chip.icon size={15} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-base md:text-lg font-black leading-none tabular-nums truncate">{chip.value}</p>
-                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-orange-100/80 mt-1">{chip.label}</p>
+                  <p className="font-display text-base md:text-lg font-bold leading-none tabular-nums truncate">{chip.value}</p>
+                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-white/50 mt-1">{chip.label}</p>
                 </div>
               </div>
             ))}
@@ -308,7 +316,7 @@ const HomeDashboard: React.FC = () => {
           {/* CTA */}
           <button
             onClick={() => navigate("/quiz")}
-            className="relative mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-primary shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0"
+            className="focus-ring relative mt-4 inline-flex items-center gap-2 rounded-full bg-lime px-5 py-3 text-sm font-black text-ink shadow-[0_16px_36px_-14px_rgba(255,185,46,0.5)] transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             <Play size={15} fill="currentColor" />
             মডেল টেস্ট দিন
@@ -317,7 +325,7 @@ const HomeDashboard: React.FC = () => {
         </motion.section>
 
         {/* --- PROMO BANNER --- */}
-        <div className="relative w-full rounded-[1.75rem] overflow-hidden shadow-md border border-gray-100 dark:border-white/5 group">
+        <div className="relative w-full rounded-[1.75rem] overflow-hidden shadow-md ring-1 ring-ink/10 dark:ring-white/10 group">
           <img
             src={`${import.meta.env.BASE_URL}banner.png`}
             alt="Promo Banner"
@@ -329,13 +337,13 @@ const HomeDashboard: React.FC = () => {
         {/* --- QUICK ACCESS --- */}
         <section>
           <div className="flex items-center justify-between mb-2.5 md:mb-3 px-1">
-            <h2 className="text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-              <span className="w-1.5 h-4 md:h-5 rounded-full bg-gradient-to-b from-primary to-amber-500" />
+            <h2 className="text-sm md:text-base font-black text-ink dark:text-paper tracking-tight flex items-center gap-2">
+              <span className="w-1.5 h-4 md:h-5 rounded-full bg-gradient-to-b from-brand to-gold" />
               দ্রুত অ্যাক্সেস
             </h2>
             <button
               onClick={() => navigate("/exams")}
-              className="text-[11px] md:text-xs font-black text-primary hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 flex items-center gap-1 transition-colors"
+              className="focus-ring text-[11px] md:text-xs font-black text-brand-deep hover:text-brand dark:text-brand-bright flex items-center gap-1 transition-colors"
             >
               পরীক্ষা জোন <ChevronRight size={13} />
             </button>
@@ -347,9 +355,9 @@ const HomeDashboard: React.FC = () => {
                 key={i}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(item.path, { state: (item as any).state })}
-                className={`group flex flex-col items-center gap-2.5 rounded-3xl border p-3 md:p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg active:scale-95 ${item.tint}`}
+                className={`focus-ring group flex flex-col items-center gap-2.5 rounded-3xl border p-3 md:p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(22,18,16,0.3)] hover:ring-1 hover:ring-brand/25 active:scale-95 ${item.tint}`}
               >
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-ink-3 shadow-sm flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
                   <img
                     src={item.icon}
                     alt={item.label}
@@ -358,7 +366,7 @@ const HomeDashboard: React.FC = () => {
                     draggable={false}
                   />
                 </div>
-                <span className="font-bold text-gray-700 dark:text-zinc-200 text-[11px] md:text-xs text-center leading-tight">
+                <span className="font-bold text-ink/80 dark:text-white/80 text-[11px] md:text-xs text-center leading-tight">
                   {item.label}
                 </span>
               </motion.button>
@@ -370,38 +378,35 @@ const HomeDashboard: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowStreakModal(true)}
-          className="w-full relative overflow-hidden rounded-3xl border border-orange-200/70 dark:border-orange-500/20 bg-gradient-to-r from-orange-50 via-amber-50 to-white dark:from-orange-500/10 dark:via-amber-500/5 dark:to-transparent p-4 md:p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all text-left group"
+          className="focus-ring w-full relative overflow-hidden rounded-3xl ring-1 ring-brand/15 dark:ring-white/10 bg-gradient-to-r from-cream via-amber-soft to-white dark:from-ink-2 dark:via-ink-2 dark:to-ink-3 p-4 md:p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all text-left group"
         >
-          <div aria-hidden className="absolute -right-8 -top-10 w-36 h-36 bg-orange-400/10 rounded-full blur-2xl group-hover:bg-orange-400/20 transition-colors" />
-          <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 shrink-0">
-            <Flame size={26} className="text-white fill-orange-100/40" />
+          <div aria-hidden className="absolute -right-8 -top-10 w-36 h-36 bg-brand/10 rounded-full blur-2xl group-hover:bg-brand/20 transition-colors" />
+          <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl ring-conic flex items-center justify-center shadow-[0_10px_24px_-8px_rgba(224,68,0,0.5)] shrink-0">
+            <Flame size={26} className="text-white fill-white/30" />
           </div>
           <div className="flex-1 min-w-0 relative">
-            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.15em] text-orange-700 dark:text-orange-400">
+            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.15em] text-brand-deep dark:text-brand-bright">
               ধারাবাহিকতা
             </p>
-            <p className="text-sm md:text-base font-black text-gray-900 dark:text-white mt-0.5 leading-tight">
-              <span className="text-lg md:text-xl tabular-nums">{toBengaliNumber(currentStreak)}</span> দিন ধরে নিয়মিত প্র্যাকটিস করছেন!
+            <p className="text-sm md:text-base font-black text-ink dark:text-paper mt-0.5 leading-tight">
+              <span className="font-display text-lg md:text-xl tabular-nums">{toBengaliNumber(currentStreak)}</span> দিন ধরে নিয়মিত প্র্যাকটিস করছেন!
             </p>
-            {/* 7-day dots */}
             <div className="flex items-center gap-1.5 mt-2">
               {last7Days.map((d) => (
                 <span
                   key={d.key}
                   title={d.key}
                   className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-colors ${
-                    d.active
-                      ? "bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.6)]"
-                      : "bg-gray-200 dark:bg-zinc-700"
+                    d.active ? "bg-brand shadow-[0_0_6px_rgba(255,82,0,0.5)]" : "bg-ink/15 dark:bg-white/20"
                   }`}
                 />
               ))}
-              <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-zinc-500 ml-1.5 uppercase tracking-wider">
+              <span className="text-[9px] md:text-[10px] font-bold text-mist ml-1.5 uppercase tracking-wider">
                 গত ৭ দিন
               </span>
             </div>
           </div>
-          <div className="relative p-2 rounded-full bg-white/70 dark:bg-white/10 text-orange-700 dark:text-orange-400 group-hover:translate-x-0.5 transition-transform shrink-0">
+          <div className="relative p-2 rounded-full bg-white/80 dark:bg-white/10 text-brand-deep dark:text-brand-bright group-hover:translate-x-0.5 transition-transform shrink-0">
             <ChevronRight size={18} />
           </div>
         </motion.button>
@@ -413,28 +418,29 @@ const HomeDashboard: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
-              className="w-full bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-500/10 dark:to-blue-500/5 rounded-3xl p-5 md:p-6 border border-indigo-100 dark:border-indigo-500/20 flex items-start gap-4 relative overflow-hidden"
+              className="w-full bg-mint dark:bg-ink-2 rounded-3xl p-5 md:p-6 ring-1 ring-brand/15 dark:ring-white/10 flex items-start gap-4 relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
 
               <button
                 onClick={() => {
                   setShowDevNotice(false);
                   localStorage.setItem("hide_dev_notice", "true");
                 }}
-                className="absolute top-4 right-4 p-1.5 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors z-10"
+                className="focus-ring absolute top-4 right-4 p-1.5 text-brand-deep/60 hover:text-brand-deep dark:text-white/40 dark:hover:text-white transition-colors z-10"
+                aria-label="বন্ধ করো"
               >
                 <X size={18} />
               </button>
 
-              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
+              <div className="w-12 h-12 bg-brand text-white rounded-2xl flex items-center justify-center shrink-0 shadow-[0_10px_24px_-8px_rgba(224,68,0,0.5)]">
                 <Sparkles size={24} />
               </div>
               <div className="space-y-1 pr-6">
-                <h3 className="text-base md:text-lg font-black text-indigo-900 dark:text-indigo-100 font-tiro">
+                <h3 className="text-base md:text-lg font-black text-ink dark:text-paper font-bangla">
                   আমরা এখনো গড়ে উঠছি!
                 </h3>
-                <p className="text-xs md:text-sm text-indigo-700/80 dark:text-indigo-300/70 font-medium leading-relaxed font-tiro">
+                <p className="text-xs md:text-sm text-ink/70 dark:text-white/70 font-medium leading-relaxed">
                   আমাদের প্ল্যাটফর্মটি বর্তমানে ডেভেলপমেন্ট (Beta) পর্যায়ে
                   রয়েছে। সব ফিচার এখনও পরিপূর্ণ নয়, তবে আমরা দিনরাত কাজ করছি
                   আপনার পড়াশোনাকে আরও সহজ করতে। খুব শীঘ্রই এটি আপনার জন্য একটি
@@ -448,33 +454,33 @@ const HomeDashboard: React.FC = () => {
 
         {/* --- LEADERBOARD --- */}
         <div
-          className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden mb-6 group cursor-pointer transition-all hover:shadow-md hover:border-gray-200 dark:hover:border-white/20"
+          className="bg-white dark:bg-ink-2 rounded-3xl ring-1 ring-ink/8 dark:ring-white/10 shadow-sm overflow-hidden mb-6 group cursor-pointer transition-all hover:shadow-[0_24px_50px_-24px_rgba(22,18,16,0.3)] hover:ring-brand/20"
           onClick={() => navigate("/leaderboard")}
         >
-          <div className="px-5 py-4 md:px-6 md:py-5 border-b border-gray-50 dark:border-white/5 flex justify-between items-center bg-gradient-to-r from-blue-50/60 to-transparent dark:from-blue-500/[0.04]">
+          <div className="px-5 py-4 md:px-6 md:py-5 border-b border-ink/6 dark:border-white/10 flex justify-between items-center bg-gradient-to-r from-mint/60 to-transparent dark:from-white/5 dark:to-transparent">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+              <div className="w-10 h-10 rounded-2xl bg-ink dark:bg-lime text-lime dark:text-ink flex items-center justify-center shadow-md">
                 <Trophy size={18} strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+                <h3 className="text-base md:text-lg font-bold text-ink dark:text-paper tracking-tight font-bangla">
                   লিডারবোর্ড
                 </h3>
-                <p className="text-[11px] text-gray-500 dark:text-zinc-400 font-medium tracking-wide">
+                <p className="text-[11px] text-mist font-medium tracking-wide">
                   শীর্ষ পারফর্মার
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <div className="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight tabular-nums">
+                <div className="font-display text-xl md:text-2xl font-bold text-brand-deep dark:text-brand-bright tracking-tight tabular-nums">
                   {rank ? `#${toBengaliNumber(rank)}` : "-"}
                 </div>
-                <div className="text-[10px] text-gray-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                <div className="text-[10px] text-mist font-bold uppercase tracking-wider">
                   আপনার র‍্যাঙ্ক
                 </div>
               </div>
-              <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-500 group-hover:translate-x-0.5 transition-transform">
+              <div className="p-2 rounded-full bg-mint dark:bg-white/10 text-brand-deep dark:text-brand-bright group-hover:translate-x-0.5 transition-transform">
                 <ChevronRight size={16} />
               </div>
             </div>
@@ -482,7 +488,7 @@ const HomeDashboard: React.FC = () => {
 
           <div className="p-3 md:p-4 space-y-2">
             {topLearners.length === 0 ? (
-              <div className="text-center text-gray-400 dark:text-zinc-500 text-xs py-8 font-medium">
+              <div className="text-center text-mist text-xs py-8 font-medium">
                 No data available
               </div>
             ) : (
@@ -513,9 +519,9 @@ const HomeDashboard: React.FC = () => {
                     return (
                       <div key={`divider-${idx}`} className="flex justify-center py-2 opacity-50">
                         <div className="flex gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600"></div>
-                          <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600"></div>
-                          <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-600"></div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-ink/20 dark:bg-white/20"></div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-ink/20 dark:bg-white/20"></div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-ink/20 dark:bg-white/20"></div>
                         </div>
                       </div>
                     );
@@ -523,16 +529,16 @@ const HomeDashboard: React.FC = () => {
 
                   const { user: u, currentRank, isMe } = item;
 
-                  let rankBadge = "bg-gray-100 text-gray-500 border-gray-200 dark:bg-white/5 dark:text-zinc-400 dark:border-white/5";
-                  if (currentRank === 1) rankBadge = "bg-yellow-50 text-yellow-600 border-yellow-200 shadow-sm dark:bg-yellow-500/10 dark:text-yellow-500 dark:border-yellow-500/20";
-                  else if (currentRank === 2) rankBadge = "bg-slate-50 text-slate-600 border-slate-200 shadow-sm dark:bg-zinc-500/10 dark:text-zinc-300 dark:border-white/10";
-                  else if (currentRank === 3) rankBadge = "bg-orange-50 text-orange-700 border-orange-200 shadow-sm dark:bg-orange-500/10 dark:text-orange-500 dark:border-orange-500/20";
-                  else if (isMe) rankBadge = "bg-blue-50 text-blue-600 border-blue-200 shadow-sm dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
+                  let rankBadge = "bg-ink/5 text-mist border-ink/10 dark:bg-white/5 dark:border-white/10";
+                  if (currentRank === 1) rankBadge = "bg-gold/20 text-ink border-gold/40 shadow-sm dark:bg-gold/20 dark:text-white dark:border-gold/40";
+                  else if (currentRank === 2) rankBadge = "bg-ink/8 text-ink border-ink/15 shadow-sm dark:bg-white/10 dark:text-white dark:border-white/15";
+                  else if (currentRank === 3) rankBadge = "bg-brand/10 text-brand-deep border-brand/25 shadow-sm dark:bg-brand/20 dark:text-brand-bright dark:border-brand/30";
+                  else if (isMe) rankBadge = "bg-mint text-brand-deep border-brand/25 shadow-sm dark:bg-brand/20 dark:text-brand-bright dark:border-brand/30";
 
                   return (
                     <div
                       key={`user-${currentRank}-${idx}`}
-                      className={`flex items-center justify-between p-3 rounded-2xl transition-all border ${isMe ? "bg-blue-50/50 dark:bg-blue-500/5 border-blue-100 dark:border-blue-500/10 shadow-sm" : "bg-transparent border-transparent hover:bg-gray-50 dark:hover:bg-white/[0.02]"}`}
+                      className={`flex items-center justify-between p-3 rounded-2xl transition-all border ${isMe ? "bg-mint/60 border-brand/20 shadow-sm dark:bg-white/5 dark:border-brand/30" : "bg-transparent border-transparent hover:bg-paper dark:hover:bg-white/5"}`}
                     >
                       <div className="flex items-center gap-3 md:gap-4">
                         <div
@@ -546,36 +552,36 @@ const HomeDashboard: React.FC = () => {
                               <img
                                 src={u.photoURL}
                                 alt=""
-                                className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-100 dark:bg-zinc-800 object-cover shadow-sm ring-2 ring-white dark:ring-zinc-900"
+                                className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-ink/5 dark:bg-white/10 object-cover shadow-sm ring-2 ring-paper dark:ring-ink-2"
                               />
                             ) : (
-                              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold shadow-sm ring-2 ring-white dark:ring-zinc-900">
+                              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full ring-conic flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-paper dark:ring-ink-2">
                                 {u.displayName?.charAt(0) || "U"}
                               </div>
                             )}
                             {currentRank === 1 && (
-                              <div className="absolute -top-1.5 -right-1.5 text-yellow-500 drop-shadow-sm bg-white dark:bg-zinc-900 rounded-full p-0.5">
+                              <div className="absolute -top-1.5 -right-1.5 text-gold drop-shadow-sm bg-white dark:bg-ink-2 rounded-full p-0.5">
                                 <Crown size={12} fill="currentColor" />
                               </div>
                             )}
                           </div>
                           <div className="flex flex-col">
                             <span
-                              className={`text-sm md:text-base font-semibold ${isMe ? "text-blue-700 dark:text-blue-400" : "text-gray-800 dark:text-gray-200"}`}
+                              className={`text-sm md:text-base font-semibold ${isMe ? "text-brand-deep dark:text-brand-bright" : "text-ink/85 dark:text-white/85"}`}
                             >
                               {isMe ? (u.displayName ? `${u.displayName} (আপনি)` : "আপনি") : u.displayName}
                             </span>
-                            <span className="text-[11px] text-gray-500 dark:text-zinc-500 font-medium truncate max-w-[120px]">
+                            <span className="text-[11px] text-mist font-medium truncate max-w-[120px]">
                               {u.college || "Student"}
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-sm md:text-base font-bold text-gray-900 dark:text-gray-100 block tabular-nums">
+                        <span className="font-display text-sm md:text-base font-bold text-ink dark:text-paper block tabular-nums">
                           {toBengaliNumber(u.points || 0)}
                         </span>
-                        <span className="text-[10px] text-gray-500 dark:text-zinc-500 uppercase tracking-wider">
+                        <span className="text-[10px] text-mist uppercase tracking-wider">
                           পয়েন্ট
                         </span>
                       </div>
@@ -606,13 +612,14 @@ const HomeDashboard: React.FC = () => {
                     <button
                       onClick={() => setShowStreakModal(false)}
                       className="p-2 -ml-2 text-white hover:bg-white/10 rounded-full transition-colors"
+                      aria-label="বন্ধ করো"
                     >
                       <X size={28} strokeWidth={2.5} />
                     </button>
                     <h2 className="text-xl font-bold text-white tracking-wide">
                       ধারাবাহিকতা
                     </h2>
-                    <button className="p-2 -mr-2 text-white hover:bg-white/10 rounded-full transition-colors">
+                    <button className="p-2 -mr-2 text-white hover:bg-white/10 rounded-full transition-colors" aria-label="শেয়ার">
                       <Share2 size={24} strokeWidth={2} />
                     </button>
                   </div>
@@ -633,7 +640,6 @@ const HomeDashboard: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Giant Background Flame Graphic */}
                     <div className="absolute right-0 top-0 w-48 h-48 pointer-events-none translate-x-4 -translate-y-4">
                       {stats?.currentStreak ? (
                         <div className="w-full h-full scale-[1.35] origin-top-right translate-x-4">
@@ -707,51 +713,34 @@ const HomeDashboard: React.FC = () => {
                       <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF9600]/10 rounded-full blur-[80px] pointer-events-none"></div>
 
                       <div className="flex justify-between items-center mb-6 px-2 relative z-10">
-                        <button className="text-gray-400 hover:text-white transition-colors">
+                        <button className="text-gray-400 hover:text-white transition-colors" aria-label="আগের মাস">
                           <ChevronRight size={24} className="rotate-180" />
                         </button>
                         <span className="text-lg font-bold text-white tracking-wide">
                           জুন ২০২৬
                         </span>
-                        <button className="text-gray-400 hover:text-white transition-colors">
+                        <button className="text-gray-400 hover:text-white transition-colors" aria-label="পরের মাস">
                           <ChevronRight size={24} />
                         </button>
                       </div>
 
-                      {/* Calendar Grid Header */}
                       <div className="grid grid-cols-7 gap-2 mb-4 text-center relative z-10">
-                        {[
-                          "রবি",
-                          "সোম",
-                          "মঙ্গল",
-                          "বুধ",
-                          "বৃহঃ",
-                          "শুক্র",
-                          "শনি",
-                        ].map((day) => (
-                          <span
-                            key={day}
-                            className="text-[11px] font-black text-gray-400 uppercase tracking-wider"
-                          >
+                        {["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"].map((day) => (
+                          <span key={day} className="text-[11px] font-black text-gray-400 uppercase tracking-wider">
                             {day}
                           </span>
                         ))}
                       </div>
 
-                      {/* 35 days grid placeholder */}
                       <div className="grid grid-cols-7 gap-y-5 gap-x-2 text-center pb-2 relative z-10">
                         {Array.from({ length: 30 }).map((_, i) => {
                           const dayStr = String(i + 1).padStart(2, "0");
                           const dateKey = `2026-06-${dayStr}`;
-                          const isActive =
-                            stats?.activityLog?.includes(dateKey) || i === 6; // Mock active for visualization as per image
+                          const isActive = stats?.activityLog?.includes(dateKey) || i === 6;
                           const isToday = i === 6;
 
                           return (
-                            <div
-                              key={i}
-                              className="flex flex-col items-center justify-center"
-                            >
+                            <div key={i} className="flex flex-col items-center justify-center">
                               {isActive ? (
                                 <div
                                   className={`relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shadow-sm transition-all duration-300 ${isToday ? "bg-gradient-to-br from-[#FFB800] to-[#FF9600] text-black ring-4 ring-[#FF9600]/30 shadow-[0_0_15px_rgba(255,150,0,0.6)] scale-110" : "bg-[#FF9600]/15 text-[#FFB800] border border-[#FF9600]/50 shadow-[0_0_10px_rgba(255,150,0,0.2)]"}`}
@@ -780,8 +769,6 @@ const HomeDashboard: React.FC = () => {
           </AnimatePresence>,
           document.body,
         )}
-
-
     </div>
   );
 };

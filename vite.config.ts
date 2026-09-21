@@ -2,11 +2,39 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
+
+// Dev-only middleware: serve the generated static SEO pages (dist/q/<slug>/,
+// dist/hsc-syllabus/…) straight from the dev server, mirroring production
+// where the static host answers these paths before the SPA fallback.
+const serveStaticSeo = {
+  name: 'serve-static-seo-pages',
+  configureServer(server: any) {
+    server.middlewares.use((req: any, res: any, next: any) => {
+      try {
+        const url = decodeURIComponent((req.url || '').split('?')[0]);
+        if (/^\/(q|hsc-syllabus)(\/|$)/.test(url)) {
+          const root = path.resolve(process.cwd(), 'dist');
+          const rel = url.replace(/\/+$/, '').replace(/^\/+/, '');
+          const file = path.join(root, rel, 'index.html');
+          if (file.startsWith(root + path.sep) && fs.existsSync(file)) {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.end(fs.readFileSync(file));
+            return;
+          }
+        }
+      } catch {
+        /* fall through to SPA */
+      }
+      next();
+    });
+  },
+};
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode: _mode }) => {
   return {
-    plugins: [react()],
+    plugins: [react(), serveStaticSeo],
     optimizeDeps: {
       include: ['react-is']
     },

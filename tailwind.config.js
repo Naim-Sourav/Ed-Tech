@@ -14,8 +14,11 @@ export default {
       fontFamily: {
         sans: ['Inter', 'Hind Siliguri', 'sans-serif'],
         tiro: ['Kalpurush', 'sans-serif'],
-        display: ['Outfit', 'Inter', 'sans-serif'],
-        noto: ['Noto Sans Bengali', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', 'Outfit', 'Inter', 'sans-serif'],
+        noto: ['"Noto Sans Bengali"', 'sans-serif'],
+        /* ── Landing (porikkhangon.app editorial theme) ── */
+        bangla: ['"Noto Serif Bengali"', 'Hind Siliguri', 'serif'],
+        body: ['Hind Siliguri', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         xs: '0.75rem',
@@ -64,11 +67,87 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
+          DEFAULT: '#ff5200',
+          deep: '#e04400',
+          bright: '#ff7a35',
           orange: '#ff5200',
           black: '#000000',
           white: '#ffffff',
-        }
-      }
+        },
+        /* ── Landing palette: warm paper / warm ink / brand orange / amber ── */
+        paper: '#faf9f6',
+        cream: '#fff1e8',
+        ink: {
+          DEFAULT: '#161210',
+          2: '#201a16',
+          3: '#2a231d',
+        },
+        mist: '#6f655c',
+        mint: '#ffeade',
+        lime: {
+          DEFAULT: '#ffb92e',
+          soft: '#ffedc2',
+        },
+        amber: {
+          soft: '#fff1d6',
+        },
+        gold: '#ffb92e',
+        flag: '#e63b2e',
+      },
+      /* Extra spacing steps used by the landing design */
+      spacing: {
+        '4.5': '1.125rem',
+        '5.5': '1.375rem',
+      },
+      /* Opacity steps the landing design leans on (ring-ink/8, bg-white/12 …) */
+      opacity: {
+        2: '0.02',
+        3: '0.03',
+        4: '0.04',
+        6: '0.06',
+        8: '0.08',
+        12: '0.12',
+        18: '0.18',
+        22: '0.22',
+        35: '0.35',
+        45: '0.45',
+        55: '0.55',
+        65: '0.65',
+        85: '0.85',
+      },
+      animation: {
+        marquee: 'marquee 42s linear infinite',
+        'marquee-slow': 'marquee 64s linear infinite',
+        float: 'float 7s ease-in-out infinite',
+        'float-slow': 'float 10s ease-in-out infinite',
+        'spin-slow': 'spin 22s linear infinite',
+        'pulse-ring': 'pulse-ring 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite',
+        shimmer: 'shimmer 2.8s linear infinite',
+        ticker: 'ticker 18s linear infinite',
+      },
+      keyframes: {
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-14px)' },
+        },
+        'pulse-ring': {
+          '0%': { transform: 'scale(1)', opacity: '0.9' },
+          '70%': { transform: 'scale(1.9)', opacity: '0' },
+          '100%': { transform: 'scale(1.9)', opacity: '0' },
+        },
+        shimmer: {
+          from: { backgroundPosition: '200% 0' },
+          to: { backgroundPosition: '-200% 0' },
+        },
+        ticker: {
+          from: { transform: 'translateY(0)' },
+          to: { transform: 'translateY(-50%)' },
+        },
+      },
     },
   },
   plugins: [],

@@ -109,6 +109,12 @@ function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+/** Root-relative form of an internal URL (keeps canonical/OG absolute). */
+function rel(u) {
+  const v = String(u);
+  return v.startsWith(SITE) ? (v.slice(SITE.length) || '/') : v;
+}
+
 function topicsOf(chapterValue) {
   return (chapterValue || []).map((item) =>
     typeof item === 'string' ? { title: item, subTopics: [] } : { title: item.title, subTopics: item.subTopics || [] }
@@ -186,7 +192,7 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
       const isLast = i === breadcrumbs.length - 1;
       return isLast
         ? `<span class="cur">${esc(label)}</span>`
-        : `<a href="${href}">${esc(label)}</a><span class="sep">›</span>`;
+        : `<a href="${rel(href)}">${esc(label)}</a><span class="sep">›</span>`;
     })
     .join(' ');
 
@@ -195,6 +201,9 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700;800&display=swap" rel="stylesheet">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -217,63 +226,91 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
 ${mathjax ? `<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']],processEscapes:true},options:{enableMenu:false},chtml:{scale:1,minScale:0.5},startup:{typeset:true}};</script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>` : ''}
 <style>
-:root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--brand:#f97316;--bg:#ffffff;--ok:#16a34a}
+/* Warm editorial v2 — dark ink chrome, dot-grid paper, gradient flourishes */
+:root{--paper:#faf9f6;--ink:#161210;--ink2:#201a16;--brand:#ff5200;--deep:#e04400;--lime:#ffb92e;--mint:#ffeade;--cream:#fff1e8;--mist:#6f655c;--line:rgba(22,18,16,.09);--ok:#16a34a;--okbg:#f2fbf5}
 *{box-sizing:border-box}
-body{margin:0;font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.8}
-a{color:var(--brand)}
-header{border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:5}
-.header-in{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:700}
-.brand img{height:34px;width:auto}
-.cta{background:var(--brand);color:#fff;text-decoration:none;font-weight:700;padding:9px 18px;border-radius:10px;font-size:14px;white-space:nowrap}
-main{max-width:960px;margin:0 auto;padding:28px 20px 56px}
-nav.crumb{font-size:13px;color:var(--muted);margin-bottom:18px;display:flex;flex-wrap:wrap;gap:6px}
-nav.crumb a{color:var(--muted);text-decoration:none}
+body{margin:0;font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;color:var(--ink);line-height:1.8;-webkit-font-smoothing:antialiased;
+background:radial-gradient(60% 42% at 50% 0%,rgba(255,82,0,.09),transparent),radial-gradient(38% 30% at 92% 8%,rgba(255,185,46,.12),transparent),radial-gradient(rgba(22,18,16,.04) 1px,transparent 1px) var(--paper);background-size:auto,auto,22px 22px}
+::selection{background:#ffd9c2;color:var(--ink)}
+a{color:var(--deep)}
+header{background:var(--ink);position:sticky;top:0;z-index:5;box-shadow:0 10px 30px -18px rgba(22,18,16,.6)}
+.header-in{max-width:1000px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--paper);font-weight:700;font-size:17px}
+.brand img{height:32px;width:auto;filter:brightness(0) invert(1) sepia(1) saturate(0) hue-rotate(180deg)}
+.brand .mark{width:34px;height:34px;border-radius:12px;background:conic-gradient(from 140deg,var(--brand),var(--lime) 42%,#ff7a35 78%,var(--brand));display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}
+.cta{background:var(--lime);color:var(--ink);text-decoration:none;font-weight:800;padding:9px 20px;border-radius:999px;font-size:14px;white-space:nowrap;box-shadow:0 10px 24px -10px rgba(255,185,46,.6);transition:transform .15s}
+.cta:hover{transform:translateY(-1px)}
+main{max-width:1000px;margin:0 auto;padding:34px 20px 70px}
+nav.crumb{font-size:13px;color:var(--mist);margin-bottom:22px;display:flex;flex-wrap:wrap;gap:6px;font-weight:600}
+nav.crumb a{color:var(--mist);text-decoration:none}
 nav.crumb a:hover{color:var(--brand)}
-nav.crumb .sep{color:#d1d5db}
-h1{font-size:clamp(22px,4vw,34px);line-height:1.45;margin:0 0 10px}
-h2{font-size:clamp(19px,3vw,26px);margin:34px 0 12px}
-p.lede{color:var(--muted);font-size:16px;margin:0 0 8px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
-.chip{background:#f3f4f6;border:1px solid var(--line);color:#374151;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600}
+nav.crumb .sep{color:#d8cfc6}
+nav.crumb .cur{color:var(--ink)}
+h1{font-family:'Noto Serif Bengali',serif;font-weight:800;font-size:clamp(26px,4.4vw,40px);line-height:1.55;margin:0 0 14px;letter-spacing:-.01em}
+h1::after{content:"";display:block;width:76px;height:5px;border-radius:999px;margin-top:16px;background:linear-gradient(90deg,var(--brand),var(--lime))}
+h2{font-family:'Noto Serif Bengali',serif;font-weight:700;font-size:clamp(19px,3vw,26px);margin:36px 0 14px}
+h2::before{content:"";display:inline-block;width:11px;height:11px;border-radius:4px;background:linear-gradient(135deg,var(--brand),var(--lime));margin-right:10px;transform:rotate(45deg)}
+p.lede{color:var(--mist);font-size:16.5px;margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.chip{background:#fff;border:1px solid rgba(255,82,0,.22);color:var(--deep);border-radius:999px;padding:5px 14px;font-size:13px;font-weight:700;box-shadow:0 2px 6px -2px rgba(22,18,16,.08)}
+.chip::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brand);margin-right:7px;vertical-align:2px}
+.chip.src{background:#ffedc2;border-color:rgba(255,185,46,.5);color:#7a4d00}
+.chip.src::before{background:#c47f00}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin:22px 0}
-.card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;text-decoration:none;color:var(--ink);background:#fff;transition:border-color .15s}
-.card:hover{border-color:var(--brand)}
-.card b{display:block;font-size:16px;margin-bottom:4px}
-.card span{color:var(--muted);font-size:13px}
+.card{border:1px solid var(--line);border-radius:20px;padding:18px 20px;text-decoration:none;color:var(--ink);background:#fff;transition:all .2s;box-shadow:0 1px 2px rgba(22,18,16,.04)}
+.card:hover{border-color:rgba(255,82,0,.4);transform:translateY(-3px);box-shadow:0 22px 44px -20px rgba(22,18,16,.28)}
+.card b{display:block;font-size:16.5px;margin-bottom:4px}
+.card span{color:var(--mist);font-size:13px}
 ul.topics{margin:8px 0 0;padding-left:20px}
-ul.topics li{margin:5px 0}
-ul.topics ul{margin:4px 0;padding-left:18px;color:var(--muted);font-size:14.5px}
-.tips{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:16px 20px;margin:22px 0}
+ul.topics li{margin:6px 0}
+ul.topics ul{margin:4px 0;padding-left:18px;color:var(--mist);font-size:14.5px}
+.tips{background:var(--cream);border:1px solid rgba(255,82,0,.16);border-left:5px solid var(--brand);border-radius:20px;padding:18px 22px;margin:26px 0}
 .tips h2{margin-top:0}
-.banner{margin:34px 0 8px;border-radius:18px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;padding:26px 24px;text-align:center}
-.banner h2{margin:0 0 6px;color:#fff}
-.banner p{margin:0 0 16px;opacity:.95}
-.banner a{display:inline-block;background:#fff;color:#ea580c;font-weight:800;text-decoration:none;padding:12px 26px;border-radius:12px}
-.pager{display:flex;justify-content:space-between;gap:12px;margin-top:30px;flex-wrap:wrap}
-.pager a{border:1px solid var(--line);border-radius:12px;padding:10px 16px;text-decoration:none;font-size:14px}
-ol.opts{list-style:none;margin:18px 0;padding:0;display:grid;gap:10px}
-ol.opts li{border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:#fff}
-ol.opts li.correct{border-color:var(--ok);background:#f0fdf4;font-weight:700}
-ol.opts li.correct::after{content:" ✓ সঠিক উত্তর";color:var(--ok);font-size:13px;font-weight:800}
-.answer{margin:18px 0;padding:16px 20px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0}
+.banner{position:relative;overflow:hidden;margin:42px 0 8px;border-radius:32px;background:var(--ink);color:#fff;padding:40px 30px;text-align:center}
+.banner::before{content:"";position:absolute;right:-100px;top:-100px;width:320px;height:320px;border-radius:50%;background:conic-gradient(from 120deg,rgba(255,82,0,0),rgba(255,82,0,.55),rgba(255,185,46,.4),rgba(255,82,0,0));filter:blur(60px)}
+.banner::after{content:"";position:absolute;left:-80px;bottom:-120px;width:260px;height:260px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,185,46,.25),transparent);filter:blur(50px)}
+.banner h2{margin:0 0 10px;color:var(--lime);position:relative}
+.banner h2::before{display:none}
+.banner p{margin:0 0 20px;color:rgba(255,255,255,.72);position:relative}
+.banner a{position:relative;display:inline-block;background:var(--lime);color:var(--ink);font-weight:800;text-decoration:none;padding:13px 30px;border-radius:999px;box-shadow:0 16px 36px -14px rgba(255,185,46,.6);transition:transform .15s}
+.banner a:hover{transform:translateY(-2px)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:32px;flex-wrap:wrap}
+.pager a{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 18px;text-decoration:none;font-size:14px;font-weight:600;color:var(--ink)}
+.pager a:hover{border-color:rgba(255,82,0,.4);color:var(--deep)}
+article.qcard{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:28px;padding:30px 28px 34px;box-shadow:0 30px 70px -32px rgba(22,18,16,.25);margin-top:6px}
+article.qcard::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--brand),var(--lime) 55%,var(--brand))}
+ol.opts{list-style:none;margin:20px 0;padding:0;display:grid;gap:11px}
+ol.opts li{display:flex;align-items:flex-start;gap:13px;border:1px solid var(--line);border-radius:18px;padding:13px 17px;background:var(--paper);transition:all .18s}
+ol.opts li:hover{border-color:rgba(255,82,0,.4);transform:translateY(-1px);box-shadow:0 14px 30px -18px rgba(22,18,16,.25)}
+ol.opts li .lt{flex:none;width:38px;height:38px;border-radius:13px;background:var(--mint);color:var(--deep);font-weight:800;display:grid;place-items:center;font-size:16px;box-shadow:inset 0 -2px 0 rgba(224,68,0,.25)}
+ol.opts li .txt{flex:1}
+ol.opts li.correct{border-color:rgba(22,163,74,.5);background:var(--okbg);font-weight:700}
+ol.opts li.correct .lt{background:var(--ok);color:#fff;box-shadow:none}
+ol.opts li .tick{display:none;color:var(--ok);font-weight:800;font-size:13px;margin-top:6px}
+ol.opts li.correct .tick{display:block}
+.answer{display:flex;align-items:flex-start;gap:14px;margin:20px 0;padding:16px 20px;border-radius:18px;background:var(--okbg);border:1px solid rgba(22,163,74,.35)}
+.answer .amed{flex:none;width:40px;height:40px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:19px;font-weight:800;box-shadow:0 10px 22px -10px rgba(22,163,74,.7)}
 .answer b{color:var(--ok)}
-.expl{margin:14px 0;padding:16px 20px;border-radius:14px;background:#f8fafc;border:1px solid var(--line)}
+.expl{margin:16px 0;padding:18px 22px;border-radius:18px;background:var(--cream);border:1px solid rgba(255,82,0,.16);border-left:5px solid var(--brand)}
 .expl h2{margin:0 0 8px;font-size:18px}
-.qimg{max-width:100%;border-radius:10px;margin:10px 0}
-.qlist{display:grid;gap:10px;margin:14px 0}
-.qlist a{border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-decoration:none;color:var(--ink);background:#fff;font-size:15px}
-.qlist a:hover{border-color:var(--brand)}
-footer{border-top:1px solid var(--line);background:#fafafa}
-.footer-in{max-width:960px;margin:0 auto;padding:26px 20px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;justify-content:space-between;color:var(--muted);font-size:14px}
-footer a{color:var(--muted);text-decoration:none}
-footer a:hover{color:var(--brand)}
+.expl h2::before{width:9px;height:9px}
+.qimg{max-width:100%;border-radius:12px;margin:10px 0}
+.qlist{display:grid;gap:10px;margin:16px 0}
+.qlist a{border:1px solid var(--line);border-radius:16px;padding:13px 18px;text-decoration:none;color:var(--ink);background:#fff;font-size:15px;font-weight:600;transition:all .15s;position:relative}
+.qlist a::after{content:"→";position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--brand);opacity:0;transition:all .15s}
+.qlist a:hover{border-color:rgba(255,82,0,.4);color:var(--deep);padding-right:40px}
+.qlist a:hover::after{opacity:1}
+footer{background:var(--ink);color:rgba(250,249,246,.65);margin-top:56px}
+.footer-in{max-width:1000px;margin:0 auto;padding:28px 20px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;justify-content:space-between;font-size:14px}
+footer a{color:rgba(250,249,246,.65);text-decoration:none}
+footer a:hover{color:var(--lime)}
+@media (max-width:640px){article.qcard{padding:22px 16px}}
 </style>
 </head>
 <body>
 <header><div class="header-in">
-  <a class="brand" href="${SITE}/"><img src="${SITE}/Pshape.svg" alt="পরীক্ষাঙ্গন লোগো"> পরীক্ষাঙ্গন</a>
-  <a class="cta" href="${SITE}/auth">ফ্রি শুরু করো</a>
+  <a class="brand" href="/"><img src="${SITE}/Pshape.svg" alt="পরীক্ষাঙ্গন লোগো"> পরীক্ষাঙ্গন</a>
+  <a class="cta" href="/auth">ফ্রি শুরু করো</a>
 </div></header>
 <main>
   <nav class="crumb" aria-label="breadcrumb">${crumbHtml}</nav>
@@ -282,10 +319,10 @@ footer a:hover{color:var(--brand)}
 <footer><div class="footer-in">
   <span>© ${new Date().getFullYear()} পরীক্ষাঙ্গন (Porikkhangon) — HSC ও এডমিশন প্রস্তুতির AI প্ল্যাটফর্ম</span>
   <span>
-    <a href="${SITE}/">হোম</a> ·
-    <a href="${SITE}/hsc-syllabus/">সিলেবাস গাইড</a> ·
-    <a href="${SITE}/privacy">প্রাইভেসি</a> ·
-    <a href="${SITE}/terms">টার্মস</a>
+    <a href="/">হোম</a> ·
+    <a href="/hsc-syllabus/">সিলেবাস গাইড</a> ·
+    <a href="/privacy">প্রাইভেসি</a> ·
+    <a href="/terms">টার্মস</a>
   </span>
 </div></footer>
 </body>
@@ -347,7 +384,7 @@ async function pool(tasks, concurrency = 8) {
 async function collectQuestions(syllabusSubjects) {
   /** @type {Map<string, any>} */
   const byId = new Map();
-  const add = (q, source) => {
+  const add = (q, source, sourceLabel = '') => {
     if (!q || !q.question || !Array.isArray(q.options) || q.options.length < 2) return;
     const id = q._id || q.id || `local-${bnSlug(q.question)}-${q.options.length}`;
     if (byId.has(id)) return;
@@ -367,6 +404,7 @@ async function collectQuestions(syllabusSubjects) {
       explanationImage: q.explanationImage || '',
       slug: safePath(q.slug || bnSlug(q.question)),
       source,
+      sourceLabel: sourceLabel || (q.examRef ? String(q.examRef) : ''),
     });
     const rec = byId.get(id);
     if (rec && rec.slug.length < 12) {
@@ -374,11 +412,15 @@ async function collectQuestions(syllabusSubjects) {
     }
   };
 
-  // 4a. Bundled datasets (always available)
-  for (const f of ['data/gst_a_23_24_questions.json', 'data/medical_24_25_questions.json']) {
+  // 4a. Bundled datasets (always available) — label = where the question came from
+  const BUNDLED_LABELS = {
+    'data/gst_a_23_24_questions.json': 'GST-A ভর্তি পরীক্ষা ২০২৩-২৪',
+    'data/medical_24_25_questions.json': 'মেডিকেল ভর্তি পরীক্ষা ২০২৪-২৫',
+  };
+  for (const f of Object.keys(BUNDLED_LABELS)) {
     try {
       const arr = JSON.parse(readFileSync(join(ROOT, f), 'utf8'));
-      (Array.isArray(arr) ? arr : []).forEach((q) => add(q, 'bundled'));
+      (Array.isArray(arr) ? arr : []).forEach((q) => add(q, 'bundled', BUNDLED_LABELS[f]));
     } catch (e) {
       console.warn(`[seo] could not read ${f}: ${e.message}`);
     }
@@ -391,13 +433,13 @@ async function collectQuestions(syllabusSubjects) {
   for (const [subject, chapters] of syllabusSubjects) {
     for (const chapter of Object.keys(chapters)) {
       tasks.push(async () => {
-        const u = `${API}/admin/questions?page=1&limit=10&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}`;
+        const u = `${API}/admin/questions?page=1&limit=25&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}`;
         const data = await fetchJson(u);
         return (data?.questions || []).map((q) => ({ ...q, _subject: subject, _chapter: chapter }));
       });
     }
   }
-  for (let p = 1; p <= 10; p++) {
+  for (let p = 1; p <= 40; p++) {
     tasks.push(async () => {
       const data = await fetchJson(`${API}/admin/questions?page=${p}&limit=100&level=ADMISSION`);
       return data?.questions || [];
@@ -415,7 +457,7 @@ async function collectQuestions(syllabusSubjects) {
   for (const list of results) {
     if (!list) continue;
     for (const q of list) {
-      add(q, 'api');
+      add(q, 'api', q.level === 'ADMISSION' && !q.examRef ? 'ভর্তি পরীক্ষা' : '');
       apiCount++;
     }
   }
@@ -460,7 +502,7 @@ console.log(`[seo] unique questions for static pages: ${allQuestions.length}`);
     .map(([subject, chapters]) => {
       const slug = slugify(subject);
       const n = Object.keys(chapters).length;
-      return `<a class="card" href="${SITE}${HUB}${slug}/"><b>${esc(subject)}</b><span>${n}টি অধ্যায় · সম্পূর্ণ সিলেবাস ও টপিক লিস্ট</span></a>`;
+      return `<a class="card" href="${HUB}${slug}/"><b>${esc(subject)}</b><span>${n}টি অধ্যায় · সম্পূর্ণ সিলেবাস ও টপিক লিস্ট</span></a>`;
     })
     .join('\n');
 
@@ -522,7 +564,7 @@ for (const [subject, chapters] of subjects) {
       .map(([chapter, value], i) => {
         const n = countTopics(topicsOf(value));
         const qCount = (byChapterKey.get(`${subject}||${chapter}`) || []).length;
-        return `<a class="card" href="${SITE}${HUB}${subjectSlug}/${slugify(chapter)}/"><b>${i + 1}. ${esc(chapter)}</b><span>${n}টি টপিক${qCount ? ` · ${qCount}টি সলভড প্রশ্ন` : ''}</span></a>`;
+        return `<a class="card" href="${HUB}${subjectSlug}/${slugify(chapter)}/"><b>${i + 1}. ${esc(chapter)}</b><span>${n}টি টপিক${qCount ? ` · ${qCount}টি সলভড প্রশ্ন` : ''}</span></a>`;
       })
       .join('\n');
 
@@ -535,7 +577,7 @@ for (const [subject, chapters] of subjects) {
 <ul class="topics">${tips.map((t) => `<li>${esc(t)}</li>`).join('\n')}</ul></div>
 <div class="banner"><h2>${esc(subject)}-এর MCQ প্র্যাকটিস করো ফ্রিতে</h2>
 <p>অধ্যায়ভিত্তিক প্রশ্নব্যাংক, ব্যাখ্যাসহ উত্তর ও প্রোগ্রেস ট্র্যাকিং।</p>
-<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}">প্রশ্নব্যাংক খোলো</a></div>`;
+<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}">প্রশ্নব্যাংক খোলো</a></div>`;
 
     const jsonLd = [
       breadcrumbLd([
@@ -585,14 +627,14 @@ for (const [subject, chapters] of subjects) {
 
     const sampleHtml = chapterQuestions.length
       ? `<h2>এই অধ্যায়ের সলভড প্রশ্ন</h2>
-<div class="qlist">${chapterQuestions.slice(0, 8).map((q) => `<a href="${q.url}">${esc(plain(q.question).slice(0, 110))}</a>`).join('\n')}</div>`
+<div class="qlist">${chapterQuestions.slice(0, 8).map((q) => `<a href="${rel(q.url)}">${esc(plain(q.question).slice(0, 110))}</a>`).join('\n')}</div>`
       : '';
 
     const prev = chapterEntries[idx - 1];
     const next = chapterEntries[idx + 1];
     const pager = `<div class="pager">
-      ${prev ? `<a href="${SITE}${HUB}${subjectSlug}/${slugify(prev[0])}/">← ${esc(prev[0])}</a>` : '<span></span>'}
-      ${next ? `<a href="${SITE}${HUB}${subjectSlug}/${slugify(next[0])}/">${esc(next[0])} →</a>` : `<a href="${SITE}${HUB}${subjectSlug}/">সব অধ্যায়</a>`}
+      ${prev ? `<a href="${HUB}${subjectSlug}/${slugify(prev[0])}/">← ${esc(prev[0])}</a>` : '<span></span>'}
+      ${next ? `<a href="${HUB}${subjectSlug}/${slugify(next[0])}/">${esc(next[0])} →</a>` : `<a href="${HUB}${subjectSlug}/">সব অধ্যায়</a>`}
     </div>`;
 
     const body = `
@@ -607,7 +649,7 @@ ${sampleHtml}
 ${pager}
 <div class="banner"><h2>"${esc(chapter)}" এর প্রশ্ন প্র্যাকটিস করবে?</h2>
 <p>ব্যাখ্যাসহ উত্তর, টাইমার ও ইনস্ট্যান্ট রেজাল্ট — একদম ফ্রি।</p>
-<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}">এই অধ্যায়ের প্রশ্ন সলভ করো</a></div>`;
+<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}&chapter=${encodeURIComponent(chapter)}">এই অধ্যায়ের প্রশ্ন সলভ করো</a></div>`;
 
     const jsonLd = [
       breadcrumbLd([
@@ -658,7 +700,10 @@ for (const q of allQuestions) {
   crumbs.push([plain(q.question).slice(0, 60), q.url]);
 
   const optsHtml = q.options
-    .map((opt, i) => `<li class="${i === q.correctAnswerIndex ? 'correct' : ''}">${LETTERS[i] || i + 1}. ${esc(opt)}${q.optionsImages?.[i] ? `<br><img class="qimg" src="${esc(q.optionsImages[i])}" alt="বিকল্প ${i + 1}">` : ''}</li>`)
+    .map((opt, i) => {
+      const correct = i === q.correctAnswerIndex;
+      return `<li${correct ? ' class="correct"' : ''}><span class="lt">${LETTERS[i] || i + 1}</span><span class="txt">${esc(opt)}${q.optionsImages?.[i] ? `<br><img class="qimg" src="${esc(q.optionsImages[i])}" alt="বিকল্প ${i + 1}">` : ''}</span><span class="tick">✓ সঠিক উত্তর</span></li>`;
+    })
     .join('\n');
 
   const correctText = q.options[q.correctAnswerIndex] || '';
@@ -669,11 +714,13 @@ for (const q of allQuestions) {
   const siblings = (byChapterKey.get(`${q.subject}||${q.chapter}`) || []).filter((x) => x.slug !== q.slug).slice(0, 5);
   const moreHtml = siblings.length
     ? `<h2>একই অধ্যায়ের আরও প্রশ্ন</h2>
-<div class="qlist">${siblings.map((s) => `<a href="${s.url}">${esc(plain(s.question).slice(0, 110))}</a>`).join('\n')}</div>`
+<div class="qlist">${siblings.map((s) => `<a href="${rel(s.url)}">${esc(plain(s.question).slice(0, 110))}</a>`).join('\n')}</div>`
     : '';
 
-  const chips = [q.subject, q.chapter, q.level === 'ADMISSION' ? 'ভর্তি পরীক্ষা' : q.level === 'MAINBOOK' ? 'মূল বই' : q.level === 'ACADEMIC' ? 'HSC একাডেমিক' : '', ...(q.tags || []).slice(0, 2)]
-    .filter(Boolean)
+  const levelLabel = q.level === 'ADMISSION' ? 'ভর্তি পরীক্ষা' : q.level === 'MAINBOOK' ? 'মূল বই' : q.level === 'ACADEMIC' ? 'HSC একাডেমিক' : '';
+  const srcChip = q.sourceLabel ? `<span class="chip src">সূত্র: ${esc(String(q.sourceLabel))}</span>` : '';
+  const chips = srcChip + [q.subject, q.chapter, levelLabel, ...(q.tags || []).slice(0, 2)]
+    .filter((c) => c && c !== q.sourceLabel)
     .map((c) => `<span class="chip">${esc(String(c))}</span>`)
     .join('');
 
@@ -681,17 +728,19 @@ for (const q of allQuestions) {
   const description = `${descSource.slice(0, 120)} — সঠিক উত্তর ও ব্যাখ্যা${q.subject ? ` · ${q.subject}` : ''}${q.chapter ? `, ${q.chapter}` : ''}। পরীক্ষাঙ্গনে ফ্রি MCQ প্র্যাকটিস করো।`;
 
   const body = `
-<h1>${esc(q.question)}</h1>
+<article class="qcard">
 <div class="chips">${chips}</div>
+<h1>${esc(q.question)}</h1>
 ${q.questionImage ? `<img class="qimg" src="${esc(q.questionImage)}" alt="প্রশ্নের চিত্র">` : ''}
-<h2>বিকল্পসমূহ</h2>
+<h2>অপশন</h2>
 <ol class="opts">${optsHtml}</ol>
-<div class="answer"><b>সঠিক উত্তর:</b> ${LETTERS[q.correctAnswerIndex] || ''}. ${esc(correctText)}</div>
+<div class="answer"><span class="amed">✓</span><div><b>সঠিক উত্তর:</b> ${LETTERS[q.correctAnswerIndex] || ''}. ${esc(correctText)}</div></div>
 ${explHtml}
+</article>
 ${moreHtml}
 <div class="banner"><h2>একই ধরনের আরও প্রশ্ন সলভ করো</h2>
 <p>৫০,০০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>
-<a href="${SITE}/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
+<a href="/qbank?level=ACADEMIC&subject=${encodeURIComponent(q.subject)}&chapter=${encodeURIComponent(q.chapter)}">প্রশ্নব্যাংকে প্র্যাকটিস করো</a></div>`;
 
   const jsonLd = [
     breadcrumbLd(crumbs),

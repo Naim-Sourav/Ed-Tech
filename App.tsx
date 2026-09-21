@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Navigation from './components/Navigation';
 import PageLoader from './components/PageLoader';
 import AuthPage from './components/AuthPage';
+import AuthSuccessOverlay from './components/AuthSuccessOverlay';
 import LandingPage from './components/LandingPage';
 import { Menu, ArrowLeft, Bell, Swords } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
@@ -519,6 +520,7 @@ const AppRoutes: React.FC<{
     return (
           <>
           <ThemeColorManager themeMode={themeMode} />
+          <AuthSuccessOverlay />
           <HashCompatRedirect />
           <Routes>
             <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => navigate('/auth')} /> : <Navigate to="/dashboard" />} />
@@ -527,11 +529,14 @@ const AppRoutes: React.FC<{
                         {/* Public Exam Route - Accessible to guests */}
             <Route path="/exam/:examId" element={<ExamPage />} />
 
-            {/* Public question viewer - backs /q/<slug> share links & SEO pages */}
-            <Route path="/question/:slug" element={<QuestionPage />} />
+            {/* Public question viewer - backs /q/<slug> share links & SEO pages.
+                The `/*` splat also accepts trailing-slash URLs (/q/<slug>/) so
+                canonical static-style links resolve in-app instead of falling
+                through to the authenticated catch-all (which redirects to /dashboard). */}
+            <Route path="/question/:slug/*" element={<QuestionPage />} />
             {/* Short alias: static /q/<slug>/ files serve first when they exist;
                 this catches share links for questions without a static page. */}
-            <Route path="/q/:slug" element={<QuestionPage />} />
+            <Route path="/q/:slug/*" element={<QuestionPage />} />
 
             {/* Legal pages are PUBLIC (trust + SEO): no login required. */}
             <Route path="/privacy" element={<PrivacyPolicy />} />

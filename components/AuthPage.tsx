@@ -1,279 +1,580 @@
-
-import React, { useState } from 'react';
-import { logger } from '../utils/logger';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  UserRound,
+  Smartphone,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  ArrowLeft,
+  Check,
+  Flame,
+} from 'lucide-react';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile,
+} from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { syncUserToMongoDB } from '../services/api';
-import { Mail, Lock, User, Loader2, ArrowRight, Smartphone } from 'lucide-react';
+import { Logo } from './landing/ui';
+import { notifyAuthSuccess } from './AuthSuccessOverlay';
+
+/*
+ * Auth page restyled to match premium-ed-tech-landing-page.zip
+ * (src/components/auth/AuthPage.tsx) — same layout, typography and motion,
+ * wired to this app's Firebase auth (email+password, phone on signup, Google).
+ */
 
 interface AuthPageProps {
   onBack: () => void;
 }
 
+const TRACKS = ['SSC', 'HSC', 'Admission'];
+
+const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as [number, number, number, number];
+
+function GoogleMark({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.45a5.52 5.52 0 0 1-2.4 3.62v3.01h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.88-3.01c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.28v3.1A12 12 0 0 0 12 24Z" />
+      <path fill="#FBBC05" d="M5.29 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.38-2.28V6.61H1.29a12 12 0 0 0 0 10.77l4-3.1Z" />
+      <path fill="#EA4335" d="M12 4.77c1.76 0 3.35.6 4.59 1.8l3.44-3.45A11.98 11.98 0 0 0 12 0 12 12 0 0 0 1.28 6.6l4 3.11c.94-2.84 3.6-4.94 6.72-4.94Z" />
+    </svg>
+  );
+}
+
+const inputCls =
+  'w-full rounded-2xl border border-ink/12 bg-paper/60 px-4 py-3.5 pl-11 text-[15px] font-medium text-ink placeholder:text-ink/35 transition-all duration-300 focus:border-brand/60 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand/10';
+
+function Field({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-[13px] font-bold text-ink/70">{label}</span>
+      <span className="relative block">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/35">{icon}</span>
+        {children}
+      </span>
+    </label>
+  );
+}
+
+function passwordScore(p: string) {
+  let s = 0;
+  if (p.length >= 6) s++;
+  if (p.length >= 10) s++;
+  if (/\d/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p) || /[A-Z]/.test(p)) s++;
+  return s;
+}
+const scoreLabels = ['— লিখো —', 'দুর্বল', 'মোটামুটি', 'শক্তিশালী', 'দারুণ শক্তিশালী'];
+const scoreColors = ['bg-ink/10', 'bg-flag', 'bg-gold', 'bg-brand', 'bg-brand-deep'];
+
+function banglaError(code: string): string {
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট আছে — লগইন করে দেখো।';
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'ইমেইল বা পাসওয়ার্ড ঠিক নেই — আবার চেক করো।';
+    case 'auth/weak-password':
+      return 'পাসওয়ার্ড কমপক্ষে ৬ ক্যারেক্টারের হতে হবে।';
+    case 'auth/invalid-email':
+      return 'ইমেইল ঠিকানাটা ঠিক নেই।';
+    case 'auth/too-many-requests':
+      return 'অনেকবার চেষ্টা হয়ে গেছে — কিছুক্ষণ পরে আবার করো।';
+    case 'auth/network-request-failed':
+      return 'ইন্টারনেট সংযোগটা চেক করো।';
+    case 'auth/popup-closed-by-user':
+      return 'Google পপ-আপ বন্ধ হয়ে গেছে — আবার চেষ্টা করো।';
+    default:
+      return 'একটু সমস্যা হয়েছে — আবার চেষ্টা করো।';
+  }
+}
+
 const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
-  const { loginWithGoogle } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const { currentUser, loginWithGoogle } = useAuth();
+
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [name, setName] = useState('');
+  const [track, setTrack] = useState('HSC');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [phone, setPhone] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [justAuthed, setJustAuthed] = useState(false);
 
-  // Check for URL params to pre-fill data (e.g. from Public Exam)
-  React.useEffect(() => {
+  const isSignup = mode === 'signup';
+  const score = passwordScore(password);
+
+  // Pre-fill from URL params (e.g. arriving from a public exam)
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pEmail = params.get('email');
     const pName = params.get('name');
-    
     if (pEmail || pName) {
-        setIsLogin(false); // Switch to register mode
-        if (pEmail) setEmail(pEmail);
-        if (pName) setName(pName);
+      setMode('signup');
+      if (pEmail) setEmail(pEmail);
+      if (pName) setName(pName);
     }
   }, []);
 
-  const validatePhone = (number: string) => {
-    return /^01[3-9]\d{8}$/.test(number);
-  };
+  useEffect(() => {
+    setError(null);
+    setNotice(null);
+  }, [mode]);
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-        await loginWithGoogle();
-        // Successful login will trigger onAuthStateChanged in AuthContext
-    } catch (err: any) {
-        logger.error("Login Error:", err);
-        let msg = "Google Login Failed.";
-        if (err.code === 'auth/popup-closed-by-user') {
-            msg = "লগইন উইন্ডোটি বন্ধ করা হয়েছে। দয়া করে আবার চেষ্টা করুন।";
-        } else if (err.code === 'auth/popup-blocked') {
-            msg = "পপ-আপ ব্লক করা হয়েছে। ব্রাউজার সেটিং চেক করুন।";
-        } else if (err.code === 'auth/unauthorized-domain') {
-            msg = "এই ডোমেইনটি অথোরাইজড নয়। (Developer Note: Add domain to Firebase Console)";
-        } else if (err.code === 'auth/network-request-failed') {
-            msg = "ইন্টারনেট সংযোগ চেক করুন।";
-        }
-        setError(msg);
-    } finally {
-        setLoading(false);
-    }
-  };
+  const validatePhone = (n: string) => /^01[3-9]\d{8}$/.test(n);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (!isLogin && !validatePhone(phoneNumber)) {
-        setError("সঠিক মোবাইল নাম্বার দিন (যেমন: 017...)");
-        setLoading(false);
-        return;
+    setError(null);
+    setNotice(null);
+    if (isSignup && !name.trim()) {
+      setError('তোমার নামটা লিখো — অঙ্গনে সবাই নামেই চিনবে।');
+      return;
     }
-
+    if (isSignup && !validatePhone(phone)) {
+      setError('সঠিক মোবাইল নাম্বার দাও (যেমন: 017XXXXXXXX)।');
+      return;
+    }
+    if (isSignup && password.length < 6) {
+      setError('পাসওয়ার্ড কমপক্ষে ৬ ক্যারেক্টারের হতে হবে।');
+      return;
+    }
+    setBusy(true);
     try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        
-        // Remove default cartoon avatar. Leave photoURL empty to trigger Initial Avatar UI.
-        await updateProfile(userCredential.user, {
-          displayName: name,
-          photoURL: "" 
+      if (isSignup) {
+        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        await updateProfile(cred.user, { displayName: name.trim(), photoURL: '' });
+        await syncUserToMongoDB({ ...cred.user, displayName: name.trim(), photoURL: '' }, {
+          phoneNumber: phone,
+          track,
         });
-        
-        await syncUserToMongoDB({
-            ...userCredential.user,
-            displayName: name,
-            photoURL: ""
-        }, { phoneNumber });
-      }
-    } catch (err: any) {
-      logger.error(err);
-      if (err.code === 'auth/invalid-credential') {
-        setError('ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।');
-      } else if (err.code === 'auth/email-already-in-use') {
-        setError('এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট খোলা আছে।');
-      } else if (err.code === 'auth/weak-password') {
-        setError('পাসওয়ার্ড অত্যন্ত দুর্বল (অন্তত ৬ অক্ষর দিন)।');
       } else {
-        setError('লগইন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
+        await signInWithEmailAndPassword(auth, email.trim(), password);
       }
+      notifyAuthSuccess(
+        (isSignup ? name.trim() : currentUser?.displayName || email.trim().split('@')[0])
+          .split(' ')[0] || 'বন্ধু'
+      );
+      setJustAuthed(true);
+    } catch (err) {
+      setError(banglaError((err as { code?: string }).code || ''));
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
+
+  const google = async () => {
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const gUser = await loginWithGoogle();
+      notifyAuthSuccess(
+        (gUser?.displayName || currentUser?.displayName || 'বন্ধু').split(' ')[0]
+      );
+      setJustAuthed(true);
+    } catch (err) {
+      setError(banglaError((err as { code?: string }).code || ''));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const forgot = async () => {
+    setError(null);
+    setNotice(null);
+    if (!email.trim()) {
+      setError('আগে ওপরে তোমার ইমেইলটা লিখো, তারপর রিসেট চাপো।');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setNotice('রিসেট লিংক পাঠিয়ে দিয়েছি — ইনবক্স (প্রয়োজনে স্প্যাম) চেক করো।');
+    } catch (err) {
+      setError(banglaError((err as { code?: string }).code || ''));
+    }
+  };
+
+  const welcomeName = (name || currentUser?.displayName || 'বন্ধু').split(' ')[0];
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-black transition-colors">
-      {/* Left Side - Visual */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-orange-800 opacity-90"></div>
-        
-        <div className="relative z-10 p-12 text-white max-w-lg">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border-2 border-white overflow-hidden p-2">
-               <img src="./Pshape.svg" alt="Porikkhangon Logo" className="w-full h-full object-contain [filter:invert(1)_hue-rotate(180deg)]" />
-            </div>
-            <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-10 w-auto object-contain [filter:invert(1)_hue-rotate(180deg)]" />
-          </div>
-          <h1 className="text-5xl font-bold mb-6">আপনার লার্নিং জার্নি শুরু হোক এখান থেকেই</h1>
-          <p className="text-lg text-orange-100 leading-relaxed mb-8">
-            AI টিউটর, স্মার্ট কুইজ এবং পার্সোনালাইজড সাপোর্টের মাধ্যমে নিজেকে প্রস্তুত করুন সেরা ফলাফলের জন্য।
-          </p>
-          <div className="flex gap-4">
-             <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
-                <span className="font-bold text-2xl">10k+</span>
-                <p className="text-sm text-orange-100">Students</p>
-             </div>
-             <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
-                <span className="font-bold text-2xl">50k+</span>
-                <p className="text-sm text-orange-100">Tests</p>
-             </div>
-          </div>
-        </div>
+    <div className="pk-landing relative min-h-screen overflow-hidden bg-paper font-body text-ink">
+      {/* Ambient */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <div className="absolute -top-44 right-[-140px] h-[520px] w-[520px] rounded-full bg-[radial-gradient(closest-side,rgba(255,82,0,0.12),transparent)] blur-3xl" />
+        <div className="absolute bottom-[-160px] left-[-140px] h-[460px] w-[460px] rounded-full bg-[radial-gradient(closest-side,rgba(255,185,46,0.16),transparent)] blur-3xl" />
       </div>
 
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-6">
-           <div className="text-center lg:text-left">
-              <button onClick={onBack} className="text-sm text-gray-500 hover:text-primary mb-4 flex items-center justify-center lg:justify-start gap-1">
-                 ← {"ফিরে যান"}
-              </button>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {isLogin ? "স্বাগতম!" : "একাউন্ট তৈরি করুন"}
+      {/* Minimal header */}
+      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+        <Logo />
+        <button
+          type="button"
+          onClick={onBack}
+          className="focus-ring group inline-flex items-center gap-2 rounded-full px-4 py-2 text-[14px] font-semibold text-mist transition-colors hover:text-ink"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
+          হোমে ফিরো
+        </button>
+      </header>
+
+      <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-4 pb-20 pt-6 sm:px-6 lg:min-h-[calc(100vh-104px)] lg:grid-cols-[1.08fr_1fr] lg:gap-14 lg:pt-0">
+        {/* ── Brand panel ── */}
+        <motion.aside
+          initial={{ opacity: 0, x: -32 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.9, ease: EASE_OUT_EXPO }}
+          className="noise relative hidden min-h-[560px] flex-col justify-between overflow-hidden rounded-[32px] bg-ink p-10 text-white shadow-[0_48px_90px_-40px_rgba(22,18,16,0.7)] lg:flex"
+        >
+          <div
+            className="pointer-events-none absolute -right-24 -top-24 h-[440px] w-[440px] rounded-full blur-3xl"
+            style={{
+              background:
+                'conic-gradient(from 120deg, rgba(255,82,0,0.0), rgba(255,82,0,0.45), rgba(255,185,46,0.3), rgba(255,82,0,0.0))',
+            }}
+            aria-hidden="true"
+          />
+          <div className="relative">
+            <p className="flex items-center gap-2 text-[11.5px] font-bold uppercase tracking-[0.26em] text-lime">
+              <Flame className="h-3.5 w-3.5" /> তোমার অঙ্গন অপেক্ষা করছে
+            </p>
+            <h2 className="mt-5 font-bangla text-[38px] font-extrabold leading-[1.15] tracking-tight xl:text-[44px]">
+              একটা অ্যাকাউন্ট,
+              <br />
+              <span className="bg-gradient-to-r from-brand-bright to-lime bg-clip-text text-transparent">
+                তিনটা লড়াইয়ের অস্ত্র।
+              </span>
+            </h2>
+
+            <ul className="mt-10 space-y-6">
+              {[
+                { n: '০', t: 'ফ্রিতে অ্যাকাউন্ট খোলো', d: '৩০ সেকেন্ডেই — কার্ড লাগবে না' },
+                { n: '০২', t: 'প্রথম লাইভ মক টা দাও', d: 'রিয়েল এক্সাম ইন্টারফেসে, instant রেজাল্ট' },
+                { n: '০৩', t: 'দুর্বলতা জেনে এগিয়ে যাও', d: 'AI রিপোর্ট বলে দেবে কোথায় ফোকাস' },
+              ].map((s, i) => (
+                <motion.li
+                  key={s.n}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 + i * 0.12, duration: 0.7, ease: EASE_OUT_EXPO }}
+                  className="flex items-start gap-4"
+                >
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand font-display text-[15px] font-bold text-white shadow-[0_10px_24px_-8px_rgba(255,82,0,0.6)]">
+                    {s.n.charAt(1)}
+                  </span>
+                  <div>
+                    <p className="font-bangla text-[17px] font-bold">{s.t}</p>
+                    <p className="mt-0.5 text-[14px] text-white/55">{s.d}</p>
+                  </div>
+                </motion.li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="relative mt-10 flex items-center gap-4 border-t border-white/10 pt-6">
+            <div className="flex -space-x-2.5" aria-hidden="true">
+              {['AR', 'NS', 'TH'].map((t, i) => (
+                <span
+                  key={t}
+                  className={`grid h-9 w-9 place-items-center rounded-full text-[10.5px] font-bold text-white ring-2 ring-ink ${
+                    ['bg-brand', 'bg-gold', 'bg-flag'][i]
+                  }`}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <p className="text-[13.5px] leading-snug text-white/60">
+              <span className="font-bold text-white">২,৪০,০০+ শিক্ষার্থী</span> ইতিমধ্যে
+              <br />
+              প্রতিদিন চর্চা করছে
+            </p>
+          </div>
+        </motion.aside>
+
+        {/* ── Form column ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.1, ease: EASE_OUT_EXPO }}
+          className="mx-auto w-full max-w-md"
+        >
+          {currentUser && !justAuthed ? (
+            <div className="rounded-[26px] bg-white p-8 text-center shadow-[0_24px_60px_-28px_rgba(22,18,16,0.3)] ring-1 ring-ink/10">
+              <span className="ring-conic mx-auto grid h-16 w-16 place-items-center rounded-[26%] font-bangla text-[24px] font-bold text-white shadow-lg">
+                {(currentUser.displayName || 'প').charAt(0)}
+              </span>
+              <h2 className="mt-5 font-bangla text-[22px] font-bold text-ink">
+                তুমি তো লগইন করাই আছো, {welcomeName}!
               </h2>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                {isLogin ? "আপনার একাউন্টে লগইন করুন" : "বিনামূল্যে রেজিস্ট্রেশন করুন"}
-              </p>
-           </div>
-
-           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-xl border border-red-100 dark:border-red-800 flex items-center gap-2">
-              <span className="font-bold">Error:</span> {error}
+              <p className="mt-2 text-[14px] text-mist">{currentUser.email}</p>
+              <button
+                type="button"
+                onClick={onBack}
+                className="focus-ring mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink py-3.5 text-[15px] font-bold text-paper transition-all hover:-translate-y-0.5 hover:bg-brand-deep"
+              >
+                এগিয়ে যাও
+              </button>
             </div>
-           )}
+          ) : (
+            <>
+              <h1 className="text-center font-bangla text-[26px] font-extrabold tracking-tight text-ink sm:text-[30px]">
+                {isSignup ? 'অঙ্গনে তোমাকে স্বাগতম' : 'আবার দেখা, ভালো লাগলো'}
+              </h1>
+              <p className="mt-2 text-center text-[14.5px] text-mist">
+                {isSignup ? '৩০ সেকেন্ডে অ্যাকাউন্ট খোলো — ফ্রিতেই শুরু' : 'যেখানে ছেড়েছিলে, ঠিক সেখান থেকেই আবার'}
+              </p>
 
-           <button
-             onClick={handleGoogleLogin}
-             disabled={loading}
-             className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-3 relative disabled:opacity-70 disabled:cursor-not-allowed"
-           >
-             <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-             </svg>
-             {"Google দিয়ে চালিয়ে যান"}
-           </button>
-
-           <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-zinc-800"></div>
+              {/* Tabs */}
+              <div className="mt-6 grid grid-cols-2 rounded-full bg-white p-1.5 ring-1 ring-ink/10" role="tablist" aria-label="Auth mode">
+                {(
+                  [
+                    { id: 'login', label: 'লগইন' },
+                    { id: 'signup', label: 'অ্যাকাউন্ট খোলো' },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === t.id}
+                    onClick={() => setMode(t.id)}
+                    className="focus-ring relative rounded-full py-2.5"
+                  >
+                    {mode === t.id && (
+                      <motion.span
+                        layoutId="auth-tab"
+                        className="absolute inset-0 rounded-full bg-ink"
+                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 text-[14px] font-bold transition-colors ${
+                        mode === t.id ? 'text-paper' : 'text-mist hover:text-ink'
+                      }`}
+                    >
+                      {t.label}
+                    </span>
+                  </button>
+                ))}
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="px-2 bg-white dark:bg-black text-gray-500">{"অথবা"}</span>
+
+              {/* Card */}
+              <div className="mt-5 rounded-[26px] bg-white p-6 shadow-[0_24px_60px_-28px_rgba(22,18,16,0.3)] ring-1 ring-ink/10 sm:p-7">
+                <AnimatePresence mode="wait">
+                  <motion.form
+                    key={mode}
+                    onSubmit={submit}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -14 }}
+                    transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+                    className="space-y-4"
+                    noValidate
+                  >
+                    <AnimatePresence>
+                      {error && (
+                        <motion.p
+                          initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                          animate={{ opacity: 1, height: 'auto', marginBottom: 4 }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="flex items-start gap-2.5 overflow-hidden rounded-2xl bg-flag/8 px-4 py-3 text-[13.5px] font-semibold leading-snug text-flag ring-1 ring-flag/15"
+                        >
+                          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                          {error}
+                        </motion.p>
+                      )}
+                      {notice && (
+                        <motion.p
+                          initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                          animate={{ opacity: 1, height: 'auto', marginBottom: 4 }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="flex items-start gap-2.5 overflow-hidden rounded-2xl bg-mint px-4 py-3 text-[13.5px] font-semibold leading-snug text-ink ring-1 ring-brand/20"
+                        >
+                          <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                          {notice}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+
+                    {isSignup && (
+                      <Field label="তোমার নাম" icon={<UserRound className="h-[18px] w-[18px]" />}>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="যেমন: নুসরাত জাহান"
+                          autoComplete="name"
+                          className={inputCls}
+                        />
+                      </Field>
+                    )}
+
+                    {isSignup && (
+                      <Field label="মোবাইল নাম্বার" icon={<Smartphone className="h-[18px] w-[18px]" />}>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="017XXXXXXXX"
+                          autoComplete="tel"
+                          className={inputCls}
+                        />
+                      </Field>
+                    )}
+
+                    <Field label="ইমেইল" icon={<Mail className="h-[18px] w-[18px]" />}>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="tumi@example.com"
+                        autoComplete="email"
+                        required
+                        className={inputCls}
+                      />
+                    </Field>
+
+                    <Field label="পাসওয়ার্ড" icon={<Lock className="h-[18px] w-[18px]" />}>
+                      <input
+                        type={showPass ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder={isSignup ? 'কমপক্ষে ৬ ক্যারেক্টার' : 'তোমার পাসওয়ার্ড'}
+                        autoComplete={isSignup ? 'new-password' : 'current-password'}
+                        required
+                        className={`${inputCls} pr-12`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPass(!showPass)}
+                        aria-label={showPass ? 'পাসওয়ার্ড লুকোও' : 'পাসওয়ার্ড দেখো'}
+                        className="focus-ring absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-ink/35 transition-colors hover:text-ink"
+                      >
+                        {showPass ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                      </button>
+                    </Field>
+
+                    {isSignup && (
+                      <div className="!mt-2 flex items-center gap-2.5">
+                        <div className="flex flex-1 gap-1.5" aria-hidden="true">
+                          {[1, 2, 3, 4].map((seg) => (
+                            <span
+                              key={seg}
+                              className={`h-1.5 flex-1 rounded-full transition-colors duration-500 ${
+                                score >= seg ? scoreColors[score] : 'bg-ink/10'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-[11.5px] font-bold text-mist">{scoreLabels[score]}</span>
+                      </div>
+                    )}
+
+                    {isSignup && (
+                      <div>
+                        <span className="mb-1.5 block text-[13px] font-bold text-ink/70">কোন লড়াইয়ে আছো?</span>
+                        <div className="grid grid-cols-3 gap-2">
+                          {TRACKS.map((t) => (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => setTrack(t)}
+                              aria-pressed={track === t}
+                              className={`focus-ring relative rounded-2xl border py-2.5 text-[13.5px] font-bold transition-all duration-300 ${
+                                track === t
+                                  ? 'border-brand bg-mint text-brand-deep shadow-[0_8px_20px_-10px_rgba(255,82,0,0.5)]'
+                                  : 'border-ink/10 bg-paper/60 text-mist hover:border-brand/30 hover:text-ink'
+                              }`}
+                            >
+                              {t}
+                              {track === t && (
+                                <span className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-brand text-white">
+                                  <Check className="h-3 w-3" strokeWidth={3.5} />
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!isSignup && (
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={forgot}
+                          className="focus-ring text-[13px] font-bold text-brand-deep transition-colors hover:text-brand"
+                        >
+                          পাসওয়ার্ড ভুলে গেছো?
+                        </button>
+                      </div>
+                    )}
+
+                    <motion.button
+                      type="submit"
+                      disabled={busy}
+                      whileTap={{ scale: 0.98 }}
+                      className="focus-ring group flex w-full items-center justify-center gap-2.5 rounded-full bg-brand py-4 text-[15.5px] font-bold text-white shadow-[0_16px_36px_-14px_rgba(255,82,0,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {busy ? (
+                        <>
+                          <Loader2 className="h-[18px] w-[18px] animate-spin" />
+                          একটু ধরো…
+                        </>
+                      ) : isSignup ? (
+                        'অ্যাকাউন্ট খোলো — ফ্রি'
+                      ) : (
+                        'অঙ্গনে ঢুকে পড়ো'
+                      )}
+                    </motion.button>
+
+                    <div className="flex items-center gap-3 pt-1" aria-hidden="true">
+                      <span className="h-px flex-1 bg-ink/10" />
+                      <span className="text-[12px] font-semibold text-mist">অথবা</span>
+                      <span className="h-px flex-1 bg-ink/10" />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={google}
+                      disabled={busy}
+                      className="focus-ring flex w-full items-center justify-center gap-3 rounded-full bg-white py-3.5 text-[15px] font-bold text-ink ring-1 ring-ink/12 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-14px_rgba(22,18,16,0.35)] hover:ring-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      <GoogleMark className="h-[19px] w-[19px]" />
+                      Google দিয়ে চালিয়ে যাও
+                    </button>
+
+                    {isSignup && (
+                      <p className="pt-1 text-center text-[11.5px] leading-relaxed text-mist">
+                        অ্যাকাউন্ট খুললে তুমি পরীক্ষাঙ্গনের <span className="font-bold text-ink/70">টার্মস</span> ও{' '}
+                        <span className="font-bold text-ink/70">প্রাইভেসি নীতি</span> মেনে নিচ্ছো।
+                      </p>
+                    )}
+                  </motion.form>
+                </AnimatePresence>
               </div>
-           </div>
+            </>
+          )}
+        </motion.div>
+      </main>
 
-           <form onSubmit={handleSubmit} className="space-y-4">
-             {!isLogin && (
-               <>
-                <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">{"আপনার নাম"}</label>
-                    <div className="relative group">
-                        <User size={18} className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                        <input
-                        type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
-                        placeholder={"আপনার নাম"}
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">{"মোবাইল নাম্বার"}</label>
-                    <div className="relative group">
-                        <Smartphone size={18} className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                        <input
-                        type="tel"
-                        required
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
-                        placeholder="01XXXXXXXXX"
-                        />
-                    </div>
-                </div>
-               </>
-             )}
-
-             <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">{"ইমেইল এড্রেস"}</label>
-                <div className="relative group">
-                  <Mail size={18} className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
-                    placeholder="name@example.com"
-                  />
-                </div>
-             </div>
-
-             <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">{"পাসওয়ার্ড"}</label>
-                <div className="relative group">
-                  <Lock size={18} className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
-                    placeholder="••••••••"
-                  />
-                </div>
-             </div>
-
-             <button
-               type="submit"
-               disabled={loading}
-               className="w-full bg-primary hover:bg-orange-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-             >
-               {loading ? (
-                 <Loader2 size={24} className="animate-spin" />
-               ) : (
-                 <>
-                   {isLogin ? "লগইন করুন" : "রেজিস্ট্রেশন করুন"} <ArrowRight size={20} />
-                 </>
-               )}
-             </button>
-           </form>
-
-           <div className="text-center">
-             <p className="text-sm text-gray-600 dark:text-gray-400">
-               {isLogin ? "একাউন্ট নেই?" : "ইতিমধ্যে একাউন্ট আছে?"}
-               <button
-                 onClick={() => setIsLogin(!isLogin)}
-                 className="ml-2 font-bold text-primary hover:underline"
-               >
-                 {isLogin ? "রেজিস্ট্রেশন করুন" : "লগইন করুন"}
-               </button>
-             </p>
-           </div>
-        </div>
-      </div>
+      {/* Success checkmark is now rendered globally by <AuthSuccessOverlay />
+          (mounted in App), so it survives the /auth -> /dashboard redirect. */}
     </div>
   );
 };
