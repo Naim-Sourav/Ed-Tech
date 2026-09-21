@@ -113,17 +113,34 @@ const QuestionPage: React.FC = () => {
   };
 
   return (
-    <div className="pk-landing dash relative w-full min-h-[80vh] overflow-hidden bg-paper dark:bg-ink text-ink dark:text-paper py-8 px-4">
+    <div className="pk-landing dash relative w-full min-h-[80vh] overflow-hidden bg-paper dark:bg-ink text-ink dark:text-paper">
       <Helmet>
         <title>{question ? `${question.question.slice(0, 60)} | পরীক্ষাঙ্গন` : 'প্রশ্ন | পরীক্ষাঙ্গন'}</title>
         <meta name="robots" content="noindex, follow" />
       </Helmet>
 
-      {/* Ambient warm washes */}
+      {/* Ambient warm washes + dot-grid paper texture */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,82,0,0.09),transparent)] blur-2xl" />
       <div aria-hidden className="pointer-events-none absolute -top-20 -right-24 w-72 h-72 bg-[radial-gradient(closest-side,rgba(255,185,46,0.14),transparent)] blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(22,18,16,0.04)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:22px_22px]" />
 
-      <div className="max-w-3xl mx-auto relative z-10">
+      {/* Dark brand bar (matches static SEO pages) */}
+      <header className="relative z-20 bg-ink shadow-[0_10px_30px_-18px_rgba(22,18,16,0.6)]">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <Link to="/" className="flex items-center gap-2.5 text-paper font-bold text-[17px]">
+            <span className="w-8 h-8 rounded-xl ring-conic grid place-items-center text-white font-extrabold shadow-md">প</span>
+            পরীক্ষাঙ্গন
+          </Link>
+          <Link
+            to="/auth"
+            className="bg-lime text-ink font-extrabold text-sm px-4 py-2 rounded-full shadow-[0_10px_24px_-10px_rgba(255,185,46,0.6)] transition-transform hover:-translate-y-0.5"
+          >
+            ফ্রি শুরু করো
+          </Link>
+        </div>
+      </header>
+
+      <div className="max-w-3xl mx-auto relative z-10 py-8 px-4">
         <div className="flex items-center justify-between mb-5">
           <Link
             to="/qbank"
@@ -174,8 +191,9 @@ const QuestionPage: React.FC = () => {
         {state === 'ready' && question && (
           <article
             ref={bodyRef as any}
-            className="bg-white dark:bg-ink-2 ring-1 ring-ink/10 dark:ring-white/10 rounded-[26px] p-5 md:p-8 shadow-[0_24px_60px_-28px_rgba(22,18,16,0.3)]"
+            className="relative overflow-hidden bg-white dark:bg-ink-2 ring-1 ring-ink/10 dark:ring-white/10 rounded-[28px] p-5 md:p-8 shadow-[0_30px_70px_-32px_rgba(22,18,16,0.25)]"
           >
+            <div aria-hidden className="absolute top-0 inset-x-0 h-[5px] bg-gradient-to-r from-brand via-lime to-brand" />
             <div className="flex flex-wrap gap-2 mb-4">
               {question.subject && (
                 <span className="text-xs font-bold px-3 py-1 rounded-full bg-mint text-brand-deep dark:bg-brand/20 dark:text-brand-bright ring-1 ring-brand/15 dark:ring-brand/30">
@@ -194,7 +212,7 @@ const QuestionPage: React.FC = () => {
               ))}
             </div>
 
-            <h1 className="font-bangla text-lg md:text-2xl font-extrabold text-ink dark:text-paper leading-relaxed mb-4 tracking-tight">
+            <h1 className="font-bangla text-xl md:text-[26px] font-extrabold text-ink dark:text-paper leading-relaxed mb-5 tracking-tight after:content-[''] after:block after:w-[76px] after:h-[5px] after:rounded-full after:mt-4 after:bg-gradient-to-r after:from-brand after:to-lime">
               {question.question}
             </h1>
             {question.questionImage && (
@@ -211,7 +229,7 @@ const QuestionPage: React.FC = () => {
                       'flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm md:text-base transition-colors',
                       revealed && isCorrect
                         ? 'border-green-500/50 bg-green-50 dark:bg-green-950/40 font-bold text-green-800 dark:text-green-300'
-                        : 'border-ink/10 dark:border-white/10 bg-paper dark:bg-white/5 text-ink/85 dark:text-white/85',
+                        : 'border-ink/10 dark:border-white/10 bg-paper dark:bg-white/5 text-ink/85 dark:text-white/85 transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_14px_30px_-18px_rgba(22,18,16,0.25)]',
                     ].join(' ')}
                   >
                     <span
@@ -245,14 +263,19 @@ const QuestionPage: React.FC = () => {
               </button>
             ) : (
               <div className="space-y-4">
-                <div className="rounded-2xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30 px-4 py-3 text-sm md:text-base">
-                  <b className="text-green-700 dark:text-green-400">সঠিক উত্তর:</b>{' '}
-                  <span className="text-ink dark:text-white">
-                    {LETTERS[question.correctAnswerIndex]}. {question.options?.[question.correctAnswerIndex]}
+                <div className="flex items-start gap-3.5 rounded-2xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30 px-4 py-3.5 text-sm md:text-base">
+                  <span className="flex-none w-10 h-10 rounded-full bg-green-600 text-white grid place-items-center font-extrabold text-lg shadow-[0_10px_22px_-10px_rgba(22,163,74,0.7)]">
+                    ✓
                   </span>
+                  <div>
+                    <b className="text-green-700 dark:text-green-400">সঠিক উত্তর:</b>{' '}
+                    <span className="text-ink dark:text-white">
+                      {LETTERS[question.correctAnswerIndex]}. {question.options?.[question.correctAnswerIndex]}
+                    </span>
+                  </div>
                 </div>
                 {question.explanation && (
-                  <div className="rounded-2xl border border-brand/15 dark:border-white/10 bg-cream dark:bg-white/5 px-4 py-4">
+                  <div className="rounded-2xl border border-brand/15 dark:border-white/10 border-l-4 border-l-brand dark:border-l-brand-bright bg-cream dark:bg-white/5 px-4 py-4">
                     <h2 className="flex items-center gap-2 font-bangla text-sm font-extrabold text-ink dark:text-paper mb-2">
                       <Sparkles size={16} className="text-brand dark:text-brand-bright" /> ব্যাখ্যা
                     </h2>
