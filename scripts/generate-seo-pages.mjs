@@ -195,6 +195,9 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700;800&display=swap" rel="stylesheet">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -217,57 +220,69 @@ function shell({ title, description, canonical, breadcrumbs, jsonLd, body, mathj
 ${mathjax ? `<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']],processEscapes:true},options:{enableMenu:false},chtml:{scale:1,minScale:0.5},startup:{typeset:true}};</script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>` : ''}
 <style>
-:root{--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--brand:#f97316;--bg:#ffffff;--ok:#16a34a}
+/* Warm editorial design — paper #faf9f6 · ink #161210 · brand #ff5200 · lime #ffb92e */
+:root{--paper:#faf9f6;--ink:#161210;--brand:#ff5200;--deep:#e04400;--lime:#ffb92e;--mint:#ffeade;--cream:#fff1e8;--mist:#6f655c;--line:rgba(22,18,16,.09);--ok:#16a34a;--okbg:#f2fbf5}
 *{box-sizing:border-box}
-body{margin:0;font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.8}
-a{color:var(--brand)}
-header{border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:5}
-.header-in{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:700}
+body{margin:0;font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.8;-webkit-font-smoothing:antialiased}
+::selection{background:#ffd9c2;color:var(--ink)}
+a{color:var(--deep)}
+header{border-bottom:1px solid var(--line);background:rgba(250,249,246,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:sticky;top:0;z-index:5}
+.header-in{max-width:1000px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:700;font-size:17px}
 .brand img{height:34px;width:auto}
-.cta{background:var(--brand);color:#fff;text-decoration:none;font-weight:700;padding:9px 18px;border-radius:10px;font-size:14px;white-space:nowrap}
-main{max-width:960px;margin:0 auto;padding:28px 20px 56px}
-nav.crumb{font-size:13px;color:var(--muted);margin-bottom:18px;display:flex;flex-wrap:wrap;gap:6px}
-nav.crumb a{color:var(--muted);text-decoration:none}
+.cta{background:var(--brand);color:#fff;text-decoration:none;font-weight:700;padding:9px 20px;border-radius:999px;font-size:14px;white-space:nowrap;box-shadow:0 10px 24px -10px rgba(255,82,0,.55);transition:transform .15s}
+.cta:hover{transform:translateY(-1px)}
+main{max-width:1000px;margin:0 auto;padding:30px 20px 64px}
+nav.crumb{font-size:13px;color:var(--mist);margin-bottom:20px;display:flex;flex-wrap:wrap;gap:6px;font-weight:600}
+nav.crumb a{color:var(--mist);text-decoration:none}
 nav.crumb a:hover{color:var(--brand)}
-nav.crumb .sep{color:#d1d5db}
-h1{font-size:clamp(22px,4vw,34px);line-height:1.45;margin:0 0 10px}
-h2{font-size:clamp(19px,3vw,26px);margin:34px 0 12px}
-p.lede{color:var(--muted);font-size:16px;margin:0 0 8px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
-.chip{background:#f3f4f6;border:1px solid var(--line);color:#374151;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600}
+nav.crumb .sep{color:#d8cfc6}
+nav.crumb .cur{color:var(--ink)}
+h1{font-family:'Noto Serif Bengali',serif;font-weight:800;font-size:clamp(24px,4.2vw,38px);line-height:1.55;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-family:'Noto Serif Bengali',serif;font-weight:700;font-size:clamp(19px,3vw,26px);margin:34px 0 12px}
+p.lede{color:var(--mist);font-size:16.5px;margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.chip{background:var(--mint);border:1px solid rgba(255,82,0,.18);color:var(--deep);border-radius:999px;padding:4px 14px;font-size:13px;font-weight:700}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin:22px 0}
-.card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;text-decoration:none;color:var(--ink);background:#fff;transition:border-color .15s}
-.card:hover{border-color:var(--brand)}
-.card b{display:block;font-size:16px;margin-bottom:4px}
-.card span{color:var(--muted);font-size:13px}
+.card{border:1px solid var(--line);border-radius:18px;padding:18px 20px;text-decoration:none;color:var(--ink);background:#fff;transition:all .2s;box-shadow:0 1px 2px rgba(22,18,16,.04)}
+.card:hover{border-color:rgba(255,82,0,.35);transform:translateY(-2px);box-shadow:0 18px 36px -18px rgba(22,18,16,.25)}
+.card b{display:block;font-size:16.5px;margin-bottom:4px}
+.card span{color:var(--mist);font-size:13px}
 ul.topics{margin:8px 0 0;padding-left:20px}
-ul.topics li{margin:5px 0}
-ul.topics ul{margin:4px 0;padding-left:18px;color:var(--muted);font-size:14.5px}
-.tips{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:16px 20px;margin:22px 0}
+ul.topics li{margin:6px 0}
+ul.topics ul{margin:4px 0;padding-left:18px;color:var(--mist);font-size:14.5px}
+.tips{background:var(--cream);border:1px solid rgba(255,82,0,.15);border-radius:20px;padding:18px 22px;margin:24px 0}
 .tips h2{margin-top:0}
-.banner{margin:34px 0 8px;border-radius:18px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;padding:26px 24px;text-align:center}
-.banner h2{margin:0 0 6px;color:#fff}
-.banner p{margin:0 0 16px;opacity:.95}
-.banner a{display:inline-block;background:#fff;color:#ea580c;font-weight:800;text-decoration:none;padding:12px 26px;border-radius:12px}
+.banner{position:relative;overflow:hidden;margin:38px 0 8px;border-radius:28px;background:var(--ink);color:#fff;padding:34px 28px;text-align:center}
+.banner::before{content:"";position:absolute;right:-90px;top:-90px;width:300px;height:300px;border-radius:50%;background:conic-gradient(from 120deg,rgba(255,82,0,0),rgba(255,82,0,.5),rgba(255,185,46,.35),rgba(255,82,0,0));filter:blur(56px)}
+.banner h2{margin:0 0 8px;color:var(--lime);position:relative}
+.banner p{margin:0 0 18px;color:rgba(255,255,255,.72);position:relative}
+.banner a{position:relative;display:inline-block;background:var(--lime);color:var(--ink);font-weight:800;text-decoration:none;padding:12px 28px;border-radius:999px;box-shadow:0 16px 36px -14px rgba(255,185,46,.55)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin-top:30px;flex-wrap:wrap}
-.pager a{border:1px solid var(--line);border-radius:12px;padding:10px 16px;text-decoration:none;font-size:14px}
+.pager a{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 18px;text-decoration:none;font-size:14px;font-weight:600;color:var(--ink)}
+.pager a:hover{border-color:rgba(255,82,0,.35);color:var(--deep)}
+article.qcard{background:#fff;border:1px solid var(--line);border-radius:26px;padding:26px 26px 30px;box-shadow:0 24px 60px -28px rgba(22,18,16,.18);margin-top:6px}
 ol.opts{list-style:none;margin:18px 0;padding:0;display:grid;gap:10px}
-ol.opts li{border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:#fff}
-ol.opts li.correct{border-color:var(--ok);background:#f0fdf4;font-weight:700}
-ol.opts li.correct::after{content:" ✓ সঠিক উত্তর";color:var(--ok);font-size:13px;font-weight:800}
-.answer{margin:18px 0;padding:16px 20px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0}
+ol.opts li{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--line);border-radius:16px;padding:12px 16px;background:var(--paper)}
+ol.opts li .lt{flex:none;width:34px;height:34px;border-radius:12px;background:var(--mint);color:var(--deep);font-weight:800;display:grid;place-items:center;font-size:15px}
+ol.opts li .txt{flex:1}
+ol.opts li.correct{border-color:rgba(22,163,74,.45);background:var(--okbg);font-weight:700}
+ol.opts li.correct .lt{background:var(--ok);color:#fff}
+ol.opts li .tick{display:none;color:var(--ok);font-weight:800;font-size:13px;margin-top:6px}
+ol.opts li.correct .tick{display:block}
+.answer{margin:18px 0;padding:16px 20px;border-radius:16px;background:var(--okbg);border:1px solid rgba(22,163,74,.3)}
 .answer b{color:var(--ok)}
-.expl{margin:14px 0;padding:16px 20px;border-radius:14px;background:#f8fafc;border:1px solid var(--line)}
+.expl{margin:14px 0;padding:18px 20px;border-radius:16px;background:var(--cream);border:1px solid rgba(255,82,0,.15)}
 .expl h2{margin:0 0 8px;font-size:18px}
-.qimg{max-width:100%;border-radius:10px;margin:10px 0}
+.qimg{max-width:100%;border-radius:12px;margin:10px 0}
 .qlist{display:grid;gap:10px;margin:14px 0}
-.qlist a{border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-decoration:none;color:var(--ink);background:#fff;font-size:15px}
-.qlist a:hover{border-color:var(--brand)}
-footer{border-top:1px solid var(--line);background:#fafafa}
-.footer-in{max-width:960px;margin:0 auto;padding:26px 20px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;justify-content:space-between;color:var(--muted);font-size:14px}
-footer a{color:var(--muted);text-decoration:none}
+.qlist a{border:1px solid var(--line);border-radius:14px;padding:12px 16px;text-decoration:none;color:var(--ink);background:#fff;font-size:15px;font-weight:600;transition:all .15s}
+.qlist a:hover{border-color:rgba(255,82,0,.35);color:var(--deep)}
+footer{border-top:1px solid var(--line);background:#f5f1ea}
+.footer-in{max-width:1000px;margin:0 auto;padding:26px 20px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;justify-content:space-between;color:var(--mist);font-size:14px}
+footer a{color:var(--mist);text-decoration:none}
 footer a:hover{color:var(--brand)}
+@media (max-width:640px){article.qcard{padding:20px 16px}}
 </style>
 </head>
 <body>
@@ -658,7 +673,10 @@ for (const q of allQuestions) {
   crumbs.push([plain(q.question).slice(0, 60), q.url]);
 
   const optsHtml = q.options
-    .map((opt, i) => `<li class="${i === q.correctAnswerIndex ? 'correct' : ''}">${LETTERS[i] || i + 1}. ${esc(opt)}${q.optionsImages?.[i] ? `<br><img class="qimg" src="${esc(q.optionsImages[i])}" alt="বিকল্প ${i + 1}">` : ''}</li>`)
+    .map((opt, i) => {
+      const correct = i === q.correctAnswerIndex;
+      return `<li${correct ? ' class="correct"' : ''}><span class="lt">${LETTERS[i] || i + 1}</span><span class="txt">${esc(opt)}${q.optionsImages?.[i] ? `<br><img class="qimg" src="${esc(q.optionsImages[i])}" alt="বিকল্প ${i + 1}">` : ''}</span><span class="tick">✓ সঠিক উত্তর</span></li>`;
+    })
     .join('\n');
 
   const correctText = q.options[q.correctAnswerIndex] || '';
@@ -681,13 +699,15 @@ for (const q of allQuestions) {
   const description = `${descSource.slice(0, 120)} — সঠিক উত্তর ও ব্যাখ্যা${q.subject ? ` · ${q.subject}` : ''}${q.chapter ? `, ${q.chapter}` : ''}। পরীক্ষাঙ্গনে ফ্রি MCQ প্র্যাকটিস করো।`;
 
   const body = `
-<h1>${esc(q.question)}</h1>
+<article class="qcard">
 <div class="chips">${chips}</div>
+<h1>${esc(q.question)}</h1>
 ${q.questionImage ? `<img class="qimg" src="${esc(q.questionImage)}" alt="প্রশ্নের চিত্র">` : ''}
 <h2>বিকল্পসমূহ</h2>
 <ol class="opts">${optsHtml}</ol>
 <div class="answer"><b>সঠিক উত্তর:</b> ${LETTERS[q.correctAnswerIndex] || ''}. ${esc(correctText)}</div>
 ${explHtml}
+</article>
 ${moreHtml}
 <div class="banner"><h2>একই ধরনের আরও প্রশ্ন সলভ করো</h2>
 <p>৫০,০০০+ প্রশ্ন, ব্যাখ্যাসহ উত্তর, টাইমার ও প্রোগ্রেস ট্র্যাকিং — ফ্রি।</p>

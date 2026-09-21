@@ -14,6 +14,9 @@ import { QuizQuestion } from '../types';
  * canonical version of a question is its static page; this route exists so
  * that every shared link (all 50k+ questions, not just the static subset)
  * resolves inside the app.
+ *
+ * Visual language matches the warm-editorial design (paper/ink/brand/lime)
+ * and the static SEO pages, with full dark-mode support.
  */
 
 const LETTERS = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ'];
@@ -110,46 +113,58 @@ const QuestionPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-[80vh] bg-slate-50/50 dark:bg-gray-950 py-6 px-4">
+    <div className="pk-landing dash relative w-full min-h-[80vh] overflow-hidden bg-paper dark:bg-ink text-ink dark:text-paper py-8 px-4">
       <Helmet>
         <title>{question ? `${question.question.slice(0, 60)} | পরীক্ষাঙ্গন` : 'প্রশ্ন | পরীক্ষাঙ্গন'}</title>
         <meta name="robots" content="noindex, follow" />
       </Helmet>
 
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
+      {/* Ambient warm washes */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,82,0,0.09),transparent)] blur-2xl" />
+      <div aria-hidden className="pointer-events-none absolute -top-20 -right-24 w-72 h-72 bg-[radial-gradient(closest-side,rgba(255,185,46,0.14),transparent)] blur-3xl" />
+
+      <div className="max-w-3xl mx-auto relative z-10">
+        <div className="flex items-center justify-between mb-5">
           <Link
             to="/qbank"
-            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-700 dark:text-orange-400"
+            className="focus-ring flex items-center gap-2 text-sm font-bold text-mist hover:text-brand-deep dark:hover:text-brand-bright transition-colors"
           >
             <ArrowLeft size={16} /> প্রশ্নব্যাংকে ফিরে যাও
           </Link>
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-orange-700 dark:text-orange-400"
+            className="focus-ring flex items-center gap-2 rounded-full bg-white/70 dark:bg-white/10 backdrop-blur-md px-4 py-2 text-sm font-bold text-ink dark:text-paper ring-1 ring-ink/10 dark:ring-white/15 shadow-sm hover:shadow transition-all"
           >
-            <Share2 size={16} /> শেয়ার
+            <Share2 size={16} className="text-brand-deep dark:text-brand-bright" /> শেয়ার
           </button>
         </div>
 
         {state === 'loading' && (
-          <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-sm font-semibold">প্রশ্ন লোড হচ্ছে…</p>
+          <div className="flex flex-col items-center justify-center py-24 text-mist">
+            <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-sm font-bold">প্রশ্ন লোড হচ্ছে…</p>
           </div>
         )}
 
         {state === 'notfound' && (
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-8 text-center">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">প্রশ্নটি খুঁজে পাওয়া যায়নি</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <div className="bg-white dark:bg-ink-2 ring-1 ring-ink/10 dark:ring-white/10 rounded-[26px] p-8 text-center shadow-[0_24px_60px_-28px_rgba(22,18,16,0.3)]">
+            <h1 className="font-bangla text-xl md:text-2xl font-extrabold text-ink dark:text-paper mb-2">
+              প্রশ্নটি খুঁজে পাওয়া যায়নি
+            </h1>
+            <p className="text-sm text-mist mb-6">
               লিংকটি পুরনো বা প্রশ্নটি মুছে ফেলা হয়ে থাকতে পারে। প্রশ্নব্যাংকে সার্চ করে দেখো।
             </p>
-            <div className="flex justify-center gap-3">
-              <Link to="/qbank" className="px-5 py-2.5 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-xl">
+            <div className="flex justify-center gap-3 flex-wrap">
+              <Link
+                to="/qbank"
+                className="focus-ring px-5 py-2.5 bg-brand hover:bg-brand-deep text-white text-sm font-bold rounded-full shadow-[0_12px_28px_-12px_rgba(255,82,0,0.6)] transition-all hover:-translate-y-0.5"
+              >
                 প্রশ্নব্যাংক খোলো
               </Link>
-              <a href={`${import.meta.env.BASE_URL}hsc-syllabus/`} className="px-5 py-2.5 border border-gray-200 dark:border-zinc-700 text-sm font-bold rounded-xl text-gray-700 dark:text-gray-200">
+              <a
+                href={`${import.meta.env.BASE_URL}hsc-syllabus/`}
+                className="focus-ring px-5 py-2.5 ring-1 ring-ink/15 dark:ring-white/20 text-sm font-bold rounded-full text-ink dark:text-paper hover:ring-brand/40 transition-all"
+              >
                 সিলেবাস গাইড
               </a>
             </div>
@@ -157,30 +172,33 @@ const QuestionPage: React.FC = () => {
         )}
 
         {state === 'ready' && question && (
-          <div ref={bodyRef} className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-5 md:p-8">
+          <article
+            ref={bodyRef as any}
+            className="bg-white dark:bg-ink-2 ring-1 ring-ink/10 dark:ring-white/10 rounded-[26px] p-5 md:p-8 shadow-[0_24px_60px_-28px_rgba(22,18,16,0.3)]"
+          >
             <div className="flex flex-wrap gap-2 mb-4">
               {question.subject && (
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-mint text-brand-deep dark:bg-brand/20 dark:text-brand-bright ring-1 ring-brand/15 dark:ring-brand/30">
                   {question.subject}
                 </span>
               )}
               {question.chapter && (
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-cream text-ink/70 dark:bg-white/10 dark:text-white/70 ring-1 ring-ink/10 dark:ring-white/10">
                   {question.chapter}
                 </span>
               )}
               {(question.tags || []).slice(0, 2).map((t) => (
-                <span key={t} className="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-500 dark:bg-zinc-800 dark:text-gray-400">
+                <span key={t} className="text-xs font-bold px-3 py-1 rounded-full bg-ink/5 text-mist dark:bg-white/5 dark:text-white/50 ring-1 ring-ink/10 dark:ring-white/10">
                   {t}
                 </span>
               ))}
             </div>
 
-            <h1 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white leading-relaxed mb-4">
+            <h1 className="font-bangla text-lg md:text-2xl font-extrabold text-ink dark:text-paper leading-relaxed mb-4 tracking-tight">
               {question.question}
             </h1>
             {question.questionImage && (
-              <img src={question.questionImage} alt="প্রশ্নের চিত্র" className="max-w-full rounded-xl mb-4" />
+              <img src={question.questionImage} alt="প্রশ্নের চিত্র" className="max-w-full rounded-2xl mb-4" />
             )}
 
             <div className="grid gap-2.5 mb-5">
@@ -190,17 +208,26 @@ const QuestionPage: React.FC = () => {
                   <div
                     key={i}
                     className={[
-                      'flex items-start gap-3 rounded-xl border px-4 py-3 text-sm md:text-base',
+                      'flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm md:text-base transition-colors',
                       revealed && isCorrect
-                        ? 'border-green-500 bg-green-50 dark:bg-green-950/40 font-bold text-green-800 dark:text-green-300'
-                        : 'border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-gray-200',
+                        ? 'border-green-500/50 bg-green-50 dark:bg-green-950/40 font-bold text-green-800 dark:text-green-300'
+                        : 'border-ink/10 dark:border-white/10 bg-paper dark:bg-white/5 text-ink/85 dark:text-white/85',
                     ].join(' ')}
                   >
-                    <span className="font-bold shrink-0">{LETTERS[i]}.</span>
+                    <span
+                      className={[
+                        'w-8 h-8 md:w-9 md:h-9 rounded-xl grid place-items-center font-bold shrink-0 text-sm',
+                        revealed && isCorrect
+                          ? 'bg-green-600 text-white'
+                          : 'bg-mint text-brand-deep dark:bg-white/10 dark:text-brand-bright',
+                      ].join(' ')}
+                    >
+                      {LETTERS[i]}
+                    </span>
                     <span className="flex-1">
                       {opt}
                       {question.optionsImages?.[i] && (
-                        <img src={question.optionsImages[i]} alt={`বিকল্প ${LETTERS[i]}`} className="max-w-full rounded-lg mt-2" />
+                        <img src={question.optionsImages[i]} alt={`বিকল্প ${LETTERS[i]}`} className="max-w-full rounded-xl mt-2" />
                       )}
                     </span>
                     {revealed && isCorrect && <CheckCircle2 size={18} className="text-green-600 shrink-0 mt-0.5" />}
@@ -212,28 +239,28 @@ const QuestionPage: React.FC = () => {
             {!revealed ? (
               <button
                 onClick={() => setRevealed(true)}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-primary hover:bg-orange-600 text-white font-bold rounded-xl transition-colors"
+                className="focus-ring w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-brand hover:bg-brand-deep text-white font-bold rounded-full shadow-[0_16px_36px_-14px_rgba(255,82,0,0.65)] transition-all hover:-translate-y-0.5"
               >
                 <Eye size={18} /> উত্তর ও ব্যাখ্যা দেখো
               </button>
             ) : (
               <div className="space-y-4">
-                <div className="rounded-xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30 px-4 py-3 text-sm md:text-base">
+                <div className="rounded-2xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30 px-4 py-3 text-sm md:text-base">
                   <b className="text-green-700 dark:text-green-400">সঠিক উত্তর:</b>{' '}
-                  <span className="text-gray-800 dark:text-gray-100">
+                  <span className="text-ink dark:text-white">
                     {LETTERS[question.correctAnswerIndex]}. {question.options?.[question.correctAnswerIndex]}
                   </span>
                 </div>
                 {question.explanation && (
-                  <div className="rounded-xl border border-gray-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/60 px-4 py-4">
-                    <h2 className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                      <Sparkles size={16} className="text-primary" /> ব্যাখ্যা
+                  <div className="rounded-2xl border border-brand/15 dark:border-white/10 bg-cream dark:bg-white/5 px-4 py-4">
+                    <h2 className="flex items-center gap-2 font-bangla text-sm font-extrabold text-ink dark:text-paper mb-2">
+                      <Sparkles size={16} className="text-brand dark:text-brand-bright" /> ব্যাখ্যা
                     </h2>
-                    <div className="text-sm md:text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                    <div className="text-sm md:text-base text-ink/75 dark:text-white/75 whitespace-pre-wrap leading-relaxed">
                       {question.explanation}
                     </div>
                     {question.explanationImage && (
-                      <img src={question.explanationImage} alt="ব্যাখ্যার চিত্র" className="max-w-full rounded-lg mt-3" />
+                      <img src={question.explanationImage} alt="ব্যাখ্যার চিত্র" className="max-w-full rounded-xl mt-3" />
                     )}
                   </div>
                 )}
@@ -243,18 +270,18 @@ const QuestionPage: React.FC = () => {
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <Link
                 to={`/qbank?level=ACADEMIC&subject=${encodeURIComponent(question.subject || '')}&chapter=${encodeURIComponent(question.chapter || '')}`}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-primary hover:bg-orange-600 text-white text-sm font-bold rounded-xl"
+                className="focus-ring flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-ink dark:bg-lime hover:bg-brand-deep dark:hover:bg-gold text-paper dark:text-ink text-sm font-bold rounded-full transition-all hover:-translate-y-0.5 shadow-[0_16px_36px_-16px_rgba(22,18,16,0.5)]"
               >
                 <BookOpen size={16} /> এই অধ্যায়ের আরও প্রশ্ন সলভ করো
               </Link>
               <a
                 href={`/hsc-syllabus/`}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 border border-gray-200 dark:border-zinc-700 text-sm font-bold rounded-xl text-gray-700 dark:text-gray-200 hover:border-primary"
+                className="focus-ring flex-1 flex items-center justify-center gap-2 px-5 py-3 ring-1 ring-ink/15 dark:ring-white/20 text-sm font-bold rounded-full text-ink dark:text-paper hover:ring-brand/40 transition-all"
               >
                 সিলেবাস গাইড দেখো
               </a>
             </div>
-          </div>
+          </article>
         )}
       </div>
     </div>
