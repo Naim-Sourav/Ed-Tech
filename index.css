@@ -342,9 +342,21 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/* App screens (dashboard) opt into dark mode while keeping the warm palette.
+   The base `.pk-landing` above is always light; `.dash` lets `html.dark` flip
+   just this screen to a warm near-black without touching the marketing landing. */
+html.dark .pk-landing.dash {
+  background: #161210;
+  color: #faf9f6;
+}
+
 .pk-landing ::selection {
   background: #ffd9c2;
   color: #161210;
+}
+html.dark .pk-landing.dash ::selection {
+  background: #ff5200;
+  color: #faf9f6;
 }
 
 .pk-landing .text-balance {
