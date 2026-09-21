@@ -1,13 +1,11 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { ScanEye, MonitorCheck, Languages, Gamepad2, X, Check, Quote } from 'lucide-react';
-import { benefits, comparisonRows } from './data';
-import { EASE_OUT_EXPO, EASE_SPRING, Reveal, SectionTag, staggerParent, staggerChild, toBn } from './ui';
+import { motion } from "motion/react";
+import { ScanEye, MonitorCheck, Languages, Gamepad2, X, Check, Quote } from "lucide-react";
+import { benefits, comparisonRows } from "./data";
+import { Reveal, SectionTag, staggerParent, staggerChild, toBn } from "./ui";
 
 const icons = [ScanEye, MonitorCheck, Languages, Gamepad2];
 
-/** Sticky intro + photo collage on the left, numbered benefit rows + comparison table on the right. */
-const Benefits: React.FC = () => {
+export default function Benefits() {
   return (
     <section id="benefits" className="relative overflow-hidden py-20 sm:py-28">
       <div
@@ -21,14 +19,13 @@ const Benefits: React.FC = () => {
             <div className="lg:sticky lg:top-28">
               <Reveal>
                 <SectionTag>কেন পরীক্ষাঙ্গন · Why us</SectionTag>
-                <h2 className="mt-5 font-bangla text-[34px] font-extrabold leading-[1.12] tracking-[-0.01em] text-ink sm:text-[44px]">
-                  টপারদের{' '}
-                  <span className="bg-gradient-to-r from-brand-deep to-brand-bright bg-clip-text text-transparent">
-                    লুকানো শর্টকাট।
-                  </span>
+                <h2 className="mt-5 font-display text-[34px] font-bold leading-[1.06] tracking-[-0.02em] text-ink sm:text-[46px]">
+                  The shortcut
+                  <br />
+                  toppers <span className="bg-gradient-to-r from-brand-deep to-brand-bright bg-clip-text text-transparent">don't talk about.</span>
                 </h2>
                 <p className="mt-5 max-w-md font-bangla text-[17px] font-semibold text-brand-deep">
-                  প্রতিদিন মাত্র ৩০ মিনিট — বসে দেখো, পরীক্ষা হয়ে যাবে তোমার হোম গ্রাউন্ড।
+                  প্রতিদিন মাত্র ৩০ মিনিট — বস পরীক্ষা হবে তোমার হোম গ্রাউন্ড।
                 </p>
               </Reveal>
 
@@ -37,14 +34,16 @@ const Benefits: React.FC = () => {
                 <div className="relative overflow-hidden rounded-[26px] shadow-[0_36px_70px_-30px_rgba(22,18,16,0.5)] ring-1 ring-ink/10">
                   <img
                     src="/images/student-hero.jpg"
-                    alt="বই হাতে আত্মবিশ্বাসী একজন শিক্ষার্থী"
+                    alt="A confident Bangladeshi student ready for her SSC exam"
                     className="aspect-[4/5] w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
                     loading="lazy"
                   />
                   <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-ink/70 to-transparent" aria-hidden="true" />
                   <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3">
-                    <p className="text-[13px] font-bold text-white">“ফিজিক্সের ভয়টা এখানেই শেষ”</p>
-                    <span className="rounded-full bg-lime px-2.5 py-1 text-[11px] font-bold text-ink">HSC '26</span>
+                    <p className="text-[13px] font-bold text-white">
+                      “ফিজিক্সে আমার ভয়টা এখানেই শেষ”
+                    </p>
+                    <span className="rounded-full bg-lime px-2.5 py-1 text-[11px] font-bold text-ink">SSC '26</span>
                   </div>
                 </div>
 
@@ -52,12 +51,12 @@ const Benefits: React.FC = () => {
                   initial={{ opacity: 0, y: 26, rotate: 8 }}
                   whileInView={{ opacity: 1, y: 0, rotate: 5 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.35, duration: 0.8, ease: EASE_OUT_EXPO }}
+                  transition={{ delay: 0.35, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute -bottom-2 -right-2 w-[52%] overflow-hidden rounded-2xl shadow-[0_24px_50px_-20px_rgba(22,18,16,0.55)] ring-4 ring-paper sm:-right-6"
                 >
                   <img
                     src="/images/students-study.jpg"
-                    alt="একসাথে পড়াশোনারত শিক্ষার্থীরা"
+                    alt="Bangladeshi students preparing together for admission tests"
                     className="aspect-[4/3] w-full object-cover"
                     loading="lazy"
                   />
@@ -67,12 +66,12 @@ const Benefits: React.FC = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.5, duration: 0.6, ease: EASE_SPRING }}
+                  transition={{ delay: 0.5, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
                   className="glass absolute -right-1 top-6 rounded-2xl px-4 py-3 shadow-lg sm:-right-4"
                 >
-                  <p className="font-display text-[22px] font-bold leading-none text-ink">২৪/৭</p>
+                  <p className="font-display text-[22px] font-bold leading-none text-ink">৯২%</p>
                   <p className="mt-1 max-w-[110px] text-[11px] font-semibold leading-snug text-mist">
-                    AI টিউটরের পাশে থাকার নিশ্চয়তা
+                    শিক্ষার্থী বলছে কনফিডেন্স বেড়েছে
                   </p>
                 </motion.div>
               </Reveal>
@@ -84,7 +83,7 @@ const Benefits: React.FC = () => {
             variants={staggerParent}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, margin: "-80px" }}
             className="lg:col-span-7"
           >
             {benefits.map((b, i) => {
@@ -103,7 +102,7 @@ const Benefits: React.FC = () => {
                       {toBn(`0${i + 1}`)}
                     </span>
                     <span className="relative z-10 mt-1 grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-ink text-lime shadow-[0_14px_28px_-12px_rgba(22,18,16,0.6)] transition-colors duration-500 group-hover:bg-brand">
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-5.5 w-5.5" />
                     </span>
                     <div className="relative z-10">
                       <p className="font-bangla text-[21px] font-bold tracking-tight text-ink sm:text-[23px]">
@@ -121,7 +120,7 @@ const Benefits: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Comparison table */}
+        {/* Comparison */}
         <Reveal className="mt-20">
           <div className="overflow-hidden rounded-[26px] bg-white ring-1 ring-ink/8 shadow-[0_30px_60px_-34px_rgba(22,18,16,0.35)]">
             <div className="grid grid-cols-1 gap-y-2 bg-ink px-6 py-5 text-white sm:grid-cols-[150px_1fr_1fr] sm:px-9">
@@ -130,7 +129,7 @@ const Benefits: React.FC = () => {
               </span>
               <span className="text-[14px] font-semibold text-white/55">গাইডবুক + কোচিং — পুরনো উপায়</span>
               <span className="inline-flex items-center gap-2 text-[14px] font-bold text-lime">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-lime text-ink" aria-hidden="true">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-lime text-ink">
                   <Check className="h-3 w-3" strokeWidth={4} />
                 </span>
                 পরীক্ষাঙ্গনে
@@ -140,21 +139,21 @@ const Benefits: React.FC = () => {
               <div
                 key={row.label}
                 className={`grid grid-cols-1 gap-y-1.5 px-6 py-4.5 sm:grid-cols-[150px_1fr_1fr] sm:items-center sm:gap-6 sm:px-9 ${
-                  i % 2 === 0 ? 'bg-white' : 'bg-paper/60'
+                  i % 2 === 0 ? "bg-white" : "bg-paper/60"
                 } border-t border-ink/6 first:border-t-0`}
               >
                 <p className="font-bangla text-[14.5px] font-bold text-ink">{row.label}</p>
                 <p className="flex items-center gap-2.5 text-[14px] text-mist">
-                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-ink/[0.06] text-ink/40" aria-hidden="true">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-ink/[0.06] text-ink/40">
                     <X className="h-3 w-3" strokeWidth={3.5} />
                   </span>
                   {row.old}
                 </p>
                 <p className="flex items-center gap-2.5 text-[14px] font-semibold text-ink">
-                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-mint text-brand-deep" aria-hidden="true">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-mint text-brand-deep">
                     <Check className="h-3 w-3" strokeWidth={3.5} />
                   </span>
-                  {row.neo}
+                  {row.new}
                 </p>
               </div>
             ))}
@@ -163,6 +162,4 @@ const Benefits: React.FC = () => {
       </div>
     </section>
   );
-};
-
-export default Benefits;
+}

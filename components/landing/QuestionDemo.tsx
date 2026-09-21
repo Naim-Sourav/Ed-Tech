@@ -1,20 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Check, X, Lightbulb, ChevronRight, Zap, Timer } from 'lucide-react';
-import { demoQuestions } from './data';
-import { EASE_OUT_EXPO, toBn } from './ui';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Check, X, Lightbulb, ChevronRight, Zap, Timer } from "lucide-react";
+import { demoQuestions } from "./data";
 
-const OPTION_LETTERS = ['ক', 'খ', 'গ', 'ঘ'];
-const START_SECONDS = 1500;
+const OPTION_LETTERS = ["ক", "খ", "গ", "ঘ"];
 
-/**
- * Live MCQ widget inside the hero — visitors can answer real questions
- * straight from the landing page (no login needed).
- */
-const QuestionDemo: React.FC = () => {
+export default function QuestionDemo() {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
-  const [seconds, setSeconds] = useState(START_SECONDS);
+  const [seconds, setSeconds] = useState(1500);
   const [solved, setSolved] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -31,23 +25,23 @@ const QuestionDemo: React.FC = () => {
     };
   }, [answered, index]);
 
-  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-  const ss = String(seconds % 60).padStart(2, '0');
+  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const ss = String(seconds % 60).padStart(2, "0");
 
   const next = () => {
     setSolved((v) => v + 1);
     setIndex((i) => (i + 1) % demoQuestions.length);
     setSelected(null);
-    setSeconds(START_SECONDS);
+    setSeconds(1500);
   };
 
   const optionStyle = useMemo(
     () => (i: number) => {
       if (!answered)
-        return 'border-ink/10 bg-white hover:border-brand/50 hover:bg-mint/60 hover:shadow-[0_10px_24px_-12px_rgba(255,82,0,0.3)]';
-      if (i === q.answer) return 'border-brand bg-mint shadow-[0_10px_28px_-12px_rgba(255,82,0,0.4)]';
-      if (i === selected) return 'border-flag/60 bg-flag/8';
-      return 'border-ink/8 bg-white opacity-45';
+        return "border-ink/10 bg-white hover:border-brand/50 hover:bg-mint/60 hover:shadow-[0_10px_24px_-12px_rgba(255,82,0,0.3)]";
+      if (i === q.answer) return "border-brand bg-mint shadow-[0_10px_28px_-12px_rgba(255,82,0,0.4)]";
+      if (i === selected) return "border-flag/60 bg-flag/8";
+      return "border-ink/8 bg-white opacity-45";
     },
     [answered, q.answer, selected],
   );
@@ -66,11 +60,10 @@ const QuestionDemo: React.FC = () => {
           <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-soft px-3 py-1 text-[12px] font-bold text-ink">
             <Zap className="h-3.5 w-3.5 text-gold" fill="currentColor" />
             <span className="font-display tabular-nums">x{solved}</span>
-            <span className="sr-only">টি প্রশ্ন সলভ করা হয়েছে</span>
           </span>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-display text-[12px] font-bold tabular-nums ring-1 ${
-              seconds < 60 ? 'bg-flag/10 text-flag ring-flag/20' : 'bg-ink/[0.04] text-ink ring-ink/8'
+              seconds < 60 ? "bg-flag/10 text-flag ring-flag/20" : "bg-ink/[0.04] text-ink ring-ink/8"
             }`}
           >
             <Timer className="h-3.5 w-3.5" />
@@ -87,32 +80,29 @@ const QuestionDemo: React.FC = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -14 }}
-            transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
             <p className="font-bangla text-[19px] font-bold leading-snug text-ink sm:text-[21px]">
-              {toBn(String(index + 1))}. {q.question}
+              {index + 1}. {q.question}
             </p>
 
             <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
               {q.options.map((opt, i) => (
                 <motion.button
                   key={opt + i}
-                  type="button"
                   whileTap={{ scale: 0.97 }}
                   disabled={answered}
                   onClick={() => setSelected(i)}
-                  aria-label={`${OPTION_LETTERS[i]}: ${opt}`}
                   className={`focus-ring group flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all duration-300 ${optionStyle(i)}`}
                 >
                   <span
                     className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg font-bangla text-[13px] font-bold transition-colors ${
                       answered && i === q.answer
-                        ? 'bg-brand text-white'
+                        ? "bg-brand text-white"
                         : answered && i === selected
-                          ? 'bg-flag text-white'
-                          : 'bg-ink/[0.05] text-ink/70 group-hover:bg-brand group-hover:text-white'
+                          ? "bg-flag text-white"
+                          : "bg-ink/[0.05] text-ink/70 group-hover:bg-brand group-hover:text-white"
                     }`}
-                    aria-hidden="true"
                   >
                     {answered && i === q.answer ? (
                       <Check className="h-4 w-4" strokeWidth={3} />
@@ -137,23 +127,22 @@ const QuestionDemo: React.FC = () => {
             <motion.div
               key="solution"
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="flex items-center justify-between gap-3"
             >
               <div className="flex items-start gap-2.5">
                 <span
                   className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full ${
-                    isCorrect ? 'bg-brand text-white' : 'bg-flag text-white'
+                    isCorrect ? "bg-brand text-white" : "bg-flag text-white"
                   }`}
-                  aria-hidden="true"
                 >
                   {isCorrect ? <Check className="h-3.5 w-3.5" strokeWidth={3.5} /> : <X className="h-3.5 w-3.5" strokeWidth={3.5} />}
                 </span>
                 <div>
-                  <p className={`text-[13px] font-bold ${isCorrect ? 'text-brand-deep' : 'text-flag'}`}>
-                    {isCorrect ? 'একদম ঠিক! +৭ পয়েন্ট' : 'ভুল হয়েছে — সঠিক উত্তর দেখো'}
+                  <p className={`text-[13px] font-bold ${isCorrect ? "text-brand-deep" : "text-flag"}`}>
+                    {isCorrect ? "একদম ঠিক! +৭ পয়েন্ট" : "ভুল হয়েছে — সঠিক উত্তর দেখো"}
                   </p>
                   <p className="mt-0.5 flex items-start gap-1.5 text-[12.5px] leading-relaxed text-mist">
                     <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" />
@@ -162,7 +151,6 @@ const QuestionDemo: React.FC = () => {
                 </div>
               </div>
               <motion.button
-                type="button"
                 onClick={next}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
@@ -188,7 +176,7 @@ const QuestionDemo: React.FC = () => {
                   <span
                     key={i}
                     className={`h-1.5 rounded-full transition-all duration-500 ${
-                      i === index ? 'w-5 bg-brand' : 'w-1.5 bg-ink/15'
+                      i === index ? "w-5 bg-brand" : "w-1.5 bg-ink/15"
                     }`}
                   />
                 ))}
@@ -199,6 +187,4 @@ const QuestionDemo: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default QuestionDemo;
+}

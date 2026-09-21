@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import LandingNav from './landing/LandingNav';
+import Navbar from './landing/Navbar';
 import Hero from './landing/Hero';
 import SocialProof from './landing/SocialProof';
 import Features from './landing/Features';
@@ -10,7 +10,7 @@ import Testimonials from './landing/Testimonials';
 import Pricing from './landing/Pricing';
 import FAQ from './landing/FAQ';
 import CTA from './landing/CTA';
-import LandingFooter from './landing/LandingFooter';
+import Footer from './landing/Footer';
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -19,24 +19,20 @@ interface LandingPageProps {
 /**
  * Public landing page (route "/").
  *
- * Rebuilt to match the premium editorial design shipped in
- * `premium-ed-tech-landing-page.zip` — warm paper background, brand orange
- * (#FF5200), Bengali-first typography, an interactive MCQ demo in the hero and
- * a full section flow (social proof → features → tracks → benefits →
- * testimonials → courses → FAQ → CTA).
- *
- * Content/marketing copy lives in `components/landing/data.ts`; shared design
- * primitives in `components/landing/ui.tsx`. All styling is scoped under the
- * `.pk-landing` class (see `index.css`) so the app screens are unaffected.
+ * Pixel-faithful port of the design shipped in
+ * `premium-ed-tech-landing-page.zip` (src/). All sections, copy and
+ * typography come straight from the zip; only integration glue differs
+ * (framer-motion → motion/react, auth bridge, hash CTAs resolved by the
+ * app's HashCompatRedirect). Styling is scoped under `.pk-landing`.
  */
-const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
+const LandingPage: React.FC<LandingPageProps> = (_props) => {
   return (
     <div className="pk-landing min-h-screen bg-paper font-body text-ink antialiased">
       <Helmet>
         <title>পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম</title>
         <meta
           name="description"
-          content="পরীক্ষাঙ্গন (Porikkhangon) — HSC, ভর্তি পরীক্ষা ও MCQ প্রস্তুতির AI-চালিত প্ল্যাটফর্ম। ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং — বেসিক ফিচার সব ফ্রিতে।"
+          content="পরীক্ষাঙ্গন (Porikkhangon) — HSC, ভর্তি পরীক্ষা ও MCQ প্রস্তুতির AI-চালিত প্ল্যাটফর্ম। ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং — সব ফ্রিতে।"
         />
         <meta
           name="keywords"
@@ -59,7 +55,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         <meta name="twitter:title" content="পরীক্ষাঙ্গন Porikkhangon | HSC ও Admission প্রস্তুতির AI প্ল্যাটফর্ম" />
         <meta
           name="twitter:description"
-          content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।"
+          content="HSC ও ভর্তি পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি এক জায়গায় — ২০,০০+ প্রশ্ন, মডেল টেস্ট, AI টিউটর, কুইজ ব্যাটল ও স্মার্ট ট্র্যাকিং।"
         />
         <meta name="twitter:image" content="https://www.porikkhangon.app/og-image.jpg" />
       </Helmet>
@@ -68,13 +64,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         href="#features"
         className="sr-only z-[60] rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-paper focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
-        কনটেন্টে যাও
+        Skip to content
       </a>
 
-      <LandingNav onLoginClick={onLoginClick} />
-
+      <Navbar />
       <main>
-        <Hero onLoginClick={onLoginClick} />
+        <Hero />
         <SocialProof />
         <Features />
         <Showcase />
@@ -82,10 +77,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         <Testimonials />
         <Pricing />
         <FAQ />
-        <CTA onLoginClick={onLoginClick} />
+        <CTA />
       </main>
-
-      <LandingFooter />
+      <Footer />
     </div>
   );
 };

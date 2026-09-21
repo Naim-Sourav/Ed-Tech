@@ -1,15 +1,12 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Star, Quote, BadgeCheck } from 'lucide-react';
-import { testimonials } from './data';
-import { Reveal, SectionTag, staggerParent, staggerChild } from './ui';
+import { motion } from "motion/react";
+import { Star, Quote, BadgeCheck } from "lucide-react";
+import { testimonials } from "./data";
+import { Reveal, SectionTag, staggerParent, staggerChild } from "./ui";
 
-const avatarColors = ['bg-brand', 'bg-ink', 'bg-gold', 'bg-flag', 'bg-brand-deep'];
+const avatarColors = ["bg-brand", "bg-ink", "bg-gold", "bg-flag", "bg-brand-deep"];
 
-/** Featured quote + supporting cards. Copy is placeholder — swap for real reviews before launch. */
-const Testimonials: React.FC = () => {
-  const featured = testimonials[0];
-  const rest = testimonials.slice(1);
+export default function Testimonials() {
+  const [featured, ...rest] = testimonials;
 
   return (
     <section id="testimonials" className="relative overflow-hidden bg-cream/50 py-20 sm:py-28">
@@ -17,14 +14,15 @@ const Testimonials: React.FC = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
           <SectionTag>রেজাল্ট বলেই কথা · Testimonials</SectionTag>
-          <h2 className="mt-5 font-bangla text-[34px] font-extrabold leading-[1.1] tracking-[-0.01em] text-ink sm:text-[48px]">
-            প্রতিশ্রুতির চেয়ে{' '}
+          <h2 className="mt-5 font-display text-[34px] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[52px]">
+            Results speak
+            <br />
             <span className="bg-gradient-to-r from-brand-deep to-brand-bright bg-clip-text text-transparent">
-              রেজাল্ট জোরে কথা বলে।
+              louder than promises.
             </span>
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-mist">
-            নটর ডেম থেকে ময়মনসিংহ, ঢাবি থেকে গুচ্ছ — শিক্ষার্থীদের অভিজ্ঞতাই আমাদের সেরা বিজ্ঞাপন।
+            ভিকারুননিসা থেকে ময়মনসিংহ ক্যাডেট, ঢাবি ক-ইউনিট থেকে ঢামেক — তোমাদের গল্পই আমাদের সেরা মার্কেটিং।
           </p>
         </Reveal>
 
@@ -32,7 +30,7 @@ const Testimonials: React.FC = () => {
           variants={staggerParent}
           initial="hidden"
           whileInView="show"
-          viewport={{ once: true, margin: '-60px' }}
+          viewport={{ once: true, margin: "-60px" }}
           className="mt-14 grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3"
         >
           {/* Featured */}
@@ -45,11 +43,11 @@ const Testimonials: React.FC = () => {
               className="pointer-events-none absolute -bottom-8 right-2 select-none font-bangla text-[150px] font-extrabold leading-none text-white/[0.045] sm:text-[200px]"
               aria-hidden="true"
             >
-              HSC
+              GPA-5
             </span>
             <div className="relative">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="flex gap-0.5" aria-hidden="true">
+                <span className="flex gap-0.5">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 text-gold" fill="currentColor" />
                   ))}
@@ -83,6 +81,7 @@ const Testimonials: React.FC = () => {
               key={t.name}
               variants={staggerChild}
               whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
               className="group relative flex flex-col justify-between rounded-[26px] bg-white p-6 ring-1 ring-ink/8 transition-shadow duration-500 hover:shadow-[0_28px_56px_-28px_rgba(22,18,16,0.3)] sm:p-7"
             >
               <div>
@@ -113,6 +112,4 @@ const Testimonials: React.FC = () => {
       </div>
     </section>
   );
-};
-
-export default Testimonials;
+}

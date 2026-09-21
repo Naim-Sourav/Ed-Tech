@@ -1,13 +1,12 @@
-import React from 'react';
-import { GraduationCap } from 'lucide-react';
-import { stats, schools } from './data';
-import { BnCounter, Reveal } from './ui';
+import { GraduationCap } from "lucide-react";
+import { stats, schools } from "./data";
+import { Counter, Reveal } from "./ui";
 
-/** Dark stat band + institution marquee right under the hero. */
-const SocialProof: React.FC = () => {
+export default function SocialProof() {
   return (
     <section className="relative py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        {/* ── Stats band ── */}
         <Reveal>
           <div className="noise relative overflow-hidden rounded-[28px] bg-ink px-6 py-10 shadow-[0_40px_80px_-40px_rgba(22,18,16,0.7)] sm:rounded-[36px] sm:px-12 sm:py-12">
             <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand/25 blur-3xl" aria-hidden="true" />
@@ -17,14 +16,15 @@ const SocialProof: React.FC = () => {
               {stats.map((s, i) => (
                 <div
                   key={s.label}
-                  className={`flex flex-col items-center text-center ${i > 0 ? 'lg:border-l lg:border-white/10' : ''} ${
-                    i % 2 === 1 ? 'border-l border-white/10 lg:border-l' : ''
-                  }`}
+                  className={`flex flex-col items-center text-center ${
+                    i > 0 ? "lg:border-l lg:border-white/10" : ""
+                  } ${i % 2 === 1 ? "border-l border-white/10 lg:border-l" : ""}`}
                 >
-                  <BnCounter
+                  <Counter
                     value={s.value}
                     decimals={s.decimals}
                     suffix={s.suffix}
+                    bn
                     className="font-bangla text-[40px] font-extrabold leading-none text-lime sm:text-[52px]"
                   />
                   <p className="mt-3 text-[14px] font-semibold text-white/85">{s.labelBn}</p>
@@ -35,11 +35,12 @@ const SocialProof: React.FC = () => {
           </div>
         </Reveal>
 
+        {/* ── School marquee ── */}
         <Reveal delay={0.15} className="mt-12">
           <p className="text-center text-[12px] font-bold uppercase tracking-[0.22em] text-mist">
             দেশের সেরা প্রতিষ্ঠানের শিক্ষার্থীদের আস্থা
           </p>
-          <div className="relative mt-6 overflow-hidden" aria-label="যেসব প্রতিষ্ঠানের শিক্ষার্থীরা ব্যবহার করে">
+          <div className="relative mt-6 overflow-hidden" aria-label="Institutions our students come from">
             <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-paper to-transparent" aria-hidden="true" />
             <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-paper to-transparent" aria-hidden="true" />
             <div className="flex w-max animate-marquee-slow">
@@ -62,6 +63,4 @@ const SocialProof: React.FC = () => {
       </div>
     </section>
   );
-};
-
-export default SocialProof;
+}
