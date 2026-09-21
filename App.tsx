@@ -529,11 +529,14 @@ const AppRoutes: React.FC<{
                         {/* Public Exam Route - Accessible to guests */}
             <Route path="/exam/:examId" element={<ExamPage />} />
 
-            {/* Public question viewer - backs /q/<slug> share links & SEO pages */}
-            <Route path="/question/:slug" element={<QuestionPage />} />
+            {/* Public question viewer - backs /q/<slug> share links & SEO pages.
+                The `/*` splat also accepts trailing-slash URLs (/q/<slug>/) so
+                canonical static-style links resolve in-app instead of falling
+                through to the authenticated catch-all (which redirects to /dashboard). */}
+            <Route path="/question/:slug/*" element={<QuestionPage />} />
             {/* Short alias: static /q/<slug>/ files serve first when they exist;
                 this catches share links for questions without a static page. */}
-            <Route path="/q/:slug" element={<QuestionPage />} />
+            <Route path="/q/:slug/*" element={<QuestionPage />} />
 
             {/* Legal pages are PUBLIC (trust + SEO): no login required. */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
