@@ -24,6 +24,7 @@ import { auth } from '../services/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { syncUserToMongoDB } from '../services/api';
 import { Logo } from './landing/ui';
+import { notifyAuthSuccess } from './AuthSuccessOverlay';
 
 /*
  * Auth page restyled to match premium-ed-tech-landing-page.zip
@@ -38,7 +39,6 @@ interface AuthPageProps {
 const TRACKS = ['SSC', 'HSC', 'Admission'];
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as [number, number, number, number];
-const EASE_SPRING = [0.34, 1.56, 0.64, 1] as [number, number, number, number];
 
 function GoogleMark({ className = '' }: { className?: string }) {
   return (
@@ -165,6 +165,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
       } else {
         await signInWithEmailAndPassword(auth, email.trim(), password);
       }
+      notifyAuthSuccess(
+        (isSignup ? name.trim() : currentUser?.displayName || email.trim().split('@')[0])
+          .split(' ')[0] || 'বন্ধু'
+      );
       setJustAuthed(true);
     } catch (err) {
       setError(banglaError((err as { code?: string }).code || ''));
@@ -178,7 +182,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     setNotice(null);
     setBusy(true);
     try {
-      await loginWithGoogle();
+      const gUser = await loginWithGoogle();
+      notifyAuthSuccess(
+        (gUser?.displayName || currentUser?.displayName || 'বন্ধু').split(' ')[0]
+      );
       setJustAuthed(true);
     } catch (err) {
       setError(banglaError((err as { code?: string }).code || ''));
@@ -566,37 +573,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
         </motion.div>
       </main>
 
-      {/* ── Success overlay ── */}
-      <AnimatePresence>
-        {justAuthed && currentUser && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 grid place-items-center bg-paper/80 backdrop-blur-md"
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0, filter: 'blur(8px)' }}
-              animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
-              transition={{ duration: 0.6, ease: EASE_SPRING }}
-              className="text-center"
-            >
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.15, duration: 0.6, ease: EASE_SPRING }}
-                className="ring-conic mx-auto grid h-20 w-20 place-items-center rounded-full text-white shadow-[0_20px_50px_-14px_rgba(255,82,0,0.6)]"
-              >
-                <Check className="h-9 w-9" strokeWidth={3.5} />
-              </motion.span>
-              <h2 className="mt-6 font-bangla text-[30px] font-extrabold tracking-tight text-ink">
-                স্বাগতম, {welcomeName}!
-              </h2>
-              <p className="mt-1.5 text-[14.5px] font-medium text-mist">অঙ্গনে নিয়ে যাওয়া হচ্ছে…</p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Success checkmark is now rendered globally by <AuthSuccessOverlay />
+          (mounted in App), so it survives the /auth -> /dashboard redirect. */}
     </div>
   );
 };

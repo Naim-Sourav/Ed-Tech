@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Navigation from './components/Navigation';
 import PageLoader from './components/PageLoader';
 import AuthPage from './components/AuthPage';
+import AuthSuccessOverlay from './components/AuthSuccessOverlay';
 import LandingPage from './components/LandingPage';
 import { Menu, ArrowLeft, Bell, Swords } from 'lucide-react';
 import { useAuth } from './contexts/AuthContext';
@@ -519,6 +520,7 @@ const AppRoutes: React.FC<{
     return (
           <>
           <ThemeColorManager themeMode={themeMode} />
+          <AuthSuccessOverlay />
           <HashCompatRedirect />
           <Routes>
             <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => navigate('/auth')} /> : <Navigate to="/dashboard" />} />
