@@ -34,7 +34,7 @@ on:
       limit:
         description: 'Questions per request (keep modest — the API is slow for big pages)'
         required: false
-        default: '250'
+        default: '500'
       max_pages:
         description: 'Safety cap on requests'
         required: false
@@ -50,7 +50,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -72,12 +72,12 @@ jobs:
               .then(d => console.log('probe ok:', (d.questions||[]).length, 'rows, total', d.total, 'in', Date.now()-t, 'ms'))
               .catch(e => { console.log('::error title=API probe::' + e.message); process.exit(1); });
           "
-        timeout-minutes: 3
+        timeout-minutes: 4
 
       - name: Fetch full question bank
         env:
           API_BASE: ${{ inputs.api_base || 'https://mongodb-hb6b.onrender.com/api' }}
-          PAGE_LIMIT: ${{ inputs.limit || '250' }}
+          PAGE_LIMIT: ${{ inputs.limit || '500' }}
           MAX_PAGES: ${{ inputs.max_pages || '100' }}
           FILTER: ${{ inputs.filter || '' }}
         run: |

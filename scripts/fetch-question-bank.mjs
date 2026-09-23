@@ -27,7 +27,7 @@
  *                      e.g. --filter "subject=Biology 1st Paper"
  */
 
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 const DEFAULT_API = process.env.API_BASE || 'https://mongodb-hb6b.onrender.com/api';
@@ -42,7 +42,7 @@ const OUT = resolve(arg('out', 'exports/question-bank.ndjson'));
 const LIMIT = Number(arg('limit', 250));
 const MAX_PAGES = Number(arg('max-pages', 100));
 const CONCURRENCY = Number(arg('concurrency', 3));
-const TIMEOUT = Number(arg('timeout', 45000));
+const TIMEOUT = Number(arg('timeout', 60000));
 const RETRIES = Number(arg('retries', 5));
 const FILTER = arg('filter', '');
 
@@ -103,49 +103,69 @@ async function main() {
 
   console.log(`Total      : ${total} questions across ~${pages} page(s)`);
 
-  const all = [...firstBatch];
-  const seenIds = new Set(firstBatch.map((q) => q._id));
-  const seenPages = new Set([1]);
-
-  let nextPage = 2;
-  const worker = async () => {
-    while (nextPage <= pages) {
-      const page = nextPage++;
-      if (seenPages.has(page)) continue;
-      seenPages.add(page);
-      try {
-        const data = await getJson(pageUrl(page));
-        const batch = (data.questions || []).map(normalizeRow);
-        for (const q of batch) {
-          if (q._id && seenIds.has(q._id)) continue;
-          if (q._id) seenIds.add(q._id);
-          all.push(q);
-        }
-        console.log(`  page ${page}/${pages}: +${batch.length} (total ${all.length})`);
-      } catch (err) {
-        console.error(`  page ${page} permanently failed: ${err.message}`);
-      }
-    }
-  };
-  await Promise.all(Array.from({ length: Math.max(1, CONCURRENCY) }, worker));
-
   mkdirSync(dirname(OUT), { recursive: true });
-  // A previous run may already hold data (e.g. a partial run) — keep everything.
+
+  // Resume support: a previous (possibly interrupted) run already downloaded
+  // part of the bank — keep those rows and only fetch what is missing.
+  const seenIds = new Set();
+  let restored = 0;
   if (existsSync(OUT)) {
     for (const line of readFileSync(OUT, 'utf8').split('\n')) {
       if (!line.trim()) continue;
       try {
         const q = JSON.parse(line);
-        if (q._id && seenIds.has(q._id)) continue;
-        if (q._id) seenIds.add(q._id);
-        all.push(q);
+        if (q._id) {
+          if (seenIds.has(q._id)) continue;
+          seenIds.add(q._id);
+        }
+        restored++;
       } catch {
         /* ignore malformed lines */
       }
     }
+    if (restored) console.log(`↻ resuming: ${restored} questions already in ${OUT}`);
   }
-  writeFileSync(OUT, all.map((q) => JSON.stringify(q)).join('\n') + '\n');
-  console.log(`\n✅ Saved ${all.length} unique questions → ${OUT} (API reported total ${total})`);
+
+  let saved = restored;
+  const persist = (rows) => {
+    if (!rows.length) return;
+    appendFileSync(OUT, rows.map((q) => JSON.stringify(q)).join('\n') + '\n');
+    saved += rows.length;
+  };
+
+  // Page 1 was already fetched for the total; write it if it is new.
+  const freshFirst = firstBatch.filter((q) => !q._id || !seenIds.has(q._id));
+  freshFirst.forEach((q) => q._id && seenIds.add(q._id));
+  if (restored === 0) writeFileSync(OUT, '');
+  persist(freshFirst);
+
+  let nextPage = 2;
+  const worker = async () => {
+    while (nextPage <= pages) {
+      const page = nextPage++;
+      try {
+        const data = await getJson(pageUrl(page));
+        const batch = (data.questions || []).map(normalizeRow);
+        const fresh = batch.filter((q) => {
+          if (q._id && seenIds.has(q._id)) return false;
+          if (q._id) seenIds.add(q._id);
+          return true;
+        });
+        persist(fresh);
+        console.log(`  page ${page}/${pages}: +${fresh.length} new (total ${saved})`);
+      } catch (err) {
+        console.error(`  page ${page} permanently failed: ${err.message}`);
+        annotate('warning', `page ${page} failed: ${err.message}`);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.max(1, CONCURRENCY) }, worker));
+
+  console.log(`\n✅ Saved ${saved} unique questions → ${OUT} (API reported total ${total})`);
+  if (total && saved < total) {
+    console.warn(`⚠️  ${total - saved} question(s) missing — re-run to fetch the rest (the file is resumable).`);
+  }
+  annotate('notice', `fetched ${saved}/${total} questions`);
 }
 
 main().catch((err) => {
