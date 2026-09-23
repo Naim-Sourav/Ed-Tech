@@ -61,10 +61,13 @@ jobs:
           node-version: '22'
 
       - name: Probe the API
+        env:
+          API_BASE: ${{ inputs.api_base || 'https://mongodb-hb6b.onrender.com/api' }}
         run: |
           node -e "
+            const base = process.env.API_BASE;
             const t = Date.now();
-            fetch('${{ inputs.api_base }}/admin/questions?page=1&limit=5')
+            fetch(base + '/admin/questions?page=1&limit=5')
               .then(r => r.json())
               .then(d => console.log('probe ok:', (d.questions||[]).length, 'rows, total', d.total, 'in', Date.now()-t, 'ms'))
               .catch(e => { console.log('::error title=API probe::' + e.message); process.exit(1); });
@@ -73,14 +76,17 @@ jobs:
 
       - name: Fetch full question bank
         env:
-          API_BASE: ${{ inputs.api_base }}
+          API_BASE: ${{ inputs.api_base || 'https://mongodb-hb6b.onrender.com/api' }}
+          PAGE_LIMIT: ${{ inputs.limit || '250' }}
+          MAX_PAGES: ${{ inputs.max_pages || '100' }}
+          FILTER: ${{ inputs.filter || '' }}
         run: |
           node scripts/fetch-question-bank.mjs \
-            --api "${{ inputs.api_base }}" \
+            --api "$API_BASE" \
             --out exports/question-bank.ndjson \
-            --limit "${{ inputs.limit }}" \
-            --max-pages "${{ inputs.max_pages }}" \
-            ${{ inputs.filter != '' && format('--filter "{0}"', inputs.filter) || '' }}
+            --limit "$PAGE_LIMIT" \
+            --max-pages "$MAX_PAGES" \
+            ${FILTER:+--filter "$FILTER"}
 
       - name: Audit question quality
         run: |
@@ -92,11 +98,22 @@ jobs:
             --plan exports/fix-plan.json
 
       - name: Publish summary
-        run: cat exports/audit-report.md >> "$GITHUB_STEP_SUMMARY"
+        if: always()
+        run: |
+          {
+            echo "### Question bank audit"
+            echo
+            if [ -f exports/audit-report.md ]; then
+              cat exports/audit-report.md
+            else
+              echo "_Audit did not run (the fetch failed) — see the job log._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: question-bank-audit
           path: exports/
+          if-no-files-found: warn
           retention-days: 14
