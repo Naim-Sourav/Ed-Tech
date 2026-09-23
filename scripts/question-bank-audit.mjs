@@ -188,6 +188,29 @@ const merges = dupGroups.map((group) => {
 });
 const duplicatesToDelete = merges.reduce((sum, m) => sum + m.deleteIds.length, 0);
 
+// Cross-chapter copies: identical question filed under different chapters.
+// These are NOT auto-merged (each chapter legitimately lists its own items) but
+// they are reported so a human can decide.
+const fingerprintMap = new Map();
+for (const q of questions) {
+  const fp = Q.questionFingerprint(q);
+  if (!fp || fp === '##') continue;
+  const list = fingerprintMap.get(fp);
+  if (list) list.push(q);
+  else fingerprintMap.set(fp, [q]);
+}
+const crossChapter = [];
+for (const list of fingerprintMap.values()) {
+  if (list.length < 2) continue;
+  const places = new Set(list.map((q) => `${q.subject ?? ''}//${q.chapter ?? ''}`));
+  if (places.size < 2) continue;
+  crossChapter.push({
+    question: String(list[0].question || '').slice(0, 160),
+    places: [...places],
+    copies: list.map((q) => q._id || q.id),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // 5. Bank-wide inconsistencies
 // ---------------------------------------------------------------------------
@@ -260,6 +283,7 @@ writeFileSync(
       subjectVariants,
       chapterVariants,
       duplicateSlugs: duplicateSlugs.slice(0, 50),
+      crossChapterDuplicates: crossChapter.slice(0, 100),
       bySubject: Object.fromEntries([...bySubject.entries()].sort((a, b) => b[1] - a[1])),
       examples: Object.fromEntries(examples),
       explanationExamples: Object.fromEntries(explanationExamples),
@@ -347,6 +371,20 @@ if (chapterVariants.length) {
   lines.push('|---|---|');
   for (const v of chapterVariants.slice(0, 15)) {
     lines.push(`| ${v.normalized} | ${v.variants.map(([text, n]) => `\`${text}\` (${n})`).join(' / ')} |`);
+  }
+}
+lines.push('');
+lines.push('## Same question filed under different chapters');
+lines.push('');
+lines.push(`Found **${crossChapter.length}** questions whose wording + options appear under more than one subject/chapter. These are left for a human to decide (a copy in two chapters may be intentional), but they are the usual cause of "I saw this question twice".`);
+if (crossChapter.length) {
+  lines.push('');
+  lines.push('| Question | Filed under | Copies |');
+  lines.push('|---|---|---|');
+  for (const c of crossChapter.slice(0, 15)) {
+    lines.push(
+      `| ${c.question.replace(/\|/g, '\\|').slice(0, 70)} | ${c.places.join(' • ')} | ${c.copies.length} |`,
+    );
   }
 }
 lines.push('');
