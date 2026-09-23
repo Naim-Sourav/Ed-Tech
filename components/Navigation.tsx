@@ -31,7 +31,7 @@ interface NavigationProps {
 // Custom SVG Icon Component for Bottom Nav
 const CustomIcon = ({ src, active, className }: { src: string, active: boolean, className?: string }) => (
   <div 
-    className={`w-6 h-6 transition-all duration-300 ${active ? 'bg-primary dark:bg-orange-400' : 'bg-gray-400 dark:bg-zinc-500'} ${className}`}
+    className={`w-6 h-6 transition-all duration-300 ${active ? 'bg-brand dark:bg-brand-bright' : 'bg-ink/40 dark:bg-white/40'} ${className}`}
     style={{ 
       maskImage: `url(${src})`, 
       WebkitMaskImage: `url(${src})`,
@@ -201,10 +201,10 @@ const Navigation: React.FC<NavigationProps> = ({
   const getNotificationIcon = (type: string) => {
       switch(type) {
           case 'WARNING': return <AlertTriangle size={16} className="text-amber-600" />;
-          case 'SUCCESS': return <CheckCircle size={16} className="text-orange-700 dark:text-orange-400" />;
-          case 'BATTLE_CHALLENGE': return <Swords size={16} className="text-orange-700 dark:text-orange-400" />;
+          case 'SUCCESS': return <CheckCircle size={16} className="text-brand-deep dark:text-brand-bright" />;
+          case 'BATTLE_CHALLENGE': return <Swords size={16} className="text-brand-deep dark:text-brand-bright" />;
           case 'BATTLE_RESULT': return <Trophy size={16} className="text-amber-600" />;
-          default: return <Info size={16} className="text-orange-700 dark:text-orange-400" />;
+          default: return <Info size={16} className="text-brand-deep dark:text-brand-bright" />;
       }
   };
 
@@ -215,7 +215,7 @@ const Navigation: React.FC<NavigationProps> = ({
         return <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />;
     }
     return (
-        <div className="w-full h-full flex items-center justify-center bg-orange-500 text-white font-bold text-lg">
+        <div className="w-full h-full flex items-center justify-center ring-conic text-white font-bold text-lg">
             {currentUser?.displayName?.charAt(0).toUpperCase() || 'U'}
         </div>
     );
@@ -248,18 +248,18 @@ const Navigation: React.FC<NavigationProps> = ({
               onDragEnd={(_, info) => {
                 if (info.offset.x < -50) setIsMobileMenuOpen(false);
               }}
-              className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-black border-r border-gray-200 dark:border-white/[0.05] z-[150] flex flex-col shadow-2xl md:hidden h-full"
+              className="fixed inset-y-0 left-0 w-72 bg-paper dark:bg-ink-2 border-r border-ink/10 dark:border-white/10 z-[150] flex flex-col shadow-2xl md:hidden h-full"
             >
-              <div className="p-5 border-b border-gray-100 dark:border-white/[0.05] flex items-center justify-between relative">
+              <div className="p-5 border-b border-ink/6 dark:border-white/10 flex items-center justify-between relative">
                 <div className="flex items-center gap-1.5">
                   <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain logo-dark-mode" />
                   <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain logo-dark-mode" />
                 </div>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 text-gray-500">
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-ink/5 dark:hover:bg-white/10 text-mist">
                   <X size={20}/>
                 </button>
                 {/* Drag Handle Indicator */}
-                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-200 dark:bg-zinc-800 rounded-full opacity-50" />
+                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-1 bg-ink/10 dark:bg-white/15 rounded-full opacity-50" />
               </div>
 
               <motion.div
@@ -279,21 +279,21 @@ const Navigation: React.FC<NavigationProps> = ({
                     hidden: { opacity: 0, x: -20, scale: 0.95 },
                     visible: { opacity: 1, x: 0, scale: 1 }
                   }}
-                  className="p-4 border-b border-gray-100 dark:border-white/[0.05]"
+                  className="p-4 border-b border-ink/6 dark:border-white/10"
                 >
                   <Link 
                     to="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`w-full p-3 rounded-2xl flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-all text-left group border border-transparent hover:border-gray-100 dark:hover:border-white/[0.05] ${isActive('/profile') ? 'bg-gray-50 dark:bg-white/[0.03] border-gray-100 dark:border-white/[0.05]' : ''}`}
+                    className={`w-full p-3 rounded-2xl flex items-center gap-3 hover:bg-ink/5 dark:hover:bg-white/[0.04] transition-all text-left group border border-transparent hover:border-ink/10 dark:hover:border-white/10 ${isActive('/profile') ? 'bg-mint/50 dark:bg-white/[0.06] border-ink/6 dark:border-white/10' : ''}`}
                   >
                     <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white dark:border-white/[0.1] shadow-sm">
                        {renderAvatar()}
                     </div>
                     <div className="overflow-hidden flex-1">
-                      <p className="text-sm font-bold text-gray-800 dark:text-zinc-100 truncate group-hover:text-primary transition-colors">
+                      <p className="text-sm font-bold text-ink dark:text-paper truncate group-hover:text-brand-deep dark:hover:text-brand-bright transition-colors">
                         {currentUser.displayName || 'Learner'}
                       </p>
-                      <p className="text-[12px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
+                      <p className="text-[12px] text-mist truncate flex items-center gap-1">
                         {"প্রোফাইল দেখুন"} <ChevronRight size={10}/>
                       </p>
                     </div>
@@ -314,8 +314,8 @@ const Navigation: React.FC<NavigationProps> = ({
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
                           isActive(item.path)
-                            ? 'bg-orange-50 dark:bg-primary/10 text-primary dark:text-orange-400 shadow-sm'
-                            : 'text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
+                            ? 'bg-mint dark:bg-brand/15 text-brand-deep dark:text-brand-bright shadow-sm'
+                            : 'text-ink/75 dark:text-white/75 hover:bg-ink/5 dark:hover:bg-white/10 hover:text-ink dark:hover:text-paper'
                         }`}
                       >
                         {item.icon}
@@ -331,7 +331,7 @@ const Navigation: React.FC<NavigationProps> = ({
                         visible: { opacity: 1, x: 0 }
                       }}
                       onClick={handleInstallClick}
-                      className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-700 dark:text-orange-400"
+                      className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-ink/75 dark:text-white/75 hover:bg-mint/60 dark:hover:bg-brand/15 hover:text-brand-deep dark:hover:text-brand-bright"
                     >
                       {isIOS ? <Share size={18} /> : <Download size={18} />}
                       <span>অ্যাপ ইনস্টল করুন</span>
@@ -350,8 +350,8 @@ const Navigation: React.FC<NavigationProps> = ({
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold mt-6 text-sm ${
                           isActive('/admin')
-                            ? 'bg-orange-100 dark:bg-zinc-800 text-orange-700 dark:text-orange-300'
-                            : 'text-gray-500 dark:text-zinc-500 hover:bg-orange-50 dark:hover:bg-zinc-800/50 hover:text-orange-700 dark:hover:text-orange-300'
+                            ? 'bg-mint dark:bg-brand/20 text-brand-deep dark:text-brand-bright'
+                            : 'text-mist hover:bg-mint/60 dark:hover:bg-white/[0.06] hover:text-brand-deep dark:hover:text-brand-bright'
                         }`}
                       >
                         <ShieldCheck size={18} />
@@ -361,7 +361,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   )}
                 </nav>
 
-                <div className="p-4 border-t border-gray-100 dark:border-white/[0.05] space-y-3 bg-white dark:bg-black">
+                <div className="p-4 border-t border-ink/6 dark:border-white/10 space-y-3 bg-paper dark:bg-ink-2">
                   <motion.div
                     variants={{
                       hidden: { opacity: 0, y: 10 },
@@ -369,13 +369,13 @@ const Navigation: React.FC<NavigationProps> = ({
                     }}
                     className="grid grid-cols-2 gap-3"
                   >
-                    <div className="flex items-center justify-center gap-2 p-1 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.05]">
+                    <div className="flex items-center justify-center gap-2 p-1 rounded-xl bg-mint/50 dark:bg-white/[0.06] border border-ink/6 dark:border-white/10">
                         <ThemeToggle themeMode={themeMode || 'system'} onToggle={toggleTheme} size="sm" />
-                        <span className="pr-2 text-xs font-bold text-gray-600 dark:text-zinc-300">{getThemeLabel()}</span>
+                        <span className="pr-2 text-xs font-bold text-ink/75 dark:text-white/80">{getThemeLabel()}</span>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-xs font-bold border border-red-100 dark:border-red-900/20 active:scale-95"
+                        className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-flag/10 dark:bg-flag/15 text-flag hover:bg-flag/20 dark:hover:bg-flag/25 transition-colors text-xs font-bold border border-flag/25 dark:border-flag/30 active:scale-95"
                     >
                         <LogOut size={16} /> {"লগআউট"}
                     </button>
@@ -409,35 +409,35 @@ const Navigation: React.FC<NavigationProps> = ({
               onDragEnd={(_, info) => {
                 if (info.offset.x > 50) setIsNotificationOpen(false);
               }}
-              className="fixed inset-y-0 right-0 w-80 md:w-96 bg-white dark:bg-black z-[170] shadow-2xl border-l border-gray-200 dark:border-white/[0.05] flex flex-col"
+              className="fixed inset-y-0 right-0 w-80 md:w-96 bg-paper dark:bg-ink-2 z-[170] shadow-2xl border-l border-ink/10 dark:border-white/10 flex flex-col"
             >
-               <div className="p-4 bg-white dark:bg-black border-b border-gray-100 dark:border-white/[0.05] flex justify-between items-center">
-                   <h4 className="text-base font-bold text-gray-800 dark:text-zinc-100 flex items-center gap-2">
-                       নোটিফিকেশন <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">{unreadCount}</span>
+               <div className="p-4 bg-paper dark:bg-ink-2 border-b border-ink/6 dark:border-white/10 flex justify-between items-center">
+                   <h4 className="text-base font-bold text-ink dark:text-paper flex items-center gap-2">
+                       নোটিফিকেশন <span className="bg-brand/10 text-brand-deep dark:text-brand-bright px-2 py-0.5 rounded-full text-xs">{unreadCount}</span>
                    </h4>
                    <div className="flex items-center gap-2">
                       {unreadCount > 0 && (
-                          <button onClick={markAllAsRead} className="text-[12px] font-bold text-gray-500 hover:text-primary flex items-center gap-1 transition-colors">
+                          <button onClick={markAllAsRead} className="text-[12px] font-bold text-mist hover:text-brand-deep dark:hover:text-brand-bright flex items-center gap-1 transition-colors">
                               <Check size={12}/> সব পঠিত
                           </button>
                       )}
-                      <button onClick={() => setIsNotificationOpen(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 text-gray-500">
+                      <button onClick={() => setIsNotificationOpen(false)} className="p-2 rounded-full hover:bg-ink/5 dark:hover:bg-white/10 text-mist">
                           <X size={20}/>
                       </button>
                    </div>
                </div>
 
-               <div className="p-3 border-b border-gray-100 dark:border-white/[0.05] bg-gray-50 dark:bg-black">
-                   <div className="flex bg-gray-200 dark:bg-white/[0.03] p-1 rounded-xl">
+               <div className="p-3 border-b border-ink/6 dark:border-white/10 bg-paper dark:bg-ink-2">
+                   <div className="flex bg-ink/8 dark:bg-white/[0.06] p-1 rounded-xl">
                        <button 
                            onClick={() => setFilter('ALL')}
-                           className={`flex-1 py-1.5 text-[12px] font-bold rounded-lg transition-all ${filter === 'ALL' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-400'}`}
+                           className={`flex-1 py-1.5 text-[12px] font-bold rounded-lg transition-all ${filter === 'ALL' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-brand-deep dark:text-paper' : 'text-mist hover:text-ink dark:hover:text-white/80'}`}
                        >
                            সব
                        </button>
                        <button 
                            onClick={() => setFilter('UNREAD')}
-                           className={`flex-1 py-1.5 text-[12px] font-bold rounded-lg transition-all ${filter === 'UNREAD' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-primary dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-zinc-400'}`}
+                           className={`flex-1 py-1.5 text-[12px] font-bold rounded-lg transition-all ${filter === 'UNREAD' ? 'bg-white dark:bg-white/[0.08] shadow-sm text-brand-deep dark:text-paper' : 'text-mist hover:text-ink dark:hover:text-white/80'}`}
                        >
                            অপঠিত
                        </button>
@@ -445,20 +445,20 @@ const Navigation: React.FC<NavigationProps> = ({
                </div>
 
                 {!isPushSubscribed && (
-                    <div className="px-4 py-3 bg-orange-50 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-900/20">
+                    <div className="px-4 py-3 bg-mint dark:bg-brand/10 border-b border-brand/15 dark:border-white/10">
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-700 dark:text-orange-400">
+                                <div className="p-2 bg-brand/15 dark:bg-brand/20 rounded-lg text-brand-deep dark:text-brand-bright">
                                     <Bell size={16} />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-bold text-gray-800 dark:text-zinc-200">পুশ নোটিফিকেশন অফ আছে</p>
-                                    <p className="text-[9px] text-gray-500 dark:text-zinc-500">নতুন আপডেট পেতে এটি চালু করুন</p>
+                                    <p className="text-[11px] font-bold text-ink dark:text-paper">পুশ নোটিফিকেশন অফ আছে</p>
+                                    <p className="text-[9px] text-mist">নতুন আপডেট পেতে এটি চালু করুন</p>
                                 </div>
                             </div>
                             <button 
                                 onClick={handleEnablePush}
-                                className="px-3 py-1.5 bg-primary text-white text-[12px] font-bold rounded-lg shadow-sm active:scale-95 transition-all"
+                                className="px-3 py-1.5 bg-brand text-white text-[12px] font-bold rounded-lg shadow-sm active:scale-95 transition-all"
                             >
                                 চালু করুন
                             </button>
@@ -466,10 +466,10 @@ const Navigation: React.FC<NavigationProps> = ({
                     </div>
                 )}
 
-               <div className="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30 dark:bg-black/20">
+               <div className="flex-1 overflow-y-auto custom-scrollbar bg-mint/50/30 dark:bg-ink-2/20">
                   {displayedNotifications.length === 0 ? (
-                     <div className="p-10 text-center flex flex-col items-center justify-center text-gray-400 mt-20">
-                         <div className="w-16 h-16 bg-gray-100 dark:bg-white/[0.03] rounded-full flex items-center justify-center mb-3">
+                     <div className="p-10 text-center flex flex-col items-center justify-center text-mist mt-20">
+                         <div className="w-16 h-16 bg-ink/5 dark:bg-white/[0.06] rounded-full flex items-center justify-center mb-3">
                            <Bell size={24} className="opacity-50"/>
                          </div>
                          <p className="text-sm font-medium">কোনো নোটিফিকেশন নেই</p>
@@ -504,27 +504,27 @@ const Navigation: React.FC<NavigationProps> = ({
                                  }}
                                  key={n.id} 
                                  onClick={() => handleNotificationClick(n)}
-                                 className={`p-4 border-b border-gray-100 dark:border-white/[0.05] transition-colors cursor-pointer active:bg-gray-100 dark:active:bg-white/[0.03] relative ${isRead ? 'bg-white dark:bg-black' : 'bg-orange-50/40 dark:bg-orange-900/10'}`}
+                                 className={`p-4 border-b border-ink/6 dark:border-white/10 transition-colors cursor-pointer active:bg-ink/5 dark:active:bg-white/[0.06] relative ${isRead ? 'bg-paper dark:bg-ink-2' : 'bg-mint/50 dark:bg-brand/10'}`}
                               >
                                  {!isRead && (
-                                     <span className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full"></span>
+                                     <span className="absolute top-4 right-4 w-2 h-2 bg-brand rounded-full"></span>
                                  )}
                                  
                                  <div className="flex gap-3">
                                      <div className={`mt-1 shrink-0 w-8 h-8 rounded-full flex items-center justify-center border ${
-                                         n.type === 'SUCCESS' ? 'bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50' : 
+                                         n.type === 'SUCCESS' ? 'bg-brand/12 border-brand/25 dark:bg-brand/20 dark:border-brand/30' : 
                                          n.type === 'WARNING' ? 'bg-yellow-100 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800/50' : 
-                                         n.type === 'BATTLE_CHALLENGE' ? 'bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50' : 
-                                         'bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50'
+                                         n.type === 'BATTLE_CHALLENGE' ? 'bg-brand/12 border-brand/25 dark:bg-brand/20 dark:border-brand/30' : 
+                                         'bg-brand/12 border-brand/25 dark:bg-brand/20 dark:border-brand/30'
                                      }`}>
                                          {getNotificationIcon(n.type)}
                                      </div>
                                      <div className="flex-1 min-w-0 pr-4">
                                          <div className="flex justify-between items-center mb-1">
-                                             <p className={`text-xs font-bold truncate ${isRead ? 'text-gray-600 dark:text-zinc-300' : 'text-gray-900 dark:text-white'}`}>{n.title}</p>
-                                             <span className="text-[9px] text-gray-400 whitespace-nowrap">{new Date(n.date).toLocaleDateString()}</span>
+                                             <p className={`text-xs font-bold truncate ${isRead ? 'text-ink/75 dark:text-white/80' : 'text-ink dark:text-paper'}`}>{n.title}</p>
+                                             <span className="text-[9px] text-mist whitespace-nowrap">{new Date(n.date).toLocaleDateString()}</span>
                                          </div>
-                                         <p className={`text-[11px] leading-relaxed line-clamp-2 ${isRead ? 'text-gray-500 dark:text-zinc-500' : 'text-gray-700 dark:text-zinc-300'}`}>{n.message}</p>
+                                         <p className={`text-[11px] leading-relaxed line-clamp-2 ${isRead ? 'text-mist' : 'text-ink/80 dark:text-white/80'}`}>{n.message}</p>
                                      </div>
                                  </div>
                               </motion.div>
@@ -541,9 +541,9 @@ const Navigation: React.FC<NavigationProps> = ({
       {/* Desktop Sidebar (Static or hidden on mobile) */}
       <div className={`
         hidden md:flex
-        w-72 bg-white dark:bg-black border-r border-gray-200 dark:border-white/[0.05] flex-col h-full flex-shrink-0
+        w-72 bg-paper dark:bg-ink-2 border-r border-ink/10 dark:border-white/10 flex-col h-full flex-shrink-0
       `}>
-        <div className="p-5 border-b border-gray-100 dark:border-white/[0.05] flex items-center justify-between">
+        <div className="p-5 border-b border-ink/6 dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <img src="./Pshape.svg" alt="Porikkhangon Logo" className="h-12 w-auto object-contain logo-dark-mode" />
             <img src="./letterlogo.svg" alt="Porikkhangon Letter Logo" className="h-7 w-auto object-contain logo-dark-mode" />
@@ -552,29 +552,29 @@ const Navigation: React.FC<NavigationProps> = ({
           <div className="relative md:block hidden">
              <button 
                 onClick={() => setIsNotificationOpen(true)} 
-                className="p-2.5 rounded-full relative transition-all hover:bg-gray-50 dark:hover:bg-white/[0.03] text-gray-500 dark:text-zinc-400"
+                className="p-2.5 rounded-full relative transition-all hover:bg-ink/5 dark:hover:bg-white/[0.03] text-mist dark:text-white/75"
              >
                 <Bell size={20}/>
                 {unreadCount > 0 && (
-                   <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-black animate-pulse"></span>
+                   <span className="absolute top-2 right-2.5 w-2 h-2 bg-flag rounded-full ring-2 ring-paper dark:ring-ink-2 animate-pulse"></span>
                 )}
              </button>
           </div>
         </div>
  
-        <div className="p-4 border-b border-gray-100 dark:border-white/[0.05]">
+        <div className="p-4 border-b border-ink/6 dark:border-white/10">
           <Link 
             to="/profile"
-            className={`w-full p-3 rounded-2xl flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-all text-left group border border-transparent hover:border-gray-100 dark:hover:border-white/[0.05] ${isActive('/profile') ? 'bg-gray-50 dark:bg-white/[0.03] border-gray-100 dark:border-white/[0.05]' : ''}`}
+            className={`w-full p-3 rounded-2xl flex items-center gap-3 hover:bg-ink/5 dark:hover:bg-white/[0.04] transition-all text-left group border border-transparent hover:border-ink/10 dark:hover:border-white/10 ${isActive('/profile') ? 'bg-mint/50 dark:bg-white/[0.06] border-ink/6 dark:border-white/10' : ''}`}
           >
             <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white dark:border-white/[0.1] shadow-sm">
                {renderAvatar()}
             </div>
             <div className="overflow-hidden flex-1">
-              <p className="text-sm font-bold text-gray-800 dark:text-zinc-100 truncate">
+              <p className="text-sm font-bold text-ink dark:text-paper truncate">
                 {currentUser.displayName || 'Learner'}
               </p>
-              <p className="text-[12px] text-gray-500 dark:text-zinc-500 truncate flex items-center gap-1">
+              <p className="text-[12px] text-mist truncate flex items-center gap-1">
                 {"প্রোফাইল দেখুন"} <ChevronRight size={10}/>
               </p>
             </div>
@@ -588,8 +588,8 @@ const Navigation: React.FC<NavigationProps> = ({
               to={item.path}
               className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
                 isActive(item.path)
-                  ? 'bg-orange-50 dark:bg-primary/10 text-primary dark:text-orange-400 shadow-sm'
-                  : 'text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-mint dark:bg-brand/15 text-brand-deep dark:text-brand-bright shadow-sm'
+                  : 'text-ink/75 dark:text-white/75 hover:bg-ink/5 dark:hover:bg-white/10 hover:text-ink dark:hover:text-paper'
               }`}
             >
               {item.icon}
@@ -600,7 +600,7 @@ const Navigation: React.FC<NavigationProps> = ({
           {!isAppInstalled && (
             <button
               onClick={handleInstallClick}
-              className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-700 dark:text-orange-400"
+              className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-ink/75 dark:text-white/75 hover:bg-mint/60 dark:hover:bg-brand/15 hover:text-brand-deep dark:hover:text-brand-bright"
             >
               {isIOS ? <Share size={18} /> : <Download size={18} />}
               <span>অ্যাপ ইনস্টল করুন</span>
@@ -612,8 +612,8 @@ const Navigation: React.FC<NavigationProps> = ({
               to="/admin"
               className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 font-bold mt-6 text-sm ${
                 isActive('/admin')
-                  ? 'bg-orange-100 dark:bg-zinc-800 text-orange-700 dark:text-orange-300'
-                  : 'text-gray-500 dark:text-zinc-500 hover:bg-orange-50 dark:hover:bg-zinc-800/50 hover:text-orange-700 dark:hover:text-orange-300'
+                  ? 'bg-mint dark:bg-brand/20 text-brand-deep dark:text-brand-bright'
+                  : 'text-mist hover:bg-mint/60 dark:hover:bg-white/[0.06] hover:text-brand-deep dark:hover:text-brand-bright'
               }`}
             >
               <ShieldCheck size={18} />
@@ -622,27 +622,27 @@ const Navigation: React.FC<NavigationProps> = ({
           )}
         </nav>
 
-        <div className="p-4 border-t border-gray-100 dark:border-white/[0.05] space-y-3 bg-white dark:bg-black">
+        <div className="p-4 border-t border-ink/6 dark:border-white/10 space-y-3 bg-paper dark:bg-ink-2">
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center justify-center gap-2 p-1 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.05]">
+            <div className="flex items-center justify-center gap-2 p-1 rounded-xl bg-mint/50 dark:bg-white/[0.06] border border-ink/6 dark:border-white/10">
                 <ThemeToggle themeMode={themeMode || 'system'} onToggle={toggleTheme} size="sm" />
-                <span className="pr-2 text-xs font-bold text-gray-600 dark:text-zinc-300">{getThemeLabel()}</span>
+                <span className="pr-2 text-xs font-bold text-ink/75 dark:text-white/80">{getThemeLabel()}</span>
             </div>
             <button
                 onClick={handleLogout}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-xs font-bold border border-red-100 dark:border-red-900/20"
+                className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-flag/10 dark:bg-flag/15 text-flag hover:bg-flag/20 dark:hover:bg-flag/25 transition-colors text-xs font-bold border border-flag/25 dark:border-flag/30"
             >
                 <LogOut size={16} /> {"লগআউট"}
             </button>
           </div>
-          <div className="text-[12px] text-center text-gray-400 dark:text-zinc-500 font-medium">
+          <div className="text-[12px] text-center text-mist font-medium">
             <p>© ২০২৪ পরীক্ষাঙ্গন | v1.1 PWA</p>
           </div>
         </div>
       </div>
 
       {/* Native-like Fixed Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-100 dark:border-white/[0.05] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-paper/95 dark:bg-ink-2/95 backdrop-blur-xl border-t border-ink/6 dark:border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around h-16 px-1 relative">
           {mobileNavItems.map((item, idx) => {
             const active = item.path ? isActive(item.path) : false;
@@ -654,13 +654,13 @@ const Navigation: React.FC<NavigationProps> = ({
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(10);
                 }}
-                className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-300 relative z-10 ${active ? 'text-primary dark:text-orange-400' : 'text-gray-400 dark:text-zinc-500'}`}
+                className={`flex-1 flex flex-col items-center justify-center h-full transition-all duration-300 relative z-10 ${active ? 'text-brand-deep dark:text-brand-bright' : 'text-mist'}`}
               >
                 {/* 2px top-border indicator above the active icon */}
                 {active && (
                   <motion.div 
                     layoutId="activeNavIndicatorLine"
-                    className="absolute top-0 left-5 right-5 h-[2px] bg-primary dark:bg-orange-400 rounded-full"
+                    className="absolute top-0 left-5 right-5 h-[2px] bg-brand dark:bg-brand-bright rounded-full"
                     transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                   />
                 )}
@@ -671,7 +671,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     active={active} 
                   />
                   {active && (
-                    <span className="text-[12px] font-bold text-primary dark:text-orange-400 transition-all duration-300 tracking-tight font-sans">
+                    <span className="text-[12px] font-bold text-brand-deep dark:text-brand-bright transition-all duration-300 tracking-tight font-sans">
                       {item.label}
                     </span>
                   )}

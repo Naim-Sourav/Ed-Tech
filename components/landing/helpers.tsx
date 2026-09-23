@@ -1,13 +1,13 @@
 import { motion, useInView, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, type ReactNode } from "react";
+import { EASE } from "../../utils/motionTokens";
 
-/* ---------- Bengali digits ---------- */
-const BN = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-export const toBn = (v: string | number): string =>
-  String(v).replace(/\d/g, (d) => BN[Number(d)]);
+/* ---------- Bengali digits (shared with the app screens) ---------- */
+export { toBengaliNumber as toBn } from "../../utils/numberUtils";
+import { toBengaliNumber as toBn } from "../../utils/numberUtils";
 
-/* ---------- easing ---------- */
-export const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+/* ---------- easing (shared with the app screens) ---------- */
+export { EASE };
 
 /* ---------- scroll reveal wrapper ---------- */
 export function Reveal({

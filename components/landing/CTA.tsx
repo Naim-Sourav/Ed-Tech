@@ -7,7 +7,7 @@ export default function CTA({ onStart }: { onStart?: () => void }) {
     <section id="cta" className="relative px-4 pb-24 pt-6 sm:px-6" aria-label="শুরু করুন">
       <div className="mx-auto max-w-7xl">
         <Reveal>
-          <div className="noise relative overflow-hidden rounded-[2.5rem] bg-ink-950 px-6 py-16 text-center text-white sm:px-12 sm:py-24">
+          <div className="noise relative overflow-hidden rounded-hero bg-ink-950 px-6 py-16 text-center text-white sm:px-12 sm:py-24">
             {/* ambience */}
             <div className="dot-grid-dark absolute inset-0 opacity-60" />
             <div className="absolute -left-24 -top-28 size-96 rounded-full bg-brand-600/45 blur-3xl" />

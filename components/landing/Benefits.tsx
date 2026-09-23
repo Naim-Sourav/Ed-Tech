@@ -67,7 +67,7 @@ export default function Benefits() {
           <div className="absolute left-[16%] right-[16%] top-12 hidden border-t-2 border-dashed border-brand-300/60 md:block" aria-hidden />
           {STEPS.map((s, i) => (
             <StaggerItem key={s.title} className="relative">
-              <div className="card-shine group relative h-full rounded-[1.6rem] border border-ink-100 bg-white/85 p-7 backdrop-blur transition-all duration-500 hover:-translate-y-2 hover:border-brand-300 hover:shadow-[0_28px_60px_-28px_rgba(255,82,0,0.4)] sm:p-8">
+              <div className="card-shine group relative h-full rounded-card border border-ink-100 bg-white/85 p-7 backdrop-blur transition-all duration-500 hover:-translate-y-2 hover:border-brand-300 hover:shadow-[0_28px_60px_-28px_rgba(255,82,0,0.4)] sm:p-8">
                 <div className="flex items-center justify-between">
                   <span
                     className={`grid size-14 place-items-center rounded-2xl bg-gradient-to-br ${s.grad} text-white shadow-xl transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110`}
@@ -138,7 +138,7 @@ export default function Benefits() {
           <Stagger className="grid gap-5 sm:grid-cols-2" gap={0.1}>
             {WHY.map((w) => (
               <StaggerItem key={w.title}>
-                <div className="group h-full rounded-[1.6rem] border border-ink-100 bg-white/80 p-6 backdrop-blur transition-all duration-500 hover:-translate-y-1.5 hover:border-brand-300/70 hover:shadow-[0_24px_60px_-24px_rgba(255,82,0,0.35)]">
+                <div className="group h-full rounded-card border border-ink-100 bg-white/80 p-6 backdrop-blur transition-all duration-500 hover:-translate-y-1.5 hover:border-brand-300/70 hover:shadow-[0_24px_60px_-24px_rgba(255,82,0,0.35)]">
                   <span className="inline-grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-ink-800 to-ink-950 text-white shadow-lg transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
                     <w.icon className="size-5" strokeWidth={2.2} />
                   </span>
@@ -152,7 +152,7 @@ export default function Benefits() {
 
         {/* guidebook comparison — previous landing page's fair comparison */}
         <Reveal delay={0.1} className="mt-20">
-          <div className="card-ring relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 backdrop-blur-xl">
+          <div className="card-ring relative overflow-hidden rounded-panel border border-white/70 bg-white/85 backdrop-blur-xl">
             <div className="dot-grid absolute inset-0 opacity-40" aria-hidden />
             <div className="relative">
               <div className="grid grid-cols-1 gap-y-2 bg-ink-950 px-6 py-5 text-white sm:grid-cols-[150px_1fr_1fr] sm:items-center sm:gap-6 sm:px-9">

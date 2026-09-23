@@ -37,7 +37,7 @@ function GlowCard({
     <div
       ref={ref}
       onMouseMove={onMove}
-      className={`group relative overflow-hidden rounded-[1.6rem] border border-ink-100 bg-white/80 backdrop-blur transition-all duration-500 hover:-translate-y-1.5 hover:border-brand-300/70 hover:shadow-[0_24px_60px_-24px_rgba(255,82,0,0.35)] ${className}`}
+      className={`group relative overflow-hidden rounded-card border border-ink-100 bg-white/80 backdrop-blur transition-all duration-500 hover:-translate-y-1.5 hover:border-brand-300/70 hover:shadow-[0_24px_60px_-24px_rgba(255,82,0,0.35)] ${className}`}
     >
       <motion.div style={{ background: bg }} className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       <div className="relative h-full">{children}</div>

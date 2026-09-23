@@ -51,7 +51,7 @@ export default function Trust() {
       {/* stats band */}
       <div className="mx-auto mt-14 max-w-7xl px-4 sm:px-6">
         <Reveal>
-          <div className="card-ring relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/80 p-2 backdrop-blur-xl">
+          <div className="card-ring relative overflow-hidden rounded-panel border border-white/70 bg-white/80 p-2 backdrop-blur-xl">
             <div className="dot-grid absolute inset-0 opacity-60" />
             <div className="relative grid grid-cols-2 divide-x divide-y divide-ink-100/80 lg:grid-cols-4 lg:divide-y-0">
               {STATS.map((s, i) => (

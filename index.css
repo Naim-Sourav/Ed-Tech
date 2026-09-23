@@ -430,13 +430,19 @@ html.pk-landing-root {
 
 .pk-landing:not(.dash) {
   font-family: 'Hind Siliguri', 'Anek Bangla', ui-sans-serif, system-ui, sans-serif;
-  background: #fafaf9;
-  color: #101018;
+  /* Same warm paper / warm ink as the `.pk-landing` base above, so the landing
+     and the dashboard no longer render two different whites & blacks. */
+  background: #faf9f6;
+  color: #161210;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-.pk-landing:not(.dash) .font-display {
+/* `font-display` must resolve to a Bengali-capable face on EVERY pk-landing
+   screen. It used to be scoped to `:not(.dash)`, so on the dashboard it fell
+   back to Bricolage Grotesque / Inter — neither of which has Bengali glyphs —
+   while being used to render Bengali numerals. Scoped to `.pk-landing` now. */
+.pk-landing .font-display {
   font-family: 'Anek Bangla', 'Hind Siliguri', ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -450,14 +456,14 @@ html.pk-landing-root {
 }
 
 /* ---------- utilities ---------- */
-.pk-landing:not(.dash) .text-gradient {
+.pk-landing .text-gradient {
   background: linear-gradient(100deg, #ff5200 10%, #ff7a1a 50%, #ffb020 95%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.pk-landing:not(.dash) .text-gradient-dark {
+.pk-landing .text-gradient-dark {
   background: linear-gradient(100deg, #ffc9a8 0%, #ff7a36 45%, #ffb020 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -476,19 +482,19 @@ html.pk-landing-root {
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
 }
 
-.pk-landing:not(.dash) .dot-grid {
+.pk-landing .dot-grid {
   background-image: radial-gradient(circle at 1px 1px, rgba(255, 82, 0, 0.11) 1px, transparent 0);
   background-size: 26px 26px;
 }
 
-.pk-landing:not(.dash) .dot-grid-dark {
+.pk-landing .dot-grid-dark {
   background-image: radial-gradient(circle at 1px 1px, rgba(255, 163, 117, 0.13) 1px, transparent 0);
   background-size: 26px 26px;
 }
 
 /* Hairline + soft brand glow used by the design's elevated cards
    (named `card-ring` here so the app-wide conic `.ring-conic` stays intact). */
-.pk-landing:not(.dash) .card-ring {
+.pk-landing .card-ring {
   border: 1px solid rgba(255, 82, 0, 0.1);
   box-shadow:
     0 1px 2px rgba(69, 19, 7, 0.04),
@@ -496,12 +502,12 @@ html.pk-landing-root {
     0 24px 64px -24px rgba(255, 82, 0, 0.2);
 }
 
-.pk-landing:not(.dash) .card-shine {
+.pk-landing .card-shine {
   position: relative;
   overflow: hidden;
 }
 
-.pk-landing:not(.dash) .card-shine::after {
+.pk-landing .card-shine::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -511,16 +517,16 @@ html.pk-landing-root {
   pointer-events: none;
 }
 
-.pk-landing:not(.dash) .card-shine:hover::after {
+.pk-landing .card-shine:hover::after {
   transform: translateX(120%);
 }
 
-.pk-landing:not(.dash) .btn-shine {
+.pk-landing .btn-shine {
   position: relative;
   overflow: hidden;
 }
 
-.pk-landing:not(.dash) .btn-shine::after {
+.pk-landing .btn-shine::after {
   content: "";
   position: absolute;
   top: 0;
@@ -531,11 +537,11 @@ html.pk-landing-root {
   transition: transform 0.8s ease;
 }
 
-.pk-landing:not(.dash) .btn-shine:hover::after {
+.pk-landing .btn-shine:hover::after {
   transform: translateX(260%) skewX(-18deg);
 }
 
-.pk-landing:not(.dash) .glow-brand {
+.pk-landing .glow-brand {
   box-shadow: 0 0 0 1px rgba(255, 82, 0, 0.28), 0 18px 50px -12px rgba(230, 71, 0, 0.55);
 }
 
@@ -648,8 +654,10 @@ to {
    ═════════════════════════════════════════════════════════════════════════ */
 
 html.dark .pk-landing:not(.dash) {
-  background: #0e0b09;
-  color: #f3ede7;
+  /* Matches `html.dark .pk-landing.dash` so the marketing page and the app
+     screens share one warm near-black in dark mode. */
+  background: #161210;
+  color: #faf9f6;
   color-scheme: dark;
 }
 
@@ -729,7 +737,21 @@ html.dark .pk-landing:not(.dash) .text-ink\/75 {
 }
 
 html.dark .pk-landing:not(.dash) .text-mist {
-  color: #a99e91;
+  color: #b0a498;
+}
+
+/* App screens (.dash) were missing these dark-mode remaps entirely, so
+   `text-mist` stayed at #6a6058 on a #161210 background — about 2.3:1, far
+   below WCAG AA. Same treatment as the landing now. */
+html.dark .pk-landing.dash .text-mist {
+  color: #b0a498;
+}
+
+html.dark .pk-landing.dash .text-ink\/70,
+html.dark .pk-landing.dash .text-ink\/75,
+html.dark .pk-landing.dash .text-ink\/80,
+html.dark .pk-landing.dash .text-ink\/85 {
+  color: rgba(250, 249, 246, 0.82);
 }
 
 html.dark .pk-landing:not(.dash) .text-amber-900 {
@@ -933,11 +955,11 @@ html.dark .pk-landing:not(.dash) .glass {
   border-color: rgba(255, 255, 255, 0.09);
 }
 
-html.dark .pk-landing:not(.dash) .dot-grid {
+html.dark .pk-landing .dot-grid {
   background-image: radial-gradient(circle at 1px 1px, rgba(255, 163, 117, 0.13) 1px, transparent 0);
 }
 
-html.dark .pk-landing:not(.dash) .card-ring {
+html.dark .pk-landing .card-ring {
   border-color: rgba(255, 255, 255, 0.09);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.5),

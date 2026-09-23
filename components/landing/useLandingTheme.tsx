@@ -56,7 +56,13 @@ export function useLandingTheme(): LandingThemeValue {
     root.classList.toggle("dark", theme === "dark");
     if (!chosenByUser.current) return; // don't rewrite "system" on first render
     try {
-      window.localStorage.setItem(STORAGE_KEY, theme);
+      // The app shell supports three modes (light | dark | system) but the
+      // landing switch only has two. Writing the raw value used to destroy a
+      // stored "system" preference permanently. If the chosen theme already
+      // matches the OS, persist "system" so the app keeps following the OS.
+      const systemDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+      const matchesSystem = (theme === "dark") === systemDark;
+      window.localStorage.setItem(STORAGE_KEY, matchesSystem ? "system" : theme);
     } catch {
       /* ignore */
     }

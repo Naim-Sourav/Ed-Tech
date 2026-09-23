@@ -23,8 +23,10 @@ import { fetchUserStatsAPI, fetchLeaderboardAPI } from "../services/api";
 import { useCache } from "../contexts/CacheContext";
 import { LeaderboardUser } from "../types";
 import { toBengaliNumber } from "../utils/numberUtils";
+import { DURATION, EASE } from "../utils/motionTokens";
 import Lottie from "lottie-react";
 import fireAnimation from "../assets/lottie/fire.json";
+import LogoMark from "./landing/Logo";
 
 // --- QUICK ACCESS CONFIG (warm editorial tints; dark surfaces appended) ---
 const DARK_TILE = "dark:bg-white/[0.06] dark:border-white/10";
@@ -38,7 +40,7 @@ const QUICK_LINKS = [
   { icon: "/icons/wrong-questions.svg", label: "ভুল প্রশ্ন", path: "/wrong-questions", tint: `bg-cream border-brand/15 ${DARK_TILE}` },
 ];
 
-const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
+
 
 const HomeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -130,6 +132,55 @@ const HomeDashboard: React.FC = () => {
     return days;
   }, [stats]);
 
+  // --- Streak calendar (real data; the month grid used to be hardcoded to
+  // "জুন ২০২৬" with a fixed 30 cells and `isToday = i === 6`) ---
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const d = new Date();
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+
+  const shiftCalendarMonth = (delta: number) =>
+    setCalendarMonth((prev) => {
+      const d = new Date(prev.year, prev.month + delta, 1);
+      const now = new Date();
+      // never navigate past the current month
+      if (d.getFullYear() > now.getFullYear() || (d.getFullYear() === now.getFullYear() && d.getMonth() > now.getMonth())) {
+        return prev;
+      }
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+
+  const isViewingCurrentMonth = useMemo(() => {
+    const now = new Date();
+    return calendarMonth.year === now.getFullYear() && calendarMonth.month === now.getMonth();
+  }, [calendarMonth]);
+
+  const calendarLabel = useMemo(() => {
+    const MONTHS = [
+      "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+      "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+    ];
+    return `${MONTHS[calendarMonth.month]} ${toBengaliNumber(calendarMonth.year)}`;
+  }, [calendarMonth]);
+
+  const calendarCells = useMemo(() => {
+    const { year, month } = calendarMonth;
+    const log: string[] = stats?.activityLog || [];
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const leadingBlanks = new Date(year, month, 1).getDay(); // 0 = Sunday
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+    const cells: ({ day: number; dateKey: string; active: boolean; isToday: boolean } | null)[] =
+      Array.from({ length: leadingBlanks }, () => null);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      cells.push({ day, dateKey, active: log.includes(dateKey), isToday: dateKey === todayKey });
+    }
+    return cells;
+  }, [calendarMonth, stats]);
+
   const topLearners = useMemo(() => {
     if (!leaderboard.length) return [];
     return leaderboard.slice(0, 5);
@@ -159,7 +210,7 @@ const HomeDashboard: React.FC = () => {
         <div className="w-28 h-10 bg-ink/10 dark:bg-white/10 rounded-xl"></div>
         <div className="w-11 h-11 bg-ink/10 dark:bg-white/10 rounded-full"></div>
       </div>
-      <div className="bg-ink/90 dark:bg-ink-2 rounded-[2rem] p-6 md:p-7">
+      <div className="bg-ink/90 dark:bg-ink-2 rounded-panel p-6 md:p-7">
         <div className="h-4 w-28 bg-white/20 rounded mb-3"></div>
         <div className="h-7 w-48 bg-white/20 rounded mb-2"></div>
         <div className="grid grid-cols-3 gap-3 mt-6">
@@ -222,20 +273,15 @@ const HomeDashboard: React.FC = () => {
             </span>
           </motion.button>
 
+          {/* Shared brand lockup — same mark + wordmark as the landing navbar,
+              so the logo does not change between the public site and the app. */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {/* Light wordmark (black text + orange mark) for light mode */}
-            <img
-              src={`${import.meta.env.BASE_URL}letterlogo.svg`}
-              alt="Porikkhangon Logo"
-              className="h-10 md:h-12 dark:hidden"
-            />
-            {/* Warm-white wordmark (orange mark kept) so it stays visible on dark */}
-            <img
-              src={`${import.meta.env.BASE_URL}letterlogo-white.svg`}
-              alt=""
-              aria-hidden="true"
-              className="h-10 md:h-12 hidden dark:block"
-            />
+            <span className="flex items-center gap-2" aria-label="পরীক্ষাঙ্গন" role="img">
+              <LogoMark className="size-9 md:size-10" />
+              <span className="font-display text-xl md:text-2xl font-bold tracking-tight text-ink dark:text-paper">
+                পরীক্ষা<span className="text-gradient">ঙ্গন</span>
+              </span>
+            </span>
           </div>
 
           <motion.button
@@ -253,8 +299,8 @@ const HomeDashboard: React.FC = () => {
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: EASE }}
-          className="noise relative overflow-hidden rounded-[2rem] bg-ink dark:bg-ink-2 p-5 md:p-7 text-white shadow-[0_40px_80px_-40px_rgba(22,18,16,0.7)] dark:ring-1 dark:ring-white/10"
+          transition={{ duration: DURATION.base, ease: EASE }}
+          className="noise relative overflow-hidden rounded-panel bg-ink dark:bg-ink-2 p-5 md:p-7 text-white shadow-[0_40px_80px_-40px_rgba(22,18,16,0.7)] dark:ring-1 dark:ring-white/10"
         >
           {/* conic glow */}
           <div
@@ -269,14 +315,14 @@ const HomeDashboard: React.FC = () => {
 
           <div className="relative flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[11px] md:text-xs font-black uppercase tracking-[0.18em] text-lime flex items-center gap-1.5">
+              <p className="text-[11px] md:text-xs font-bold uppercase tracking-[0.18em] text-lime flex items-center gap-1.5">
                 <Sparkles size={13} className="shrink-0" />
                 {getGreeting()}
               </p>
-              <h1 className="mt-1.5 font-bangla text-2xl md:text-3xl font-extrabold tracking-tight leading-tight truncate">
+              <h1 className="mt-1.5 font-display text-2xl md:text-3xl font-bold tracking-tight leading-tight truncate">
                 {currentUser?.displayName || "শিক্ষার্থী"}
               </h1>
-              <p className="mt-1 text-xs md:text-sm font-medium text-white/60 leading-relaxed">
+              <p className="mt-1 text-xs md:text-sm font-medium text-white/75 leading-relaxed">
                 {"আজকের প্রস্তুতি শুরু হোক একটি পরীক্ষা দিয়ে!"}
               </p>
             </div>
@@ -287,7 +333,7 @@ const HomeDashboard: React.FC = () => {
               <span className="font-display text-lg md:text-xl font-bold leading-none">
                 {rank ? `#${toBengaliNumber(rank)}` : "-"}
               </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 mt-0.5">র‍্যাঙ্ক</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-white/75 mt-0.5">র‍্যাঙ্ক</span>
             </div>
           </div>
 
@@ -307,7 +353,7 @@ const HomeDashboard: React.FC = () => {
                 </div>
                 <div className="min-w-0">
                   <p className="font-display text-base md:text-lg font-bold leading-none tabular-nums truncate">{chip.value}</p>
-                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-white/50 mt-1">{chip.label}</p>
+                  <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-white/75 mt-1">{chip.label}</p>
                 </div>
               </div>
             ))}
@@ -316,19 +362,19 @@ const HomeDashboard: React.FC = () => {
           {/* CTA */}
           <button
             onClick={() => navigate("/quiz")}
-            className="focus-ring relative mt-4 inline-flex items-center gap-2 rounded-full bg-lime px-5 py-3 text-sm font-black text-ink shadow-[0_16px_36px_-14px_rgba(255,185,46,0.5)] transition-all hover:-translate-y-0.5 active:translate-y-0"
+            className="focus-ring btn-shine group relative mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-brand-500/35 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-500/50 active:translate-y-0"
           >
             <Play size={15} fill="currentColor" />
             মডেল টেস্ট দিন
-            <ArrowRight size={15} />
+            <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
           </button>
         </motion.section>
 
         {/* --- PROMO BANNER --- */}
-        <div className="relative w-full rounded-[1.75rem] overflow-hidden shadow-md ring-1 ring-ink/10 dark:ring-white/10 group">
+        <div className="relative w-full rounded-card overflow-hidden shadow-md ring-1 ring-ink/10 dark:ring-white/10 group">
           <img
             src={`${import.meta.env.BASE_URL}banner.png`}
-            alt="Promo Banner"
+            alt="পরীক্ষাঙ্গনের নতুন ফিচার ও অফারের ঘোষণা"
             className="w-full h-auto object-cover block transition-transform duration-500 group-hover:scale-[1.02]"
             draggable={false}
           />
@@ -337,7 +383,7 @@ const HomeDashboard: React.FC = () => {
         {/* --- QUICK ACCESS --- */}
         <section>
           <div className="flex items-center justify-between mb-2.5 md:mb-3 px-1">
-            <h2 className="text-sm md:text-base font-black text-ink dark:text-paper tracking-tight flex items-center gap-2">
+            <h2 className="font-display text-sm md:text-base font-bold text-ink dark:text-paper tracking-tight flex items-center gap-2">
               <span className="w-1.5 h-4 md:h-5 rounded-full bg-gradient-to-b from-brand to-gold" />
               দ্রুত অ্যাক্সেস
             </h2>
@@ -355,9 +401,9 @@ const HomeDashboard: React.FC = () => {
                 key={i}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(item.path, { state: (item as any).state })}
-                className={`focus-ring group flex flex-col items-center gap-2.5 rounded-3xl border p-3 md:p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(22,18,16,0.3)] hover:ring-1 hover:ring-brand/25 active:scale-95 ${item.tint}`}
+                className={`focus-ring group flex flex-col items-center gap-2.5 rounded-3xl border p-3 md:p-4 shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_-24px_rgba(255,82,0,0.35)] hover:ring-1 hover:ring-brand/25 active:scale-95 ${item.tint}`}
               >
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-ink-3 shadow-sm flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-ink-3 shadow-sm flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
                   <img
                     src={item.icon}
                     alt={item.label}
@@ -437,7 +483,7 @@ const HomeDashboard: React.FC = () => {
                 <Sparkles size={24} />
               </div>
               <div className="space-y-1 pr-6">
-                <h3 className="text-base md:text-lg font-black text-ink dark:text-paper font-bangla">
+                <h3 className="font-display text-base md:text-lg font-bold text-ink dark:text-paper">
                   আমরা এখনো গড়ে উঠছি!
                 </h3>
                 <p className="text-xs md:text-sm text-ink/70 dark:text-white/70 font-medium leading-relaxed">
@@ -463,9 +509,9 @@ const HomeDashboard: React.FC = () => {
                 <Trophy size={18} strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="text-base md:text-lg font-bold text-ink dark:text-paper tracking-tight font-bangla">
+                <h2 className="font-display text-base md:text-lg font-bold text-ink dark:text-paper tracking-tight">
                   লিডারবোর্ড
-                </h3>
+                </h2>
                 <p className="text-[11px] text-mist font-medium tracking-wide">
                   শীর্ষ পারফর্মার
                 </p>
@@ -599,59 +645,68 @@ const HomeDashboard: React.FC = () => {
         createPortal(
           <AnimatePresence>
             {showStreakModal && (
-              <div className="fixed inset-0 z-[9999] flex items-end justify-center sm:items-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm h-[100dvh] overflow-hidden">
+              <div className="pk-landing dash fixed inset-0 z-[9999] flex items-end justify-center sm:items-center p-0 sm:p-4 bg-ink/60 backdrop-blur-sm h-[100dvh] overflow-hidden">
                 <motion.div
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
                   transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                  className="bg-[#131F24] w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md sm:rounded-[2rem] relative overflow-y-auto overflow-x-hidden no-scrollbar block pb-[2rem]"
+                  className="bg-paper dark:bg-ink-2 text-ink dark:text-paper w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md sm:rounded-panel relative overflow-y-auto overflow-x-hidden no-scrollbar block pb-8 sm:ring-1 sm:ring-ink/10 dark:sm:ring-white/10"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="ধারাবাহিকতা"
                 >
                   {/* Header */}
-                  <div className="w-full flex items-center justify-between p-4 sm:p-6 mb-2 sticky top-0 bg-[#131F24] z-50">
+                  <div className="w-full flex items-center justify-between p-4 sm:p-6 mb-2 sticky top-0 bg-paper/95 dark:bg-ink-2/95 backdrop-blur z-50 border-b border-ink/6 dark:border-white/10">
                     <button
                       onClick={() => setShowStreakModal(false)}
-                      className="p-2 -ml-2 text-white hover:bg-white/10 rounded-full transition-colors"
+                      className="focus-ring p-2 -ml-2 text-ink dark:text-paper hover:bg-ink/5 dark:hover:bg-white/10 rounded-full transition-colors"
                       aria-label="বন্ধ করো"
                     >
-                      <X size={28} strokeWidth={2.5} />
+                      <X size={26} strokeWidth={2.5} />
                     </button>
-                    <h2 className="text-xl font-bold text-white tracking-wide">
+                    <h2 className="font-display text-lg font-bold text-ink dark:text-paper tracking-tight">
                       ধারাবাহিকতা
                     </h2>
-                    <button className="p-2 -mr-2 text-white hover:bg-white/10 rounded-full transition-colors" aria-label="শেয়ার">
-                      <Share2 size={24} strokeWidth={2} />
+                    <button
+                      className="focus-ring p-2 -mr-2 text-ink dark:text-paper hover:bg-ink/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                      aria-label="শেয়ার"
+                    >
+                      <Share2 size={22} strokeWidth={2} />
                     </button>
                   </div>
 
                   {/* Huge Number & Flame */}
-                  <div className="w-full px-8 mt-4 relative mb-12 flex justify-between items-start">
+                  <div className="w-full px-6 sm:px-8 mt-2 relative mb-10 flex justify-between items-start">
                     <div className="relative z-10 flex flex-col items-start mt-4">
                       <span
-                        className={`text-[6rem] leading-none font-black tracking-tighter drop-shadow-xl ${stats?.currentStreak ? "text-[#FF9600]" : "text-gray-500"}`}
-                        style={{ WebkitTextStroke: "3px rgba(255,150,0,0.2)" }}
+                        className={`font-display text-[5.5rem] leading-none font-bold tracking-tighter tabular-nums ${
+                          currentStreak ? "text-gradient" : "text-ink-400 dark:text-white/35"
+                        }`}
                       >
-                        {toBengaliNumber(stats?.currentStreak || 0)}
+                        {toBengaliNumber(currentStreak)}
                       </span>
                       <span
-                        className={`text-2xl font-bold mt-2 ${stats?.currentStreak ? "text-[#FF9600]" : "text-gray-500/80"}`}
+                        className={`text-xl font-bold mt-2 ${
+                          currentStreak ? "text-brand-deep dark:text-brand-bright" : "text-mist"
+                        }`}
                       >
                         দিনের ধারাবাহিকতা
                       </span>
                     </div>
 
-                    <div className="absolute right-0 top-0 w-48 h-48 pointer-events-none translate-x-4 -translate-y-4">
-                      {stats?.currentStreak ? (
-                        <div className="w-full h-full scale-[1.35] origin-top-right translate-x-4">
+                    <div className="absolute right-0 top-0 w-44 h-44 pointer-events-none translate-x-2 -translate-y-4">
+                      {currentStreak ? (
+                        <div className="w-full h-full scale-[1.3] origin-top-right">
                           <Lottie
                             animationData={fireAnimation}
-                            loop={true}
-                            className="w-full h-full drop-shadow-[0_0_30px_rgba(255,150,0,0.6)]"
+                            loop
+                            className="w-full h-full drop-shadow-[0_0_30px_rgba(255,82,0,0.45)]"
                           />
                         </div>
                       ) : (
                         <div
-                          className="w-full h-full opacity-50 bg-gray-700"
+                          className="w-full h-full opacity-40 bg-ink/30 dark:bg-white/20"
                           style={{
                             maskImage: "url(/icons/streak.svg)",
                             WebkitMaskImage: "url(/icons/streak.svg)",
@@ -665,36 +720,36 @@ const HomeDashboard: React.FC = () => {
 
                   <div className="w-full px-4 sm:px-6 z-20">
                     {/* Motivational Box */}
-                    <div className="bg-gradient-to-br from-[#202F36] to-[#1A262C] rounded-2xl p-5 mb-8 flex items-start gap-4 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-[#FF9600]/20 relative overflow-hidden">
-                      <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#FF9600]/10 rounded-full blur-3xl pointer-events-none"></div>
-                      <div className="shrink-0 mt-1 relative z-10">
-                        {stats?.currentStreak ? (
+                    <div className="bg-mint dark:bg-white/[0.06] rounded-3xl p-5 mb-8 flex items-start gap-4 shadow-sm ring-1 ring-brand/15 dark:ring-white/10 relative overflow-hidden">
+                      <div aria-hidden className="absolute -bottom-10 -right-10 w-32 h-32 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
+                      <div className="shrink-0 mt-0.5 relative z-10">
+                        {currentStreak ? (
                           <div className="w-12 h-12 -ml-1 -mt-1 flex items-center justify-center">
                             <Lottie
                               animationData={fireAnimation}
-                              loop={true}
-                              className="w-full h-full drop-shadow-[0_0_15px_rgba(255,150,0,0.8)] scale-150"
+                              loop
+                              className="w-full h-full drop-shadow-[0_0_15px_rgba(255,82,0,0.5)] scale-150"
                             />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-white">
-                            <Flame size={24} />
+                          <div className="w-10 h-10 rounded-2xl ring-conic flex items-center justify-center text-white shadow-[0_10px_24px_-8px_rgba(224,68,0,0.5)]">
+                            <Flame size={22} />
                           </div>
                         )}
                       </div>
                       <div className="flex flex-col gap-2 relative z-10">
-                        <p className="text-white font-bold leading-snug text-[15px]">
-                          {stats?.currentStreak
+                        <p className="text-ink dark:text-paper font-semibold leading-snug text-[15px]">
+                          {currentStreak
                             ? "দুর্দান্ত! আজকের প্র্যাকটিস সম্পন্ন করে আপনার ধারাবাহিকতা ধরে রাখুন! এভাবেই এগিয়ে যান!"
                             : "ধারাবাহিকতাকে এগিয়ে যেতে আজই একটি লেসন শেষ করুন!"}
                         </p>
-                        {!stats?.currentStreak && (
+                        {!currentStreak && (
                           <button
                             onClick={() => {
                               setShowStreakModal(false);
                               navigate("/quiz");
                             }}
-                            className="text-[#38BDF8] font-bold text-left tracking-wide uppercase text-sm mt-1"
+                            className="focus-ring text-brand-deep dark:text-brand-bright font-bold text-left tracking-wide uppercase text-sm mt-1"
                           >
                             লেসন শুরু করুন
                           </button>
@@ -703,58 +758,74 @@ const HomeDashboard: React.FC = () => {
                     </div>
 
                     {/* Calendar Header */}
-                    <h3 className="text-2xl font-black text-white mb-4 drop-shadow-md">
+                    <h3 className="font-display text-xl font-bold text-ink dark:text-paper mb-4 tracking-tight">
                       ধারাবাহিকতার ক্যালেন্ডার
                     </h3>
 
                     {/* Calendar Card */}
-                    <div className="bg-gradient-to-b from-[#202F36] to-[#162127] rounded-3xl p-5 md:p-6 border border-[#FF9600]/20 shadow-[0_8px_30px_rgba(0,0,0,0.5)] mb-8 relative overflow-hidden">
-                      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#FF9600] to-transparent"></div>
-                      <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF9600]/10 rounded-full blur-[80px] pointer-events-none"></div>
+                    <div className="bg-white dark:bg-white/[0.04] rounded-3xl p-5 md:p-6 ring-1 ring-ink/8 dark:ring-white/10 shadow-sm mb-8 relative overflow-hidden">
+                      <div aria-hidden className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-brand to-transparent opacity-60" />
+                      <div aria-hidden className="absolute -top-24 -right-24 w-48 h-48 bg-brand/10 rounded-full blur-[80px] pointer-events-none" />
 
                       <div className="flex justify-between items-center mb-6 px-2 relative z-10">
-                        <button className="text-gray-400 hover:text-white transition-colors" aria-label="আগের মাস">
-                          <ChevronRight size={24} className="rotate-180" />
+                        <button
+                          onClick={() => shiftCalendarMonth(-1)}
+                          className="focus-ring p-1 rounded-full text-mist hover:text-ink dark:hover:text-paper transition-colors"
+                          aria-label="আগের মাস"
+                        >
+                          <ChevronRight size={22} className="rotate-180" />
                         </button>
-                        <span className="text-lg font-bold text-white tracking-wide">
-                          জুন ২০২৬
+                        <span className="font-display text-base font-bold text-ink dark:text-paper tracking-tight tabular-nums">
+                          {calendarLabel}
                         </span>
-                        <button className="text-gray-400 hover:text-white transition-colors" aria-label="পরের মাস">
-                          <ChevronRight size={24} />
+                        <button
+                          onClick={() => shiftCalendarMonth(1)}
+                          disabled={isViewingCurrentMonth}
+                          className="focus-ring p-1 rounded-full text-mist hover:text-ink dark:hover:text-paper transition-colors disabled:opacity-30 disabled:hover:text-mist"
+                          aria-label="পরের মাস"
+                        >
+                          <ChevronRight size={22} />
                         </button>
                       </div>
 
                       <div className="grid grid-cols-7 gap-2 mb-4 text-center relative z-10">
                         {["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"].map((day) => (
-                          <span key={day} className="text-[11px] font-black text-gray-400 uppercase tracking-wider">
+                          <span key={day} className="text-[11px] font-bold text-mist uppercase tracking-wider">
                             {day}
                           </span>
                         ))}
                       </div>
 
-                      <div className="grid grid-cols-7 gap-y-5 gap-x-2 text-center pb-2 relative z-10">
-                        {Array.from({ length: 30 }).map((_, i) => {
-                          const dayStr = String(i + 1).padStart(2, "0");
-                          const dateKey = `2026-06-${dayStr}`;
-                          const isActive = stats?.activityLog?.includes(dateKey) || i === 6;
-                          const isToday = i === 6;
+                      <div className="grid grid-cols-7 gap-y-4 gap-x-2 text-center pb-2 relative z-10">
+                        {calendarCells.map((cell, i) => {
+                          if (!cell) return <div key={`pad-${i}`} aria-hidden />;
 
                           return (
-                            <div key={i} className="flex flex-col items-center justify-center">
-                              {isActive ? (
+                            <div key={cell.dateKey} className="flex flex-col items-center justify-center">
+                              {cell.active ? (
                                 <div
-                                  className={`relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shadow-sm transition-all duration-300 ${isToday ? "bg-gradient-to-br from-[#FFB800] to-[#FF9600] text-black ring-4 ring-[#FF9600]/30 shadow-[0_0_15px_rgba(255,150,0,0.6)] scale-110" : "bg-[#FF9600]/15 text-[#FFB800] border border-[#FF9600]/50 shadow-[0_0_10px_rgba(255,150,0,0.2)]"}`}
+                                  className={`relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold tabular-nums transition-all duration-300 ${
+                                    cell.isToday
+                                      ? "bg-gradient-to-br from-brand-500 to-brand-600 text-white ring-4 ring-brand/25 shadow-[0_0_15px_rgba(255,82,0,0.4)] scale-110"
+                                      : "bg-brand/10 text-brand-deep dark:text-brand-bright ring-1 ring-brand/30"
+                                  }`}
                                 >
-                                  {toBengaliNumber(i + 1)}
-                                  <div className="absolute -bottom-1 -right-1 bg-[#162127] rounded-full p-0.5">
-                                    <div className="bg-[#FF9600] text-black rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                                  {toBengaliNumber(cell.day)}
+                                  <div className="absolute -bottom-1 -right-1 bg-white dark:bg-ink-2 rounded-full p-0.5">
+                                    <div className="bg-brand text-white rounded-full w-3.5 h-3.5 flex items-center justify-center">
                                       <Check size={10} strokeWidth={4} />
                                     </div>
                                   </div>
                                 </div>
                               ) : (
-                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
-                                  {toBengaliNumber(i + 1)}
+                                <div
+                                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium tabular-nums transition-colors ${
+                                    cell.isToday
+                                      ? "text-ink dark:text-paper ring-2 ring-brand/40"
+                                      : "text-mist hover:bg-ink/5 dark:hover:bg-white/10"
+                                  }`}
+                                >
+                                  {toBengaliNumber(cell.day)}
                                 </div>
                               )}
                             </div>

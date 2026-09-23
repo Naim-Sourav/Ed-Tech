@@ -89,24 +89,31 @@ export default {
         /* ── Landing palette: warm paper / warm ink / brand orange / amber ── */
         paper: '#faf9f6',
         cream: '#fff1e8',
+        /* ── Single warm ink ramp shared by the landing AND the app screens.
+           Previously `ink.DEFAULT` was warm (#161210) while `ink.950` was a
+           cool blue-black (#101018), so the landing's headings and the
+           dashboard's headings rendered two different "blacks". The ramp below
+           is warm end-to-end and terminates exactly at `ink.DEFAULT`, so
+           `text-ink` and `text-ink-950` are now the same colour. ── */
         ink: {
           DEFAULT: '#161210',
           2: '#201a16',
           3: '#2a231d',
-          /* Full scale from the premium landing design */
-          50: '#f6f6f9',
-          100: '#ececf2',
-          200: '#d5d5e2',
-          300: '#b1b1c6',
-          400: '#8787a3',
-          500: '#686884',
-          600: '#545469',
-          700: '#454556',
-          800: '#3b3b48',
-          900: '#34343e',
-          950: '#101018',
+          50: '#faf8f6',
+          100: '#f0ece8',
+          200: '#e0d8d1',
+          300: '#c4b8ad',
+          400: '#a19386',
+          500: '#7f7267',
+          600: '#665b52',
+          700: '#524942',
+          800: '#443c36',
+          900: '#3a332e',
+          950: '#161210',
         },
-        mist: '#6f655c',
+        /* Muted body/label text. Darkened from #6f655c so it clears WCAG AA
+           (4.5:1) on the warm paper background. */
+        mist: '#6a6058',
         mint: '#ffeade',
         lime: {
           DEFAULT: '#ffb92e',
@@ -130,6 +137,14 @@ export default {
       spacing: {
         '4.5': '1.125rem',
         '5.5': '1.375rem',
+      },
+      /* Shared radius scale. The landing used 1.6/1.8/2/2.5rem + 26/28px while
+         the dashboard used 1.75rem/3xl — no common vocabulary. Both now pull
+         from these three semantic steps. */
+      borderRadius: {
+        card: '1.6rem',
+        panel: '2rem',
+        hero: '2.5rem',
       },
       /* Opacity steps the landing design leans on (ring-ink/8, bg-white/12 …) */
       opacity: {
