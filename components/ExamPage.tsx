@@ -30,6 +30,7 @@ import { ExitDialog, RetakeDialog, SubmitDialog } from './exam/Dialogs';
 import ResultView, { type LeaderboardEntry } from './exam/ResultView';
 import StreakModal from './exam/StreakModal';
 import GuestGate, { type GuestExamInfo } from './exam/GuestGate';
+import { recordQbankExam } from './qbank/launch';
 import { Chip, EASE, StateScreen } from './exam/ui';
 import {
   bn,
@@ -443,6 +444,13 @@ const ExamPage: React.FC = () => {
 
         clearCache(`profile_${currentUser.uid}`);
         clearCache(`dashboard_${currentUser.uid}`);
+
+        // Question-bank exams also feed the bank's own progress records.
+        try {
+          recordQbankExam(currentUser.uid, config, questions, userAnswers, examDuration);
+        } catch (err) {
+          logger.error('Failed to record question-bank exam locally:', err);
+        }
 
         updateQuestProgressAPI(currentUser.uid, 'EXAM_COMPLETE', 1);
         if (percentage >= 80) updateQuestProgressAPI(currentUser.uid, 'HIGH_SCORE', 1);
