@@ -31,6 +31,7 @@ import { mkdirSync, writeFileSync, rmSync, mkdtempSync, readFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { loadQuestionQuality } from './lib/load-quality.mjs';
 
 const SITE = 'https://www.porikkhangon.app';
 const API = 'https://mongodb-hb6b.onrender.com/api';
@@ -55,6 +56,10 @@ buildSync({
 });
 const { SYLLABUS_DB } = await import(pathToFileURL(bundlePath).href);
 rmSync(tmp, { recursive: true, force: true });
+
+// Same cleaning rules the app and the audit CLI use — static /q/<slug>/ pages
+// must never ship a doubled "Explanation … Explanation …" block either.
+const Q = await loadQuestionQuality();
 
 // ---------------------------------------------------------------------------
 // 2. Helpers
@@ -384,10 +389,25 @@ async function pool(tasks, concurrency = 8) {
 async function collectQuestions(syllabusSubjects) {
   /** @type {Map<string, any>} */
   const byId = new Map();
-  const add = (q, source, sourceLabel = '') => {
-    if (!q || !q.question || !Array.isArray(q.options) || q.options.length < 2) return;
+  const seenFingerprint = new Map(); // fingerprint -> id of the copy we kept
+  const add = (rawQuestion, source, sourceLabel = '') => {
+    if (!rawQuestion || !rawQuestion.question || !Array.isArray(rawQuestion.options) || rawQuestion.options.length < 2) return;
+    // repair explanations / whitespace / tags before the page is rendered
+    const q = Q.fixQuestion(rawQuestion).question;
     const id = q._id || q.id || `local-${bnSlug(q.question)}-${q.options.length}`;
     if (byId.has(id)) return;
+    // the same question imported twice (shuffled options, NFC variants…) must
+    // not become two near-identical indexable pages
+    const fingerprint = Q.questionFingerprint(q);
+    const previousId = seenFingerprint.get(fingerprint);
+    if (previousId) {
+      const previous = byId.get(previousId);
+      if (previous && !String(previous.explanation || '').trim() && String(q.explanation || '').trim()) {
+        byId.set(previousId, { ...previous, explanation: q.explanation });
+      }
+      return;
+    }
+    seenFingerprint.set(fingerprint, id);
     byId.set(id, {
       _id: id,
       question: String(q.question),

@@ -3,7 +3,7 @@ import { logger } from '../utils/logger';
 import { Trash2, GitMerge, Check, AlertCircle, Loader2, FileText, Search, Zap, CheckCircle2 } from 'lucide-react';
 import { useToast } from './Toast';
 import { deleteQuestionFromBankAPI, fetchQuestionsFromBankAPI, updateQuestionInBankAPI, autoScanDuplicatesAPI, autoMergeDuplicatesAPI } from '../services/api';
-import { normalizeForComparison, areQuestionsSimilar } from '../utils/normalization';
+import { findDuplicateGroups, mergeDuplicateQuestions } from '../utils/questionQuality';
 
 interface Props {
     qSubject: string;
@@ -79,31 +79,9 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
                     
                     showToast(`Fetched ${allQuestions.length} questions. Now grouping...`, "info");
                     
-                    const groupedList: any[] = [];
-                    allQuestions.forEach((q: any) => {
-                        if (!q.subject || !q.chapter) return;
-                        const normQ = normalizeForComparison(q.question || '');
-                        const normOpts = (q.options || []).map((o: string) => normalizeForComparison(o || '')).sort().join('_|OP|_');
-                        
-                        let foundGroup = false;
-                        for (const group of groupedList) {
-                            if (areQuestionsSimilar(normQ, normOpts, group.qNorm, group.optsNorm)) {
-                                group.questions.push(q);
-                                foundGroup = true;
-                                break;
-                            }
-                        }
-                        
-                        if (!foundGroup) {
-                            groupedList.push({
-                                qNorm: normQ,
-                                optsNorm: normOpts,
-                                questions: [q]
-                            });
-                        }
-                    });
-
-                    const dups = groupedList.filter(group => group.questions.length > 1);
+                    const dups = findDuplicateGroups(
+                        allQuestions.filter((q: any) => q.subject && q.chapter)
+                    );
                     
                     let mergedCount = 0;
                     let deletedCount = 0;
@@ -111,23 +89,20 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
                     showToast(`Found ${dups.length} groups to merge. Merging sequentially to avoid DB timeout...`, "info");
                     
                     for (const group of dups) {
-                        const qs = group.questions;
-                        let primaryQ = qs.find((q: any) => q.explanation || q.explanationImage) || qs[0];
-                        const secondaryQs = qs.filter((q: any) => q._id !== primaryQ._id);
-                        
-                        // Combine tags and refs
-                        const newTags = [...new Set(qs.flatMap((q:any) => q.tags || []))];
-                        const newExamRefs = [...new Set(qs.flatMap((q:any) => {
-                            if (!q.examRef) return [];
-                            return q.examRef.split(',').map((s: string) => s.trim());
-                        }))];
-                        
-                        const updatedPrimary = { ...primaryQ, tags: newTags, examRef: newExamRefs.join(', ') };
-                        await updateQuestionInBankAPI(primaryQ._id, updatedPrimary);
+                        const { keepId, merged, deleteIds } = mergeDuplicateQuestions(group);
+                        const primaryQ = group.find((q: any) => q._id === keepId) || group[0];
+                        const primaryId = primaryQ._id || primaryQ.id;
+                        if (!primaryId) continue;
+
+                        const updatePayload: any = { ...primaryQ, ...merged };
+                        delete updatePayload._id;
+                        delete updatePayload.id;
+                        await updateQuestionInBankAPI(primaryId, updatePayload);
                         mergedCount++;
-                        
-                        for (const s of secondaryQs) {
-                            await deleteQuestionFromBankAPI(s._id);
+
+                        for (const sId of deleteIds) {
+                            if (!sId) continue;
+                            await deleteQuestionFromBankAPI(sId);
                             deletedCount++;
                         }
                     }
@@ -155,36 +130,15 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
             const data = await fetchQuestionsFromBankAPI(1, 5000, qSubject, qChapter, qTopic, qExamRef, qSearch);
             const questions = data.questions || [];
 
-            const groupedList: any[] = [];
-            
-            questions.forEach((q: any) => {
-                const normQ = normalizeForComparison(q.question || '');
-                const normOpts = (q.options || []).map((o: string) => normalizeForComparison(o || '')).sort().join('_|OP|_');
-                
-                let foundGroup = false;
-                for (const group of groupedList) {
-                    if (areQuestionsSimilar(normQ, normOpts, group.qNorm, group.optsNorm)) {
-                        group.questions.push(q);
-                        foundGroup = true;
-                        break;
-                    }
-                }
-                
-                if (!foundGroup) {
-                    groupedList.push({
-                        qNorm: normQ,
-                        optsNorm: normOpts,
-                        questions: [q]
-                    });
-                }
-            });
+            // Shared detector: identical wording (NFC/NFD, spacing, punctuation
+            // insensitive) OR near-identical wording with the same option set.
+            const groups = findDuplicateGroups(questions);
 
-            const dups = groupedList
-                .filter(group => group.questions.length > 1)
-                .map(group => ({
-                    _id: group.questions[0].question, // Just use first question as title
-                    count: group.questions.length,
-                    questions: group.questions
+            const dups = groups
+                .map((questions) => ({
+                    _id: questions[0].question, // group title
+                    count: questions.length,
+                    questions,
                 }))
                 .sort((a, b) => b.count - a.count);
 
@@ -213,39 +167,15 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
 
                 setMergingId(group._id);
                 try {
-                    const allTags = new Set(primaryQ.tags || []);
-                    const allExamRefs = primaryQ.examRef ? primaryQ.examRef.split(',').map((s:string) => s.trim()) : [];
-                    
-                    let updatedExp = primaryQ.explanation;
-                    let updatedExpImg = primaryQ.explanationImage;
+                    // Keep the copy the admin chose, but pick up everything the
+                    // other copies know: cleaned explanation, tags, exam refs,
+                    // images, and the majority answer.
+                    const { merged } = mergeDuplicateQuestions([
+                        primaryQ,
+                        ...secondaryQs,
+                    ]);
 
-                    for (const q of secondaryQs) {
-                        if (q.tags) q.tags.forEach((t:string) => allTags.add(t));
-                        if (q.examRef) {
-                            const refs = q.examRef.split(',').map((s:string) => s.trim());
-                            refs.forEach((r:string) => {
-                                if (r && !allExamRefs.includes(r)) allExamRefs.push(r);
-                            });
-                        }
-                    }
-
-                    if (!updatedExp && !updatedExpImg) {
-                        const secondaryWithExp = secondaryQs.find((q:any) => q.explanation || q.explanationImage);
-                        if (secondaryWithExp) {
-                            updatedExp = secondaryWithExp.explanation;
-                            updatedExpImg = secondaryWithExp.explanationImage;
-                        }
-                    }
-
-                    // Update primary
-                    const updatePayload = {
-                        ...primaryQ,
-                        tags: Array.from(allTags),
-                        examRef: allExamRefs.join(', '),
-                        explanation: updatedExp,
-                        explanationImage: updatedExpImg
-                    };
-                    
+                    const updatePayload: any = { ...primaryQ, ...merged };
                     delete updatePayload._id;
                     delete updatePayload.id;
 
@@ -324,39 +254,8 @@ export default function AdminDuplicateFinder({ qSubject, qChapter, qTopic, qExam
 
                         if (secondaryIds.length === 0 || !primaryQ) continue;
 
-                        const allTags = new Set(primaryQ.tags || []);
-                        const allExamRefs = primaryQ.examRef ? primaryQ.examRef.split(',').map((s: string) => s.trim()) : [];
-                        
-                        let updatedExp = primaryQ.explanation;
-                        let updatedExpImg = primaryQ.explanationImage;
-
-                        for (const q of secondaryQs) {
-                            if (q.tags) q.tags.forEach((t: string) => allTags.add(t));
-                            if (q.examRef) {
-                                const refs = q.examRef.split(',').map((s: string) => s.trim());
-                                refs.forEach((r: string) => {
-                                    if (r && !allExamRefs.includes(r)) allExamRefs.push(r);
-                                });
-                            }
-                        }
-
-                        if (!updatedExp && !updatedExpImg) {
-                            const secondaryWithExp = secondaryQs.find((q: any) => q.explanation || q.explanationImage);
-                            if (secondaryWithExp) {
-                                updatedExp = secondaryWithExp.explanation;
-                                updatedExpImg = secondaryWithExp.explanationImage;
-                            }
-                        }
-
-                        // Update primary
-                        const updatePayload = {
-                            ...primaryQ,
-                            tags: Array.from(allTags),
-                            examRef: allExamRefs.join(', '),
-                            explanation: updatedExp,
-                            explanationImage: updatedExpImg
-                        };
-                        
+                        const { merged } = mergeDuplicateQuestions([primaryQ, ...secondaryQs]);
+                        const updatePayload: any = { ...primaryQ, ...merged };
                         delete updatePayload._id;
                         delete updatePayload.id;
 

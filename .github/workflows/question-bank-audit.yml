@@ -32,9 +32,9 @@ on:
         required: false
         default: 'https://mongodb-hb6b.onrender.com/api'
       limit:
-        description: 'Questions per request'
+        description: 'Questions per request (keep modest — the API is slow for big pages)'
         required: false
-        default: '2000'
+        default: '250'
       max_pages:
         description: 'Safety cap on requests'
         required: false
@@ -59,6 +59,17 @@ jobs:
           # Node 22 imports utils/questionQuality.ts directly (native type
           # stripping) — no npm install needed for the audit job.
           node-version: '22'
+
+      - name: Probe the API
+        run: |
+          node -e "
+            const t = Date.now();
+            fetch('${{ inputs.api_base }}/admin/questions?page=1&limit=5')
+              .then(r => r.json())
+              .then(d => console.log('probe ok:', (d.questions||[]).length, 'rows, total', d.total, 'in', Date.now()-t, 'ms'))
+              .catch(e => { console.log('::error title=API probe::' + e.message); process.exit(1); });
+          "
+        timeout-minutes: 3
 
       - name: Fetch full question bank
         env:

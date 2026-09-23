@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { logger } from '../utils/logger';
 import { saveQuestionsToBankAPI, normalizeText } from "../services/api";
+import { fixQuestion, cleanTags } from "../utils/questionQuality";
 import { SYLLABUS_DB } from "../services/syllabusData";
 import { QuizQuestion, QuestionPaperMetadata } from "../types";
 import { useToast } from "./Toast";
@@ -817,7 +818,14 @@ const AdminJsonUpload: React.FC = () => {
           item.orderIndex = Number(item.orderIndex);
         }
 
-        return item;
+        // Final hygiene pass — the same rules the audit CLI enforces, so an
+        // upload can never re-introduce "Explanation … Explanation …" blocks,
+        // doubled sentences, junk tags or invisible characters.
+        const { patch } = fixQuestion(item);
+        const cleanedItem: any = { ...item, ...patch, tags: cleanTags(item.tags) };
+        if (!cleanedItem.tags?.length) delete cleanedItem.tags;
+
+        return cleanedItem;
       });
 
       // Chunking Logic: Send 50 questions at a time

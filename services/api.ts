@@ -3,6 +3,7 @@
 import { PaymentRequest, Notification, LeaderboardUser, ExamPack, QuestType, QuestTemplate, QuestionPaperMetadata } from "../types";
 import { logger } from '../utils/logger';
 import { normalizeBangla } from "../utils/normalization";
+import { fixQuestion } from '../utils/questionQuality';
 import { auth } from "./firebase";
 
 const readEnvApiBase = (): string => {
@@ -154,6 +155,37 @@ const MOCK_LEADERBOARD: LeaderboardUser[] = [
     { uid: '3', displayName: 'Rafiqul Islam', photoURL: '', points: 4500 },
     { uid: '4', displayName: 'You', photoURL: '', points: 1250 }
 ];
+
+// --- QUESTION SANITISER ---
+/**
+ * Repair the field-level noise that exists in the live question bank before it
+ * ever reaches a component: doubled "Explanation … Explanation …" blocks,
+ * repeated sentences, NFC/NFD variants, junk tags, stray whitespace…
+ *
+ * This is a safety net for rows that have not been cleaned in the database yet
+ * (`scripts/question-bank-fix.mjs` fixes them permanently). Pure and cheap — a
+ * few regex passes per question — and it never throws.
+ */
+export const sanitizeQuestion = <T extends Record<string, any>>(question: T): T => {
+  try {
+    const { patch } = fixQuestion(question as any);
+    return (Object.keys(patch).length ? { ...question, ...patch } : question) as T;
+  } catch (e) {
+    logger.warn('[sanitizeQuestion] skipped a malformed question', e);
+    return question;
+  }
+};
+
+export const sanitizeQuestions = <T extends Record<string, any>>(questions: T): T => {
+  if (!Array.isArray(questions)) return questions;
+  let changed = false;
+  const out = questions.map((q) => {
+    const clean = sanitizeQuestion(q);
+    if (clean !== q) changed = true;
+    return clean;
+  });
+  return (changed ? out : questions) as unknown as T;
+};
 
 // --- HELPER ---
 export const normalizeText = (text: string) => {
@@ -482,7 +514,11 @@ export const fetchQuestionsForMigrator = async (page: number, limit: number) => 
     const err = await response.text();
     throw new Error(`HTTP ${response.status}: ${err}`);
   }
-  return response.json();
+  const data = await response.json();
+  if (data && Array.isArray(data.questions)) {
+    return { ...data, questions: sanitizeQuestions(data.questions) };
+  }
+  return data;
 };
 
 export const fetchQuestionsFromBankAPI = async (
@@ -513,7 +549,11 @@ export const fetchQuestionsFromBankAPI = async (
   if (search) {
     url += `&search=${encodeURIComponent(normalizeBangla(search))}`;
   }
-  return fetchWithFallback(url, {}, { questions: [], total: 0 });
+  const result = await fetchWithFallback(url, {}, { questions: [], total: 0 });
+  if (result && Array.isArray(result.questions)) {
+    return { ...result, questions: sanitizeQuestions(result.questions) };
+  }
+  return result;
 };
 
 export const autoScanDuplicatesAPI = async () => {
@@ -568,7 +608,7 @@ export const fetchQuestionsByExamRefAPI = async (examRef: string) => {
        return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
      }
   }
-  return fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []);
+  return sanitizeQuestions(await fetchWithFallback(`/quiz/past-paper/${encodeURIComponent(examRef)}`, {}, []));
 };
 
 export const deleteQuestionFromBankAPI = async (id: string) => {
@@ -609,7 +649,7 @@ export const generateQuizFromDB = async (config: { subject: string, chapter: str
     }
   }
 
-  return questions;
+  return sanitizeQuestions(questions);
 };
 
 export const fetchSyllabusStatsAPI = async (level?: string) => {

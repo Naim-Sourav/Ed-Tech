@@ -18,7 +18,7 @@
  * Options:
  *   --api <url>        API base (default: $API_BASE or the production backend)
  *   --out <file>       Output NDJSON path (default: exports/question-bank.ndjson)
- *   --limit <n>        Questions per request (default 2000 — API max is generous)
+ *   --limit <n>        Questions per request (default 250 — see README note)
  *   --max-pages <n>    Safety cap on number of requests (default 100)
  *   --concurrency <n>  Parallel page requests (default 2 — be nice to the API)
  *   --timeout <ms>     Per request timeout (default 90000 — Render cold starts)
@@ -39,14 +39,19 @@ const arg = (name, fallback) => {
 
 const API = arg('api', DEFAULT_API).replace(/\/+$/, '');
 const OUT = resolve(arg('out', 'exports/question-bank.ndjson'));
-const LIMIT = Number(arg('limit', 2000));
+const LIMIT = Number(arg('limit', 250));
 const MAX_PAGES = Number(arg('max-pages', 100));
-const CONCURRENCY = Number(arg('concurrency', 2));
-const TIMEOUT = Number(arg('timeout', 90000));
-const RETRIES = Number(arg('retries', 4));
+const CONCURRENCY = Number(arg('concurrency', 3));
+const TIMEOUT = Number(arg('timeout', 45000));
+const RETRIES = Number(arg('retries', 5));
 const FILTER = arg('filter', '');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Surface failures as a GitHub annotation — CI logs are not always reachable. */
+const annotate = (level, message) => {
+  if (process.env.GITHUB_ACTIONS) console.log(`::${level} title=Question bank fetch::${String(message).slice(0, 900)}`);
+};
 
 async function getJson(url) {
   let lastErr;
@@ -66,8 +71,9 @@ async function getJson(url) {
     } catch (err) {
       clearTimeout(timer);
       lastErr = err;
+      annotate('warning', `${url} attempt ${attempt}/${RETRIES} failed: ${err.message}`);
       if (attempt < RETRIES) {
-        const backoff = Math.min(30000, 2000 * 2 ** (attempt - 1));
+        const backoff = Math.min(15000, 1500 * 2 ** (attempt - 1));
         console.error(`  ! ${url} failed (${err.message}) — retry ${attempt}/${RETRIES - 1} in ${backoff / 1000}s`);
         await sleep(backoff);
       }
@@ -144,5 +150,6 @@ async function main() {
 
 main().catch((err) => {
   console.error('❌ Fatal:', err);
+  annotate('error', `fetch failed: ${err && err.message}`);
   process.exit(1);
 });
