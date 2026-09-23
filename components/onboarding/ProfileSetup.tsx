@@ -128,7 +128,10 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ onVisibilityChange }) => {
   const handleDone = useCallback(
     (dest: 'dashboard' | 'exams') => {
       setFinished(false);
-      navigate(dest === 'exams' ? '/exams' : '/dashboard');
+      // "প্রথম মক দাও" drops the student straight into the mock-test builder
+      // (subject → chapters → settings → exam); the builder greets them once.
+      if (dest === 'exams') navigate('/quiz', { state: { fromSetup: true } });
+      else navigate('/dashboard');
     },
     [navigate]
   );

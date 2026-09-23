@@ -18,8 +18,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { SHARED_COURSES } from '../data/courses';
 
 const EXAM_FEATURES = [
-    { id: 'mock', title: 'মক টেস্ট', desc: 'পূর্ণাঙ্গ প্রস্তুতি', icon: PenTool, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10', path: '/mock-test' },
-    { id: 'flashcard', title: 'ফ্ল্যাশ কার্ড', desc: 'দ্রুত রিভিশন', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10', path: '/flashcards' },
+    { id: 'mock', title: 'মক টেস্ট', desc: 'পূর্ণাঙ্গ প্রস্তুতি', icon: PenTool, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10', path: '/quiz' },
+    { id: 'flashcard', title: 'ফ্ল্যাশ কার্ড', desc: 'দ্রুত রিভিশন', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10', path: '/quiz', state: { mode: 'RAPID_FIRE' } },
     { id: 'battle', title: 'কুইজ ব্যাটল', desc: 'বন্ধুদের সাথে', icon: Swords, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-500/10', path: '/battle' },
     { id: 'qbank', title: 'প্রশ্নব্যাংক', desc: 'বিগত সালের প্রশ্ন', icon: BookOpen, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10', path: '/qbank' },
     { id: 'retake', title: 'রিটেক', desc: 'ভুলগুলো শুধরে', icon: RotateCcw, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-500/10', path: '/wrong-questions' },
@@ -79,7 +79,7 @@ const ExamHub: React.FC = () => {
                                         whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.97 }}
                                         key={feat.id}
-                                        onClick={() => navigate(feat.path)}
+                                        onClick={() => navigate(feat.path, 'state' in feat ? { state: feat.state } : undefined)}
                                         className="aspect-square bg-white dark:bg-[#121212] p-4 rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer hover:shadow-md transition-all flex flex-col items-center justify-center gap-3 md:gap-4 group"
                                     >
                                         <div className={`w-14 h-14 md:w-16 md:h-16 rounded-[20px] flex items-center justify-center ${feat.bg} text-gray-800 dark:text-white group-hover:scale-110 transition-transform shadow-sm`}>

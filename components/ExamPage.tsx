@@ -1015,7 +1015,9 @@ const ExamPage: React.FC = () => {
           
           if (viewMode === 'ALL_AT_ONCE') {
               if (config?.title && config.title !== 'Custom Exam' && config.title !== 'Exam') {
-                  return config.title + (chaptersStr ? ` : ${chaptersStr}` : '');
+                  // builder titles like "পদার্থবিজ্ঞান · ভেক্টর" already name the chapter — don't repeat it
+                  const alreadyNamed = chapters.length > 0 && chapters.every(c => config.title.includes(c));
+                  return config.title + (chaptersStr && !alreadyNamed ? ` : ${chaptersStr}` : '');
               }
               return subjectsStr + (chaptersStr ? ` : ${chaptersStr}` : '') || 'যৌথ পরীক্ষা';
           } else {

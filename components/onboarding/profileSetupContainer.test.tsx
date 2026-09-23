@@ -22,8 +22,11 @@ vi.mock('canvas-confetti', () => ({ default: vi.fn() }));
 import ProfileSetup from './ProfileSetup';
 
 let lastPath = '';
+let lastState: unknown = null;
 const Probe = () => {
-  lastPath = useLocation().pathname;
+  const loc = useLocation();
+  lastPath = loc.pathname;
+  lastState = loc.state;
   return null;
 };
 
@@ -132,6 +135,34 @@ describe('ProfileSetup container', () => {
     await act(async () => click(byText('ড্যাশবোর্ডে যাও')));
     expect(document.querySelector('[role="dialog"]')).toBeNull();
     expect(lastPath).toBe('/dashboard');
+  });
+
+  it('"প্রথম মক দাও" drops the student straight into the mock-test builder', async () => {
+    const updateUserProfile = vi.fn(async (_name: string, _photo: string, extra: Record<string, string>) => {
+      auth.state = { ...auth.state, extendedProfile: extra, isProfileComplete: true };
+      auth.bump();
+    });
+    auth.state = { ...baseState(), updateUserProfile };
+    await mount();
+
+    await act(async () => setValue(document.querySelector('input[type="tel"]') as HTMLInputElement, '01712345678'));
+    await act(async () => click(byText('পরের ধাপ')));
+    await settle();
+    await act(async () => click(byText('HSC পরীক্ষার্থী')));
+    await act(async () => click(Array.from(document.querySelectorAll('button')).find((b) => /^HSC \d{4}$/.test(b.textContent || ''))));
+    await act(async () => click(byText('বিজ্ঞান')));
+    await act(async () => click(byText('পরের ধাপ')));
+    await settle();
+    await act(async () => click(byText('মেডিকেল')));
+    await act(async () => click(byText('২–৪ ঘণ্টা')));
+    await act(async () => click(byText('প্রোফাইল সেভ করো')));
+    await settle();
+
+    expect(document.body.textContent).toContain('প্রথম মক দাও');
+    await act(async () => click(byText('প্রথম মক দাও')));
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(lastPath).toBe('/quiz');
+    expect(lastState).toEqual({ fromSetup: true });
   });
 
   it('"পরে করব" defers via dismissOnboarding and drops the draft', async () => {

@@ -50,6 +50,9 @@ components/onboarding/  → first-run profile setup wizard (avatar · phone · b
                           department · target · study goal) shown after sign-up
 components/landing/     → public landing page sections + content data
                           (design ported from premium-edtech-landing-page.zip)
+components/QuizArena.tsx→ /quiz mock-test builder (বিষয় → অধ্যায় → সেটিংস → /exam/:id)
+components/quiz/        → builder steps + pure model (catalog, selection, presets,
+                          stats, launch) — exam config contract lives in launch.ts
 data/profileOptions.ts  → shared student-profile vocabulary (levels, batches,
                           departments, targets, goals) used by setup + profile edit
 services/               → api.ts (backend), firebase.ts, geminiService.ts, ...
