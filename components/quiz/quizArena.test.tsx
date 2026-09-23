@@ -182,6 +182,27 @@ describe('QuizArena — mock-test builder', () => {
     expect(body()).toContain(phyChapters[0]);
   });
 
+  it('jumps straight to the settings step when the dashboard asks to resume the last setup', async () => {
+    localStorage.setItem(
+      'pk_quiz_last_setup_v1',
+      JSON.stringify({
+        selection: { [`${PHY1}-${phyChapters[0]}`]: flattenTopics(PHY1, phyChapters[0]) },
+        settings: { count: 20, timeLimit: 20, negativeMarking: 0.25, practice: false, view: 'ALL_AT_ONCE' },
+        title: '',
+        at: Date.now(),
+      }),
+    );
+    await mount({ pathname: '/quiz', state: { resumeLast: true } });
+    expect(lastLocation.search).toContain('step=TOPIC_CONFIG');
+    expect(body()).toContain('২০ প্রশ্ন · ২০ মিনিট · নেগেটিভ ০.২৫');
+    expect(body()).toContain(phyChapters[0]);
+  });
+
+  it('falls back to the subject grid when resumeLast has nothing to resume', async () => {
+    await mount({ pathname: '/quiz', state: { resumeLast: true } });
+    expect(body()).toContain('কোন বিষয়ে মক দেবে?');
+  });
+
   it('opens a subject directly from location.state and greets first-mock students', async () => {
     await mount({ pathname: '/quiz', state: { subject: 'Chemistry', fromSetup: true } });
     expect(lastLocation.search).toContain('subject=Chemistry');

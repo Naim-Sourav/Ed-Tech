@@ -120,7 +120,7 @@ const ResultView: React.FC<ResultViewProps> = ({
   const ring = `conic-gradient(#059669 0 ${correctP}%, #e63b2e ${correctP}% ${correctP + wrongP}%, rgba(128,128,128,0.22) ${correctP + wrongP}% 100%)`;
 
   return (
-    <div id="exam-container" className="pk-landing relative h-full overflow-y-auto overflow-x-hidden bg-paper font-body text-ink">
+    <div id="exam-container" className="pk-landing relative h-[100dvh] overflow-y-auto overflow-x-hidden bg-paper font-body text-ink">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] overflow-hidden" aria-hidden="true">
         <div className="absolute -top-40 right-[-160px] h-[480px] w-[480px] rounded-full bg-[radial-gradient(closest-side,rgba(255,82,0,0.12),transparent)] blur-3xl" />
         <div className="absolute -left-40 top-24 h-[420px] w-[420px] rounded-full bg-[radial-gradient(closest-side,rgba(255,185,46,0.16),transparent)] blur-3xl" />

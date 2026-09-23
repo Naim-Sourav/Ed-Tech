@@ -158,6 +158,7 @@ describe('ExamPage', () => {
     const payload = (api.saveExamResultAPI.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
     expect(payload).toMatchObject({ examId: 'e1', correct: 1, wrong: 1, skipped: 1, score: 0.75, totalQuestions: 3 });
     expect(body()).toContain('পরীক্ষার ফলাফল');
+    expect(document.querySelector('.h-\\[100dvh\\]')).toBeTruthy(); // result view is its own scroll shell as well
     expect(body()).toContain('০.৭৫');
     expect(localStorage.getItem('exam_progress_u1_e1')).toBeNull();
     // review shows the explanation + verdict chips
@@ -202,6 +203,34 @@ describe('ExamPage', () => {
     expect(body()).toContain('পরীক্ষার ফলাফল');
   });
 
+  it('scrolls the question list inside a self-contained viewport-height shell (regression: page would not scroll when embedded)', async () => {
+    localStorage.setItem(
+      'exam_config_e9',
+      JSON.stringify({
+        questions: makeQuestions(3),
+        timeLimit: 10,
+        negativeMarking: 0,
+        mode: 'ALL_AT_ONCE',
+        title: 'স্ক্রল টেস্ট',
+        isPracticeMode: false,
+        shuffle: false,
+      }),
+    );
+    await mount('e9');
+
+    const scroller = document.getElementById('exam-container');
+    expect(scroller?.className).toContain('overflow-y-auto');
+    // The shell must own its height: `h-full` relied on ancestors that never had one, so the page needed a document scroll.
+    expect(scroller?.closest('.h-\\[100dvh\\]')).toBeTruthy();
+    expect(document.querySelector('.h-\\[100dvh\\]')?.className).toContain('overflow-hidden');
+
+    // The saved session carries a timestamp so the dashboard can order "চলমান পরীক্ষা".
+    await click(byText('লাল'));
+    await flush();
+    const session = JSON.parse(localStorage.getItem('exam_progress_u1_e9') || '{}');
+    expect(typeof session.savedAt).toBe('number');
+  });
+
   it('shows the sign-in gate to guests opening a public exam link', async () => {
     auth.state.currentUser = null;
     publicApi.fetchPublicExam.mockResolvedValue({
@@ -215,6 +244,7 @@ describe('ExamPage', () => {
     await mount('pub1');
 
     expect(body()).toContain('লাইভ পরীক্ষা');
+    expect(document.querySelector('.h-\\[100dvh\\]')).toBeTruthy(); // gate owns its scroll height too
     expect(body()).toContain('সাপ্তাহিক লাইভ মক');
     expect(body()).toContain('২০ মিনিট');
     expect(byText('লগইন করে পরীক্ষা শুরু করো')).toBeTruthy();

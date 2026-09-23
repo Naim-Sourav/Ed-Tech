@@ -54,6 +54,8 @@ interface LocationState {
   mode?: 'RAPID_FIRE' | 'WRONG_QUESTIONS';
   modelTest?: { subject: string; chapter: string; title: string; count: number; time: number };
   fromSetup?: boolean;
+  /** Dashboard "আগেরবারের সেটআপে আবার" — jump straight to the settings step of the last setup. */
+  resumeLast?: boolean;
 }
 
 interface LaunchRequest {
@@ -327,6 +329,18 @@ const QuizArena: React.FC = () => {
     if (state?.mode === 'WRONG_QUESTIONS') {
       void startWrongQuestions();
       return;
+    }
+    if (state?.resumeLast) {
+      const last = readLastSetup();
+      if (last) {
+        settingsTouched.current = true;
+        setSelection(last.selection);
+        setSettings(last.settings);
+        setTimeFollowsCount(last.settings.timeLimit === last.settings.count);
+        setTitle('');
+        openSettings(false, last.selection);
+        return;
+      }
     }
     if (state?.modelTest) {
       const { subject, chapter, title: mtTitle, count, time } = state.modelTest;

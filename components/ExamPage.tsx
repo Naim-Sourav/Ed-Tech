@@ -323,6 +323,7 @@ const ExamPage: React.FC = () => {
         flaggedIndices: Array.from(flagged),
         expiryTime: expiryTimestamp,
         duration: examDuration,
+        savedAt: Date.now(),
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
     }
@@ -785,7 +786,7 @@ const ExamPage: React.FC = () => {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="pk-landing relative flex h-full flex-col overflow-hidden bg-paper font-body text-ink">
+      <div className="pk-landing relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-paper font-body text-ink">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <div className="absolute -top-40 right-[-160px] h-[480px] w-[480px] rounded-full bg-[radial-gradient(closest-side,rgba(255,82,0,0.10),transparent)] blur-3xl" />
           <div className="absolute bottom-[-180px] left-[-160px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(closest-side,rgba(255,185,46,0.14),transparent)] blur-3xl" />

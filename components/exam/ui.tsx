@@ -279,7 +279,7 @@ export function Stat({ value, label, tone = 'neutral', className = '' }: { value
 export function StateScreen({ title, subtitle, icon: Icon }: { title: string; subtitle?: string; icon?: LucideIcon }) {
   return (
     <div
-      className="pk-landing relative flex h-full flex-col items-center justify-center overflow-hidden bg-paper px-6 font-body text-ink"
+      className="pk-landing relative flex h-[100dvh] flex-col items-center justify-center overflow-hidden bg-paper px-6 font-body text-ink"
       role="status"
       aria-live="polite"
     >
