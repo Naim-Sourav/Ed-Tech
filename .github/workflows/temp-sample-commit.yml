@@ -1,0 +1,128 @@
+name: TEMP — sampled audit → commit report
+
+# Throw-away pipeline used while building the question-bank cleanup:
+#   1. pull a polite sample of real questions from the API
+#   2. run the quality audit on it
+#   3. commit the (small) reports + examples back to the working branch so they
+#      can be reviewed without downloading artifacts.
+# Deleted before the change is merged.
+
+on:
+  push:
+    branches: [arena/01a0ce52-ed-tech]
+    paths: ['.github/workflows/temp-sample-commit.yml']
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: 'pages to sample'
+        required: false
+        default: '60'
+      limit:
+        description: 'rows per page'
+        required: false
+        default: '200'
+
+permissions:
+  contents: write
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Sample the bank (curl, retries, slow)
+        env:
+          PAGES: ${{ inputs.pages || '60' }}
+          LIMIT: ${{ inputs.limit || '200' }}
+          API_BASE: https://mongodb-hb6b.onrender.com/api
+        run: |
+          set -u
+          mkdir -p exports
+          : > exports/sample.ndjson
+          : > exports/fetch-log.txt
+          ok=0; fail=0
+          for p in $(seq 1 "$PAGES"); do
+            body=""
+            for attempt in 1 2 3; do
+              body=$(curl -sS --max-time 90 -H 'Accept: application/json' \
+                "$API_BASE/admin/questions?page=$p&limit=$LIMIT" 2>>exports/fetch-log.txt) && [ -n "$body" ] && break
+              echo "page $p attempt $attempt failed" >> exports/fetch-log.txt
+              sleep 5
+            done
+            if [ -z "$body" ]; then
+              fail=$((fail+1))
+              echo "page $p: GAVE UP" >> exports/fetch-log.txt
+              continue
+            fi
+            echo "$body" | node -e "
+              let raw='';process.stdin.on('data',d=>raw+=d).on('end',()=>{
+                try{
+                  const d=JSON.parse(raw);
+                  const rows=(d.questions||[]).map(q=>JSON.stringify(q)).join('\n');
+                  if(rows) require('fs').appendFileSync('exports/sample.ndjson', rows+'\n');
+                  console.log('total='+d.total);
+                }catch(e){console.error('parse fail',e.message);}
+              });
+            " >> exports/fetch-log.txt 2>&1
+            ok=$((ok+1))
+            sleep 1
+          done
+          rows=$(wc -l < exports/sample.ndjson)
+          echo "::notice title=sample::pages ok=$ok fail=$fail rows=$rows"
+          echo "pages ok=$ok fail=$fail rows=$rows" >> exports/fetch-log.txt
+
+      - name: Audit the sample
+        run: |
+          node scripts/question-bank-audit.mjs \
+            --file exports/sample.ndjson \
+            --out exports \
+            --report exports/audit-report.md \
+            --json exports/audit-report.json \
+            --plan exports/fix-plan.json --sample 10 || true
+          node scripts/question-bank-audit.mjs --help 2>/dev/null | head -1 || true
+
+      - name: Extract suspicious examples (small, for review)
+        run: |
+          node -e "
+            const fs=require('fs');
+            let rows=[];
+            try { rows=fs.readFileSync('exports/sample.ndjson','utf8').split('\n').filter(Boolean).map(l=>JSON.parse(l)); } catch(e){}
+            const marker=/explanation|explaination|ব্যাখ্যা|সমাধান|\bans\b\s*[:：]|\banswer\b\s*[:：]/i;
+            const suspicious=rows.filter(q=>marker.test(String(q.explanation||'')));
+            const doubled=rows.filter(q=>{
+              const e=String(q.explanation||'').replace(/\s+/g,' ').trim();
+              if(e.length<40) return false;
+              const h=Math.floor(e.length/2);
+              const a=e.slice(0,h), b=e.slice(h);
+              return a.length>15 && b.length>15 && (a.startsWith(b.slice(0,10)) || b.startsWith(a.slice(0,10)));
+            });
+            const noExplanation=rows.filter(q=>!String(q.explanation||'').trim());
+            const out=[...suspicious,...doubled.filter(d=>!suspicious.includes(d))].slice(0,250);
+            fs.writeFileSync('exports/suspicious-explanations.ndjson', out.map(q=>JSON.stringify(q)).join('\n')+'\n');
+            fs.writeFileSync('exports/sample-stats.json', JSON.stringify({
+              sampled: rows.length,
+              suspiciousExplanations: suspicious.length,
+              doubledExplanations: doubled.length,
+              withoutExplanation: noExplanation.length,
+              subjects: [...new Set(rows.map(q=>q.subject||''))].length,
+              chapters: [...new Set(rows.map(q=>(q.subject||'')+'|'+(q.chapter||'')))].length,
+            }, null, 2));
+            console.log('::notice title=sample stats::'+JSON.stringify({sampled:rows.length,suspicious:suspicious.length,doubled:doubled.length,noExplanation:noExplanation.length}));
+          "
+
+      - name: Commit the reports (small files only)
+        run: |
+          git config user.name "question-bank-audit[bot]"
+          git config user.email "audit@users.noreply.github.com"
+          mkdir -p exports
+          # never commit the raw dump, only the compact artefacts
+          rm -f exports/sample.ndjson
+          git add -f exports/audit-report.md exports/audit-report.json exports/fix-plan.json exports/suspicious-explanations.ndjson exports/sample-stats.json exports/fetch-log.txt
+          git commit -m "chore(audit): sampled question-bank audit results [skip ci]" || echo "nothing to commit"
+          git push origin HEAD:arena/01a0ce52-ed-tech || echo "push failed"
