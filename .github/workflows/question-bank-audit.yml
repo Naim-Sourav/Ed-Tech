@@ -1,0 +1,83 @@
+name: Question Bank — Fetch & Audit
+
+# Downloads the whole question bank from the backend and runs the quality
+# audit (duplicates, doubled "Explanation" blocks, broken options, mojibake…).
+#
+# Run it from the Actions tab → "Question Bank — Fetch & Audit" → Run workflow.
+# Artifacts produced:
+#   exports/question-bank.ndjson     every raw question from the API
+#   exports/audit-report.md          human readable findings
+#   exports/audit-report.json        machine readable findings
+#   exports/fix-plan.json            the exact updates/merges needed to clean it
+#
+# Local equivalent:
+#   node scripts/fetch-question-bank.mjs
+#   node scripts/question-bank-audit.mjs --file exports/question-bank.ndjson
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base:
+        description: 'API base URL'
+        required: false
+        default: 'https://mongodb-hb6b.onrender.com/api'
+      limit:
+        description: 'Questions per request'
+        required: false
+        default: '2000'
+      max_pages:
+        description: 'Safety cap on requests'
+        required: false
+        default: '100'
+      filter:
+        description: 'Extra query string (e.g. subject=Physics 1st Paper)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # esbuild is what lets the CLI reuse utils/questionQuality.ts verbatim.
+      - name: Install esbuild
+        run: npm install --no-save --no-audit --no-fund esbuild@0.21.5
+
+      - name: Fetch full question bank
+        env:
+          API_BASE: ${{ inputs.api_base }}
+        run: |
+          node scripts/fetch-question-bank.mjs \
+            --api "${{ inputs.api_base }}" \
+            --out exports/question-bank.ndjson \
+            --limit "${{ inputs.limit }}" \
+            --max-pages "${{ inputs.max_pages }}" \
+            ${{ inputs.filter != '' && format('--filter "{0}"', inputs.filter) || '' }}
+
+      - name: Audit question quality
+        run: |
+          node scripts/question-bank-audit.mjs \
+            --file exports/question-bank.ndjson \
+            --out exports \
+            --report exports/audit-report.md \
+            --json exports/audit-report.json \
+            --plan exports/fix-plan.json
+
+      - name: Publish summary
+        run: cat exports/audit-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: question-bank-audit
+          path: exports/
+          retention-days: 14
