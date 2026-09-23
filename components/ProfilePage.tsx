@@ -11,6 +11,7 @@ import { useToast } from './Toast';
 import { useCache } from '../contexts/CacheContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import { normalizeBangla, uniqueByNormalization, normalizeForComparison } from '../utils/normalization';
+import { DEPARTMENTS, TARGETS } from '../data/profileOptions';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart as ReChartsPieChart, Pie, Cell } from 'recharts';
 
 
@@ -1115,11 +1116,18 @@ const ProfilePage: React.FC<{ themeMode?: 'light' | 'dark' | 'system'; toggleThe
                     </div>
                     <div className="space-y-1.5">
                       <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Department</label>
-                      <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none"><option>Science</option><option>Arts</option><option>Commerce</option></select>
+                      <select value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none">
+                        {/* keep a legacy value selectable so saving never silently rewrites it */}
+                        {editDepartment && !DEPARTMENTS.some(d => d.id === editDepartment) && <option value={editDepartment}>{editDepartment}</option>}
+                        {DEPARTMENTS.map(d => <option key={d.id} value={d.id}>{d.label} ({d.id})</option>)}
+                      </select>
                     </div>
                     <div className="space-y-1.5 md:col-span-2">
                       <label className="block text-[12px] md:text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Target</label>
-                      <select value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none"><option>Medical</option><option>Engineering</option><option>University</option><option>Guccho</option></select>
+                      <select value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl bg-white dark:bg-zinc-800 dark:text-white text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none">
+                        {editTarget && !TARGETS.some(t => t.id === editTarget) && <option value={editTarget}>{editTarget}</option>}
+                        {TARGETS.map(t => <option key={t.id} value={t.id}>{t.label} ({t.id})</option>)}
+                      </select>
                     </div>
                  </div>
                ) : (

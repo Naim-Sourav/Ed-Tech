@@ -21,20 +21,29 @@ const VISIBLE_MS = 1700;
 
 const EVENT = "pk:auth-success";
 
-export const notifyAuthSuccess = (name?: string) => {
+const DEFAULT_SUBTITLE = "অঙ্গনে নিয়ে যাওয়া হচ্ছে…";
+
+/**
+ * @param name     first name shown in the greeting
+ * @param subtitle optional context line — e.g. a fresh sign-up is told it is
+ *                 heading to profile setup rather than "the arena"
+ */
+export const notifyAuthSuccess = (name?: string, subtitle?: string) => {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent(EVENT, { detail: { name } }));
+    window.dispatchEvent(new CustomEvent(EVENT, { detail: { name, subtitle } }));
   }
 };
 
 const AuthSuccessOverlay: React.FC = () => {
   const [name, setName] = useState<string | null>(null);
+  const [subtitle, setSubtitle] = useState<string>(DEFAULT_SUBTITLE);
 
   useEffect(() => {
     let hideTimer: number | undefined;
     const onOk = (e: Event) => {
-      const d = (e as CustomEvent<{ name?: string }>).detail;
+      const d = (e as CustomEvent<{ name?: string; subtitle?: string }>).detail;
       setName(d?.name?.trim() || "বন্ধু");
+      setSubtitle(d?.subtitle?.trim() || DEFAULT_SUBTITLE);
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => setName(null), VISIBLE_MS);
     };
@@ -97,7 +106,7 @@ const AuthSuccessOverlay: React.FC = () => {
               স্বাগতম, {name}!
             </h2>
             <p className="mt-1.5 text-[14.5px] font-medium text-mist">
-              অঙ্গনে নিয়ে যাওয়া হচ্ছে…
+              {subtitle}
             </p>
 
             {/* progress line — fills while the redirect underneath completes */}

@@ -952,3 +952,51 @@ html.dark .pk-landing:not(.dash) .shadow-brand-500\/25 {
 html.dark .pk-landing:not(.dash) .logo-tile {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 8px 24px -10px rgba(255, 82, 0, 0.35);
 }
+
+/* ---------- form fields (auth page + profile-setup wizard) ----------
+   The sign-up / profile-setup inputs sit on a white card and use the pale
+   paper tint + ink hairlines; remap them so they stay legible when the app
+   is in dark mode (html.dark) — the surface goes to a warm near-black. */
+html.dark .pk-landing:not(.dash) .bg-paper\/60 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+html.dark .pk-landing:not(.dash) .focus\:bg-white:focus {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/12 {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/8 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .pk-landing:not(.dash) .ring-ink\/12 {
+  --tw-ring-color: rgba(255, 255, 255, 0.14);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink\/5,
+html.dark .pk-landing:not(.dash) .hover\:bg-ink\/10:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .pk-landing:not(.dash) .text-ink\/80,
+html.dark .pk-landing:not(.dash) .text-ink\/60 {
+  color: rgba(243, 237, 231, 0.8);
+}
+
+html.dark .pk-landing:not(.dash) .text-ink\/35,
+html.dark .pk-landing:not(.dash) .placeholder\:text-ink\/35::placeholder {
+  color: rgba(243, 237, 231, 0.4);
+}
+
+html.dark .pk-landing:not(.dash) .text-brand-deep\/70 {
+  color: rgba(255, 171, 114, 0.75);
+}
+
+/* the "already logged in" / avatar tiles keep a light well behind the picture */
+html.dark .pk-landing:not(.dash) .ring-white {
+  --tw-ring-color: #1d1714;
+}

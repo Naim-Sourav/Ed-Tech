@@ -42,7 +42,7 @@ function ThemeToggle({ className = "" }: { className?: string }) {
   );
 }
 
-export default function Navbar({ onStart }: { onStart?: () => void }) {
+export default function Navbar({ onStart, onLogin }: { onStart?: () => void; onLogin?: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollYProgress } = useScroll();
@@ -100,7 +100,7 @@ export default function Navbar({ onStart }: { onStart?: () => void }) {
           <ThemeToggle />
           <button
             type="button"
-            onClick={onStart}
+            onClick={onLogin || onStart}
             className="rounded-full px-4 py-2 text-[15px] font-semibold text-ink-700 transition hover:text-brand-700"
           >
             লগ ইন
@@ -167,6 +167,24 @@ export default function Navbar({ onStart }: { onStart?: () => void }) {
             >
               ফ্রি শুরু করো →
             </motion.button>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.4, ease: EASE }}
+              className="mt-3 pb-1 text-center text-sm text-ink-600"
+            >
+              আগে থেকেই অ্যাকাউন্ট আছে?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  (onLogin || onStart)?.();
+                }}
+                className="font-bold text-brand-700 underline-offset-2 hover:underline"
+              >
+                লগ ইন
+              </button>
+            </motion.p>
           </motion.nav>
         )}
       </AnimatePresence>

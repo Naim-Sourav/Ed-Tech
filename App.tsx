@@ -12,7 +12,7 @@ import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
 import PorikkhangonAI from './components/PorikkhangonAI';
-import OnboardingModal from './components/OnboardingModal';
+import ProfileSetup from './components/onboarding/ProfileSetup';
 import TelegramModal from './components/TelegramModal'; // ADDED Import
 import NotificationPrompt from './components/NotificationPrompt';
 import OfflineBanner from './components/OfflineBanner';
@@ -82,13 +82,16 @@ const MainLayout: React.FC<{
 }> = ({ themeMode, toggleTheme, setThemeMode, children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  // True while the first-run profile setup wizard is on screen — secondary
+  // pop-ups (Telegram invite, push prompt) wait until it is finished.
+  const [profileSetupOpen, setProfileSetupOpen] = useState(false);
   
   const lastScrollY = useRef(0);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, isProfileComplete, profileLoading } = useAuth();
+  const { currentUser } = useAuth();
   const { showToast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
@@ -306,9 +309,9 @@ const MainLayout: React.FC<{
 
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-black font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
-      {!profileLoading && !isProfileComplete && !location.pathname.startsWith('/exam/') && <OnboardingModal />}
-      <TelegramModal />
-      <NotificationPrompt />
+      {!location.pathname.startsWith('/exam/') && <ProfileSetup onVisibilityChange={setProfileSetupOpen} />}
+      {!profileSetupOpen && <TelegramModal />}
+      {!profileSetupOpen && <NotificationPrompt />}
 
       {!hideNav && (
         <Navigation 
@@ -523,7 +526,16 @@ const AppRoutes: React.FC<{
           <AuthSuccessOverlay />
           <HashCompatRedirect />
           <Routes>
-            <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => navigate('/auth')} /> : <Navigate to="/dashboard" />} />
+            <Route
+              path="/"
+              element={
+                !currentUser ? (
+                  <LandingPage onLoginClick={() => navigate('/auth')} onSignupClick={() => navigate('/auth?mode=signup')} />
+                ) : (
+                  <Navigate to="/dashboard" />
+                )
+              }
+            />
             <Route path="/auth" element={<AuthRoute><AuthPage onBack={() => navigate('/')} /></AuthRoute>} />
 
                         {/* Public Exam Route - Accessible to guests */}

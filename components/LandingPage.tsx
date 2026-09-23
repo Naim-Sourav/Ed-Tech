@@ -15,6 +15,8 @@ import Footer from './landing/Footer';
 
 interface LandingPageProps {
   onLoginClick: () => void;
+  /** "ফ্রি শুরু করো" CTAs — opens /auth on the sign-up tab (falls back to onLoginClick) */
+  onSignupClick?: () => void;
 }
 
 /**
@@ -26,12 +28,14 @@ interface LandingPageProps {
  *
  * Integration glue only:
  *  - `motion/react` instead of `framer-motion` (the repo already depends on `motion`)
- *  - every "লগ ইন / ফ্রি শুরু করো" style CTA calls `onLoginClick` → /auth
+ *  - "লগ ইন" calls `onLoginClick` → /auth; every "ফ্রি শুরু করো" style CTA
+ *    calls `onSignupClick` → /auth?mode=signup (sign-up tab pre-selected)
  *  - styling scoped under `.pk-landing`, and while the landing is mounted the
  *    document root is switched to the design's 16px base (the app shell uses
  *    15px / 13.5px density) so type & spacing match the source design
  */
-const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onSignupClick }) => {
+  const onStart = onSignupClick || onLoginClick;
   // The app shell sets `html { font-size: 15px }` (13.5px on phones) for dense
   // app screens. The landing design is authored against a 16px base, so scope
   // that back to 16px only while this page is on screen.
@@ -83,17 +87,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         মূল কনটেন্টে যাও
       </a>
 
-      <Navbar onStart={onLoginClick} />
+      <Navbar onStart={onStart} onLogin={onLoginClick} />
       <main>
-        <Hero onStart={onLoginClick} />
+        <Hero onStart={onStart} />
         <Trust />
         <Features />
         <Showcase />
         <Benefits />
         <Testimonials />
-        <Pricing onStart={onLoginClick} />
+        <Pricing onStart={onStart} />
         <FAQ />
-        <CTA onStart={onLoginClick} />
+        <CTA onStart={onStart} />
       </main>
       <Footer />
       </div>
