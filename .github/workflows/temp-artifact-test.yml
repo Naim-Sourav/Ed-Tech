@@ -1,0 +1,50 @@
+name: TEMP — artifact channel test
+
+on:
+  push:
+    branches: [arena/01a0ce52-ed-tech]
+    paths: ['.github/workflows/temp-artifact-test.yml']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Small polite sample (10 pages × 100, 1s apart)
+        run: |
+          mkdir -p out
+          echo "sample fetch started $(date -u +%H:%M:%S)" > out/log.txt
+          for p in 1 2 3 4 5 6 7 8 9 10; do
+            code=$(curl -sS --max-time 60 -H 'Accept: application/json' \
+              -o "out/page-$p.json" -w '%{http_code}' \
+              "https://mongodb-hb6b.onrender.com/api/admin/questions?page=$p&limit=100" || echo "ERR")
+            bytes=$(wc -c < "out/page-$p.json" 2>/dev/null || echo 0)
+            echo "page $p: http=$code bytes=$bytes $(date -u +%H:%M:%S)" | tee -a out/log.txt
+            sleep 1
+          done
+          node -e "
+            const fs=require('fs');
+            let n=0, withExp=0, marker=0;
+            for (const f of fs.readdirSync('out').filter(f=>f.startsWith('page-'))) {
+              let d; try { d=JSON.parse(fs.readFileSync('out/'+f,'utf8')); } catch { continue; }
+              for (const q of (d.questions||[])) {
+                n++; const e=String(q.explanation||'');
+                if (e.trim()) withExp++;
+                if (/explanation|ব্যাখ্যা/i.test(e)) marker++;
+              }
+            }
+            const summary = 'questions='+n+' withExplanation='+withExp+' containingMarker='+marker;
+            fs.writeFileSync('out/summary.txt', summary);
+            console.log('::notice title=sample summary::'+summary);
+          "
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-sample
+          path: out/
+          retention-days: 7
