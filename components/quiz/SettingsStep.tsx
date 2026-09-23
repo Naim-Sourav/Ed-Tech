@@ -80,7 +80,7 @@ export default function SettingsStep({
   };
 
   const summary = (
-    <Card className="lg:sticky lg:top-0">
+    <Card className="min-w-0 lg:sticky lg:top-0">
       <SectionLabel icon={<FileText className="h-3.5 w-3.5" />}>তোমার মক</SectionLabel>
 
       <label className="block">
@@ -164,8 +164,8 @@ export default function SettingsStep({
   );
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.12fr_0.88fr] lg:items-start">
-      <div className="space-y-4">
+    <div className="grid min-w-0 gap-5 lg:grid-cols-[1.12fr_0.88fr] lg:items-start">
+      <div className="min-w-0 space-y-4">
         {/* Presets */}
         <div>
           <SectionLabel
@@ -174,7 +174,7 @@ export default function SettingsStep({
           >
             এক ট্যাপে সেট করো
           </SectionLabel>
-          <div className="-mx-4 flex snap-x gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-4">
+          <div className="-mx-4 flex min-w-0 snap-x gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-4">
             {PRESETS.map((p) => {
               const active = activePreset === p.id;
               return (

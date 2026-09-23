@@ -149,13 +149,13 @@ export default function BuilderShell({
         </header>
 
         {/* Body */}
-        <div ref={scrollRef} className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div ref={scrollRef} className="relative z-10 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
           <motion.div
             key={contentKey}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: EASE }}
-            className={`mx-auto w-full max-w-5xl px-4 pt-5 sm:px-6 ${footer ? 'pb-44' : 'pb-16'}`}
+            className={`mx-auto w-full min-w-0 max-w-5xl px-4 pt-5 sm:px-6 ${footer ? 'pb-44' : 'pb-16'}`}
           >
             {subtitle && <div className="mb-5 text-[14px] leading-relaxed text-mist">{subtitle}</div>}
             {children}

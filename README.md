@@ -53,6 +53,9 @@ components/landing/     → public landing page sections + content data
 components/QuizArena.tsx→ /quiz mock-test builder (বিষয় → অধ্যায় → সেটিংস → /exam/:id)
 components/quiz/        → builder steps + pure model (catalog, selection, presets,
                           stats, launch) — exam config contract lives in launch.ts
+components/ExamPage.tsx → /exam/:id player (bootstrap, timer, submit, session resume)
+components/exam/        → exam UI (QuestionCard, chrome, dialogs, ResultView, guest
+                          gate, streak modal) + pure model (scoring, titles, analytics)
 data/profileOptions.ts  → shared student-profile vocabulary (levels, batches,
                           departments, targets, goals) used by setup + profile edit
 services/               → api.ts (backend), firebase.ts, geminiService.ts, ...

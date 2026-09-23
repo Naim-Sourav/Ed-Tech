@@ -1068,3 +1068,36 @@ html.dark .pk-landing:not(.dash) .hover\:bg-mint:hover {
 html.dark .pk-landing:not(.dash) .focus-within\:bg-white:focus-within {
   background-color: rgba(255, 255, 255, 0.08);
 }
+
+/* ---------- exam player (components/exam/*) ----------
+   Hover / ring tints the exam screens lean on; keep them visible on the dark
+   surface (the light-authored values would vanish against near-black). */
+html.dark .pk-landing:not(.dash) .hover\:text-ink:hover {
+  color: #f5f0ea;
+}
+
+html.dark .pk-landing:not(.dash) .hover\:bg-ink\/5:hover,
+html.dark .pk-landing:not(.dash) .hover\:bg-paper\/60:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .pk-landing:not(.dash) .hover\:border-ink\/20:hover,
+html.dark .pk-landing:not(.dash) .hover\:border-ink\/25:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+html.dark .pk-landing:not(.dash) .ring-ink\/15 {
+  --tw-ring-color: rgba(255, 255, 255, 0.18);
+}
+
+html.dark .pk-landing:not(.dash) .bg-paper\/85 {
+  background-color: rgba(14, 11, 9, 0.85);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink\/60 {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/8 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
