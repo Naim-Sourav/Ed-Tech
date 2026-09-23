@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'motion/react';
-import { Bookmark, Check, Eye, Lightbulb, RotateCcw, X } from 'lucide-react';
+import { ArrowDown, Bookmark, Check, Eye, Lightbulb, RotateCcw, X } from 'lucide-react';
 import type { QuizQuestion } from '../../types';
 import SafeHtml from '../SafeHtml';
 import { displaySubject, optionLabel } from '../exam/model';
-import { bn, type MarkState } from './records';
+import { bn, questionKey, type MarkState } from './records';
 import { Chip, cx } from './ui';
+import { useMathJax } from './useMathJax';
+
+/** DOM id of a question's card, so views can scroll to it. */
+export const cardDomId = (q: Pick<QuizQuestion, '_id' | 'id' | 'question' | 'options'>): string => `qbank-q-${questionKey(q)}`;
 
 export type FontSizeStep = 'text-sm' | 'text-base' | 'text-lg' | 'text-xl';
 
@@ -53,6 +57,8 @@ export interface QuestionCardProps {
   onSelect: (optionIndex: number) => void;
   onReveal: () => void;
   onRetry?: () => void;
+  /** Offered once the question is answered: jump to the next question. */
+  onNext?: () => void;
   saved: boolean;
   onToggleSave?: () => void;
   fontFor: (text?: string) => string;
@@ -73,6 +79,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onSelect,
   onReveal,
   onRetry,
+  onNext,
   saved,
   onToggleSave,
   fontFor,
@@ -83,6 +90,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const scale = TYPE_SCALE[fontSize] ?? TYPE_SCALE['text-base'];
   const answered = answer !== null;
   const locked = reading || revealed;
+  const rootRef = useRef<HTMLElement>(null);
+  // Question/options render on mount; the explanation appears once `locked` flips.
+  useMathJax(rootRef, [q, locked]);
   const chapter = (q.chapter || '').trim();
   const subject = q.subject ? displaySubject(q.subject) : '';
   const source = (q.examRef || '').trim();
@@ -97,8 +107,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <article
+      ref={rootRef}
+      id={cardDomId(q)}
       className={cx(
-        'overflow-hidden rounded-[26px] bg-white ring-1 shadow-[0_18px_44px_-30px_rgba(22,18,16,0.35)] dark:bg-ink-2 dark:shadow-none',
+        'qbank-math scroll-mt-32 overflow-hidden rounded-[26px] bg-white ring-1 shadow-[0_18px_44px_-30px_rgba(22,18,16,0.35)] dark:bg-ink-2 dark:shadow-none',
         answered ? (isRight ? 'ring-emerald-500/40' : 'ring-flag/40') : 'ring-ink/8 dark:ring-white/10',
       )}
       aria-label={`প্রশ্ন ${bn(number)}`}
@@ -274,6 +286,15 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
               className="focus-ring inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[12px] font-extrabold text-ink/55 hover:bg-ink/[0.04] hover:text-ink dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white"
             >
               <RotateCcw className="h-3.5 w-3.5" strokeWidth={2.6} aria-hidden="true" /> আবার
+            </button>
+          )}
+          {answered && onNext && (
+            <button
+              type="button"
+              onClick={onNext}
+              className="focus-ring inline-flex h-8 items-center gap-1 rounded-full bg-ink/[0.05] px-3 text-[12px] font-extrabold text-ink transition-colors hover:bg-ink/[0.09] dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.12]"
+            >
+              পরের প্রশ্ন <ArrowDown className="h-3.5 w-3.5" strokeWidth={2.8} aria-hidden="true" />
             </button>
           )}
           <span className="flex-1" />

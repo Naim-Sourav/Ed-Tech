@@ -36,7 +36,7 @@ const q = (i: number, extra: Partial<QuizQuestion> = {}): QuizQuestion => ({
   ...extra,
 });
 
-const PAPER: SessionSource = { kind: 'paper', id: "DU-A '23-24", title: 'ঢাবি ক ২০২৩-২৪' };
+const PAPER: SessionSource = { kind: 'subject', id: 'ADMISSION|Physics 1st Paper|', title: 'পদার্থবিজ্ঞান · সব অধ্যায়', subject: 'Physics 1st Paper' };
 const CHAPTER: SessionSource = { kind: 'chapter', id: 'ADMISSION|Physics 1st Paper|Vector', title: 'পদার্থ · ভেক্টর', subject: 'Physics 1st Paper' };
 
 const memoryStorage = (): StorageLike & { data: Map<string, string> } => {
@@ -62,7 +62,7 @@ describe('recordAnswer', () => {
     s = recordAnswer(s, PAPER, q(2), 0, 2000);
     expect(markState(s, q(2))).toBe('wrong');
     expect(s.pending?.items).toHaveLength(2);
-    expect(s.sources["paper:DU-A '23-24"]).toMatchObject({ answered: 2, correct: 1, lastAt: 2000, title: PAPER.title });
+    expect(s.sources['subject:ADMISSION|Physics 1st Paper|']).toMatchObject({ answered: 2, correct: 1, lastAt: 2000, title: PAPER.title });
   });
 
   it('replaces the answer when the same question is retried inside a sitting', () => {
@@ -71,7 +71,7 @@ describe('recordAnswer', () => {
     expect(s.pending?.items).toHaveLength(1);
     expect(s.pending?.items[0]).toMatchObject({ a: 2, c: 1 });
     expect(s.marks[q(2)._id!]).toMatchObject({ r: 1, n: 2, a: 2 });
-    expect(s.sources["paper:DU-A '23-24"]).toMatchObject({ answered: 1, correct: 1 });
+    expect(s.sources['subject:ADMISSION|Physics 1st Paper|']).toMatchObject({ answered: 1, correct: 1 });
   });
 
   it('closes the open sitting when a different source is answered', () => {
@@ -129,12 +129,12 @@ describe('filters and summaries', () => {
     const stats = overallStats(closed, 10_000);
     expect(stats).toMatchObject({ solved: 4, correct: 3, accuracy: 75, sessions: 1, activeDays7: 1, answeredThisWeek: 4 });
     expect(recentSessions(closed)).toHaveLength(1);
-    expect(recentSources(closed)[0]).toMatchObject({ id: "paper:DU-A '23-24", answered: 4 });
+    expect(recentSources(closed)[0]).toMatchObject({ id: 'subject:ADMISSION|Physics 1st Paper|', answered: 4 });
   });
 
   it('remembers a source total', () => {
     const withTotal = setSourceTotal(s, PAPER, 60);
-    expect(withTotal.sources["paper:DU-A '23-24"].total).toBe(60);
+    expect(withTotal.sources['subject:ADMISSION|Physics 1st Paper|'].total).toBe(60);
     expect(setSourceTotal(withTotal, PAPER, 60)).toBe(withTotal);
   });
 });

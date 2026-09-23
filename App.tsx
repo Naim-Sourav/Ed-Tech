@@ -278,7 +278,7 @@ const MainLayout: React.FC<{
   const isQuizPage = location.pathname === '/quiz';
   const isQbankPage = location.pathname === '/qbank';
   const isDashboard = location.pathname === '/dashboard';
-  const isQbankInnerPage = isQbankPage && /[?&](subject|examRef|q)=/.test(location.search);
+  const isQbankInnerPage = isQbankPage && /[?&](subject|q)=/.test(location.search);
   const hideNav = isExamPage || isPaymentPage || isBotPage || isSavedQuestions || isWrongQuestions || isQuizPage || isQbankInnerPage;
   const hideTopNav = hideNav || isQbankPage || isDashboard;
 

@@ -104,6 +104,15 @@ mjx-container {
   margin: 0 2px !important;
   vertical-align: middle !important;
 }
+/* Question bank: MathJax's `matchFontHeight` blows math up to ~121% next to Hind Siliguri;
+   keep it near the text size, and let a formula wider than the card scroll inside itself
+   instead of being clipped. */
+.qbank-math mjx-container {
+  font-size: 104% !important;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 
 /* Loader — the markup + brand artwork live in index.html so the splash paints
    before React (and before this stylesheet) is ready. It simply inherits the

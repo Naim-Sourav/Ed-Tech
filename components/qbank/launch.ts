@@ -18,7 +18,6 @@ export interface ExamLaunchConfig {
   shuffle: boolean;
   /** Where in the bank the exam was launched from (feeds the bank's records). */
   qbankSource: SessionSource;
-  examRef?: string;
   subject?: string;
   chapter?: string;
 }
@@ -35,7 +34,7 @@ const shuffle = <T>(list: T[], rand: () => number): T[] => {
 /**
  * Picks `count` questions. Stimulus groups (shared contextText/contextImage)
  * are kept together so a passage never loses its questions. With `keepOrder`
- * the paper's original order is preserved (full-paper exams).
+ * the bank's order is preserved instead of shuffling.
  */
 export const pickExamQuestions = (questions: QuizQuestion[], count: number, keepOrder: boolean, rand: () => number = Math.random): QuizQuestion[] => {
   if (count >= questions.length) return keepOrder ? [...questions] : shuffle(questions, rand);
@@ -77,13 +76,13 @@ export interface ExamSetup {
 }
 
 export const buildExamConfig = (
-  opts: { title: string; source: SessionSource; examRef?: string; subject?: string; chapter?: string; keepOrder: boolean },
+  opts: { title: string; source: SessionSource; subject?: string; chapter?: string; keepOrder?: boolean },
   questions: QuizQuestion[],
   setup: ExamSetup,
   rand: () => number = Math.random,
 ): ExamLaunchConfig => ({
   title: opts.title,
-  questions: pickExamQuestions(questions, setup.count, opts.keepOrder, rand),
+  questions: pickExamQuestions(questions, setup.count, !!opts.keepOrder, rand),
   timeLimit: Math.max(0, Math.round(setup.minutes)),
   negativeMarking: setup.negative,
   mode: 'ALL_AT_ONCE',
@@ -91,7 +90,6 @@ export const buildExamConfig = (
   isPracticeMode: false,
   shuffle: false,
   qbankSource: opts.source,
-  examRef: opts.examRef,
   subject: opts.subject,
   chapter: opts.chapter,
 });

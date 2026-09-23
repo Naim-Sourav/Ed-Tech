@@ -1,23 +1,25 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowRight, Building2, ChevronRight, History, Landmark, Layers, Play, Search, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronRight, History, Layers, Play, Search, Sparkles } from 'lucide-react';
 import { SUBJECT_GROUPS, paperLabel } from '../quiz/catalog';
-import { CATEGORIES, groupPapers, groupsInCategory, type Category, type InstitutionGroup, type Paper } from './catalog';
 import type { SyllabusStats } from './data';
 import { hrefForSource, hrefs, LEVELS, parseSourceId, type Level } from './nav';
-import { bn, overallStats, progressOf, recentSources, relativeDay, type ProgressStore } from './records';
+import { bn, overallStats, recentSources, relativeDay, type ProgressStore } from './records';
 import { useQbank } from './store';
-import { Bone, Card, cx, EASE, Monogram, Pill, Scroller, SectionHeader, Track } from './ui';
+import { Card, cx, EASE, SectionHeader, Track } from './ui';
 
 /*
  * Landing screen of the question bank: search, resume, the three tabs
- * (ভর্তি / এইচএসসি / অনুশীলনী) and a glimpse of the student's records.
+ * (ভর্তি / এইচএসসি / অনুশীলনী), the subject tiles and a glimpse of the
+ * student's records.
  */
 
-const HUES: Record<Category, number> = { varsity: 18, medical: 350, engineering: 218, krishi: 140, others: 262 };
-
-export const hueFor = (category: Category): number => HUES[category] ?? 262;
+const SECTION_COPY: Record<Level, { title: string; subtitle: string }> = {
+  ADMISSION: { title: 'বিষয় বেছে নাও', subtitle: 'ঢাবি, মেডিকেল, গুচ্ছ, ইঞ্জিনিয়ারিং — সব ভর্তি পরীক্ষার প্রশ্ন, অধ্যায় ধরে' },
+  ACADEMIC: { title: 'বোর্ড ও কলেজের প্রশ্ন', subtitle: 'বিষয় বেছে নাও — ভেতরে বোর্ড আর কলেজ ফিল্টার আছে' },
+  MAINBOOK: { title: 'পাঠ্যবইয়ের অনুশীলনী', subtitle: 'বই ধরে ধরে অধ্যায়ের প্রশ্ন' },
+};
 
 /** Questions answered under a paper (all its chapters + the "সব অধ্যায়" view). */
 const subjectAnswered = (store: ProgressStore, level: Level, paper: string): number => {
@@ -33,19 +35,13 @@ const statsFor = (stats: SyllabusStats | null, paper: string): number | null => 
 
 export interface HomeProps {
   level: Level;
-  papers: Paper[] | null;
   stats: SyllabusStats | null;
-  initialCategory?: Category | 'all';
 }
 
-const Home: React.FC<HomeProps> = ({ level, papers, stats, initialCategory = 'all' }) => {
+const Home: React.FC<HomeProps> = ({ level, stats }) => {
   const navigate = useNavigate();
   const { store } = useQbank();
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<Category | 'all'>(initialCategory);
-
-  const groups = useMemo(() => (papers ? groupPapers(papers) : null), [papers]);
-  const shown = useMemo(() => (groups ? groupsInCategory(groups, category) : null), [groups, category]);
   const overall = useMemo(() => overallStats(store), [store]);
 
   const resume = useMemo(() => {
@@ -72,7 +68,7 @@ const Home: React.FC<HomeProps> = ({ level, papers, stats, initialCategory = 'al
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-[28px] font-extrabold leading-none tracking-tight text-ink dark:text-paper md:text-[34px]">প্রশ্নব্যাংক</h1>
           <p className="mt-1.5 text-[13px] font-semibold text-mist dark:text-white/50 md:text-[14px]">
-            ঢাবি, মেডিকেল, গুচ্ছ, বোর্ড — বিগত বছরের সব প্রশ্ন, উত্তর ও ব্যাখ্যাসহ।
+            ঢাবি, মেডিকেল, গুচ্ছ, বোর্ড — বিগত বছরের সব প্রশ্ন অধ্যায় ধরে, উত্তর ও ব্যাখ্যাসহ।
           </p>
         </div>
         <button
@@ -178,45 +174,8 @@ const Home: React.FC<HomeProps> = ({ level, papers, stats, initialCategory = 'al
       </div>
 
       <div className="mt-6 space-y-8">
-        {level === 'ADMISSION' && (
-          <section>
-            <SectionHeader icon={Landmark} title="প্রতিষ্ঠান অনুযায়ী" subtitle="সাল ও ইউনিট ধরে আসল প্রশ্নপত্র" />
-            <Scroller className="mt-3">
-              <Pill active={category === 'all'} onClick={() => setCategory('all')}>
-                সব
-              </Pill>
-              {CATEGORIES.map((c) => (
-                <Pill key={c.id} active={category === c.id} onClick={() => setCategory(c.id)}>
-                  {c.name}
-                </Pill>
-              ))}
-            </Scroller>
-            <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-3">
-              {!shown && [0, 1, 2, 3, 4, 5].map((i) => <Bone key={i} className="h-[112px] rounded-[22px]" />)}
-              {shown && shown.map((g) => <InstitutionCard key={g.institution.id} group={g} onOpen={() => navigate(hrefs.institution(g.institution.id))} />)}
-            </div>
-            {shown && shown.length === 0 && (
-              <Card className="mt-3 p-6 text-center">
-                <Building2 className="mx-auto h-7 w-7 text-ink/40 dark:text-white/40" strokeWidth={2} aria-hidden="true" />
-                <p className="mt-2 text-[13.5px] font-bold text-ink dark:text-paper">এই ক্যাটাগরিতে এখনো প্রশ্নপত্র যোগ হয়নি</p>
-                <p className="mt-0.5 text-[12px] font-semibold text-mist dark:text-white/50">নতুন প্রশ্নপত্র নিয়মিত যোগ হচ্ছে — অন্য ক্যাটাগরি দেখো।</p>
-              </Card>
-            )}
-          </section>
-        )}
-
         <section>
-          <SectionHeader
-            icon={Layers}
-            title={level === 'ADMISSION' ? 'বিষয় ও অধ্যায় ধরে' : level === 'ACADEMIC' ? 'বোর্ড ও কলেজের প্রশ্ন' : 'পাঠ্যবইয়ের অনুশীলনী'}
-            subtitle={
-              level === 'ADMISSION'
-                ? 'সব ভর্তি পরীক্ষার প্রশ্ন একসাথে, অধ্যায় অনুযায়ী'
-                : level === 'ACADEMIC'
-                  ? 'বিষয় বেছে নাও — ভেতরে বোর্ড আর কলেজ ফিল্টার আছে'
-                  : 'বই ধরে ধরে অধ্যায়ের প্রশ্ন'
-            }
-          />
+          <SectionHeader icon={Layers} title={SECTION_COPY[level].title} subtitle={SECTION_COPY[level].subtitle} />
           <div className="mt-3 grid grid-cols-2 gap-2.5 md:grid-cols-3 lg:grid-cols-4">
             {SUBJECT_GROUPS.flatMap((g) =>
               g.papers.map((paper) => {
@@ -284,7 +243,7 @@ const Home: React.FC<HomeProps> = ({ level, papers, stats, initialCategory = 'al
                 <ArrowRight className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
               </span>
               <p className="text-[13px] font-semibold leading-relaxed text-mist dark:text-white/55">
-                প্রশ্ন সমাধান করলেই এখানে রেকর্ড জমবে — কোন প্রশ্নপত্রে কতটুকু হলো, কোথায় ভুল হচ্ছে, সব একসাথে।
+                প্রশ্ন সমাধান করলেই এখানে রেকর্ড জমবে — কোন অধ্যায়ে কতটুকু হলো, কোথায় ভুল হচ্ছে, সব একসাথে।
               </p>
             </Card>
           )}
@@ -295,41 +254,3 @@ const Home: React.FC<HomeProps> = ({ level, papers, stats, initialCategory = 'al
 };
 
 export default Home;
-
-/* ── institution card ─────────────────────────────────────────────────── */
-
-function InstitutionCard({ group, onOpen }: { group: InstitutionGroup; onOpen: () => void }) {
-  const { store } = useQbank();
-  const inst = group.institution;
-  const years = group.papers.map((p) => p.year).filter(Boolean);
-  const span = years.length ? (Math.min(...years) === Math.max(...years) ? bn(Math.max(...years)) : `${bn(Math.min(...years))}–${bn(Math.max(...years))}`) : '';
-  let answered = 0;
-  let total = 0;
-  group.papers.forEach((p) => {
-    const prog = progressOf(store, { kind: 'paper', id: p.ref });
-    if (prog) {
-      answered += prog.answered;
-      total += prog.total ?? p.count ?? 0;
-    }
-  });
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="focus-ring group flex min-h-[112px] flex-col rounded-[22px] bg-white p-3.5 text-left ring-1 ring-ink/8 transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-28px_rgba(22,18,16,0.5)] dark:bg-ink-2 dark:ring-white/10 dark:hover:shadow-none"
-    >
-      <div className="flex items-start gap-2.5">
-        <Monogram text={inst.code} hue={hueFor(inst.category)} className="h-10 min-w-10 px-2" />
-        <span className="ml-auto rounded-full bg-ink/[0.05] px-2 py-0.5 font-body text-[11px] font-extrabold tabular-nums text-ink/60 dark:bg-white/[0.08] dark:text-white/60">
-          {bn(group.papers.length)}টি
-        </span>
-      </div>
-      <span className="mt-2.5 line-clamp-2 text-[13.5px] font-extrabold leading-snug text-ink dark:text-paper">{inst.name}</span>
-      <span className="mt-auto pt-1.5 text-[11.5px] font-bold text-mist dark:text-white/50">
-        {span || 'প্রশ্নপত্র'}
-        {group.units.length > 1 ? ` · ${bn(group.units.length)} ইউনিট` : ''}
-      </span>
-      {answered > 0 && <Track value={total ? answered / total : 0.1} className="mt-2" />}
-    </button>
-  );
-}

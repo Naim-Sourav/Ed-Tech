@@ -13,7 +13,6 @@ import { Btn, Card, Chip, cx, Empty, PageHeader, Row, SectionHeader, Track } fro
  */
 
 const KIND_LABEL: Record<string, string> = {
-  paper: 'প্রশ্নপত্র',
   chapter: 'অধ্যায়',
   subject: 'বিষয়',
   search: 'খোঁজ',

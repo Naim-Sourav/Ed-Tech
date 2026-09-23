@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { QuizQuestion } from '../../types';
-import { asLevel, chapterSource, hrefForSource, hrefs, parseSourceId, paperSource, searchSource } from './nav';
+import { asLevel, chapterSource, hrefForSource, hrefs, parseSourceId, searchSource } from './nav';
 import { buildExamConfig, countPresets, pickExamQuestions, recordQbankExam } from './launch';
 import { readStore, type StorageLike } from './records';
 
@@ -57,19 +57,24 @@ describe('countPresets', () => {
 
 describe('buildExamConfig', () => {
   it('produces the launch contract ExamPage expects', () => {
-    const source = paperSource("DU-A '23-24", 'ঢাবি ক ২০২৩-২৪');
-    const config = buildExamConfig({ title: 'ঢাবি ক ২০২৩-২৪', source, examRef: "DU-A '23-24", keepOrder: true }, [q(1), q(2), q(3)], {
-      count: 3,
-      minutes: 45,
-      negative: 0.25,
-    });
+    const source = { ...chapterSource('ADMISSION', 'Physics 1st Paper', 'ভেক্টর'), kind: 'exam' as const };
+    const config = buildExamConfig(
+      { title: 'পদার্থবিজ্ঞান · ভেক্টর', source, subject: 'Physics 1st Paper', chapter: 'ভেক্টর', keepOrder: true },
+      [q(1), q(2), q(3)],
+      {
+        count: 3,
+        minutes: 45,
+        negative: 0.25,
+      },
+    );
     expect(config).toMatchObject({
       type: 'QBANK_EXAM',
       mode: 'ALL_AT_ONCE',
       timeLimit: 45,
       negativeMarking: 0.25,
       isPracticeMode: false,
-      examRef: "DU-A '23-24",
+      subject: 'Physics 1st Paper',
+      chapter: 'ভেক্টর',
       qbankSource: source,
     });
     expect(config.questions.map((x) => x.question)).toEqual(['Q1', 'Q2', 'Q3']);
@@ -88,8 +93,8 @@ describe('recordQbankExam', () => {
     const original = g.localStorage;
     g.localStorage = storage;
     try {
-      const source = paperSource("DU-A '23-24", 'ঢাবি');
-      expect(recordQbankExam('u1', { type: 'QBANK_EXAM', qbankSource: source, title: 'ঢাবি' }, [q(1), q(2)], [1, 3], 120)).toBe(true);
+      const source = { ...chapterSource('ADMISSION', 'Physics 1st Paper', 'ভেক্টর'), kind: 'exam' as const };
+      expect(recordQbankExam('u1', { type: 'QBANK_EXAM', qbankSource: source, title: 'ভেক্টর' }, [q(1), q(2)], [1, 3], 120)).toBe(true);
       const store = readStore('u1', storage);
       expect(store.sessions).toHaveLength(1);
       expect(store.sessions[0].items.map((i) => i.c)).toEqual([1, 0]);
@@ -106,14 +111,14 @@ describe('nav', () => {
     expect(hrefs.home()).toBe('/qbank');
     expect(hrefs.home('ACADEMIC')).toBe('/qbank?level=ACADEMIC');
     expect(hrefs.chapter('ACADEMIC', 'Physics 1st Paper', null)).toBe('/qbank?level=ACADEMIC&subject=Physics+1st+Paper&scope=all');
-    expect(hrefForSource(paperSource('X 2020', 't'))).toBe('/qbank?examRef=X+2020');
+    expect(hrefForSource(chapterSource('ACADEMIC', 'Physics 1st Paper', null))).toBe('/qbank?level=ACADEMIC&subject=Physics+1st+Paper&scope=all');
     expect(hrefForSource(chapterSource('ADMISSION', 'Physics 1st Paper', 'ভেক্টর'))).toBe(hrefs.chapter('ADMISSION', 'Physics 1st Paper', 'ভেক্টর'));
     expect(hrefForSource(searchSource('নিউটন', 'ACADEMIC'))).toBe('/qbank?q=%E0%A6%A8%E0%A6%BF%E0%A6%89%E0%A6%9F%E0%A6%A8&level=ACADEMIC');
     expect(hrefForSource({ kind: 'exam', id: 'x' })).toBeNull();
   });
 
   it('parses stored source ids (refs may contain colons)', () => {
-    expect(parseSourceId('paper:builtin:medical_24_25')).toEqual({ kind: 'paper', id: 'builtin:medical_24_25' });
+    expect(parseSourceId('search:ACADEMIC|a:b')).toEqual({ kind: 'search', id: 'ACADEMIC|a:b' });
     expect(parseSourceId('nonsense')).toBeNull();
     expect(asLevel('MAINBOOK')).toBe('MAINBOOK');
     expect(asLevel('bogus')).toBe('ADMISSION');

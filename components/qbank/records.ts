@@ -27,18 +27,18 @@ export interface QuestionMark {
   a: number;
 }
 
-export type SourceKind = 'paper' | 'chapter' | 'subject' | 'search' | 'exam' | 'mixed';
+export type SourceKind = 'chapter' | 'subject' | 'search' | 'exam' | 'mixed';
 
 export interface SessionSource {
   kind: SourceKind;
-  /** Stable id for the source: the examRef, "paper|chapter" or the search text. */
+  /** Stable id for the source: "level|paper|chapter" or the search text. */
   id: string;
   title: string;
   subject?: string;
 }
 
 export interface AnsweredItem {
-  /** Question key (Mongo id, or a content hash for bundled papers). */
+  /** Question key (Mongo id, or a content hash when a question has none). */
   k: string;
   /** Chosen option index. */
   a: number;
@@ -70,7 +70,7 @@ export interface SourceProgress {
   answered: number;
   /** Of those, how many are currently marked correct. */
   correct: number;
-  /** Known size of the source (paper length / chapter count), when we have it. */
+  /** Known size of the source (chapter's question count), when we have it. */
   total?: number;
   lastAt: number;
 }
@@ -97,7 +97,7 @@ const hash = (text: string): string => {
   return (h >>> 0).toString(36);
 };
 
-/** Mongo id when present, otherwise a stable content hash (bundled papers have no ids). */
+/** Mongo id when present, otherwise a stable content hash. */
 export const questionKey = (q: Pick<QuizQuestion, '_id' | 'id' | 'question' | 'options'>): string =>
   q._id || q.id || `h:${hash(`${q.question}|${(q.options || []).join('|')}`)}`;
 

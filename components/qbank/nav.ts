@@ -7,11 +7,10 @@ import type { SessionSource } from './records';
  *
  *   /qbank                                   home (ভর্তি tab)
  *   /qbank?level=ACADEMIC|ADMISSION|MAINBOOK home with that tab open
- *   /qbank?institution=du[&unit=ক ইউনিট]      papers of one institution
- *   /qbank?examRef=<ref>                      one paper
  *   /qbank?level=X&subject=<paper>            chapter picker
  *   /qbank?level=X&subject=<paper>&chapter=<c>   questions of a chapter
  *   /qbank?level=X&subject=<paper>&scope=all  every chapter of a paper
+ *   /qbank?…&admissionCategory=medical        (ভর্তি) only that kind of institution
  *   /qbank?q=<text>                           search
  *   /qbank?view=records                       records
  */
@@ -39,8 +38,6 @@ const build = (params: Record<string, string | null | undefined>): string => {
 
 export const hrefs = {
   home: (level?: Level | null) => build({ level: level && level !== 'ADMISSION' ? level : null }),
-  institution: (id: string, unit?: string | null) => build({ institution: id, unit }),
-  paper: (ref: string) => build({ examRef: ref }),
   subject: (level: Level, subject: string) => build({ level, subject }),
   chapter: (level: Level, subject: string, chapter: string | null) => build({ level, subject, chapter: chapter || null, scope: chapter ? null : 'all' }),
   search: (q: string, level?: Level | null) => build({ q, level: level && level !== 'ADMISSION' ? level : null }),
@@ -48,8 +45,6 @@ export const hrefs = {
 };
 
 /* ── sources ──────────────────────────────────────────────────────────── */
-
-export const paperSource = (ref: string, title: string): SessionSource => ({ kind: 'paper', id: ref, title });
 
 export const chapterSource = (level: Level, subject: string, chapter: string | null): SessionSource => ({
   kind: chapter ? 'chapter' : 'subject',
@@ -67,8 +62,6 @@ export const searchSource = (q: string, level: Level | null): SessionSource => (
 /** Where a recorded source lives, for "চালিয়ে যাও" links. */
 export const hrefForSource = (source: Pick<SessionSource, 'kind' | 'id'>): string | null => {
   switch (source.kind) {
-    case 'paper':
-      return hrefs.paper(source.id);
     case 'chapter':
     case 'subject': {
       const [level, subject, chapter] = source.id.split('|');
