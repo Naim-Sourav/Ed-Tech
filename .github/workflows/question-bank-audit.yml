@@ -56,11 +56,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      # esbuild is what lets the CLI reuse utils/questionQuality.ts verbatim.
-      - name: Install esbuild
-        run: npm install --no-save --no-audit --no-fund esbuild@0.21.5
+          # Node 22 imports utils/questionQuality.ts directly (native type
+          # stripping) — no npm install needed for the audit job.
+          node-version: '22'
 
       - name: Fetch full question bank
         env:

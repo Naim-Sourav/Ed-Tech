@@ -19,12 +19,11 @@
  *   node scripts/question-bank-audit.mjs --out exports --sample 8 --no-fuzzy
  */
 
-import { buildSync } from 'esbuild';
-import { mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, mkdtempSync, statSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { loadQuestionQuality } from './lib/load-quality.mjs';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const arg = (name, fallback) => {
@@ -44,19 +43,9 @@ const FROM_API = flag('api');
 const API = arg('api', process.env.API_BASE || 'https://mongodb-hb6b.onrender.com/api');
 
 // ---------------------------------------------------------------------------
-// 1. Load the shared quality module (TypeScript → bundled ESM)
+// 1. Load the shared quality module (the same file the app imports)
 // ---------------------------------------------------------------------------
-const tmp = mkdtempSync(join(tmpdir(), 'qb-quality-'));
-const bundlePath = join(tmp, 'questionQuality.mjs');
-buildSync({
-  entryPoints: [join(ROOT, 'utils', 'questionQuality.ts')],
-  bundle: true,
-  format: 'esm',
-  outfile: bundlePath,
-  logLevel: 'silent',
-});
-const Q = await import(pathToFileURL(bundlePath).href);
-rmSync(tmp, { recursive: true, force: true });
+const Q = await loadQuestionQuality();
 
 // ---------------------------------------------------------------------------
 // 2. Read the bank
