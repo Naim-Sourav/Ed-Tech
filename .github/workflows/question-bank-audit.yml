@@ -15,6 +15,16 @@ name: Question Bank — Fetch & Audit
 #   node scripts/question-bank-audit.mjs --file exports/question-bank.ndjson
 
 on:
+  # TEMPORARY: lets the current working branch trigger the audit while the
+  # workflow does not exist on main yet (GitHub only allows manual dispatch of
+  # workflows present on the default branch). Remove after the first merge.
+  push:
+    branches: [arena/01a0ce52-ed-tech]
+    paths:
+      - '.github/workflows/question-bank-audit.yml'
+      - 'scripts/fetch-question-bank.mjs'
+      - 'scripts/question-bank-audit.mjs'
+      - 'utils/questionQuality.ts'
   workflow_dispatch:
     inputs:
       api_base:
