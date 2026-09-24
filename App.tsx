@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { lazy, useState, useEffect, Suspense, useRef } from 'react';
 import { logger } from './utils/logger';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -12,7 +12,7 @@ import { useAuth } from './contexts/AuthContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
 import PorikkhangonAI from './components/PorikkhangonAI';
-import OnboardingModal from './components/OnboardingModal';
+import ProfileSetup from './components/onboarding/ProfileSetup';
 import TelegramModal from './components/TelegramModal'; // ADDED Import
 import NotificationPrompt from './components/NotificationPrompt';
 import OfflineBanner from './components/OfflineBanner';
@@ -24,29 +24,12 @@ import { listenToInvites, deleteInvite, joinRTDBRoom } from './services/battleSe
 
 import ErrorBoundary from './components/ErrorBoundary';
 
-// --- Lazy Load Helper with Retry Logic ---
-const lazyWithRetry = (componentImport: () => Promise<any>) =>
-  React.lazy(async () => {
-    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-      window.localStorage.getItem('page-has-been-force-refreshed') || 'false'
-    );
-
-    try {
-      const component = await componentImport();
-      window.localStorage.setItem('page-has-been-force-refreshed', 'false');
-      return component;
-    } catch (error) {
-      if (!pageHasAlreadyBeenForceRefreshed) {
-        // A stub to prevent infinite loops
-        window.localStorage.setItem('page-has-been-force-refreshed', 'true');
-        window.location.reload();
-        return { default: () => null }; // Return a dummy component while reloading
-      }
-
-      // The error is real and the page has already been refreshed
-      throw error;
-    }
-  });
+// --- Lazy Load Helper - simplified to avoid dispatcher null race ---
+// Previous version did window.location.reload() + return dummy () => null during render,
+// which could cause ReactCurrentDispatcher null (useContext/useState) if a navigation
+// happened while the dummy was mounted. Now we just lazy-load directly; chunk load
+// failures will be caught by ErrorBoundary and user can refresh via its button.
+const lazyWithRetry = (componentImport: () => Promise<any>) => lazy(componentImport);
 
 // --- Lazy Load Components ---
 const HomeDashboard = lazyWithRetry(() => import('./components/HomeDashboard'));
@@ -82,13 +65,16 @@ const MainLayout: React.FC<{
 }> = ({ themeMode, toggleTheme, setThemeMode, children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  // True while the first-run profile setup wizard is on screen — secondary
+  // pop-ups (Telegram invite, push prompt) wait until it is finished.
+  const [profileSetupOpen, setProfileSetupOpen] = useState(false);
   
   const lastScrollY = useRef(0);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, isProfileComplete, profileLoading } = useAuth();
+  const { currentUser } = useAuth();
   const { showToast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
@@ -275,7 +261,7 @@ const MainLayout: React.FC<{
   const isQuizPage = location.pathname === '/quiz';
   const isQbankPage = location.pathname === '/qbank';
   const isDashboard = location.pathname === '/dashboard';
-  const isQbankInnerPage = isQbankPage && (location.search.includes('subject=') || location.search.includes('examRef='));
+  const isQbankInnerPage = isQbankPage && /[?&](subject|q)=/.test(location.search);
   const hideNav = isExamPage || isPaymentPage || isBotPage || isSavedQuestions || isWrongQuestions || isQuizPage || isQbankInnerPage;
   const hideTopNav = hideNav || isQbankPage || isDashboard;
 
@@ -306,9 +292,9 @@ const MainLayout: React.FC<{
 
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-black font-sans text-gray-900 dark:text-gray-100 overflow-hidden selection:bg-primary/30">
-      {!profileLoading && !isProfileComplete && !location.pathname.startsWith('/exam/') && <OnboardingModal />}
-      <TelegramModal />
-      <NotificationPrompt />
+      {!location.pathname.startsWith('/exam/') && <ProfileSetup onVisibilityChange={setProfileSetupOpen} />}
+      {!profileSetupOpen && <TelegramModal />}
+      {!profileSetupOpen && <NotificationPrompt />}
 
       {!hideNav && (
         <Navigation 
@@ -340,15 +326,10 @@ const MainLayout: React.FC<{
         </main>
       </div>
 
-      {/* Global Battle Invite Popup */}
-      <AnimatePresence>
-        {activeInvite && (
-          <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white dark:bg-zinc-900 border-2 border-orange-500 rounded-3xl shadow-2xl p-5 z-[9999] overflow-hidden"
-          >
+      {/* Global Battle Invite Popup - plain div to avoid useContext null race from AnimatePresence exit */}
+      {activeInvite && (
+        <div className="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white dark:bg-zinc-900 border-2 border-orange-500 rounded-3xl shadow-2xl p-5 z-[9999] overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-xl pointer-events-none" />
             {/* Ambient fire glow in background */}
             <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-xl pointer-events-none"></div>
             
@@ -385,14 +366,9 @@ const MainLayout: React.FC<{
               </div>
             </div>
 
-            {/* Countdown / Time Limit indicator */}
+            {/* Countdown / Time Limit indicator - plain div to avoid motion */}
             <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-orange-500"
-                initial={{ width: '100%' }}
-                animate={{ width: `${(inviteTimeLeft / 45) * 100}%` }}
-                transition={{ duration: 1, ease: 'linear' }}
-              />
+              <div className="h-full bg-orange-500 transition-all duration-1000 ease-linear" style={{ width: `${(inviteTimeLeft / 45) * 100}%` }} />
             </div>
             
             <div className="flex items-center gap-2 mt-4">
@@ -410,9 +386,8 @@ const MainLayout: React.FC<{
                 গ্রহণ করুন ({inviteTimeLeft}s)
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 };
@@ -523,7 +498,16 @@ const AppRoutes: React.FC<{
           <AuthSuccessOverlay />
           <HashCompatRedirect />
           <Routes>
-            <Route path="/" element={!currentUser ? <LandingPage onLoginClick={() => navigate('/auth')} /> : <Navigate to="/dashboard" />} />
+            <Route
+              path="/"
+              element={
+                !currentUser ? (
+                  <LandingPage onLoginClick={() => navigate('/auth')} onSignupClick={() => navigate('/auth?mode=signup')} />
+                ) : (
+                  <Navigate to="/dashboard" />
+                )
+              }
+            />
             <Route path="/auth" element={<AuthRoute><AuthPage onBack={() => navigate('/')} /></AuthRoute>} />
 
                         {/* Public Exam Route - Accessible to guests */}

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { fetchLeaderboardAPI, normalizeText } from '../services/api';
@@ -24,7 +24,7 @@ const LeaderboardPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFloatingRank, setShowFloatingRank] = useState(false);
-  const lastScrollY = React.useRef(0);
+  const lastScrollY = useRef(0);
 
   // Update Cache when state changes
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { logger } from '../utils/logger';
 import { generateQuiz } from "../services/geminiService";
 import { saveQuestionsToBankAPI } from "../services/api";
@@ -324,7 +324,7 @@ const AdminQuestionGenerator: React.FC = () => {
     subject && chapter ? SYLLABUS_DB[subject][chapter] || [] : [];
   const totalQuestionsToGenerate = distribution.reduce((a, b) => a + b, 0);
 
-  const bulkSummary = React.useMemo(() => {
+  const bulkSummary = useMemo(() => {
     if (uploadCategory !== "BULK" || generatedQuestions.length === 0)
       return null;
 

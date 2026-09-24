@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -215,7 +215,7 @@ interface SubjectItemProps {
   onDelete: (id: string) => void;
 }
 
-const SubjectItem = React.memo(({ subject, onStartSession, onEdit, onDelete }: SubjectItemProps) => {
+const SubjectItem = memo(({ subject, onStartSession, onEdit, onDelete }: SubjectItemProps) => {
   const controls = useDragControls();
 
   return (

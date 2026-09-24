@@ -104,6 +104,15 @@ mjx-container {
   margin: 0 2px !important;
   vertical-align: middle !important;
 }
+/* Question bank: MathJax's `matchFontHeight` blows math up to ~121% next to Hind Siliguri;
+   keep it near the text size, and let a formula wider than the card scroll inside itself
+   instead of being clipped. */
+.qbank-math mjx-container {
+  font-size: 104% !important;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 
 /* Loader — the markup + brand artwork live in index.html so the splash paints
    before React (and before this stylesheet) is ready. It simply inherits the
@@ -951,4 +960,153 @@ html.dark .pk-landing:not(.dash) .shadow-brand-500\/25 {
 /* the logo's black tile must stay readable on dark surfaces (navbar / dark mode) */
 html.dark .pk-landing:not(.dash) .logo-tile {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 8px 24px -10px rgba(255, 82, 0, 0.35);
+}
+
+/* ---------- form fields (auth page + profile-setup wizard) ----------
+   The sign-up / profile-setup inputs sit on a white card and use the pale
+   paper tint + ink hairlines; remap them so they stay legible when the app
+   is in dark mode (html.dark) — the surface goes to a warm near-black. */
+html.dark .pk-landing:not(.dash) .bg-paper\/60 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+html.dark .pk-landing:not(.dash) .focus\:bg-white:focus {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/12 {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/8 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .pk-landing:not(.dash) .ring-ink\/12 {
+  --tw-ring-color: rgba(255, 255, 255, 0.14);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink\/5,
+html.dark .pk-landing:not(.dash) .hover\:bg-ink\/10:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .pk-landing:not(.dash) .text-ink\/80,
+html.dark .pk-landing:not(.dash) .text-ink\/60 {
+  color: rgba(243, 237, 231, 0.8);
+}
+
+html.dark .pk-landing:not(.dash) .text-ink\/35,
+html.dark .pk-landing:not(.dash) .placeholder\:text-ink\/35::placeholder {
+  color: rgba(243, 237, 231, 0.4);
+}
+
+html.dark .pk-landing:not(.dash) .text-brand-deep\/70 {
+  color: rgba(255, 171, 114, 0.75);
+}
+
+/* the "already logged in" / avatar tiles keep a light well behind the picture */
+html.dark .pk-landing:not(.dash) .ring-white {
+  --tw-ring-color: #1d1714;
+}
+
+/* ---------- mock-test builder (components/quiz/*) ----------
+   Subject tiles take their accent from a per-subject `--hue` so the grid is
+   colourful in light mode yet stays readable on the dark surface. */
+.pk-landing .subject-tile {
+  background: hsl(var(--hue, 18) 88% 93%);
+  color: hsl(var(--hue, 18) 72% 34%);
+  box-shadow: inset 0 0 0 1px hsl(var(--hue, 18) 60% 82% / 0.6);
+}
+
+html.dark .pk-landing:not(.dash) .subject-tile {
+  background: hsl(var(--hue, 18) 38% 21%);
+  color: hsl(var(--hue, 18) 85% 74%);
+  box-shadow: inset 0 0 0 1px hsl(var(--hue, 18) 40% 32% / 0.8);
+}
+
+html.dark .pk-landing:not(.dash) .bg-white\/85 {
+  background-color: rgba(29, 23, 20, 0.85);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink\/8 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink\/15 {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+html.dark .pk-landing:not(.dash) .hover\:bg-ink\/80:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+html.dark .pk-landing:not(.dash) .text-ink\/85 {
+  color: rgba(243, 237, 231, 0.88);
+}
+
+html.dark .pk-landing:not(.dash) .placeholder\:text-ink\/60::placeholder {
+  color: rgba(243, 237, 231, 0.55);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/15,
+html.dark .pk-landing:not(.dash) .border-ink\/20 {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+html.dark .pk-landing:not(.dash) .border-brand\/50 {
+  border-color: rgba(255, 138, 76, 0.6);
+}
+
+html.dark .pk-landing:not(.dash) .bg-brand\/15 {
+  background-color: rgba(255, 82, 0, 0.28);
+}
+
+html.dark .pk-landing:not(.dash) .bg-cream {
+  background-color: rgba(255, 82, 0, 0.16);
+}
+
+html.dark .pk-landing:not(.dash) .hover\:bg-rose-50:hover {
+  background-color: rgba(244, 63, 94, 0.18);
+}
+
+html.dark .pk-landing:not(.dash) .hover\:bg-mint:hover {
+  background-color: rgba(255, 82, 0, 0.18);
+}
+
+html.dark .pk-landing:not(.dash) .focus-within\:bg-white:focus-within {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- exam player (components/exam/*) ----------
+   Hover / ring tints the exam screens lean on; keep them visible on the dark
+   surface (the light-authored values would vanish against near-black). */
+html.dark .pk-landing:not(.dash) .hover\:text-ink:hover {
+  color: #f5f0ea;
+}
+
+html.dark .pk-landing:not(.dash) .hover\:bg-ink\/5:hover,
+html.dark .pk-landing:not(.dash) .hover\:bg-paper\/60:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .pk-landing:not(.dash) .hover\:border-ink\/20:hover,
+html.dark .pk-landing:not(.dash) .hover\:border-ink\/25:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+html.dark .pk-landing:not(.dash) .ring-ink\/15 {
+  --tw-ring-color: rgba(255, 255, 255, 0.18);
+}
+
+html.dark .pk-landing:not(.dash) .bg-paper\/85 {
+  background-color: rgba(14, 11, 9, 0.85);
+}
+
+html.dark .pk-landing:not(.dash) .bg-ink\/60 {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+html.dark .pk-landing:not(.dash) .border-ink\/8 {
+  border-color: rgba(255, 255, 255, 0.1);
 }

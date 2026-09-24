@@ -311,7 +311,7 @@ const AdminJsonUpload: React.FC = () => {
     [],
   );
   const [isSaving, setIsSaving] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;

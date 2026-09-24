@@ -1274,24 +1274,69 @@ app.post('/api/users/:userId/exam-results', async (req, res) => {
                 ...resultData // Contains examId, userAnswers, questions, config, stats
             });
 
-            // Update user global stats
+            // Update user global stats — per-question so mixed-subject exams distribute correctly
             const user = await User.findOne({ uid: userId });
             if (user) {
                 user.totalExams += 1;
                 user.points += (resultData.score > 0 ? (resultData.correct * 5) + 10 : 0);
                 if (!user.stats) user.stats = { totalCorrect:0, totalWrong:0, totalSkipped:0, subjectStats: {}, topicStats: {} };
-                user.stats.totalCorrect += resultData.correct;
-                user.stats.totalWrong += resultData.wrong;
-                user.stats.totalSkipped += resultData.skipped;
-                const subjStat = user.stats.subjectStats.get(resultData.subject) || { correct: 0, total: 0 };
-                subjStat.correct += resultData.correct;
-                subjStat.total += resultData.totalQuestions;
-                user.stats.subjectStats.set(resultData.subject, subjStat);
-                resultData.topicStats.forEach(t => {
-                    const topicStat = user.stats.topicStats.get(t.topic) || { correct: 0, total: 0 };
-                    topicStat.correct += t.correct;
-                    topicStat.total += t.total;
-                    user.stats.topicStats.set(t.topic, topicStat);
+                if (!user.stats.subjectStats) user.stats.subjectStats = new Map();
+                if (!user.stats.topicStats) user.stats.topicStats = new Map();
+                user.stats.totalCorrect += resultData.correct || 0;
+                user.stats.totalWrong += resultData.wrong || 0;
+                user.stats.totalSkipped += resultData.skipped || 0;
+
+                const questions = Array.isArray(resultData.questions) ? resultData.questions : [];
+                const userAnswers = Array.isArray(resultData.userAnswers) ? resultData.userAnswers : [];
+                const subjectMap = new Map();
+                const topicMap = new Map();
+                if (questions.length > 0) {
+                  questions.forEach((q, idx) => {
+                    if (!q) return;
+                    const subj = (q.subject || resultData.subject || 'General').trim() || 'General';
+                    const ans = userAnswers[idx];
+                    const correctIdx = q.correctAnswerIndex ?? q.correctAnswer ?? -1;
+                    const isCorrect = ans !== null && ans !== undefined && ans === correctIdx;
+                    const s = subjectMap.get(subj) || { correct: 0, total: 0 };
+                    s.total += 1;
+                    if (isCorrect) s.correct += 1;
+                    subjectMap.set(subj, s);
+                    const topicKey = (q.topic || q.chapter || subj || 'General').trim() || 'General';
+                    const t = topicMap.get(topicKey) || { correct: 0, total: 0 };
+                    t.total += 1;
+                    if (isCorrect) t.correct += 1;
+                    topicMap.set(topicKey, t);
+                  });
+                } else {
+                  // Fallback to legacy single-subject payload when questions array is missing
+                  const fallbackSubj = (resultData.subject || 'General').trim() || 'General';
+                  const s = subjectMap.get(fallbackSubj) || { correct: 0, total: 0 };
+                  s.correct += resultData.correct || 0;
+                  s.total += resultData.totalQuestions || 0;
+                  subjectMap.set(fallbackSubj, s);
+                  if (Array.isArray(resultData.topicStats)) {
+                    resultData.topicStats.forEach(t => {
+                      if (!t || !t.topic) return;
+                      const key = String(t.topic).trim() || 'General';
+                      const cur = topicMap.get(key) || { correct: 0, total: 0 };
+                      cur.correct += t.correct || 0;
+                      cur.total += t.total || 0;
+                      topicMap.set(key, cur);
+                    });
+                  }
+                }
+
+                subjectMap.forEach((val, key) => {
+                  const existing = user.stats.subjectStats.get(key) || { correct: 0, total: 0 };
+                  existing.correct += val.correct;
+                  existing.total += val.total;
+                  user.stats.subjectStats.set(key, existing);
+                });
+                topicMap.forEach((val, key) => {
+                  const existing = user.stats.topicStats.get(key) || { correct: 0, total: 0 };
+                  existing.correct += val.correct;
+                  existing.total += val.total;
+                  user.stats.topicStats.set(key, existing);
                 });
                 await user.save();
             }
@@ -1312,13 +1357,36 @@ app.post('/api/users/:userId/exam-results', async (req, res) => {
                 }
             }
         } else {
-            // Memory Fallback
+            // Memory Fallback — keep subject/topic maps consistent with DB path
             memoryDb.examResults.push({ userId, ...resultData, _id: Date.now().toString() });
-            // Simplified User Update for Memory
             const uIdx = memoryDb.users.findIndex(u => u.uid === userId);
             if (uIdx >= 0) {
-                memoryDb.users[uIdx].totalExams = (memoryDb.users[uIdx].totalExams || 0) + 1;
-                memoryDb.users[uIdx].points = (memoryDb.users[uIdx].points || 0) + (resultData.score > 0 ? (resultData.correct * 5) + 10 : 0);
+                const u = memoryDb.users[uIdx];
+                u.totalExams = (u.totalExams || 0) + 1;
+                u.points = (u.points || 0) + (resultData.score > 0 ? (resultData.correct * 5) + 10 : 0);
+                if (!u.stats) u.stats = { totalCorrect: 0, totalWrong: 0, totalSkipped: 0, subjectStats: {}, topicStats: {} } as any;
+                u.stats.totalCorrect = (u.stats.totalCorrect || 0) + (resultData.correct || 0);
+                u.stats.totalWrong = (u.stats.totalWrong || 0) + (resultData.wrong || 0);
+                u.stats.totalSkipped = (u.stats.totalSkipped || 0) + (resultData.skipped || 0);
+                const qArr = Array.isArray(resultData.questions) ? resultData.questions : [];
+                const aArr = Array.isArray(resultData.userAnswers) ? resultData.userAnswers : [];
+                if (qArr.length > 0) {
+                  qArr.forEach((q: any, i: number) => {
+                    const subj = (q.subject || resultData.subject || 'General').trim() || 'General';
+                    const ans = aArr[i];
+                    const cIdx = q.correctAnswerIndex ?? q.correctAnswer ?? -1;
+                    const isCorrect = ans !== null && ans !== undefined && ans === cIdx;
+                    if (!u.stats.subjectStats) u.stats.subjectStats = {} as any;
+                    if (!u.stats.subjectStats[subj]) u.stats.subjectStats[subj] = { correct: 0, total: 0 };
+                    u.stats.subjectStats[subj].total += 1;
+                    if (isCorrect) u.stats.subjectStats[subj].correct += 1;
+                    const tKey = (q.topic || q.chapter || subj || 'General').trim() || 'General';
+                    if (!u.stats.topicStats) u.stats.topicStats = {} as any;
+                    if (!u.stats.topicStats[tKey]) u.stats.topicStats[tKey] = { correct: 0, total: 0 };
+                    u.stats.topicStats[tKey].total += 1;
+                    if (isCorrect) u.stats.topicStats[tKey].correct += 1;
+                  });
+                }
             }
         }
         res.json({ success: true });

@@ -118,7 +118,7 @@ const QuizBattlePrototype: React.FC = () => {
   const [showReactions, setShowReactions] = useState(false);
   const [powerUpsUsed, setPowerUpsUsed] = useState<string[]>([]);
 
-  const usePowerUp = (type: string) => {
+  const applyPowerUp = (type: string) => {
     if (type === '50-50') {
       const currentQ = battleState?.questions[currentQIndex];
       if (!currentQ) return;
@@ -785,6 +785,19 @@ const QuizBattlePrototype: React.FC = () => {
 
     return (
         <div className="space-y-7 max-h-[70vh] overflow-y-auto custom-scrollbar pr-1">
+            {opponentInfo && (
+              <div className="flex items-center gap-3 rounded-2xl bg-orange-50 px-4 py-3 ring-1 ring-orange-200 dark:bg-orange-950/20 dark:ring-orange-900/40">
+                <PlayerAvatar src={opponentInfo.avatar} name={opponentInfo.name} className="h-10 w-10 rounded-full" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-300">চ্যালেঞ্জ</p>
+                  <p className="truncate text-[14px] font-black text-gray-900 dark:text-white">{opponentInfo.name || 'শিক্ষার্থী'} কে চ্যালেঞ্জ করছো</p>
+                  <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-400">বিষয় বেছে নিয়ে রুম খুললে নোটিফিকেশন যাবে</p>
+                </div>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-primary shadow-sm ring-1 ring-orange-200 dark:bg-zinc-900 dark:ring-orange-900/40">
+                  <Swords size={16} />
+                </span>
+              </div>
+            )}
             {/* 1. Subject Selection */}
             <div>
                 <label className="text-xs font-black text-gray-500 dark:text-zinc-400 mb-3 flex items-center gap-1.5">
@@ -1303,7 +1316,7 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="flex gap-2 shrink-0">
                         <motion.button 
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => { triggerHaptic('medium'); usePowerUp('50-50'); }}
+                            onClick={() => { triggerHaptic('medium'); applyPowerUp('50-50'); }}
                             disabled={hasAnswered || powerUpsUsed.includes('50-50')}
                             title="দুটি ভুল উত্তর বাদ দিন"
                             className="w-13 h-13 min-w-[3.25rem] h-[3.25rem] bg-white dark:bg-zinc-900 rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 dark:border-white/5 disabled:opacity-30 transition-opacity"

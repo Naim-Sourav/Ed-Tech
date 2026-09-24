@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -34,7 +34,7 @@ const GSTResultPage: React.FC = () => {
   const [showTelegramModal, setShowTelegramModal] = useState(false);
 
   // Check subscription status on mount
-  React.useEffect(() => {
+  useEffect(() => {
     const check = async () => {
       const status = await checkSubscription();
       setIsSubscribed(status);

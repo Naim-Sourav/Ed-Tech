@@ -36,15 +36,19 @@ export default defineConfig(({ mode: _mode }) => {
   return {
     plugins: [react(), serveStaticSeo],
     optimizeDeps: {
-      include: ['react-is']
+      include: ['react', 'react-dom', 'react-router-dom', 'react-is', 'motion'],
     },
     // Changed to relative base './' to make it portable across GitHub Pages and Vercel
     base: './', 
     resolve: {
       alias: {
         '@': path.resolve('.'),
+        'react': path.resolve('./node_modules/react'),
+        'react-dom': path.resolve('./node_modules/react-dom'),
         'react-is': path.resolve('./node_modules/react-is'),
+        'react-router-dom': path.resolve('./node_modules/react-router-dom'),
       },
+      dedupe: ['react', 'react-dom', 'react-is', 'react-router-dom'],
     },
     // এই অংশটি প্রিভিউ সমস্যা সমাধান করবে
     server: {
@@ -73,8 +77,8 @@ export default defineConfig(({ mode: _mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            vendor: ['react', 'react-dom', 'react-is'],
-            utils: ['@google/genai', 'react-markdown', 'lucide-react']
+            vendor: ['react', 'react-dom', 'react-is', 'react-router-dom'],
+            utils: ['@google/genai', 'react-markdown', 'lucide-react', 'motion']
           }
         }
       }

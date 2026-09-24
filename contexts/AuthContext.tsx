@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { logger } from '../utils/logger';
 import { auth, googleProvider } from '../services/firebase';
 import { onAuthStateChanged, User, signOut, updateProfile, setPersistence, browserLocalPersistence, signInWithPopup } from 'firebase/auth';
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  const dismissOnboarding = React.useCallback(() => {
+  const dismissOnboarding = useCallback(() => {
     try {
       localStorage.setItem('onboarding_skipped_v1', '1');
     } catch (_e) {
@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Derive profile completion status: a display name plus the study profile
   // (batch/department/target) collected by the onboarding wizard — unless the
   // user explicitly skipped it.
-  const isProfileComplete = React.useMemo(() => {
+  const isProfileComplete = useMemo(() => {
       if (!currentUser) return false;
       if (onboardingSkipped) return true;
       if (!currentUser.displayName) return false;

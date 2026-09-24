@@ -18,15 +18,13 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
-    <HelmetProvider>
-      <AuthProvider>
-        <CacheProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
-        </CacheProvider>
-      </AuthProvider>
-    </HelmetProvider>
-  </React.StrictMode>
+  <HelmetProvider>
+    <AuthProvider>
+      <CacheProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </CacheProvider>
+    </AuthProvider>
+  </HelmetProvider>
 );

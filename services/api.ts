@@ -272,6 +272,10 @@ export const fetchExamResultAPI = async (userId: string, examId: string) => {
     return fetchWithFallback(`/users/${userId}/exam-results/${examId}`, {}, null);
 };
 
+export const fetchAllExamResultsAPI = async (userId: string) => {
+  return fetchWithFallback(`/users/${userId}/exam-results`, {}, []);
+};
+
 export const deleteExamResultAPI = async (userId: string, examId: string) => {
   return fetchWithFallback(`/users/${userId}/exam-results/${examId}`, {
     method: 'DELETE'

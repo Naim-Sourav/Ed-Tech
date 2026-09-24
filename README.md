@@ -45,8 +45,19 @@ npm run dev                  # → http://localhost:3000
 ```
 App.tsx                 → routes (public: /, /auth, /exam/*, /q/*, legal pages)
 components/             → UI screens (HomeDashboard, QuestionBank, ExamPage, ...)
+components/AuthPage.tsx → login / sign-up (name + email + password, Google)
+components/onboarding/  → first-run profile setup wizard (avatar · phone · batch ·
+                          department · target · study goal) shown after sign-up
 components/landing/     → public landing page sections + content data
                           (design ported from premium-edtech-landing-page.zip)
+components/QuizArena.tsx→ /quiz mock-test builder (বিষয় → অধ্যায় → সেটিংস → /exam/:id)
+components/quiz/        → builder steps + pure model (catalog, selection, presets,
+                          stats, launch) — exam config contract lives in launch.ts
+components/ExamPage.tsx → /exam/:id player (bootstrap, timer, submit, session resume)
+components/exam/        → exam UI (QuestionCard, chrome, dialogs, ResultView, guest
+                          gate, streak modal) + pure model (scoring, titles, analytics)
+data/profileOptions.ts  → shared student-profile vocabulary (levels, batches,
+                          departments, targets, goals) used by setup + profile edit
 services/               → api.ts (backend), firebase.ts, geminiService.ts, ...
 contexts/               → Auth, Admin, Language, Preferences, Cache
 utils/                  → logger, sanitize, adminConfig, normalization, ...

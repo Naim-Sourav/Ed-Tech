@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { logger } from '../utils/logger';
 import Lottie from 'lottie-react';
 
@@ -12,10 +12,10 @@ interface LottieAnimProps {
 }
 
 const LottieAnim: React.FC<LottieAnimProps> = ({ animationData, url, className, loop = true, fallback }) => {
-  const [animData, setAnimData] = React.useState<any>(animationData);
-  const [error, setError] = React.useState(false);
+  const [animData, setAnimData] = useState<any>(animationData);
+  const [error, setError] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Reset state when URL changes
     if (url) {
       setAnimData(null);
@@ -39,7 +39,7 @@ const LottieAnim: React.FC<LottieAnimProps> = ({ animationData, url, className, 
   }, [url]);
 
   // If local data passed, use it immediately
-  React.useEffect(() => {
+  useEffect(() => {
       if (animationData) setAnimData(animationData);
   }, [animationData]);
 

@@ -1,48 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
 import { deleteExamResultAPI } from '../services/api';
-import { collection, query, where, getDocs, doc, deleteDoc, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { 
-  Trash2, Loader2, FileQuestion, ChevronLeft, ChevronRight
-} from 'lucide-react';
+import { Trash2, Loader2, FileQuestion, ChevronLeft, ChevronRight, Bookmark, AlertTriangle, Play, History, BookOpen } from 'lucide-react';
+import { Card, SectionHeader, Track, Bone, cx } from './dashboard/ui';
+import { Pill, Btn, Chip } from './qbank/ui';
+import { ProfileTopBar } from './profile/sections';
+import { bn } from './profile/model';
 import SavedQuestions from './SavedQuestions';
 import WrongQuestions from './WrongQuestions';
+
+const toBn = bn;
+
+type Tab = 'EXAMS' | 'SAVED' | 'WRONG';
 
 const ExamHistory: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { showToast } = useToast();
-  
-  // Tab configuration
-  const [activeTab, setActiveTab] = useState<'EXAMS' | 'SAVED' | 'WRONG'>('SAVED');
 
-  // Exam attempts state
+  const [activeTab, setActiveTab] = useState<Tab>('EXAMS');
   const [attempts, setAttempts] = useState<any[]>([]);
   const [loadingAttempts, setLoadingAttempts] = useState(true);
   const [deletingAttemptId, setDeletingAttemptId] = useState<string | null>(null);
-
-  // Pagination for exams history
   const [currentHistoryPage, setCurrentHistoryPage] = useState(1);
   const itemsPerHistoryPage = 10;
 
-  // Load past exams (attempts)
   useEffect(() => {
     let active = true;
-    
     setLoadingAttempts(true);
-
     const fetchAndSync = async () => {
       if (!currentUser) {
         if (active) setLoadingAttempts(false);
         return;
       }
       try {
-        // 1. Fetch from Firestore asynchronously
         const attemptsCol = collection(db, 'attempts');
         const q = query(attemptsCol, where('userId', '==', currentUser.uid));
         const snapshot = await getDocs(q);
@@ -50,31 +46,22 @@ const ExamHistory: React.FC = () => {
         snapshot.forEach((docSnapshot) => {
           firestoreAttempts.push({ id: docSnapshot.id, ...docSnapshot.data() });
         });
-
         const sorted = firestoreAttempts.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
         const deduplicated: any[] = [];
         for (const item of sorted) {
-          const isDup = deduplicated.some(existing => 
-            existing.examId === item.examId && 
-            Math.abs(Number(existing.timestamp || 0) - Number(item.timestamp || 0)) < 60000
+          const isDup = deduplicated.some(
+            (existing) => existing.examId === item.examId && Math.abs(Number(existing.timestamp || 0) - Number(item.timestamp || 0)) < 60000
           );
           if (!isDup) deduplicated.push(item);
         }
-
-        if (active) {
-          setAttempts(deduplicated);
-        }
+        if (active) setAttempts(deduplicated);
       } catch (err) {
-        logger.error("Failed to sync attempts with Firestore:", err);
+        logger.error('Failed to sync attempts with Firestore:', err);
       } finally {
-        if (active) {
-          setLoadingAttempts(false);
-        }
+        if (active) setLoadingAttempts(false);
       }
     };
-
     fetchAndSync();
-
     return () => {
       active = false;
     };
@@ -82,29 +69,19 @@ const ExamHistory: React.FC = () => {
 
   const handleDeleteAttempt = async (examId: string, attemptDocId?: string) => {
     if (!currentUser) return;
-    if (!window.confirm("আপনি কি নিশ্চিত যে এই পরীক্ষাটি আপনার ইতিহাস থেকে মুছে ফেলতে চান?")) {
-      return;
-    }
-    
+    if (!window.confirm('আপনি কি নিশ্চিত যে এই পরীক্ষাটি আপনার ইতিহাস থেকে মুছে ফেলতে চান?')) return;
     setDeletingAttemptId(examId);
     try {
-      // 1. Delete from external API (MongoDB node server)
       await deleteExamResultAPI(currentUser.uid, examId);
-      
-      // 2. Delete from Firebase Firestore
       if (attemptDocId) {
         try {
           await deleteDoc(doc(db, 'attempts', attemptDocId));
         } catch (fErr) {
-          logger.error("Failed to delete from Firestore:", fErr);
+          logger.error('Failed to delete from Firestore:', fErr);
         }
       } else {
         try {
-          const q = query(
-            collection(db, 'attempts'), 
-            where('userId', '==', currentUser.uid),
-            where('examId', '==', examId)
-          );
+          const q = query(collection(db, 'attempts'), where('userId', '==', currentUser.uid), where('examId', '==', examId));
           const snap = await getDocs(q);
           const promises: Promise<void>[] = [];
           snap.forEach((d) => {
@@ -112,285 +89,222 @@ const ExamHistory: React.FC = () => {
           });
           await Promise.all(promises);
         } catch (fErr) {
-          logger.error("Failed to delete from Firestore via query:", fErr);
+          logger.error('Failed to delete from Firestore via query:', fErr);
         }
       }
-
-      // 3. Update state
       const updatedAttempts = attempts.filter((a: any) => a.examId !== examId);
-      
       setAttempts(updatedAttempts.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0)));
-      showToast("পরীক্ষাটি ইতিহাস থেকে মুছে ফেলা হয়েছে", "success");
+      showToast('পরীক্ষাটি ইতিহাস থেকে মুছে ফেলা হয়েছে', 'success');
     } catch (e) {
       logger.error(e);
-      showToast("মুছে ফেলা সম্ভব হয়নি", "error");
+      showToast('মুছে ফেলা সম্ভব হয়নি', 'error');
     } finally {
       setDeletingAttemptId(null);
     }
   };
 
+  const totalPages = Math.ceil(attempts.length / itemsPerHistoryPage);
+  const pagedAttempts = useMemo(
+    () => attempts.slice((currentHistoryPage - 1) * itemsPerHistoryPage, currentHistoryPage * itemsPerHistoryPage),
+    [attempts, currentHistoryPage]
+  );
+
+  const shell = 'pk-landing dash relative min-h-full bg-paper pb-28 text-ink dark:bg-ink dark:text-paper md:pb-12';
+  const inner = 'mx-auto w-full max-w-6xl px-4 pt-3 md:px-6 md:pt-6';
+
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-black text-slate-900 dark:text-zinc-100 pb-24 md:pb-6 font-sans">
-      {/* Sticky, Sleek and Clean Top Tab Bar inspired by Chorca */}
-      <div className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-gray-150 dark:border-zinc-800">
-        <div className="max-w-4xl mx-auto flex w-full">
-          <button
-            onClick={() => setActiveTab('SAVED')}
-            className={`flex-1 py-4 text-center text-sm font-bold relative transition-colors ${
-              activeTab === 'SAVED' 
-                ? 'text-primary dark:text-orange-400 font-extrabold' 
-                : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200'
-            }`}
-          >
-            সেভ্ড প্রশ্ন
-            {activeTab === 'SAVED' && (
-              <motion.div
-                layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-orange-500"
-                transition={{ type: 'spring', damping: 25, stiffness: 380 }}
-              />
-            )}
-          </button>
+    <div className={shell}>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,82,0,0.10),transparent)] blur-2xl dark:opacity-70" />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[radial-gradient(closest-side,rgba(255,185,46,0.16),transparent)] blur-3xl dark:opacity-60" />
+      <div aria-hidden="true" className="pointer-events-none absolute -left-28 top-72 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(255,122,53,0.10),transparent)] blur-3xl dark:opacity-70" />
 
-          <button
-            onClick={() => setActiveTab('WRONG')}
-            className={`flex-1 py-4 text-center text-sm font-bold relative transition-colors ${
-              activeTab === 'WRONG' 
-                ? 'text-primary dark:text-orange-400' 
-                : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200'
-            }`}
-          >
-            ভুলের খাতা
-            {activeTab === 'WRONG' && (
-              <motion.div
-                layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-orange-500"
-                transition={{ type: 'spring', damping: 25, stiffness: 380 }}
-              />
-            )}
-          </button>
+      <div className={inner + ' relative z-10'}>
+        <ProfileTopBar title="ইতিহাস" eyebrow="তোমার সব সংরক্ষণ এক জায়গায়" onBack={() => navigate(-1)} />
 
-          <button
-            onClick={() => setActiveTab('EXAMS')}
-            className={`flex-1 py-4 text-center text-sm font-bold relative transition-colors ${
-              activeTab === 'EXAMS' 
-                ? 'text-primary dark:text-orange-400' 
-                : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200'
-            }`}
-          >
-            পরীক্ষা
-            {activeTab === 'EXAMS' && (
-              <motion.div
-                layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary dark:bg-orange-500"
-                transition={{ type: 'spring', damping: 25, stiffness: 380 }}
-              />
-            )}
-          </button>
+        {/* Tabs - Pill style matching dashboard */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Pill active={activeTab === 'SAVED'} onClick={() => setActiveTab('SAVED')}>
+            <Bookmark className="h-4 w-4" strokeWidth={2.4} /> সেভ্ড প্রশ্ন
+          </Pill>
+          <Pill active={activeTab === 'WRONG'} onClick={() => setActiveTab('WRONG')}>
+            <AlertTriangle className="h-4 w-4" strokeWidth={2.4} /> ভুলের খাতা
+          </Pill>
+          <Pill active={activeTab === 'EXAMS'} onClick={() => setActiveTab('EXAMS')}>
+            <History className="h-4 w-4" strokeWidth={2.4} /> পরীক্ষা {attempts.length > 0 && `· ${toBn(attempts.length)}`}
+          </Pill>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-4 space-y-6">
-          <AnimatePresence mode="wait">
-            {activeTab === 'EXAMS' && (
-              <motion.div
-                key="exams-tab"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="space-y-4"
-              >
-                {loadingAttempts ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                    <Loader2 size={32} className="animate-spin text-primary mb-3" />
-                    <p className="text-xs font-semibold">ফলাফল লোড করা হচ্ছে...</p>
-                  </div>
-                ) : attempts.length === 0 ? (
-                  <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-gray-150 dark:border-zinc-800 shadow-sm">
-                    <div className="w-16 h-16 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
-                      <FileQuestion size={32} className="text-orange-700 dark:text-orange-400" />
-                    </div>
-                    <p className="text-gray-900 dark:text-white font-bold text-base mb-1">কোনো পরীক্ষার রেকর্ড নেই</p>
-                    <p className="text-gray-400 text-xs max-w-xs mx-auto leading-relaxed">আপনি এখনও কোনো পরীক্ষায় অংশ নেননি। পরীক্ষা দেওয়ার পর আপনার সকল ফলাফলের বিস্তারিত বিবরণ এখানে দেখতে পাবেন।</p>
-                    <div className="mt-6">
-                      <button
-                        onClick={() => navigate('/exams')}
-                        className="px-6 py-3 bg-gradient-to-r from-primary to-orange-500 text-white font-bold rounded-xl shadow-md hover:scale-102 active:scale-98 transition-all text-xs"
-                      >
-                        পরীক্ষা দেওয়া শুরু করুন
-                      </button>
+        <div className="mt-5">
+          {activeTab === 'EXAMS' && (
+            <div className="space-y-4">
+              {loadingAttempts ? (
+                <div className="space-y-3">
+                  <Bone className="h-24 rounded-[26px]" />
+                  <Bone className="h-24 rounded-[26px]" />
+                  <Bone className="h-24 rounded-[26px]" />
+                </div>
+              ) : attempts.length === 0 ? (
+                <Card className="p-0 overflow-hidden">
+                  <div className="p-6 sm:p-8 text-center">
+                    <span className="mx-auto grid h-16 w-16 place-items-center rounded-[20px] bg-cream text-brand-deep ring-1 ring-brand/10 dark:bg-brand/10 dark:text-brand-bright dark:ring-brand/20">
+                      <FileQuestion className="h-8 w-8" strokeWidth={2} />
+                    </span>
+                    <h3 className="mt-4 text-[18px] font-extrabold tracking-tight text-ink dark:text-paper">কোনো পরীক্ষার রেকর্ড নেই</h3>
+                    <p className="mx-auto mt-1.5 max-w-sm text-[13.5px] font-semibold leading-relaxed text-mist dark:text-white/50">
+                      তুমি এখনো কোনো পরীক্ষায় অংশ নাওনি। পরীক্ষা দিলে এখানে বিস্তারিত ফলাফল, সময় আর অধ্যায়ভিত্তিক বিশ্লেষণ দেখতে পাবে।
+                    </p>
+                    <div className="mt-5 flex justify-center">
+                      <Btn variant="brand" icon={Play} onClick={() => navigate('/quiz')}>
+                        প্রথম মক দাও
+                      </Btn>
                     </div>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {attempts
-                      .slice((currentHistoryPage - 1) * itemsPerHistoryPage, currentHistoryPage * itemsPerHistoryPage)
-                      .map((attempt, idx) => {
-                      const totalQ = attempt.totalQuestions || 20;
-                      const correct = attempt.correct || 0;
-                      const percent = Math.min(100, Math.round((correct / totalQ) * 100));
-                      const percentClamped = Math.max(8, Math.min(92, percent));
+                </Card>
+              ) : (
+                <>
+                  <Card className="p-4 sm:p-5">
+                    <SectionHeader icon={History} title="পরীক্ষার ইতিহাস" subtitle={`${toBn(attempts.length)}টি পরীক্ষা · সর্বশেষ আগে`} />
+                    <ul className="mt-4 space-y-3">
+                      {pagedAttempts.map((attempt, idx) => {
+                        const totalQ = attempt.totalQuestions || 20;
+                        const correct = attempt.correct || 0;
+                        const percent = totalQ > 0 ? Math.round((correct / totalQ) * 100) : 0;
+                        const clamped = Math.max(8, Math.min(92, percent));
+                        const subjectName = attempt.subject || attempt.config?.subject || 'সাধারণ';
+                        const paperName =
+                          attempt.config?.paper ||
+                          (attempt.config?.title?.includes('1st') || attempt.examId?.includes('1st')
+                            ? '১ম পত্র'
+                            : attempt.config?.title?.includes('2nd') || attempt.examId?.includes('2nd')
+                            ? '২য় পত্র'
+                            : null);
+                        const chapterName = attempt.config?.chapter || null;
+                        const examTitle = attempt.config?.title || (attempt.examId?.replace(/_/g, ' ') || 'নামহীন পরীক্ষা');
+                        const serialNumber = idx + 1 + (currentHistoryPage - 1) * itemsPerHistoryPage;
+                        const examDate = attempt.timestamp
+                          ? new Date(attempt.timestamp).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })
+                          : '-';
+                        const tone = percent >= 70 ? 'brand' : percent >= 50 ? 'gold' : 'flag';
 
-                      const subjectName = attempt.subject || attempt.config?.subject || 'সাধারণ';
-                      const paperName = attempt.config?.paper || (attempt.config?.title?.includes('1st') || attempt.examId?.includes('1st') ? '১ম পত্র' : attempt.config?.title?.includes('2nd') || attempt.examId?.includes('2nd') ? '২য় পত্র' : null);
-                      const chapterName = attempt.config?.chapter || null;
-                      const examTitle = attempt.config?.title || (attempt.examId?.replace(/_/g, ' ') || 'নামহীন পরীক্ষা');
-
-                      const serialNumber = idx + 1 + (currentHistoryPage - 1) * itemsPerHistoryPage;
-                      const bnSerial = serialNumber.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)]);
-
-                      const examDate = attempt.timestamp 
-                        ? new Date(attempt.timestamp).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })
-                        : '-';
-
-                      return (
-                        <motion.div 
-                          key={attempt.id || `${attempt.examId}_${attempt.timestamp || 0}`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-gray-150/80 dark:border-zinc-800 shadow-sm relative overflow-hidden flex gap-4"
-                        >
-                          {/* Serial Number Bubble */}
-                          <div className="shrink-0 pt-1">
-                              <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 flex items-center justify-center text-sm font-bold text-gray-500 dark:text-zinc-400">
-                                  {bnSerial}
-                              </div>
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            {/* Top row */}
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="space-y-1">
-                                <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                                  {subjectName}
-                                </h3>
-                                {paperName && (
-                                  <p className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
-                                    {paperName}
-                                  </p>
-                                )}
-                                {chapterName ? (
-                                  <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
-                                    {chapterName}
-                                  </p>
-                                ) : (
-                                  examTitle !== subjectName && (
-                                    <p className="text-xs font-medium text-gray-400 dark:text-zinc-500">
-                                      {examTitle}
-                                    </p>
-                                  )
-                                )}
-                              </div>
-                              <span className="text-xs text-gray-400 dark:text-zinc-500 font-bold whitespace-nowrap pl-2 text-right">
-                                {examDate}
+                        return (
+                          <li
+                            key={attempt.id || `${attempt.examId}_${attempt.timestamp || 0}`}
+                            className="group rounded-[20px] bg-ink/[0.03] p-4 ring-1 ring-ink/[0.04] transition-colors hover:bg-ink/[0.05] dark:bg-white/[0.04] dark:ring-white/[0.06] dark:hover:bg-white/[0.06]"
+                          >
+                            <div className="flex items-start gap-3.5">
+                              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-[13px] font-black tabular-nums text-ink ring-1 ring-ink/10 dark:bg-ink-2 dark:text-paper dark:ring-white/10">
+                                {toBn(serialNumber)}
                               </span>
-                            </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <h3 className="truncate text-[15px] font-extrabold tracking-tight text-ink dark:text-paper">{subjectName}</h3>
+                                    <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11.5px] font-bold">
+                                      {paperName && <span className="rounded-full bg-white px-2 py-0.5 text-ink/70 ring-1 ring-ink/10 dark:bg-white/10 dark:text-white/70 dark:ring-white/10">{paperName}</span>}
+                                      {chapterName ? (
+                                        <span className="text-mist dark:text-white/50">{chapterName}</span>
+                                      ) : (
+                                        examTitle !== subjectName && <span className="truncate text-mist dark:text-white/50">{examTitle}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span className="shrink-0 text-[11px] font-bold text-mist dark:text-white/40">{examDate}</span>
+                                </div>
 
-                            {/* Progress slider bar */}
-                            <div className="relative pt-4 pb-5 my-2">
-                              <div className="h-1.5 w-full bg-gray-100 dark:bg-zinc-800 rounded-full relative">
-                                <div 
-                                  className="h-1.5 bg-primary rounded-full transition-all duration-300" 
-                                  style={{ width: `${percent}%` }}
-                                />
-                                <div 
-                                  className="absolute top-1/2 flex items-center justify-center bg-white dark:bg-zinc-950 border-2 border-primary text-[10px] font-bold tracking-tight text-primary px-2 py-0.5 rounded-full shadow-sm select-none"
-                                  style={{ left: `${percentClamped}%`, transform: 'translate(-50%, -50%)' }}
-                                >
-                                  {correct}/{totalQ}
+                                <div className="relative mt-3 pt-4">
+                                  <Track value={percent / 100} tone={tone as any} />
+                                  <div className="pointer-events-none absolute top-0 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-black tabular-nums text-ink shadow-sm ring-1 ring-ink/10 dark:bg-ink-2 dark:text-paper dark:ring-white/10" style={{ left: `${clamped}%` }}>
+                                    {toBn(correct)}/{toBn(totalQ)} · {toBn(percent)}%
+                                  </div>
+                                </div>
+
+                                <div className="mt-3 flex items-center justify-between gap-2 border-t border-ink/[0.06] pt-3 dark:border-white/[0.06]">
+                                  <div className="flex items-center gap-1.5">
+                                    <Chip tone="neutral" className="text-[11px]">
+                                      {attempt.config?.examType || 'HSC'}
+                                    </Chip>
+                                    {attempt.config?.duration && (
+                                      <Chip tone="neutral" className="text-[11px]">
+                                        {toBn(attempt.config.duration)} মি.
+                                      </Chip>
+                                    )}
+                                    <span className={cx('text-[11px] font-bold', percent >= 70 ? 'text-emerald-700 dark:text-emerald-300' : percent >= 50 ? 'text-amber-700 dark:text-amber-200' : 'text-flag dark:text-red-300')}>
+                                      {percent >= 70 ? 'ভালো' : percent >= 50 ? 'মোটামুটি' : 'আরও চর্চা দরকার'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <Btn size="sm" variant="primary" onClick={() => navigate(`/exam/${attempt.examId}`)}>
+                                      ফলাফল
+                                    </Btn>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteAttempt(attempt.examId, attempt.id)}
+                                      disabled={deletingAttemptId === attempt.examId}
+                                      aria-label="মুছুন"
+                                      className="focus-ring grid h-9 w-9 place-items-center rounded-full bg-white text-mist ring-1 ring-ink/10 transition-colors hover:bg-flag/10 hover:text-flag disabled:opacity-40 dark:bg-white/10 dark:text-white/50 dark:ring-white/10 dark:hover:bg-flag/20 dark:hover:text-red-300"
+                                    >
+                                      {deletingAttemptId === attempt.examId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" strokeWidth={2.2} />}
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
 
-                            {/* Bottom Controls */}
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-zinc-800/30">
-                              <div className="flex items-center gap-1.5">
-                                <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
-                                  {attempt.config?.examType || 'HSC'}
-                                </span>
-                                {attempt.config?.duration && (
-                                  <span className="inline-block px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-bold text-gray-400 dark:text-zinc-500 rounded-lg">
-                                    {attempt.config.duration} মি.
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button 
-                                  onClick={() => navigate(`/exam/${attempt.examId}`)}
-                                  className="px-4 py-1.5 bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-50 text-white dark:text-gray-900 rounded-xl text-xs font-bold transition-colors shadow-sm active:scale-95 whitespace-nowrap"
-                                >
-                                  ফলাফল দেখুন
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteAttempt(attempt.examId, attempt.id)} 
-                                  disabled={deletingAttemptId === attempt.examId}
-                                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all active:scale-90"
-                                  title="ভুক্তি মুছুন"
-                                >
-                                  {deletingAttemptId === attempt.examId ? (
-                                    <Loader2 size={14} className="animate-spin text-red-500" />
-                                  ) : (
-                                    <Trash2 size={14} />
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-
-                    {/* Pagination Controls */}
-                    {Math.ceil(attempts.length / itemsPerHistoryPage) > 1 && (
-                        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-                            <button
-                                onClick={() => setCurrentHistoryPage(prev => Math.max(1, prev - 1))}
-                                disabled={currentHistoryPage === 1}
-                                className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-                            <span className="text-sm font-bold text-gray-600 dark:text-zinc-400 px-3">
-                                {currentHistoryPage.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])} 
-                                / 
-                                {Math.ceil(attempts.length / itemsPerHistoryPage).toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)])}
-                            </span>
-                            <button
-                                onClick={() => setCurrentHistoryPage(prev => Math.min(Math.ceil(attempts.length / itemsPerHistoryPage), prev + 1))}
-                                disabled={currentHistoryPage === Math.ceil(attempts.length / itemsPerHistoryPage)}
-                                className="p-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
+                    {totalPages > 1 && (
+                      <div className="mt-6 flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentHistoryPage((p) => Math.max(1, p - 1))}
+                          disabled={currentHistoryPage === 1}
+                          className="focus-ring grid h-10 w-10 place-items-center rounded-full bg-white text-ink ring-1 ring-ink/10 hover:bg-ink/[0.04] disabled:opacity-40 dark:bg-white/10 dark:text-white dark:ring-white/10 dark:hover:bg-white/10"
+                        >
+                          <ChevronLeft className="h-5 w-5" strokeWidth={2.4} />
+                        </button>
+                        <span className="rounded-full bg-ink px-3.5 py-1.5 text-[13px] font-bold tabular-nums text-white dark:bg-paper dark:text-ink">
+                          {toBn(currentHistoryPage)} / {toBn(totalPages)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentHistoryPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={currentHistoryPage === totalPages}
+                          className="focus-ring grid h-10 w-10 place-items-center rounded-full bg-white text-ink ring-1 ring-ink/10 hover:bg-ink/[0.04] disabled:opacity-40 dark:bg-white/10 dark:text-white dark:ring-white/10 dark:hover:bg-white/10"
+                        >
+                          <ChevronRight className="h-5 w-5" strokeWidth={2.4} />
+                        </button>
+                      </div>
                     )}
-                  </div>
-                )}
-              </motion.div>
-            )}
+                  </Card>
+                </>
+              )}
+            </div>
+          )}
 
-            {activeTab === 'SAVED' && (
-              <motion.div
-                key="saved-questions-tab"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-              >
+          {activeTab === 'SAVED' && (
+            <Card className="p-0 overflow-hidden">
+              <div className="border-b border-ink/6 bg-cream/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+                <SectionHeader icon={Bookmark} title="সেভ্ড প্রশ্ন" subtitle="পরে দেখার জন্য সংরক্ষণ করেছ" />
+              </div>
+              <div className="p-2 sm:p-3">
                 <SavedQuestions embedded={true} />
-              </motion.div>
-            )}
+              </div>
+            </Card>
+          )}
 
-            {activeTab === 'WRONG' && (
-              <motion.div
-                key="wrong-questions-tab"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-              >
+          {activeTab === 'WRONG' && (
+            <Card className="p-0 overflow-hidden">
+              <div className="border-b border-ink/6 bg-cream/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+                <SectionHeader icon={AlertTriangle} title="ভুলের খাতা" subtitle="যেখানে ভুল হয়েছে, সেখানেই শেখা" />
+              </div>
+              <div className="p-2 sm:p-3">
                 <WrongQuestions embedded={true} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
