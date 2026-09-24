@@ -375,7 +375,15 @@ const ExamPage: React.FC = () => {
       } = summarize(questions, userAnswers, config?.negativeMarking || 0);
 
       if (currentUser && examId) {
-        const topicStats: any[] = [];
+        const topicMap = new Map<string, { total: number; correct: number }>();
+        questions.forEach((q, idx) => {
+          const key = (q.topic || q.chapter || q.subject || 'General').trim() || 'General';
+          const cur = topicMap.get(key) || { total: 0, correct: 0 };
+          cur.total += 1;
+          if (userAnswers[idx] === q.correctAnswerIndex) cur.correct += 1;
+          topicMap.set(key, cur);
+        });
+        const topicStats = Array.from(topicMap.entries()).map(([topic, v]) => ({ topic, total: v.total, correct: v.correct }));
         const mistakes = questions.filter((_, i) => userAnswers[i] !== null && userAnswers[i] !== questions[i].correctAnswerIndex);
 
         const activityRes = await recordUserActivityAPI(currentUser.uid);

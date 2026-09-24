@@ -13,7 +13,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const auth = vi.hoisted(() => ({ state: {} as Record<string, unknown>, updateUserProfile: vi.fn(), logout: vi.fn() }));
-const api = vi.hoisted(() => ({ fetchUserStatsAPI: vi.fn(), fetchLeaderboardAPI: vi.fn() }));
+const api = vi.hoisted(() => ({ fetchUserStatsAPI: vi.fn(), fetchLeaderboardAPI: vi.fn(), fetchAllExamResultsAPI: vi.fn(async () => []) }));
 const cache = vi.hoisted(() => ({ store: new Map<string, unknown>() }));
 const toast = vi.hoisted(() => ({ showToast: vi.fn() }));
 const prefs = vi.hoisted(() => ({ questionFont: 'font-noto', questionFontSize: 'text-base', setQuestionFont: vi.fn(), setQuestionFontSize: vi.fn() }));
@@ -222,9 +222,23 @@ describe('ProfilePage — own profile', () => {
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain('প্রোফাইল এডিট');
   });
 
-  it('navigates: subject → mock builder with the subject, gear → settings, logout → /auth', async () => {
+  it('navigates: subject → deep analysis sheet + mock builder, gear → settings, logout → /auth', async () => {
     await mount();
-    await click(Array.from(byLabel('বিষয়ভিত্তিক দক্ষতা')!.querySelectorAll('button')).find((b) => b.textContent?.includes('পদার্থবিজ্ঞান')));
+    // Subject row now opens deep analysis instead of direct navigation
+    const subjectSection = byLabel('বিষয়ভিত্তিক দক্ষতা')!;
+    const physicsRow = Array.from(subjectSection.querySelectorAll('button')).find((b) => b.textContent?.includes('পদার্থবিজ্ঞান') && b.textContent?.includes('বিস্তারিত'));
+    await click(physicsRow);
+    await flush(400);
+    expect(document.querySelector('[role=\"dialog\"]')?.textContent).toContain('গভীর বিশ্লেষণ');
+    // Close sheet
+    await click(document.querySelector('[aria-label=\"বন্ধ করো\"]'));
+    await flush(300);
+
+    // Practice button inside the Physics row should still go to quiz builder
+    const rows = Array.from(subjectSection.querySelectorAll('li'));
+    const physicsLi = rows.find((li) => li.textContent?.includes('পদার্থবিজ্ঞান'));
+    const practiceBtn = physicsLi ? Array.from(physicsLi.querySelectorAll('button')).find((b) => b.textContent?.includes('এই বিষয়ে মক দাও')) : null;
+    await click(practiceBtn);
     expect(lastLocation.pathname).toBe('/quiz');
     expect(lastLocation.state).toEqual({ subject: 'Physics' });
 

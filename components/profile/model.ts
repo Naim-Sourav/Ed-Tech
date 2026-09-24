@@ -341,6 +341,64 @@ export const topicRows = (stats: ProfileStats | null | undefined, limit = 3): { 
 
 /* ── misc ──────────────────────────────────────────────────────────────── */
 
+/* ── chapter deep analysis ─────────────────────────────────────────────── */
+
+export interface ChapterStat {
+  key: string; // subject::chapter
+  subject: string;
+  chapter: string;
+  total: number;
+  correct: number;
+  wrong: number;
+  skipped: number;
+  accuracy: number;
+}
+
+export interface ExamResultLike {
+  questions?: Array<{ subject?: string; chapter?: string; topic?: string; correctAnswerIndex?: number; correctAnswer?: number; _id?: string }>;
+  userAnswers?: Array<number | null>;
+  subject?: string;
+  timestamp?: number;
+}
+
+export const chapterStatsFromResults = (results: ExamResultLike[] = [], subjectFilter?: string | null): ChapterStat[] => {
+  const map = new Map<string, ChapterStat>();
+  results.forEach((r) => {
+    const qs = Array.isArray(r.questions) ? r.questions : [];
+    const ans = Array.isArray(r.userAnswers) ? r.userAnswers : [];
+    qs.forEach((q, idx) => {
+      if (!q) return;
+      const subj = (q.subject || r.subject || 'General').trim() || 'General';
+      if (subjectFilter && subj !== subjectFilter) {
+        // Also allow matching by display name grouping — check if filter is a group name that contains this subject
+        // For simplicity, if filter is provided we still include only exact subject matches;
+        // the caller can pass null to get all.
+        if (subjectFilter !== subj) return;
+      }
+      const chap = (q.chapter || q.topic || 'অন্যান্য').trim() || 'অন্যান্য';
+      const key = `${subj}::${chap}`;
+      const cur = map.get(key) || { key, subject: subj, chapter: chap, total: 0, correct: 0, wrong: 0, skipped: 0, accuracy: 0 };
+      cur.total += 1;
+      const a = ans[idx];
+      const cIdx = (q as any).correctAnswerIndex ?? (q as any).correctAnswer ?? -1;
+      if (a === null || a === undefined) cur.skipped += 1;
+      else if (a === cIdx) cur.correct += 1;
+      else cur.wrong += 1;
+      map.set(key, cur);
+    });
+  });
+  return Array.from(map.values())
+    .map((s) => ({ ...s, accuracy: s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0 }))
+    .sort((a, b) => b.total - a.total || a.chapter.localeCompare(b.chapter, 'bn'));
+};
+
+export const weakChaptersFromStats = (stats: ChapterStat[], minTotal = 3): ChapterStat[] =>
+  stats.filter((s) => s.total >= minTotal && s.accuracy < 50).sort((a, b) => a.accuracy - b.accuracy || b.total - a.total);
+
+/** Sum of correct across subject rows — used to detect backend inconsistency. */
+export const sumCorrectFromSubjectRows = (rows: SubjectRow[]): number => rows.reduce((sum, r) => sum + (r.correct || 0), 0);
+export const sumTotalFromSubjectRows = (rows: SubjectRow[]): number => rows.reduce((sum, r) => sum + (r.total || 0), 0);
+
 /** Stable hue for the monogram, so the same student always gets the same colour. */
 export const hueFor = (seed: string): number => {
   let h = 0;

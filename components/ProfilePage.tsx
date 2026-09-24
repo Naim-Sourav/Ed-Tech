@@ -8,12 +8,13 @@ import { useAuth } from '../contexts/AuthContext';
 import type { EnrolledCourse } from '../contexts/AuthContext';
 import { useCache } from '../contexts/CacheContext';
 import { useToast } from './Toast';
-import { fetchLeaderboardAPI, fetchUserStatsAPI } from '../services/api';
+import { fetchAllExamResultsAPI, fetchLeaderboardAPI, fetchUserStatsAPI } from '../services/api';
 import { uploadImageToCloudinary } from '../services/imageUpload';
 import type { LeaderboardUser } from '../types';
 import { IconBtn } from './qbank/ui';
 import {
   achievements,
+  chapterStatsFromResults,
   emptyIdentity,
   heatmap,
   isHttpUrl,
@@ -23,6 +24,7 @@ import {
   streakFromLog,
   subjectRows,
   topicRows,
+  type ChapterStat,
   type ProfileIdentity,
   type ProfileStats,
   type SubjectRow,
@@ -42,12 +44,13 @@ import {
 } from './profile/sections';
 import EditProfileSheet, { type ProfileEditResult } from './profile/EditProfileSheet';
 import SettingsView, { type ThemeMode } from './profile/SettingsView';
+import DeepAnalysisSheet from './profile/DeepAnalysisSheet';
 
 /*
  * Profile (/profile, /profile/:userId) and settings (/settings).
- * Data: the same stats + leaderboard endpoints the dashboard uses, cached per
- * session. Everything derived lives in ./profile/model.ts; the cards in
- * ./profile/sections.tsx. This file only wires state, routing and side effects.
+ * Now matches dashboard language: dark hero identity, white cards,
+ * deep analysis sheet per subject, fixed challenge + empty states,
+ * and per-question subject distribution so numbers stay consistent.
  */
 
 const LEGACY_TABS: Record<string, string> = { SAVED: '/saved-questions', MISTAKES: '/wrong-questions', HISTORY: '/history' };
@@ -103,15 +106,15 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
     return () => {
       cancelled = true;
     };
-  }, [uid]); // refetch only when the viewed user changes
+  }, [uid]);
 
-  /* ── legacy links: old tabs now live on their own pages ─────────── */
+  /* ── legacy links ───────────────────────────────────────────────── */
   const tab = searchParams.get('tab');
   useEffect(() => {
     if (tab && LEGACY_TABS[tab]) navigate(LEGACY_TABS[tab], { replace: true });
   }, [tab, navigate]);
 
-  /* ── identity (auth + extended profile win over the stats payload) ── */
+  /* ── identity ───────────────────────────────────────────────────── */
   const identity = useMemo<ProfileIdentity>(() => {
     const su = stats?.user ?? {};
     if (!own) {
@@ -152,6 +155,32 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
   const topics = useMemo(() => topicRows(stats), [stats]);
   const badges = useMemo(() => achievements({ stats, rank, longest }), [stats, rank, longest]);
   const canResetPassword = !!currentUser?.providerData?.some((p) => p?.providerId === 'password');
+
+  /* ── deep analysis: chapter breakdown from all exam results ─────── */
+  const [allResults, setAllResults] = useState<any[]>([]);
+  const [resultsLoading, setResultsLoading] = useState(false);
+  const [analysisRow, setAnalysisRow] = useState<SubjectRow | null>(null);
+
+  useEffect(() => {
+    if (!own || !uid || !stats) return;
+    // Only fetch when we have exams and own profile
+    if ((stats.totalExams || 0) === 0) return;
+    let cancelled = false;
+    setResultsLoading(true);
+    fetchAllExamResultsAPI(uid)
+      .then((res) => {
+        if (!cancelled) setAllResults(Array.isArray(res) ? res : []);
+      })
+      .catch((e) => logger.info('Failed to load exam results for deep analysis', e))
+      .finally(() => {
+        if (!cancelled) setResultsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [own, uid, stats?.totalExams]);
+
+  const chapterStats = useMemo<ChapterStat[]>(() => chapterStatsFromResults(allResults), [allResults]);
 
   /* ── edit sheet + photo ──────────────────────────────────────────── */
   const [editOpen, setEditOpen] = useState(() => searchParams.get('edit') === '1');
@@ -219,8 +248,30 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
     }
   };
 
-  const challenge = () => navigate('/battle', { state: { opponent: { uid, name: identity.name, avatar: identity.photoURL } } });
-  const practice = (row: SubjectRow) => navigate('/quiz', row.group ? { state: { subject: row.group } } : undefined);
+  const challenge = useCallback(() => {
+    if (!uid) return;
+    // Navigate to battle with opponent info — battle page now shows opponent banner
+    navigate('/battle', { state: { opponent: { uid, name: identity.name || 'শিক্ষার্থী', avatar: identity.photoURL } } });
+    showToast(`${identity.name || 'শিক্ষার্থী'} কে চ্যালেঞ্জ পাঠানোর জন্য ব্যাটল সেটআপ খুলছি`, 'info');
+  }, [navigate, uid, identity.name, identity.photoURL, showToast]);
+
+  const practice = useCallback(
+    (row: SubjectRow) => {
+      navigate('/quiz', row.group ? { state: { subject: row.group } } : undefined);
+    },
+    [navigate],
+  );
+
+  const practiceChapter = useCallback(
+    (chapter: string, subject: string) => {
+      // For chapter drilldown we can reuse qbank's chapter picker via quiz builder with subject + chapter
+      navigate('/qbank', { state: { subject, chapter } } as any);
+      // Fallback: if qbank state not handled, go to quiz with subject
+      setTimeout(() => navigate('/quiz', { state: { subject } }), 100);
+    },
+    [navigate],
+  );
+
   const openCourse = (c: EnrolledCourse) => navigate(BATCH_COURSES.has(c.id) ? `/exam-batch/${c.id}` : '/courses');
   const signOut = async () => {
     try {
@@ -249,6 +300,7 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
   if (view === 'settings') {
     return (
       <div className={shell}>
+        <div className="absolute inset-x-0 top-0 h-80 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,82,0,0.08),transparent)] blur-2xl dark:opacity-60" aria-hidden="true" />
         <div className={inner}>
           <SettingsView
             themeMode={themeMode}
@@ -267,11 +319,15 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
   }
 
   const ready = !loading || !!stats;
-  const empty = !loading && !stats;
 
   return (
     <div className={shell}>
-      <div className={inner}>
+      {/* dashboard-like background blobs */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,82,0,0.10),transparent)] blur-2xl dark:opacity-70" />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[radial-gradient(closest-side,rgba(255,185,46,0.16),transparent)] blur-3xl dark:opacity-60" />
+      <div aria-hidden="true" className="pointer-events-none absolute -left-28 top-72 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(255,122,53,0.10),transparent)] blur-3xl dark:opacity-70" />
+
+      <div className={inner + ' relative z-10'}>
         <ProfileTopBar
           title="প্রোফাইল"
           eyebrow={own ? 'এক নজরে তোমার অগ্রগতি' : 'শিক্ষার্থীর প্রোফাইল'}
@@ -282,7 +338,7 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
         {!ready ? (
           <ProfileSkeleton />
         ) : (
-          <div className="mt-4 grid gap-4 md:gap-5 lg:grid-cols-[360px_1fr] lg:items-start">
+          <div className="mt-4 grid gap-4 md:gap-5 lg:grid-cols-[380px_1fr] lg:items-start">
             {/* left: who */}
             <div className="space-y-4 md:space-y-5">
               <IdentityCard
@@ -290,6 +346,7 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
                 uid={uid}
                 own={own}
                 streak={current}
+                rank={rank}
                 onEdit={own ? () => setEditOpen(true) : undefined}
                 onShare={share}
                 onChallenge={own ? undefined : challenge}
@@ -306,14 +363,14 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
 
             {/* right: what */}
             <div className="space-y-4 md:space-y-5">
-              {empty && failed && (
+              {!stats && failed && (
                 <p className="rounded-2xl bg-amber-soft px-4 py-3 text-[13px] font-bold text-amber-900 dark:bg-gold/15 dark:text-amber-100" role="status">
                   পরিসংখ্যান আনা যায়নি — ইন্টারনেট দেখে পেজটা আবার লোড করো।
                 </p>
               )}
-              <StatsCard stats={stats} rank={rank} onStart={() => navigate('/quiz')} />
+              <StatsCard stats={stats} rank={rank} onStart={() => navigate('/quiz')} own={own} />
               <ActivityCard heat={heat} current={current} longest={longest} />
-              <SubjectsCard rows={subjects} onPractice={practice} />
+              <SubjectsCard rows={subjects} onPractice={practice} onAnalysis={(row) => setAnalysisRow(row)} own={own} />
               <TopicsCard strong={topics.strong} weak={topics.weak} own={own} onPractice={own ? () => navigate('/wrong-questions') : undefined} />
               <AchievementsCard list={badges} />
               {own && <CoursesCard courses={enrolledCourses} onOpen={openCourse} onAll={() => navigate('/courses')} />}
@@ -327,6 +384,21 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
           </div>
         )}
       </div>
+
+      {/* deep analysis sheet */}
+      <DeepAnalysisSheet
+        open={!!analysisRow}
+        onClose={() => setAnalysisRow(null)}
+        subject={analysisRow}
+        chapterStats={chapterStats}
+        loading={resultsLoading}
+        onPracticeSubject={practice}
+        onPracticeChapter={practiceChapter}
+        onOpenQbank={(subject) => {
+          setAnalysisRow(null);
+          navigate(`/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}`);
+        }}
+      />
 
       {own && (
         <>

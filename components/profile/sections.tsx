@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import {
   Activity,
   Award,
+  BarChart3,
   BookOpen,
   CalendarDays,
   Camera,
@@ -30,7 +31,7 @@ import {
 } from 'lucide-react';
 import type { EnrolledCourse } from '../../contexts/AuthContext';
 import { formatBdPhone } from '../../utils/phone';
-import { Bone, Card, EASE, SectionHeader, Track, cx } from '../dashboard/ui';
+import { Bone, Card, EASE, Eyebrow, SectionHeader, Track, cx } from '../dashboard/ui';
 import { formatPoints } from '../dashboard/model';
 import { Btn, Chip, IconBtn, Row } from '../qbank/ui';
 import {
@@ -56,9 +57,9 @@ import {
 } from './model';
 
 /*
- * Presentational sections of the profile page. Everything is dark-aware
- * (explicit `dark:` variants) and uses the warm paper/ink language shared
- * with the dashboard and the question bank.
+ * Presentational sections of the profile page — now aligned with the
+ * dashboard's language: dark hero for identity, white rounded-[26px] cards
+ * for everything else, explicit dark: variants, motion with EASE.
  */
 
 const enter = (delay = 0) => ({
@@ -69,7 +70,19 @@ const enter = (delay = 0) => ({
 
 /* ── avatar ────────────────────────────────────────────────────────────── */
 
-export function ProfileAvatar({ src, name, seed, className = '', textClassName = 'text-[30px]' }: { src?: string | null; name?: string | null; seed: string; className?: string; textClassName?: string }) {
+export function ProfileAvatar({
+  src,
+  name,
+  seed,
+  className = '',
+  textClassName = 'text-[30px]',
+}: {
+  src?: string | null;
+  name?: string | null;
+  seed: string;
+  className?: string;
+  textClassName?: string;
+}) {
   const hue = hueFor(seed);
   if (isHttpUrl(src)) {
     return <img src={src as string} alt="" className={cx('rounded-full bg-ink/5 object-cover dark:bg-white/10', className)} referrerPolicy="no-referrer" draggable={false} />;
@@ -109,13 +122,14 @@ export function ProfileTopBar({ title, eyebrow, right, onBack }: { title: string
   );
 }
 
-/* ── identity card ─────────────────────────────────────────────────────── */
+/* ── identity card — dark hero like dashboard ─────────────────────────── */
 
 export function IdentityCard({
   identity,
   uid,
   own,
   streak,
+  rank,
   onEdit,
   onShare,
   onChallenge,
@@ -126,6 +140,7 @@ export function IdentityCard({
   uid: string;
   own: boolean;
   streak: number;
+  rank?: number | null;
   onEdit?: () => void;
   onShare?: () => void;
   onChallenge?: () => void;
@@ -136,82 +151,118 @@ export function IdentityCard({
   const since = memberSince(identity.createdAt);
   return (
     <motion.div {...enter(0)}>
-      <Card className="overflow-hidden" as="section" aria-label="পরিচয়">
-        <div className="relative h-24 sm:h-28">
-          <div className="absolute inset-0 bg-[linear-gradient(115deg,#ff5200_0%,#ff7a36_48%,#ffb92e_100%)]" aria-hidden="true" />
-          <div
-            className="absolute inset-0 opacity-30"
-            style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.55) 1px, transparent 0)', backgroundSize: '14px 14px' }}
-            aria-hidden="true"
-          />
-          <div className="absolute -bottom-16 -right-10 h-40 w-40 rounded-full bg-white/20 blur-2xl" aria-hidden="true" />
-        </div>
+      <section
+        className="noise relative overflow-hidden rounded-[28px] bg-ink p-5 text-white shadow-[0_40px_80px_-40px_rgba(22,18,16,0.7)] dark:bg-ink-2 dark:ring-1 dark:ring-white/10 sm:p-7"
+        aria-label="পরিচয়"
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full blur-3xl"
+          style={{ background: 'conic-gradient(from 120deg, rgba(255,82,0,0), rgba(255,82,0,0.5), rgba(255,185,46,0.35), rgba(255,82,0,0))' }}
+        />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-1/4 h-48 w-48 rounded-full bg-lime/10 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -left-20 top-10 h-32 w-32 rounded-full bg-white/5 blur-2xl" />
 
-        <div className="px-4 pb-5 sm:px-6">
-          <div className="-mt-11 flex items-end justify-between gap-3">
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 min-w-0">
             <div className="relative shrink-0">
-              <ProfileAvatar src={identity.photoURL} name={identity.name} seed={uid} className="h-[88px] w-[88px] shadow-lg ring-4 ring-white dark:ring-ink-2" />
+              <ProfileAvatar src={identity.photoURL} name={identity.name} seed={uid} className="h-[84px] w-[84px] shadow-lg ring-2 ring-white/20 sm:h-[96px] sm:w-[96px]" />
               {own && onPickPhoto && (
                 <button
                   type="button"
                   onClick={onPickPhoto}
                   disabled={uploading}
                   aria-label="প্রোফাইল ছবি বদলাও"
-                  className="focus-ring absolute -bottom-0.5 -right-0.5 grid h-8 w-8 place-items-center rounded-full bg-ink text-white ring-[3px] ring-white transition-transform hover:scale-105 disabled:opacity-60 dark:bg-paper dark:text-ink dark:ring-ink-2"
+                  className="focus-ring absolute -bottom-1 -right-1 grid h-8 w-8 place-items-center rounded-full bg-white text-ink ring-2 ring-ink shadow-md transition-transform hover:scale-105 disabled:opacity-60"
                 >
                   {uploading ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <Camera className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />}
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-2 pb-1">
-              {own ? (
-                <>
-                  {onShare && <IconBtn icon={Share2} label="প্রোফাইল শেয়ার করো" onClick={onShare} />}
-                  {onEdit && (
-                    <Btn size="sm" icon={Pencil} onClick={onEdit}>
-                      এডিট
-                    </Btn>
-                  )}
-                </>
-              ) : (
-                onChallenge && (
-                  <Btn size="sm" variant="brand" icon={Swords} onClick={onChallenge}>
-                    চ্যালেঞ্জ করো
-                  </Btn>
-                )
-              )}
+            <div className="min-w-0 pt-1">
+              <Eyebrow className="flex items-center gap-1.5 text-lime">
+                <Sparkles className="h-3.5 w-3.5 shrink-0" strokeWidth={2.6} aria-hidden="true" />
+                <span className="truncate">{own ? 'তোমার প্রোফাইল' : 'শিক্ষার্থী'}</span>
+              </Eyebrow>
+              <h2 className="mt-1.5 truncate font-bangla text-[26px] font-extrabold leading-tight tracking-tight sm:text-[30px]">{identity.name || 'শিক্ষার্থী'}</h2>
+              <p className="mt-1 max-w-[32ch] text-[13.5px] font-medium leading-relaxed text-white/70 sm:text-[14px]">{line || (own ? 'পড়াশোনার তথ্য এখনো যোগ করা হয়নি — এডিট করে যোগ করো।' : 'পড়াশোনার তথ্য নেই')}</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {identity.college && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11.5px] font-bold ring-1 ring-white/10">
+                    <School className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden="true" />
+                    {identity.college}
+                  </span>
+                )}
+                {streak > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 px-2.5 py-1 text-[11.5px] font-bold text-lime ring-1 ring-lime/20">
+                    <Flame className="h-3.5 w-3.5" fill="currentColor" strokeWidth={2} aria-hidden="true" />
+                    {bn(streak)} দিনের স্ট্রিক
+                  </span>
+                )}
+                {since && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-2.5 py-1 text-[11.5px] font-bold text-white/70 ring-1 ring-white/10">
+                    <CalendarDays className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden="true" />
+                    {since} থেকে
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
-          <h2 className="mt-3 truncate font-bangla text-[24px] font-extrabold leading-tight tracking-tight text-ink dark:text-paper sm:text-[28px]">{identity.name || 'শিক্ষার্থী'}</h2>
-          <p className="mt-1 text-[13.5px] font-semibold text-mist dark:text-white/55">{line || (own ? 'পড়াশোনার তথ্য এখনো যোগ করা হয়নি' : 'পড়াশোনার তথ্য নেই')}</p>
-
-          <div className="mt-3.5 flex flex-wrap gap-1.5">
-            {identity.college && (
-              <Chip icon={School} tone="neutral">
-                {identity.college}
-              </Chip>
-            )}
-            {streak > 0 && (
-              <Chip icon={Flame} tone="brand">
-                {bn(streak)} দিনের স্ট্রিক
-              </Chip>
-            )}
-            {since && (
-              <Chip icon={CalendarDays} tone="neutral">
-                {since} থেকে
-              </Chip>
-            )}
+          <div className="flex shrink-0 flex-col items-center gap-2">
+            <div className="flex h-[68px] w-[68px] flex-col items-center justify-center rounded-[22px] border border-white/15 bg-white/8 shadow-lg backdrop-blur-sm sm:h-20 sm:w-20">
+              <Trophy className="mb-0.5 h-4 w-4 text-lime" strokeWidth={2.4} aria-hidden="true" />
+              <span className="text-[18px] font-black leading-none tabular-nums sm:text-[20px]">{rank ? `#${bn(rank)}` : '—'}</span>
+              <span className="mt-1 text-[9px] font-bold text-white/50">র‍্যাঙ্ক</span>
+            </div>
           </div>
         </div>
-      </Card>
+
+        <div className="relative mt-5 flex flex-wrap items-center gap-2.5">
+          {own ? (
+            <>
+              {onEdit && (
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className="focus-ring inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-[14px] font-black text-ink shadow-[0_16px_36px_-14px_rgba(255,255,255,0.5)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <Pencil className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+                  এডিট প্রোফাইল
+                </button>
+              )}
+              {onShare && (
+                <button
+                  type="button"
+                  onClick={onShare}
+                  className="focus-ring inline-flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 text-[13.5px] font-extrabold text-white/90 backdrop-blur-sm transition-colors hover:bg-white/15"
+                >
+                  <Share2 className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+                  শেয়ার
+                </button>
+              )}
+            </>
+          ) : (
+            onChallenge && (
+              <button
+                type="button"
+                onClick={onChallenge}
+                className="focus-ring inline-flex h-12 items-center gap-2 rounded-full bg-lime px-6 text-[14px] font-black text-ink-950 shadow-[0_16px_36px_-14px_rgba(255,185,46,0.6)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <Swords className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+                চ্যালেঞ্জ করো
+              </button>
+            )
+          )}
+        </div>
+      </section>
     </motion.div>
   );
 }
 
 /* ── numbers ───────────────────────────────────────────────────────────── */
 
-export function StatsCard({ stats, rank, onStart }: { stats: ProfileStats | null; rank: number | null; onStart: () => void }) {
+export function StatsCard({ stats, rank, onStart, own = true }: { stats: ProfileStats | null; rank: number | null; onStart: () => void; own?: boolean }) {
   const points = stats?.points || 0;
   const exams = stats?.totalExams || 0;
   const correct = stats?.totalCorrect || 0;
@@ -227,7 +278,8 @@ export function StatsCard({ stats, rank, onStart }: { stats: ProfileStats | null
   return (
     <motion.div {...enter(0.05)}>
       <Card className="p-4 sm:p-5" aria-label="সংখ্যায় অগ্রগতি">
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <SectionHeader icon={BarChart3} title="সংখ্যায় অগ্রগতি" subtitle={answered ? `${bn(answered)}টি উত্তর বিশ্লেষণ করা হয়েছে` : own ? 'এখনো যাত্রা শুরু হয়নি' : 'এই শিক্ষার্থীর পরিসংখ্যান'} />
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {tiles.map((t) => (
             <div key={t.label} className="rounded-2xl bg-ink/[0.03] px-3.5 py-3 ring-1 ring-ink/[0.05] dark:bg-white/[0.04] dark:ring-white/[0.06]">
               <span className={cx('grid h-8 w-8 place-items-center rounded-xl', t.tint)}>
@@ -240,23 +292,29 @@ export function StatsCard({ stats, rank, onStart }: { stats: ProfileStats | null
         </div>
 
         {answered > 0 ? (
-          <div className="mt-4">
+          <div className="mt-4 rounded-2xl bg-paper p-3 ring-1 ring-ink/6 dark:bg-white/5 dark:ring-white/10">
             <div className="flex items-center justify-between text-[12px] font-bold">
               <span className="text-emerald-700 dark:text-emerald-300">{bn(correct)} সঠিক</span>
               <span className="text-mist dark:text-white/50">মোট {bn(answered)} উত্তর</span>
               <span className="text-flag dark:text-red-300">{bn(wrong)} ভুল</span>
             </div>
-            <div className="mt-1.5 flex h-2 w-full overflow-hidden rounded-full bg-ink/8 dark:bg-white/10" role="presentation">
+            <div className="mt-2 flex h-2 w-full overflow-hidden rounded-full bg-ink/8 dark:bg-white/10" role="presentation">
               <div className="h-full bg-emerald-500 transition-[width] duration-700" style={{ width: `${(correct / answered) * 100}%` }} />
               <div className="h-full bg-flag/80 transition-[width] duration-700" style={{ width: `${(wrong / answered) * 100}%` }} />
             </div>
+            <p className="mt-2 text-[11px] font-semibold text-mist dark:text-white/45">বিষয়ভিত্তিক মোট সঠিকের যোগফল উপরের সঠিকের সাথে মিলবে — এখন মিশ্র পরীক্ষাও বিষয় অনুযায়ী ভাগ হয়।</p>
           </div>
-        ) : (
+        ) : own ? (
           <div className="mt-4 flex flex-col items-start gap-3 rounded-2xl bg-cream px-4 py-3.5 dark:bg-brand/10 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[13.5px] font-bold text-ink dark:text-paper">এখনো কোনো উত্তর নেই — প্রথম মক দিয়ে শুরু করো।</p>
             <Btn size="sm" variant="brand" icon={Play} onClick={onStart}>
               মক টেস্ট দাও
             </Btn>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-2xl bg-ink/[0.03] px-4 py-4 text-center dark:bg-white/[0.04]">
+            <p className="text-[13.5px] font-bold text-ink dark:text-paper">এই শিক্ষার্থী এখনো কোনো পরীক্ষা দেয়নি</p>
+            <p className="mt-1 text-[12px] font-semibold text-mist dark:text-white/50">পরীক্ষা দিলে এখানে পরিসংখ্যান দেখা যাবে</p>
           </div>
         )}
       </Card>
@@ -300,11 +358,7 @@ export function ActivityCard({ heat, current, longest }: { heat: Heatmap; curren
                       title={cell.key}
                       className={cx(
                         'aspect-square w-full rounded-[3px]',
-                        cell.future
-                          ? 'bg-transparent ring-1 ring-inset ring-ink/[0.05] dark:ring-white/[0.06]'
-                          : cell.active
-                            ? 'bg-brand'
-                            : 'bg-ink/[0.07] dark:bg-white/[0.09]',
+                        cell.future ? 'bg-transparent ring-1 ring-inset ring-ink/[0.05] dark:ring-white/[0.06]' : cell.active ? 'bg-brand' : 'bg-ink/[0.07] dark:bg-white/[0.09]',
                         cell.isToday && 'ring-2 ring-inset ring-ink dark:ring-paper',
                       )}
                     />
@@ -332,13 +386,23 @@ export function ActivityCard({ heat, current, longest }: { heat: Heatmap; curren
 const TONE_TEXT = { good: 'text-emerald-700 dark:text-emerald-300', ok: 'text-amber-700 dark:text-amber-200', weak: 'text-flag dark:text-red-300' } as const;
 const TONE_BAR = { good: 'brand', ok: 'gold', weak: 'flag' } as const;
 
-export function SubjectsCard({ rows, onPractice }: { rows: SubjectRow[]; onPractice: (row: SubjectRow) => void }) {
+export function SubjectsCard({
+  rows,
+  onPractice,
+  onAnalysis,
+  own = true,
+}: {
+  rows: SubjectRow[];
+  onPractice: (row: SubjectRow) => void;
+  onAnalysis: (row: SubjectRow) => void;
+  own?: boolean;
+}) {
   const [all, setAll] = useState(false);
   const shown = all ? rows : rows.slice(0, 5);
   return (
     <motion.div {...enter(0.15)}>
       <Card className="p-4 sm:p-5" aria-label="বিষয়ভিত্তিক দক্ষতা">
-        <SectionHeader icon={BookOpen} title="বিষয়ভিত্তিক দক্ষতা" subtitle="সব পরীক্ষা মিলিয়ে সঠিক উত্তরের হার" />
+        <SectionHeader icon={BookOpen} title="বিষয়ভিত্তিক দক্ষতা" subtitle={own ? 'ট্যাপ করলে গভীর বিশ্লেষণ খুলবে' : 'বিষয় অনুযায়ী দক্ষতা'} />
         {rows.length === 0 ? (
           <p className="mt-4 rounded-2xl bg-ink/[0.03] px-4 py-5 text-center text-[13px] font-semibold text-mist dark:bg-white/[0.04] dark:text-white/50">
             পরীক্ষা দিলে এখানে বিষয় অনুযায়ী দক্ষতা দেখা যাবে।
@@ -349,9 +413,9 @@ export function SubjectsCard({ rows, onPractice }: { rows: SubjectRow[]; onPract
               <li key={row.key}>
                 <button
                   type="button"
-                  onClick={() => onPractice(row)}
+                  onClick={() => onAnalysis(row)}
                   className="focus-ring group flex w-full items-center gap-3 rounded-xl py-2.5 text-left"
-                  aria-label={`${row.name} অনুশীলন করো`}
+                  aria-label={`${row.name} বিশ্লেষণ দেখো`}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-3">
@@ -361,9 +425,26 @@ export function SubjectsCard({ rows, onPractice }: { rows: SubjectRow[]; onPract
                       </span>
                     </div>
                     <Track value={row.accuracy / 100} tone={TONE_BAR[row.tone]} className="mt-1.5" />
+                    <div className="mt-1 flex items-center gap-2 text-[11px] font-semibold text-mist dark:text-white/45">
+                      <span className="font-body tabular-nums">{bn(row.correct)} সঠিক</span>
+                      <span>·</span>
+                      <span>{bn(row.total - row.correct)} ভুল/স্কিপ</span>
+                      {own && <span className="ml-auto inline-flex items-center gap-0.5 text-brand-deep dark:text-brand-bright">বিস্তারিত <ChevronRight className="h-3 w-3" strokeWidth={2.6} /></span>}
+                    </div>
                   </div>
                   <ChevronRight className="h-4 w-4 shrink-0 text-ink/25 transition-transform group-hover:translate-x-0.5 dark:text-white/25" strokeWidth={2.6} aria-hidden="true" />
                 </button>
+                {own && (
+                  <div className="pb-2 pl-1">
+                    <button
+                      type="button"
+                      onClick={() => onPractice(row)}
+                      className="focus-ring text-[12px] font-bold text-mist hover:text-brand-deep dark:text-white/50 dark:hover:text-brand-bright"
+                    >
+                      এই বিষয়ে মক দাও
+                    </button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -585,7 +666,7 @@ export function AccountCard({ onSettings, onLeaderboard, onLogout }: { onSetting
 export function ProfileSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="লোড হচ্ছে">
-      <Bone className="h-[250px] rounded-[26px]" />
+      <Bone className="h-[280px] rounded-[28px]" />
       <Bone className="h-[210px] rounded-[26px]" />
       <Bone className="h-[220px] rounded-[26px]" />
     </div>

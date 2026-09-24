@@ -785,6 +785,19 @@ const QuizBattlePrototype: React.FC = () => {
 
     return (
         <div className="space-y-7 max-h-[70vh] overflow-y-auto custom-scrollbar pr-1">
+            {opponentInfo && (
+              <div className="flex items-center gap-3 rounded-2xl bg-orange-50 px-4 py-3 ring-1 ring-orange-200 dark:bg-orange-950/20 dark:ring-orange-900/40">
+                <PlayerAvatar src={opponentInfo.avatar} name={opponentInfo.name} className="h-10 w-10 rounded-full" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-300">চ্যালেঞ্জ</p>
+                  <p className="truncate text-[14px] font-black text-gray-900 dark:text-white">{opponentInfo.name || 'শিক্ষার্থী'} কে চ্যালেঞ্জ করছো</p>
+                  <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-400">বিষয় বেছে নিয়ে রুম খুললে নোটিফিকেশন যাবে</p>
+                </div>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-primary shadow-sm ring-1 ring-orange-200 dark:bg-zinc-900 dark:ring-orange-900/40">
+                  <Swords size={16} />
+                </span>
+              </div>
+            )}
             {/* 1. Subject Selection */}
             <div>
                 <label className="text-xs font-black text-gray-500 dark:text-zinc-400 mb-3 flex items-center gap-1.5">
