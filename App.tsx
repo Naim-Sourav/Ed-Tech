@@ -326,15 +326,10 @@ const MainLayout: React.FC<{
         </main>
       </div>
 
-      {/* Global Battle Invite Popup */}
-      <AnimatePresence>
-        {activeInvite && (
-          <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white dark:bg-zinc-900 border-2 border-orange-500 rounded-3xl shadow-2xl p-5 z-[9999] overflow-hidden"
-          >
+      {/* Global Battle Invite Popup - plain div to avoid useContext null race from AnimatePresence exit */}
+      {activeInvite && (
+        <div className="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white dark:bg-zinc-900 border-2 border-orange-500 rounded-3xl shadow-2xl p-5 z-[9999] overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-xl pointer-events-none" />
             {/* Ambient fire glow in background */}
             <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-xl pointer-events-none"></div>
             
@@ -371,14 +366,9 @@ const MainLayout: React.FC<{
               </div>
             </div>
 
-            {/* Countdown / Time Limit indicator */}
+            {/* Countdown / Time Limit indicator - plain div to avoid motion */}
             <div className="mt-4 h-1 w-full bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-orange-500"
-                initial={{ width: '100%' }}
-                animate={{ width: `${(inviteTimeLeft / 45) * 100}%` }}
-                transition={{ duration: 1, ease: 'linear' }}
-              />
+              <div className="h-full bg-orange-500 transition-all duration-1000 ease-linear" style={{ width: `${(inviteTimeLeft / 45) * 100}%` }} />
             </div>
             
             <div className="flex items-center gap-2 mt-4">
@@ -396,9 +386,8 @@ const MainLayout: React.FC<{
                 গ্রহণ করুন ({inviteTimeLeft}s)
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 };

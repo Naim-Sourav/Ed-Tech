@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import {
   Activity,
   Award,
@@ -30,7 +29,7 @@ import {
 } from 'lucide-react';
 import type { EnrolledCourse } from '../../contexts/AuthContext';
 import { formatBdPhone } from '../../utils/phone';
-import { Bone, Card, EASE, SectionHeader, Track, cx } from '../dashboard/ui';
+import { Bone, Card, SectionHeader, Track, cx } from '../dashboard/ui';
 import { formatPoints } from '../dashboard/model';
 import { Btn, Chip, IconBtn, Row } from '../qbank/ui';
 import {
@@ -59,13 +58,8 @@ import {
  * Presentational sections of the profile page. Everything is dark-aware
  * (explicit `dark:` variants) and uses the warm paper/ink language shared
  * with the dashboard and the question bank.
+ * NOTE: motion removed to avoid useContext null race on navigation.
  */
-
-const enter = (delay = 0) => ({
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, ease: EASE, delay },
-});
 
 /* ── avatar ────────────────────────────────────────────────────────────── */
 
@@ -135,7 +129,7 @@ export function IdentityCard({
   const line = studyLine(identity);
   const since = memberSince(identity.createdAt);
   return (
-    <motion.div {...enter(0)}>
+    <div>
       <Card className="overflow-hidden" as="section" aria-label="পরিচয়">
         <div className="relative h-24 sm:h-28">
           <div className="absolute inset-0 bg-[linear-gradient(115deg,#ff5200_0%,#ff7a36_48%,#ffb92e_100%)]" aria-hidden="true" />
@@ -205,7 +199,7 @@ export function IdentityCard({
           </div>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -225,7 +219,7 @@ export function StatsCard({ stats, rank, onStart }: { stats: ProfileStats | null
     { icon: Target, label: 'নির্ভুলতা', value: answered ? `${bn(accuracy)}%` : '—', tint: 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300' },
   ];
   return (
-    <motion.div {...enter(0.05)}>
+    <div>
       <Card className="p-4 sm:p-5" aria-label="সংখ্যায় অগ্রগতি">
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {tiles.map((t) => (
@@ -260,7 +254,7 @@ export function StatsCard({ stats, rank, onStart }: { stats: ProfileStats | null
           </div>
         )}
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -272,7 +266,7 @@ export function ActivityCard({ heat, current, longest }: { heat: Heatmap; curren
   const cols = heat.columns.length;
   const template = { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` };
   return (
-    <motion.div {...enter(0.1)}>
+    <div>
       <Card className="p-4 sm:p-5" aria-label="সক্রিয়তা">
         <SectionHeader icon={Activity} title="সক্রিয়তা" subtitle={`গত ${bn(Math.round(heat.days / 30))} মাসে ${bn(heat.activeDays)} দিন অনুশীলন`} />
         <div className="mt-4 flex gap-2">
@@ -323,7 +317,7 @@ export function ActivityCard({ heat, current, longest }: { heat: Heatmap; curren
           </Chip>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -336,7 +330,7 @@ export function SubjectsCard({ rows, onPractice }: { rows: SubjectRow[]; onPract
   const [all, setAll] = useState(false);
   const shown = all ? rows : rows.slice(0, 5);
   return (
-    <motion.div {...enter(0.15)}>
+    <div>
       <Card className="p-4 sm:p-5" aria-label="বিষয়ভিত্তিক দক্ষতা">
         <SectionHeader icon={BookOpen} title="বিষয়ভিত্তিক দক্ষতা" subtitle="সব পরীক্ষা মিলিয়ে সঠিক উত্তরের হার" />
         {rows.length === 0 ? (
@@ -374,7 +368,7 @@ export function SubjectsCard({ rows, onPractice }: { rows: SubjectRow[]; onPract
           </button>
         )}
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -403,7 +397,7 @@ function TopicList({ title, rows, tone }: { title: string; rows: TopicRow[]; ton
 export function TopicsCard({ strong, weak, own = true, onPractice }: { strong: TopicRow[]; weak: TopicRow[]; own?: boolean; onPractice?: () => void }) {
   if (!strong.length && !weak.length) return null;
   return (
-    <motion.div {...enter(0.2)}>
+    <div>
       <Card className="p-4 sm:p-5" aria-label="শক্তি ও দুর্বলতা">
         <SectionHeader icon={Crosshair} title="শক্তি ও দুর্বলতা" subtitle="টপিক অনুযায়ী" action={onPractice && weak.length ? 'ঝালাই করো' : undefined} onAction={onPractice} />
         <div className="mt-3.5 flex flex-col gap-2.5 sm:flex-row">
@@ -411,7 +405,7 @@ export function TopicsCard({ strong, weak, own = true, onPractice }: { strong: T
           <TopicList title={own ? 'যেখানে কাজ দরকার' : 'দুর্বল টপিক'} rows={weak} tone="weak" />
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -433,7 +427,7 @@ export function AchievementsCard({ list }: { list: Achievement[] }) {
   const unlocked = list.filter((a) => a.unlocked).length;
   const next = nextAchievement(list);
   return (
-    <motion.div {...enter(0.25)}>
+    <div>
       <Card className="p-4 sm:p-5" aria-label="অর্জন">
         <SectionHeader icon={Medal} title="অর্জন" subtitle={`${bn(unlocked)}/${bn(list.length)} ব্যাজ আনলক`} />
         <ul className="mt-4 grid grid-cols-3 gap-2">
@@ -477,7 +471,7 @@ export function AchievementsCard({ list }: { list: Achievement[] }) {
           </div>
         )}
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -486,7 +480,7 @@ export function AchievementsCard({ list }: { list: Achievement[] }) {
 export function CoursesCard({ courses, onOpen, onAll }: { courses: EnrolledCourse[]; onOpen: (course: EnrolledCourse) => void; onAll: () => void }) {
   if (!courses.length) return null;
   return (
-    <motion.div {...enter(0.3)}>
+    <div>
       <Card className="p-2 sm:p-3" aria-label="আমার কোর্স">
         <SectionHeader icon={GraduationCap} title="আমার কোর্স" subtitle={`${bn(courses.length)}টি কোর্সে এনরোল করা`} action="সব কোর্স" onAction={onAll} className="px-2 pt-2" />
         <ul className="mt-1">
@@ -511,7 +505,7 @@ export function CoursesCard({ courses, onOpen, onAll }: { courses: EnrolledCours
           ))}
         </ul>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -529,7 +523,7 @@ export function StudyInfoCard({ identity, onEdit }: { identity: ProfileIdentity;
     { icon: Mail, label: 'ইমেইল', value: identity.email },
   ];
   return (
-    <motion.div {...enter(0.3)}>
+    <div>
       <Card className="p-4 sm:p-5" aria-label="পড়াশোনার তথ্য">
         <SectionHeader icon={GraduationCap} title="পড়াশোনার তথ্য" subtitle={completion.missing.length ? `${bn(completion.done)}/${bn(completion.total)} সম্পূর্ণ` : 'প্রোফাইল সম্পূর্ণ'} action="এডিট" onAction={onEdit} />
         {completion.missing.length > 0 && <Track value={completion.done / completion.total} className="mt-3" />}
@@ -557,7 +551,7 @@ export function StudyInfoCard({ identity, onEdit }: { identity: ProfileIdentity;
           ))}
         </dl>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -570,13 +564,13 @@ export function AccountCard({ onSettings, onLeaderboard, onLogout }: { onSetting
     </span>
   );
   return (
-    <motion.div {...enter(0.35)}>
+    <div>
       <Card className="p-2 sm:p-3" aria-label="অ্যাকাউন্ট">
         <Row lead={tile('bg-ink/[0.05] text-ink/70 dark:bg-white/[0.08] dark:text-white/70', Settings)} title="সেটিংস" meta="থিম, প্রশ্নের ফন্ট, অ্যাকাউন্ট" onClick={onSettings} />
         <Row lead={tile('bg-gold/20 text-amber-800 dark:bg-gold/20 dark:text-amber-200', Trophy)} title="লিডারবোর্ড" meta="সবার মধ্যে তোমার অবস্থান" onClick={onLeaderboard} />
         <Row lead={tile('bg-flag/10 text-flag dark:bg-flag/20 dark:text-red-300', LogOut)} title={<span className="text-flag dark:text-red-300">লগআউট</span>} onClick={onLogout} />
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
