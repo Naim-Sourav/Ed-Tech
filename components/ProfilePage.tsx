@@ -257,6 +257,8 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
 
   const practice = useCallback(
     (row: SubjectRow) => {
+      // Navigate directly — don't close sheet first then navigate immediately,
+      // that was causing AnimatePresence exit + unmount race (useContext null).
       navigate('/quiz', row.group ? { state: { subject: row.group } } : undefined);
     },
     [navigate],
@@ -264,10 +266,11 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
 
   const practiceChapter = useCallback(
     (chapter: string, subject: string) => {
-      // For chapter drilldown we can reuse qbank's chapter picker via quiz builder with subject + chapter
-      navigate('/qbank', { state: { subject, chapter } } as any);
-      // Fallback: if qbank state not handled, go to quiz with subject
-      setTimeout(() => navigate('/quiz', { state: { subject } }), 100);
+      // Single navigation to quiz builder. Previous version did
+      // navigate('/qbank') + setTimeout navigate('/quiz') which caused
+      // React dispatcher null errors (useState/useContext) especially after
+      // new profile creation.
+      navigate('/quiz', { state: { subject } });
     },
     [navigate],
   );
@@ -395,7 +398,6 @@ const ProfilePage: React.FC<Props> = ({ themeMode = 'light', setThemeMode }) => 
         onPracticeSubject={practice}
         onPracticeChapter={practiceChapter}
         onOpenQbank={(subject) => {
-          setAnalysisRow(null);
           navigate(`/qbank?level=ACADEMIC&subject=${encodeURIComponent(subject)}`);
         }}
       />
