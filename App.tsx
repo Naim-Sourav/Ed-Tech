@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { lazy, useState, useEffect, Suspense, useRef } from 'react';
 import { logger } from './utils/logger';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -26,7 +26,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 // --- Lazy Load Helper with Retry Logic ---
 const lazyWithRetry = (componentImport: () => Promise<any>) =>
-  React.lazy(async () => {
+  lazy(async () => {
     const pageHasAlreadyBeenForceRefreshed = JSON.parse(
       window.localStorage.getItem('page-has-been-force-refreshed') || 'false'
     );

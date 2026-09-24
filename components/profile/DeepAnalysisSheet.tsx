@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { motion } from 'motion/react';
-import { BookOpen, Crosshair, Flame, Target, Trophy, BarChart3, Play, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { BookOpen, Target, BarChart3, Play, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { Sheet, SheetHeader, Btn, Chip, Track } from '../qbank/ui';
 import { Card, SectionHeader, EASE, cx } from '../dashboard/ui';
 import { bn } from './model';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { motion } from 'motion/react';
 import {
   ArrowRight,
@@ -515,7 +515,7 @@ export function LeaderboardCard({ rows, gap, rank, onOpen }: { rows: BoardRow[];
       ) : (
         <ul className="space-y-1 p-2.5">
           {rows.map((row, i) => (
-            <React.Fragment key={`${row.rank}-${row.user.uid}`}>
+            <Fragment key={`${row.rank}-${row.user.uid}`}>
               {gap && i === rows.length - 1 && (
                 <li aria-hidden="true" className="flex justify-center gap-1.5 py-1.5">
                   {[0, 1, 2].map((d) => (
@@ -570,7 +570,7 @@ export function LeaderboardCard({ rows, gap, rank, onOpen }: { rows: BoardRow[];
                   <span className="block text-[10px] font-bold uppercase tracking-wider text-mist dark:text-white/50">পয়েন্ট</span>
                 </span>
               </li>
-            </React.Fragment>
+            </Fragment>
           ))}
         </ul>
       )}

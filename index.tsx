@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { StrictMode } from 'react';
 import { logger } from './utils/logger';
 import ReactDOM from 'react-dom/client';
 import './index.css';
@@ -18,7 +18,7 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <HelmetProvider>
       <AuthProvider>
         <CacheProvider>
@@ -28,5 +28,5 @@ root.render(
         </CacheProvider>
       </AuthProvider>
     </HelmetProvider>
-  </React.StrictMode>
+  </StrictMode>
 );

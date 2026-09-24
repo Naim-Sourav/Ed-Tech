@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { logger } from '../utils/logger';
 import { Play, Loader2, Image as ImageIcon, CheckCircle, AlertCircle } from 'lucide-react';
 import { fetchQuestionsFromBankAPI, updateQuestionInBankAPI, fetchQuestionsForMigrator } from '../services/api';
@@ -15,7 +15,7 @@ export default function AdminImageMigrator() {
     const { showToast } = useToast();
     
     // Use a ref to access the latest stop state inside the async loop
-    const shouldStopRef = React.useRef(false);
+    const shouldStopRef = useRef(false);
 
     const addLog = (msg: string) => {
         setLogs(prev => [msg, ...prev].slice(0, 100)); // Keep last 100 logs

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AnimatePresence, MotionConfig, motion, useAnimation } from 'motion/react';
 import { addDoc, collection } from 'firebase/firestore';
@@ -885,7 +885,7 @@ const ExamPage: React.FC = () => {
                     const showSubjectHeader = idx > 0 && q.subject !== questions[idx - 1]?.subject && !!q.subject;
                     const answered = isAnswered(userAnswers[idx]);
                     return (
-                      <React.Fragment key={idx}>
+                      <Fragment key={idx}>
                         {showSubjectHeader && (
                           <div className="sticky top-0 z-20 -mx-1 px-1 pt-1">
                             <div className="flex items-center gap-2 rounded-2xl bg-white/85 px-4 py-2.5 text-[13px] font-extrabold text-ink ring-1 ring-ink/8 backdrop-blur-xl">
@@ -913,7 +913,7 @@ const ExamPage: React.FC = () => {
                           stimulus={isStimulusHead(questions, idx) ? stimulusRange(questions, idx) : null}
                           showExplanation={isPractice && answered}
                         />
-                      </React.Fragment>
+                      </Fragment>
                     );
                   })}
                 </div>

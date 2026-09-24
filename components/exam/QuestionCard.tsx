@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'motion/react';
 import { Bookmark, Check, Flag, Lightbulb, X } from 'lucide-react';
 import type { QuizQuestion } from '../../types';
@@ -310,4 +310,4 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   );
 };
 
-export default React.memo(QuestionCard);
+export default memo(QuestionCard);

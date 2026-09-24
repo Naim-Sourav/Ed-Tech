@@ -36,7 +36,8 @@ export default defineConfig(({ mode: _mode }) => {
   return {
     plugins: [react(), serveStaticSeo],
     optimizeDeps: {
-      include: ['react-is']
+      include: ['react', 'react-dom', 'react-is', 'react-router-dom', 'motion'],
+      exclude: ['@react-three/fiber', '@react-three/drei', 'three'],
     },
     // Changed to relative base './' to make it portable across GitHub Pages and Vercel
     base: './', 

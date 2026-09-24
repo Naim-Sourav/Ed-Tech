@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { motion } from 'motion/react';
 import { ALargeSmall, ChevronLeft, ChevronRight, Clock, Flag, LayoutGrid, LayoutList, Rows3, X, Zap } from 'lucide-react';
 import { Button, Chip, Dialog, DialogHeader, IconButton, ProgressTrack } from './ui';
@@ -43,10 +43,10 @@ export function ExamHeader({
           </h1>
           <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11.5px] font-semibold text-mist sm:text-[12px]">
             {chips.map((c, i) => (
-              <React.Fragment key={c}>
+              <Fragment key={c}>
                 {i > 0 && <span aria-hidden="true">·</span>}
                 <span className="min-w-0 shrink truncate">{c}</span>
-              </React.Fragment>
+              </Fragment>
             ))}
           </p>
         </div>
