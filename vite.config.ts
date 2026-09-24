@@ -44,13 +44,6 @@ export default defineConfig(({ mode: _mode }) => {
       alias: {
         '@': path.resolve('.'),
         'react-is': path.resolve('./node_modules/react-is'),
-        // Temporarily alias motion to fallback to eliminate useContext null crashes
-        // that were happening on any button click (AnimatePresence exit + navigation race).
-        // If this fixes the issue, we know motion is the culprit and can re-enable
-        // selectively. User reported any button click causes error, refresh fixes.
-        'motion/react': path.resolve('./components/motion-fallback.tsx'),
-        motion: path.resolve('./components/motion-fallback.tsx'),
-        'framer-motion': path.resolve('./components/motion-fallback.tsx'),
       },
     },
     // এই অংশটি প্রিভিউ সমস্যা সমাধান করবে

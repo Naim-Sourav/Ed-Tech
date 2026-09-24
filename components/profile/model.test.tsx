@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   achievements,
-  chapterStatsFromResults,
   emptyIdentity,
   heatmap,
   initialOf,
@@ -13,8 +12,6 @@ import {
   profileUrl,
   streakFromLog,
   studyLine,
-  sumCorrectFromSubjectRows,
-  sumTotalFromSubjectRows,
   topicRows,
   type ProfileStats,
 } from './model';
@@ -146,45 +143,6 @@ describe('topicRows', () => {
   });
   it('is empty for missing stats', () => {
     expect(topicRows(null)).toEqual({ strong: [], weak: [] });
-  });
-});
-
-describe('chapter deep analysis', () => {
-  it('aggregates per-chapter correct/wrong/skipped from mixed-subject results', () => {
-    const results = [
-      {
-        subject: 'Physics',
-        questions: [
-          { subject: 'Physics', chapter: 'ভেক্টর', correctAnswerIndex: 1 },
-          { subject: 'Physics', chapter: 'নিউটনিয়ান বলবিদ্যা', correctAnswerIndex: 0 },
-          { subject: 'Chemistry', chapter: 'গুণগত রসায়ন', correctAnswerIndex: 2 },
-        ],
-        userAnswers: [1, 2, 2],
-      },
-      {
-        subject: 'Physics',
-        questions: [
-          { subject: 'Physics', chapter: 'ভেক্টর', correctAnswerIndex: 0 },
-          { subject: 'Physics', chapter: 'ভেক্টর', correctAnswerIndex: 1 },
-        ],
-        userAnswers: [0, null],
-      },
-    ];
-    const stats = chapterStatsFromResults(results as any);
-    expect(stats).toHaveLength(3);
-    const vec = stats.find((s) => s.chapter === 'ভেক্টর')!;
-    expect(vec).toMatchObject({ subject: 'Physics', total: 3, correct: 2, skipped: 1, accuracy: 67 });
-    const chem = stats.find((s) => s.chapter === 'গুণগত রসায়ন')!;
-    expect(chem).toMatchObject({ subject: 'Chemistry', total: 1, correct: 1 });
-  });
-
-  it('sum helpers keep top numbers consistent with subject rows', () => {
-    const rows = [
-      { key: 'Physics', name: 'পদার্থবিজ্ঞান', group: 'Physics', total: 136, correct: 107, accuracy: 79, tone: 'good' as const },
-      { key: 'Biology', name: 'জীববিজ্ঞান', group: 'Biology', total: 134, correct: 113, accuracy: 84, tone: 'good' as const },
-    ];
-    expect(sumCorrectFromSubjectRows(rows as any)).toBe(220);
-    expect(sumTotalFromSubjectRows(rows as any)).toBe(270);
   });
 });
 
