@@ -24,29 +24,12 @@ import { listenToInvites, deleteInvite, joinRTDBRoom } from './services/battleSe
 
 import ErrorBoundary from './components/ErrorBoundary';
 
-// --- Lazy Load Helper with Retry Logic ---
-const lazyWithRetry = (componentImport: () => Promise<any>) =>
-  lazy(async () => {
-    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-      window.localStorage.getItem('page-has-been-force-refreshed') || 'false'
-    );
-
-    try {
-      const component = await componentImport();
-      window.localStorage.setItem('page-has-been-force-refreshed', 'false');
-      return component;
-    } catch (error) {
-      if (!pageHasAlreadyBeenForceRefreshed) {
-        // A stub to prevent infinite loops
-        window.localStorage.setItem('page-has-been-force-refreshed', 'true');
-        window.location.reload();
-        return { default: () => null }; // Return a dummy component while reloading
-      }
-
-      // The error is real and the page has already been refreshed
-      throw error;
-    }
-  });
+// --- Lazy Load Helper - simplified to avoid dispatcher null race ---
+// Previous version did window.location.reload() + return dummy () => null during render,
+// which could cause ReactCurrentDispatcher null (useContext/useState) if a navigation
+// happened while the dummy was mounted. Now we just lazy-load directly; chunk load
+// failures will be caught by ErrorBoundary and user can refresh via its button.
+const lazyWithRetry = (componentImport: () => Promise<any>) => lazy(componentImport);
 
 // --- Lazy Load Components ---
 const HomeDashboard = lazyWithRetry(() => import('./components/HomeDashboard'));

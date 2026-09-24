@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowLeft, ChevronRight, X } from 'lucide-react';
-import { EASE, cx } from '../dashboard/ui';
+import { cx } from '../dashboard/ui';
 
 export { Card, SectionHeader, Track, Eyebrow, Bone, EASE, cx } from '../dashboard/ui';
 
@@ -330,38 +329,28 @@ export function Sheet({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[90] flex items-end justify-center bg-ink/60 p-0 font-body backdrop-blur-sm sm:items-center sm:p-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={onClose}
-        >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label={label}
-            onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 30 }}
-            transition={{ duration: 0.34, ease: EASE }}
-            className={cx(
-              'w-full overflow-y-auto rounded-t-[28px] bg-white p-5 text-ink shadow-[0_40px_90px_-40px_rgba(22,18,16,0.7)] ring-1 ring-ink/8 dark:bg-ink-2 dark:text-paper dark:ring-white/10 sm:rounded-[28px] sm:p-6',
-              size === 'md' ? 'sm:max-w-lg' : 'sm:max-w-md',
-              'max-h-[92dvh]',
-            )}
-            style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
-          >
-            {children}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-ink/60 p-0 font-body backdrop-blur-sm sm:items-center sm:p-6"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        onClick={(e) => e.stopPropagation()}
+        className={cx(
+          'w-full overflow-y-auto rounded-t-[28px] bg-white p-5 text-ink shadow-[0_40px_90px_-40px_rgba(22,18,16,0.7)] ring-1 ring-ink/8 dark:bg-ink-2 dark:text-paper dark:ring-white/10 sm:rounded-[28px] sm:p-6',
+          size === 'md' ? 'sm:max-w-lg' : 'sm:max-w-md',
+          'max-h-[92dvh]',
+        )}
+        style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 
