@@ -118,7 +118,7 @@ const QuizBattlePrototype: React.FC = () => {
   const [showReactions, setShowReactions] = useState(false);
   const [powerUpsUsed, setPowerUpsUsed] = useState<string[]>([]);
 
-  const usePowerUp = (type: string) => {
+  const applyPowerUp = (type: string) => {
     if (type === '50-50') {
       const currentQ = battleState?.questions[currentQIndex];
       if (!currentQ) return;
@@ -1316,7 +1316,7 @@ const QuizBattlePrototype: React.FC = () => {
                     <div className="flex gap-2 shrink-0">
                         <motion.button 
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => { triggerHaptic('medium'); usePowerUp('50-50'); }}
+                            onClick={() => { triggerHaptic('medium'); applyPowerUp('50-50'); }}
                             disabled={hasAnswered || powerUpsUsed.includes('50-50')}
                             title="দুটি ভুল উত্তর বাদ দিন"
                             className="w-13 h-13 min-w-[3.25rem] h-[3.25rem] bg-white dark:bg-zinc-900 rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 dark:border-white/5 disabled:opacity-30 transition-opacity"

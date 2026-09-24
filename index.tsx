@@ -1,5 +1,5 @@
 
-import React, { StrictMode } from 'react';
+import React from 'react';
 import { logger } from './utils/logger';
 import ReactDOM from 'react-dom/client';
 import './index.css';
@@ -18,15 +18,13 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <StrictMode>
-    <HelmetProvider>
-      <AuthProvider>
-        <CacheProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
-        </CacheProvider>
-      </AuthProvider>
-    </HelmetProvider>
-  </StrictMode>
+  <HelmetProvider>
+    <AuthProvider>
+      <CacheProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </CacheProvider>
+    </AuthProvider>
+  </HelmetProvider>
 );

@@ -43,10 +43,15 @@ class ErrorBoundary extends Component<Props, State> {
           <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md">
             অ্যাপ্লিকেশনটি লোড করতে সমস্যা হচ্ছে। দয়া করে পেজটি রিফ্রেশ করুন অথবা কিছুক্ষণ পর আবার চেষ্টা করুন।
           </p>
-          <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-8 max-w-lg w-full overflow-auto text-left">
+          <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-8 max-w-lg w-full overflow-auto text-left space-y-2">
              <p className="text-xs font-mono text-red-600 dark:text-red-400 break-all">
                 {this.state.error?.toString()}
              </p>
+             {this.state.error?.stack && (
+               <pre className="text-[10px] font-mono text-red-500 dark:text-red-300 whitespace-pre-wrap break-all max-h-64 overflow-auto">
+                 {this.state.error.stack.slice(0, 2000)}
+               </pre>
+             )}
           </div>
           <button
             onClick={() => window.location.reload()}
