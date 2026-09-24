@@ -70,16 +70,61 @@ export const useAnimation = () => ({
 
 export const useMotionValue = (initial: any) => {
   const ref = React.useRef(initial);
-  return ref.current;
+  // Return a minimal MotionValue-like object with get/set
+  return React.useMemo(
+    () => ({
+      get: () => ref.current,
+      set: (v: any) => {
+        ref.current = v;
+      },
+      // For compatibility with code that reads .current or calls as function
+      get current() {
+        return ref.current;
+      },
+      set current(v: any) {
+        ref.current = v;
+      },
+    }),
+    []
+  );
 };
 
 export const useMotionTemplate = (...args: any[]) => {
   return args.join('');
 };
 
-export const useTransform = () => 0;
+export const useTransform = (value: any, transformer?: any) => {
+  // If value is a MotionValue-like with get(), use its current value
+  // If transformer is function, apply it
+  const getVal = () => {
+    const v = value && typeof value.get === 'function' ? value.get() : value;
+    if (typeof transformer === 'function') {
+      try {
+        return transformer(v);
+      } catch {
+        return v;
+      }
+    }
+    return v;
+  };
+  // Return a MotionValue-like that has get() and can be rendered as string
+  return {
+    get: getVal,
+    toString: () => String(getVal()),
+    valueOf: () => getVal(),
+  } as any;
+};
 export const useScroll = () => ({ scrollY: { get: () => 0, scrollX: { get: () => 0 } } });
-export const useSpring = (v: any) => v;
+export const useSpring = (mv: any, _config?: any) => {
+  // Return the same motion value, or a wrapper that has get()
+  if (mv && typeof mv.get === 'function') return mv;
+  return {
+    get: () => (mv && typeof mv.get === 'function' ? mv.get() : mv),
+    set: (v: any) => {
+      if (mv && typeof mv.set === 'function') mv.set(v);
+    },
+  };
+};
 export const useInView = () => true;
 export const useAnimationControls = useAnimation;
 export const useMotionValueEvent = () => {};
