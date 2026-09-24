@@ -71,13 +71,35 @@ const enter = (delay = 0) => ({
 
 export function ProfileAvatar({ src, name, seed, className = '', textClassName = 'text-[30px]' }: { src?: string | null; name?: string | null; seed: string; className?: string; textClassName?: string }) {
   const hue = hueFor(seed);
+  // Extract explicit size from className if it contains h-[88px] w-[88px] pattern, otherwise fallback to 88
+  // We keep Tailwind classes but also add inline style as hard fallback so mobile !important overrides can't break it
+  const is88 = className.includes('88px');
+  const fallbackStyle = is88
+    ? ({ width: 88, height: 88, minWidth: 88, minHeight: 88, maxWidth: 88, maxHeight: 88 } as React.CSSProperties)
+    : undefined;
+
   if (isHttpUrl(src)) {
-    return <img src={src as string} alt="" className={cx('rounded-full bg-ink/5 object-cover dark:bg-white/10', className)} referrerPolicy="no-referrer" draggable={false} />;
+    return (
+      <span className={cx('relative inline-block shrink-0 overflow-hidden rounded-full bg-ink/5 dark:bg-white/10', className)} style={fallbackStyle}>
+        <img
+          src={src as string}
+          alt=""
+          className="h-full w-full rounded-full object-cover"
+          referrerPolicy="no-referrer"
+          draggable={false}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' } as React.CSSProperties}
+        />
+      </span>
+    );
   }
   return (
     <span
-      className={cx('grid place-items-center rounded-full font-bangla font-extrabold', textClassName, className)}
-      style={{ background: `linear-gradient(140deg, hsl(${hue} 90% 92%), hsl(${(hue + 30) % 360} 85% 80%))`, color: `hsl(${hue} 55% 28%)` }}
+      className={cx('grid shrink-0 place-items-center rounded-full font-bangla font-extrabold', textClassName, className)}
+      style={{
+        ...(fallbackStyle || {}),
+        background: `linear-gradient(140deg, hsl(${hue} 90% 92%), hsl(${(hue + 30) % 360} 85% 80%))`,
+        color: `hsl(${hue} 55% 28%)`,
+      }}
       aria-hidden="true"
     >
       {initialOf(name)}
