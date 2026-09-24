@@ -11,6 +11,8 @@ import { Card, SectionHeader, Track, Bone, cx } from './dashboard/ui';
 import { Pill, Btn, Chip } from './qbank/ui';
 import { ProfileTopBar } from './profile/sections';
 import { bn } from './profile/model';
+import SavedQuestions from './SavedQuestions';
+import WrongQuestions from './WrongQuestions';
 
 const toBn = bn;
 
@@ -286,19 +288,8 @@ const ExamHistory: React.FC = () => {
               <div className="border-b border-ink/6 bg-cream/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
                 <SectionHeader icon={Bookmark} title="সেভ্ড প্রশ্ন" subtitle="পরে দেখার জন্য সংরক্ষণ করেছ" />
               </div>
-              <div className="p-6 sm:p-8 text-center">
-                <span className="mx-auto grid h-16 w-16 place-items-center rounded-[20px] bg-cream text-brand-deep ring-1 ring-brand/10 dark:bg-brand/10 dark:text-brand-bright dark:ring-brand/20">
-                  <Bookmark className="h-8 w-8" strokeWidth={2} />
-                </span>
-                <h3 className="mt-4 text-[18px] font-extrabold tracking-tight text-ink dark:text-paper">সেভ্ড প্রশ্ন আলাদা পেজে</h3>
-                <p className="mx-auto mt-1.5 max-w-sm text-[13.5px] font-semibold leading-relaxed text-mist dark:text-white/50">
-                  সেভ্ড প্রশ্নগুলো এখন আলাদা পেজে দেখো, যাতে হিস্টরি পেজ দ্রুত লোড হয়।
-                </p>
-                <div className="mt-5 flex justify-center">
-                  <Btn variant="brand" icon={BookOpen} onClick={() => navigate('/saved-questions')}>
-                    সেভ্ড প্রশ্ন দেখো
-                  </Btn>
-                </div>
+              <div className="p-2 sm:p-3">
+                <SavedQuestions embedded={true} />
               </div>
             </Card>
           )}
@@ -308,19 +299,8 @@ const ExamHistory: React.FC = () => {
               <div className="border-b border-ink/6 bg-cream/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
                 <SectionHeader icon={AlertTriangle} title="ভুলের খাতা" subtitle="যেখানে ভুল হয়েছে, সেখানেই শেখা" />
               </div>
-              <div className="p-6 sm:p-8 text-center">
-                <span className="mx-auto grid h-16 w-16 place-items-center rounded-[20px] bg-cream text-brand-deep ring-1 ring-brand/10 dark:bg-brand/10 dark:text-brand-bright dark:ring-brand/20">
-                  <AlertTriangle className="h-8 w-8" strokeWidth={2} />
-                </span>
-                <h3 className="mt-4 text-[18px] font-extrabold tracking-tight text-ink dark:text-paper">ভুলের খাতা আলাদা পেজে</h3>
-                <p className="mx-auto mt-1.5 max-w-sm text-[13.5px] font-semibold leading-relaxed text-mist dark:text-white/50">
-                  ভুল প্রশ্নগুলো আলাদা পেজে অনুশীলন করো, হিস্টরি পেজ হালকা থাকবে।
-                </p>
-                <div className="mt-5 flex justify-center">
-                  <Btn variant="brand" icon={Play} onClick={() => navigate('/wrong-questions')}>
-                    ভুলের খাতা দেখো
-                  </Btn>
-                </div>
+              <div className="p-2 sm:p-3">
+                <WrongQuestions embedded={true} />
               </div>
             </Card>
           )}
